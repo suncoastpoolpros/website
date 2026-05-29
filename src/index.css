@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&family=Caveat:wght@500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  
+  /* === Brand color tokens (global reference) === */
+  /* Orange */
+  --color-brand-orange: #ff720f;
+  --color-brand-orange-light: #ff8a3a;
+  --color-brand-orange-dark: #e06000;
+  /* Blue */
+  --color-brand-blue: #1669AE;
+  --color-brand-blue-light: #4a93d1;
+  --color-brand-blue-dark: #0f4d80;
+
+  /* Aliases kept for existing references */
+  --color-primary: #ff720f;
+  --color-primary-dark: #e06000;
+  --color-navy: #0a1628;
+  --color-navy-light: #15233b;
+  --color-navy-dark: #050b14;
+  
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-morph: morph 15s ease-in-out infinite alternate;
+  --animate-shimmer: shimmer 2s linear infinite;
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+  
+  @keyframes morph {
+    0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+    50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+    100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  }
+
+  @keyframes shimmer {
+    from { background-position: 0 0; }
+    to { background-position: -200% 0; }
+  }
+}
+
+@layer base {
+  /* Any enabled button or button-role element shows the pointer/"clicker" cursor.
+     Native <button> defaults to the arrow; this restores the expected hand on
+     hover everywhere (CTAs, FAQ accordions, quote-chooser cards, nav toggles)
+     without touching each one. Disabled buttons keep the default cursor. */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  /* Shared section header — change here to restyle every section heading site-wide. */
+  .section-heading {
+    @apply text-3xl md:text-[2.5rem] font-display font-bold tracking-tight;
+  }
+
+  /* Shared section description — the paragraph under a .section-heading. */
+  .section-subtext {
+    @apply text-lg text-gray-400 leading-relaxed;
+  }
+
+  /* Global button system. Every button uses `.btn` + a color modifier
+     (`.btn-orange` or `.btn-blue`). Change `.btn` here to restyle the size,
+     shape, weight, and spacing of EVERY button site-wide at once. */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg
+           font-semibold text-[15px] transition-colors cursor-pointer;
+  }
+  .btn-orange {
+    @apply bg-brand-orange hover:bg-brand-orange-dark text-white;
+  }
+  .btn-blue {
+    @apply bg-brand-blue hover:bg-brand-blue-dark text-white
+           shadow-lg shadow-brand-blue/20;
+  }
+  .btn-glass {
+    @apply text-white bg-white/[0.07] backdrop-blur-sm border border-white/20
+           hover:bg-white/[0.12] hover:border-white/30;
+  }
+
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)];
+  }
+  
+  .glass-card-hover {
+    @apply transition-all duration-500 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_8px_32px_0_rgba(255,114,15,0.15)] hover:-translate-y-2;
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 20px rgba(255, 114, 15, 0.3);
+  }
+  
+  .bg-mesh {
+    background-color: #0a1628;
+    background-image:
+      radial-gradient(at 0% 50%, hsla(215, 98%, 15%, 1) 0, transparent 50%),
+      radial-gradient(at 50% 50%, hsla(210, 100%, 10%, 1) 0, transparent 50%),
+      radial-gradient(at 100% 50%, hsla(215, 98%, 15%, 1) 0, transparent 50%);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

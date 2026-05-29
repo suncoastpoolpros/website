@@ -1,0 +1,333 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { m, AnimatePresence } from 'motion/react';
+import {
+  X,
+  Phone,
+  ChevronDown,
+  MapPin,
+  Workflow,
+  HelpCircle,
+  Briefcase,
+  Mail,
+  ArrowRight,
+  Clock,
+} from 'lucide-react';
+import { ServiceAreasMenu } from '@/components/ServiceAreasMenu';
+import { Container } from '@/components/Container';
+import { useQuoteSheet } from '@/components/QuoteSheet';
+import { PHONE_DISPLAY, PHONE_HREF, HOURS_SHORT } from '@/lib/contact';
+
+// Mobile drawer nav items. `to` routes; `href` is an in-page anchor (homepage).
+type MobileNavItem = { label: string; icon: React.ComponentType<{ className?: string }>; to?: string; href?: string };
+const MOBILE_NAV: MobileNavItem[] = [
+  { label: 'Service Areas', icon: MapPin, href: '#service-areas' },
+  { label: 'How It Works', icon: Workflow, to: '/how-it-works' },
+  { label: 'FAQ', icon: HelpCircle, to: '/faq' },
+  { label: 'Careers', icon: Briefcase, to: '/careers' },
+  { label: 'Contact', icon: Mail, to: '/contact' },
+];
+
+export const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [areasOpen, setAreasOpen] = useState(false);
+  const closeTimer = useRef<number | null>(null);
+  const { open: openQuoteSheet } = useQuoteSheet();
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // While the mobile drawer is open: lock body scroll and close on Escape.
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setIsOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [isOpen]);
+
+  // Delay close-on-leave so the user can travel from the trigger
+  // down into the panel without it snapping shut.
+  const openAreas = () => {
+    if (closeTimer.current) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+    setAreasOpen(true);
+  };
+  const scheduleClose = () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setAreasOpen(false), 120);
+  };
+
+  return (
+    <nav
+      className={`fixed w-full z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-[#0a1628]/85 backdrop-blur-xl border-b border-white/10'
+          : 'bg-transparent border-b border-transparent'
+      }`}
+    >
+      <Container>
+        <div className="flex items-center justify-between h-16">
+          <Link
+            to="/"
+            aria-label="Suncoast Pool Pros home"
+            className="shrink-0"
+          >
+            <span className="font-display font-bold text-base tracking-wide text-white uppercase">
+              Suncoast Pool Pros
+            </span>
+          </Link>
+
+          <div className="hidden md:flex items-center gap-1">
+            {/* Service Areas — opens mega-menu on hover */}
+            <div
+              className="relative"
+              onMouseEnter={openAreas}
+              onMouseLeave={scheduleClose}
+            >
+              <button
+                type="button"
+                onClick={() => setAreasOpen((v) => !v)}
+                aria-expanded={areasOpen}
+                aria-haspopup="true"
+                className="inline-flex items-center gap-1 text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors"
+              >
+                Service Areas
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform ${areasOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {areasOpen && (
+                <div
+                  className="absolute left-1/2 top-full -translate-x-1/2 pt-3 z-50"
+                  onMouseEnter={openAreas}
+                  onMouseLeave={scheduleClose}
+                >
+                  <ServiceAreasMenu />
+                </div>
+              )}
+            </div>
+
+            <Link
+              to="/how-it-works"
+              className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors"
+            >
+              How It Works
+            </Link>
+            <Link
+              to="/faq"
+              className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors"
+            >
+              FAQ
+            </Link>
+            <Link
+              to="/careers"
+              className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors"
+            >
+              Careers
+            </Link>
+          </div>
+
+          <div className="hidden md:flex items-center gap-2">
+            <a
+              href={PHONE_HREF}
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+            >
+              <Phone className="w-4 h-4" />
+              {PHONE_DISPLAY}
+            </a>
+            <button
+              type="button"
+              onClick={openQuoteSheet}
+              className="btn btn-orange"
+            >
+              Get a Quote
+            </button>
+          </div>
+
+          <div className="flex md:hidden">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle menu"
+              aria-expanded={isOpen}
+              className="relative inline-flex items-center justify-center w-10 h-10 rounded-md text-gray-200 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <span className="relative block w-5 h-[14px]">
+                <m.span
+                  className="absolute left-0 top-0 block h-0.5 w-5 rounded-full bg-current"
+                  animate={isOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+                  transition={{ duration: 0.25 }}
+                />
+                <m.span
+                  className="absolute left-0 bottom-0 block h-0.5 w-5 rounded-full bg-current"
+                  animate={isOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+                  transition={{ duration: 0.25 }}
+                />
+              </span>
+            </button>
+          </div>
+        </div>
+      </Container>
+
+      {/* Mobile drawer — full-height panel sliding in from the right over a backdrop */}
+      <AnimatePresence>
+        {isOpen && (
+          <div className="md:hidden fixed inset-0 z-[60]">
+            {/* Backdrop */}
+            <m.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={() => setIsOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Panel */}
+            <m.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="absolute right-0 top-0 h-full w-[82%] max-w-sm flex flex-col bg-[#0a1628] border-l border-white/10 shadow-2xl shadow-black/60"
+            >
+              {/* Brand bloom for depth */}
+              <div className="absolute top-0 right-0 w-56 h-56 bg-brand-blue/15 rounded-full blur-[100px] pointer-events-none" />
+
+              {/* Header */}
+              <div className="relative flex items-center justify-between px-5 h-16 border-b border-white/10">
+                <Link
+                  to="/"
+                  onClick={() => setIsOpen(false)}
+                  aria-label="Suncoast Pool Pros home"
+                  className="flex items-center gap-2.5"
+                >
+                  <img src="/icon-mark.svg" alt="" aria-hidden="true" className="h-6 w-auto" />
+                  <span className="font-display font-bold text-sm tracking-wide text-white uppercase">
+                    Suncoast Pool Pros
+                  </span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  aria-label="Close menu"
+                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Nav links */}
+              <nav className="relative flex-1 overflow-y-auto px-4 py-5">
+                <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  Menu
+                </p>
+                <div className="space-y-1">
+                  {MOBILE_NAV.map((item, i) => {
+                    const active = !!item.to && pathname === item.to;
+                    const content = (
+                      <>
+                        {/* Active accent bar */}
+                        <span
+                          className={`absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 rounded-r-full bg-brand-orange transition-opacity ${
+                            active ? 'opacity-100' : 'opacity-0'
+                          }`}
+                        />
+                        <span
+                          className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
+                            active
+                              ? 'bg-brand-blue/20 border-brand-blue/40'
+                              : 'bg-white/[0.06] border-white/10 group-hover:bg-brand-blue/15 group-hover:border-brand-blue/30'
+                          }`}
+                        >
+                          <item.icon className="w-[18px] h-[18px] text-brand-blue-light" />
+                        </span>
+                        <span
+                          className={`flex-1 text-[15px] transition-colors ${
+                            active
+                              ? 'text-white font-semibold'
+                              : 'text-gray-200 font-medium group-hover:text-white'
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                        <ArrowRight
+                          className={`w-4 h-4 transition-all ${
+                            active
+                              ? 'text-brand-blue-light'
+                              : 'text-gray-600 group-hover:text-brand-blue-light group-hover:translate-x-0.5'
+                          }`}
+                        />
+                      </>
+                    );
+                    const cls = `group relative flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
+                      active ? 'bg-white/[0.06]' : 'hover:bg-white/[0.04]'
+                    }`;
+                    return (
+                      <m.div
+                        key={item.label}
+                        initial={{ opacity: 0, x: 24 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.12 + i * 0.05 }}
+                      >
+                        {item.to ? (
+                          <Link to={item.to} onClick={() => setIsOpen(false)} className={cls}>
+                            {content}
+                          </Link>
+                        ) : (
+                          <a href={item.href} onClick={() => setIsOpen(false)} className={cls}>
+                            {content}
+                          </a>
+                        )}
+                      </m.div>
+                    );
+                  })}
+                </div>
+              </nav>
+
+              {/* Footer: CTA + call + hours */}
+              <div className="relative border-t border-white/10 p-4 space-y-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(false);
+                    openQuoteSheet();
+                  }}
+                  className="btn btn-orange w-full"
+                >
+                  Get a Quote
+                  <ArrowRight className="w-[18px] h-[18px]" />
+                </button>
+                <a
+                  href={PHONE_HREF}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-white/[0.06] border border-white/10 text-white font-medium text-[15px] hover:bg-white/10 transition-colors"
+                >
+                  <Phone className="w-[18px] h-[18px] text-brand-blue-light" />
+                  {PHONE_DISPLAY}
+                </a>
+                <p className="flex items-center justify-center gap-1.5 text-xs text-gray-500">
+                  <Clock className="w-3.5 h-3.5" />
+                  Open {HOURS_SHORT}
+                </p>
+              </div>
+            </m.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </nav>
+  );
+};
