@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MessageSquare, Phone, Camera, MapPin, Send, ClipboardList, ArrowLeft, ChevronRight } from 'lucide-react';
 import { sendContact } from '@/lib/contactSubmit';
 import { useTurnstile } from '@/lib/turnstile';
+import { clearDraft, readDraft, writeDraft } from '@/lib/quoteDraft';
 import { PHONE_DISPLAY, PHONE_HREF, SMS_HREF, SMS_QUOTE_HREF, HOURS_SHORT } from '@/lib/contact';
 
 const TEXT_STEPS = [
@@ -64,35 +65,102 @@ const ConditionalBlock = ({
 
 export const QuoteChooser = () => {
   const isDesktop = useIsDesktop();
-  // Default-open the most relevant option per device.
-  const [choice, setChoice] = useState<Choice>(null);
+  // Lazy-read the saved draft (if any) so the initial state values come from
+  // localStorage instead of empty defaults. Runs once on mount.
+  const initialDraft = useMemo(() => readDraft(), []);
+  // Default-open the most relevant option per device — unless there's a draft,
+  // in which case land directly on the form so the buyer picks up where they
+  // left off without an extra click.
+  const [choice, setChoice] = useState<Choice>(initialDraft ? 'form' : null);
   const [formSent, setFormSent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const turnstile = useTurnstile();
   // Service type lives in React state so step 2 can render the right fields
   // for what the buyer needs (e.g. green-pool severity, equipment type for
   // repair). Mirrored via onChange from the native <select> on step 1.
-  const [service, setService] = useState<Service>('');
+  const [service, setService] = useState<Service>(
+    (initialDraft?.service as Service) ?? ''
+  );
   // Two-step form: step 1 = contact + service type, step 2 = pool/service
   // specifics. Splitting reduces the visual weight of the form and lets us
   // ask for the deeper info we actually need to quote accurately.
-  const [formStep, setFormStep] = useState<1 | 2>(1);
+  const [formStep, setFormStep] = useState<1 | 2>(initialDraft?.step ?? 1);
   // Step 1 values are stashed when the user clicks "Next" so the inputs can
   // safely unmount when step 2 renders. We re-hydrate them at submit time.
-  const [step1Data, setStep1Data] = useState<Record<string, string>>({});
+  const [step1Data, setStep1Data] = useState<Record<string, string>>(
+    initialDraft?.step1 ?? {}
+  );
+  // Step 2 values mirror to state on change so they survive a re-render or
+  // tab close. We use uncontrolled inputs with defaultValue elsewhere for
+  // simplicity; this ref-mirror is purely for persistence.
+  const step2DraftRef = useRef<Record<string, string>>(initialDraft?.step2 ?? {});
+  // Banner flag — only true on initial render when a draft was hydrated. We
+  // hide the banner the moment the user touches a field so it doesn't nag.
+  const [showRestoredBanner, setShowRestoredBanner] = useState<boolean>(!!initialDraft);
 
   // Clicking a card from the three-option view commits to that path.
   // The back button (rendered above the pinned card) is what clears it.
   const select = (c: Exclude<Choice, null>) => setChoice(c);
 
   // Reset the form back to step 1 when the user backs out of the form card,
-  // so re-entering doesn't drop them mid-flow with stale state.
+  // so re-entering doesn't drop them mid-flow with stale state. Also clears
+  // any persisted draft — backing out means "start over."
   const resetForm = () => {
     setFormStep(1);
     setStep1Data({});
     setService('');
     setFormError(null);
+    step2DraftRef.current = {};
+    setShowRestoredBanner(false);
+    clearDraft();
   };
+
+  // Persist whatever's currently in the step 1 form to the draft. Called from
+  // an onChange listener on the form element itself, so any field edit triggers
+  // a write. Reads via FormData so we don't need to control each input.
+  const persistStep1FromForm = (form: HTMLFormElement) => {
+    const data = new FormData(form);
+    const get = (k: string) => String(data.get(k) ?? '');
+    const step1 = {
+      name: get('name'),
+      email: get('email'),
+      phone: get('phone'),
+      address: get('address'),
+      service: get('service'),
+    };
+    writeDraft({
+      step: 1,
+      service: step1.service,
+      step1,
+      step2: step2DraftRef.current,
+    });
+    // Touching a field means the buyer is engaging — hide the restored banner.
+    setShowRestoredBanner(false);
+  };
+
+  // Same for step 2. The set of named fields changes per service type, so we
+  // grab everything FormData hands us (skipping the honeypot).
+  const persistStep2FromForm = (form: HTMLFormElement) => {
+    const data = new FormData(form);
+    const next: Record<string, string> = {};
+    data.forEach((v, k) => {
+      if (k === 'website') return;
+      next[k] = String(v);
+    });
+    step2DraftRef.current = next;
+    writeDraft({
+      step: 2,
+      service,
+      step1: step1Data,
+      step2: next,
+    });
+    setShowRestoredBanner(false);
+  };
+
+  // Helper for step 2 inputs — returns the persisted value for a field, or
+  // empty string if there's no draft entry for it. Use as defaultValue so
+  // inputs remain uncontrolled (forms still read via FormData).
+  const draftVal = (key: string): string => step2DraftRef.current[key] ?? '';
 
   const handleStep1Next = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -106,14 +174,24 @@ export const QuoteChooser = () => {
       setFormSent(true);
       return;
     }
-    setStep1Data({
+    const step1 = {
       name: value('name'),
       email: value('email'),
       phone: value('phone'),
       address: value('address'),
       service: value('service'),
-    });
+    };
+    setStep1Data(step1);
     setFormStep(2);
+    // Move the draft to step 2 so a refresh between here and submit drops the
+    // buyer onto the right step.
+    writeDraft({
+      step: 2,
+      service: step1.service,
+      step1,
+      step2: step2DraftRef.current,
+    });
+    setShowRestoredBanner(false);
   };
 
   const handleStep2Submit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -153,6 +231,10 @@ export const QuoteChooser = () => {
         source: 'quote-chooser',
         submittedAt: new Date().toISOString(),
       });
+      // Successful submit — drop the saved draft so the next quote request
+      // starts fresh (including for other people on a shared computer).
+      clearDraft();
+      step2DraftRef.current = {};
       setFormSent(true);
     } catch (err) {
       setFormError(`Something went wrong. Please call or text ${PHONE_DISPLAY}.`);
@@ -278,6 +360,28 @@ export const QuoteChooser = () => {
               aria-hidden="true"
               style={{ position: 'absolute', left: '-9999px', width: 1, height: 1 }}
             />
+
+            {/* Restore banner — shown when we hydrated state from a saved
+                draft. Hides itself the moment the buyer touches a field, so
+                it never lingers as nag UI. The "Start over" link clears the
+                draft + resets everything for someone who isn't the original
+                drafter (e.g. shared device). */}
+            {showRestoredBanner && (
+              <div className="mb-4 flex items-start justify-between gap-3 rounded-lg border border-brand-blue/25 bg-brand-blue/[0.06] px-3 py-2.5">
+                <p className="text-[12px] text-gray-200 leading-snug">
+                  <span className="text-white font-medium">Picking up where you left off.</span>
+                  <span className="block text-gray-400 mt-0.5">Your info is still here from before.</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="text-[12px] text-brand-blue-light hover:text-white underline underline-offset-2 decoration-brand-blue-light/40 hover:decoration-white/60 transition-colors shrink-0"
+                >
+                  Start over
+                </button>
+              </div>
+            )}
+
             {/* Step indicator — quietly tells the buyer they're not stuck in a
                 surprise multi-page form. Two steps, total. */}
             <div className="flex items-center justify-between mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500">
@@ -289,7 +393,14 @@ export const QuoteChooser = () => {
             </div>
 
             {formStep === 1 && (
-              <form onSubmit={handleStep1Next} className="space-y-3">
+              <form
+                onSubmit={handleStep1Next}
+                // Bubble onChange catches any field edit inside the form,
+                // then we serialize the whole form via FormData. No need to
+                // wire change handlers per input.
+                onChange={(e) => persistStep1FromForm(e.currentTarget)}
+                className="space-y-3"
+              >
                 {/* Honeypot — hidden from humans (display:none + aria-hidden + tabIndex)
                     but bot field-fillers see it as a normal field and populate it.
                     Submissions that include a value here are silently dropped. */}
@@ -360,24 +471,28 @@ export const QuoteChooser = () => {
             )}
 
             {formStep === 2 && (
-              <form onSubmit={handleStep2Submit} className="space-y-3">
+              <form
+                onSubmit={handleStep2Submit}
+                onChange={(e) => persistStep2FromForm(e.currentTarget)}
+                className="space-y-3"
+              >
                 {/* ---- Weekly Pool Cleaning — pricing essentials ---- */}
                 {service === 'weekly' && (
                   <ConditionalBlock label="About your pool">
-                    <select name="poolSize" defaultValue="" required className={INPUT_CLS}>
+                    <select name="poolSize" defaultValue={draftVal('poolSize')} required className={INPUT_CLS}>
                       <option value="" disabled>Approximate pool size</option>
                       <option value="small">Small (under 10,000 gal)</option>
                       <option value="medium">Medium (10,000–20,000 gal)</option>
                       <option value="large">Large (20,000+ gal)</option>
                       <option value="unsure">Not sure</option>
                     </select>
-                    <select name="poolType" defaultValue="" required className={INPUT_CLS}>
+                    <select name="poolType" defaultValue={draftVal('poolType')} required className={INPUT_CLS}>
                       <option value="" disabled>Saltwater or chlorine?</option>
                       <option value="salt">Saltwater</option>
                       <option value="chlorine">Traditional chlorine</option>
                       <option value="unsure">Not sure</option>
                     </select>
-                    <select name="heaterType" defaultValue="" required className={INPUT_CLS}>
+                    <select name="heaterType" defaultValue={draftVal('heaterType')} required className={INPUT_CLS}>
                       <option value="" disabled>Heater type</option>
                       <option value="none">No heater</option>
                       <option value="gas">Gas heater</option>
@@ -386,12 +501,12 @@ export const QuoteChooser = () => {
                       <option value="unsure">Not sure</option>
                     </select>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <select name="screenEnclosure" defaultValue="" required className={INPUT_CLS}>
+                      <select name="screenEnclosure" defaultValue={draftVal('screenEnclosure')} required className={INPUT_CLS}>
                         <option value="" disabled>Screen enclosure?</option>
                         <option value="yes">Yes — screened</option>
                         <option value="no">No — open</option>
                       </select>
-                      <select name="debrisLoad" defaultValue="" required className={INPUT_CLS}>
+                      <select name="debrisLoad" defaultValue={draftVal('debrisLoad')} required className={INPUT_CLS}>
                         <option value="" disabled>Trees / debris</option>
                         <option value="low">Little to none</option>
                         <option value="medium">Some trees nearby</option>
@@ -404,14 +519,14 @@ export const QuoteChooser = () => {
                 {/* ---- Green Pool Recovery ---- */}
                 {service === 'green' && (
                   <ConditionalBlock label="Tell us about the pool">
-                    <select name="greenSeverity" defaultValue="" required className={INPUT_CLS}>
+                    <select name="greenSeverity" defaultValue={draftVal('greenSeverity')} required className={INPUT_CLS}>
                       <option value="" disabled>How green is it?</option>
                       <option value="tint">Slight tint — still mostly clear</option>
                       <option value="cloudy">Cloudy green</option>
                       <option value="opaque">Can't see the bottom</option>
                       <option value="debris">Algae &amp; debris — full neglect</option>
                     </select>
-                    <select name="greenSize" defaultValue="" required className={INPUT_CLS}>
+                    <select name="greenSize" defaultValue={draftVal('greenSize')} required className={INPUT_CLS}>
                       <option value="" disabled>Approximate pool size</option>
                       <option value="small">Small (under 10,000 gal)</option>
                       <option value="medium">Medium (10,000–20,000 gal)</option>
@@ -421,6 +536,7 @@ export const QuoteChooser = () => {
                     <textarea
                       name="greenNotes"
                       rows={2}
+                      defaultValue={draftVal('greenNotes')}
                       placeholder="Anything else? (equipment running, last serviced, etc.)"
                       className={`${INPUT_CLS} resize-none`}
                     />
@@ -430,7 +546,7 @@ export const QuoteChooser = () => {
                 {/* ---- Repair / Installation ---- */}
                 {service === 'repair' && (
                   <ConditionalBlock label="What's the issue?">
-                    <select name="repairEquipment" defaultValue="" required className={INPUT_CLS}>
+                    <select name="repairEquipment" defaultValue={draftVal('repairEquipment')} required className={INPUT_CLS}>
                       <option value="" disabled>What needs attention?</option>
                       <option value="pump">Pump</option>
                       <option value="filter">Filter</option>
@@ -445,6 +561,7 @@ export const QuoteChooser = () => {
                       name="repairIssue"
                       rows={3}
                       required
+                      defaultValue={draftVal('repairIssue')}
                       placeholder="Briefly describe the issue (sounds, leaks, error codes, etc.)"
                       className={`${INPUT_CLS} resize-none`}
                     />
@@ -454,7 +571,7 @@ export const QuoteChooser = () => {
                 {/* ---- Commercial / HOA ---- */}
                 {service === 'commercial' && (
                   <ConditionalBlock label="About the property">
-                    <select name="commercialPropertyType" defaultValue="" required className={INPUT_CLS}>
+                    <select name="commercialPropertyType" defaultValue={draftVal('commercialPropertyType')} required className={INPUT_CLS}>
                       <option value="" disabled>Property type</option>
                       <option value="hoa">HOA</option>
                       <option value="condo">Condo / Apartment</option>
@@ -463,13 +580,13 @@ export const QuoteChooser = () => {
                       <option value="other">Other commercial</option>
                     </select>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <select name="commercialPoolCount" defaultValue="" required className={INPUT_CLS}>
+                      <select name="commercialPoolCount" defaultValue={draftVal('commercialPoolCount')} required className={INPUT_CLS}>
                         <option value="" disabled>How many pools?</option>
                         <option value="1">1</option>
                         <option value="2-3">2–3</option>
                         <option value="4+">4+</option>
                       </select>
-                      <select name="commercialRole" defaultValue="" required className={INPUT_CLS}>
+                      <select name="commercialRole" defaultValue={draftVal('commercialRole')} required className={INPUT_CLS}>
                         <option value="" disabled>Your role</option>
                         <option value="owner">Owner</option>
                         <option value="property-manager">Property manager</option>
@@ -488,6 +605,7 @@ export const QuoteChooser = () => {
                       name="otherDetails"
                       rows={4}
                       required
+                      defaultValue={draftVal('otherDetails')}
                       placeholder="What do you need? The more detail, the more accurate the quote."
                       className={`${INPUT_CLS} resize-none`}
                     />

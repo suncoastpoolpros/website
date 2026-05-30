@@ -75,6 +75,13 @@
       }
     </script>
 
+    <!-- Preload the fonts used above the fold (Montserrat headings + Inter body)
+         so they start downloading the moment HTML arrives, in parallel with the
+         CSS. Without these the browser only learns about them after CSS parses. -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/montserrat-900.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/montserrat-700.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400.woff2" crossorigin />
+
     <link rel="preload" as="image" href="/pool-service-st-petersburg-hero-mobile.webp" type="image/webp" media="(max-width: 767px)" />
     <link rel="preload" as="image" href="/pool-service-st-petersburg-hero.webp" type="image/webp" media="(min-width: 768px) and (max-width: 1535px)" />
     <link rel="preload" as="image" href="/pool-service-st-petersburg-hero-1920.webp" type="image/webp" media="(min-width: 1536px)" />

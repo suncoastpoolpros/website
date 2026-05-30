@@ -83,8 +83,13 @@ const loadScript = (): Promise<void> => {
 export const useTurnstile = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
-  // A pending execute() call waiting for the next callback fire.
-  const pendingRef = useRef<{ resolve: (token: string) => void; reject: (e: Error) => void } | null>(null);
+  // Last token issued by the widget's success callback. Tokens are valid for
+  // ~5 minutes; the widget auto-refreshes them so this stays current.
+  const tokenRef = useRef<string>('');
+  // Pending getToken() callers waiting for the next callback fire (used when
+  // the user hits submit before the widget has produced its first token, or
+  // right after a manual reset).
+  const waitersRef = useRef<Array<(token: string) => void>>([]);
   const [ready, setReady] = useState(false);
 
   const enabled = Boolean(SITE_KEY);
@@ -95,22 +100,30 @@ export const useTurnstile = () => {
     loadScript()
       .then(() => {
         if (cancelled || !containerRef.current || !window.turnstile) return;
+        // Managed invisible widget. Turnstile auto-solves on render and
+        // delivers a token via the callback — we don't need (and shouldn't
+        // call) turnstile.execute() in this mode.
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
           sitekey: SITE_KEY!,
           size: 'invisible',
-          execution: 'execute',
-          appearance: 'interaction-only',
+          retry: 'auto',
           callback: (token: string) => {
-            const pending = pendingRef.current;
-            pendingRef.current = null;
-            pending?.resolve(token);
+            tokenRef.current = token;
+            const waiters = waitersRef.current;
+            waitersRef.current = [];
+            for (const w of waiters) w(token);
           },
           'error-callback': () => {
-            const pending = pendingRef.current;
-            pendingRef.current = null;
-            pending?.reject(new Error('turnstile_error'));
+            // On error, drain waiters with an empty token so submission can
+            // proceed to the server, which will report captcha_failed cleanly.
+            tokenRef.current = '';
+            const waiters = waitersRef.current;
+            waitersRef.current = [];
+            for (const w of waiters) w('');
           },
           'expired-callback': () => {
+            // Token aged out. Clear so the next submit waits for a fresh one.
+            tokenRef.current = '';
             if (widgetIdRef.current && window.turnstile) {
               window.turnstile.reset(widgetIdRef.current);
             }
@@ -120,9 +133,9 @@ export const useTurnstile = () => {
       })
       .catch(() => {
         // Script load failed (network, ad blocker, etc.). Leave `ready` false
-        // — the form's execute() will resolve with '' and submission will
-        // proceed without a token. The server treats no-token as captcha
-        // failure ONLY if a secret is configured; otherwise it's accepted.
+        // — execute() will resolve with '' and submission will proceed without
+        // a token. The server treats no-token as captcha failure ONLY if a
+        // secret is configured; otherwise it's accepted (dev-friendly default).
       });
     return () => {
       cancelled = true;
@@ -134,27 +147,42 @@ export const useTurnstile = () => {
         }
         widgetIdRef.current = null;
       }
+      waitersRef.current = [];
+      tokenRef.current = '';
     };
   }, [enabled]);
 
   const execute = (): Promise<string> => {
-    if (!enabled || !ready || !widgetIdRef.current || !window.turnstile) {
-      // Falls through to a no-op token. Server-side: if the secret is
-      // configured, this will fail captcha; if not, it accepts the submit.
-      return Promise.resolve('');
-    }
-    return new Promise<string>((resolve, reject) => {
-      // Race-condition safety: if there's already a pending execute() that
-      // never fired, reject it. Each submit gets a fresh promise.
-      pendingRef.current?.reject(new Error('turnstile_superseded'));
-      pendingRef.current = { resolve, reject };
-      try {
-        window.turnstile!.reset(widgetIdRef.current!);
-        window.turnstile!.execute(widgetIdRef.current!);
-      } catch (e) {
-        pendingRef.current = null;
-        reject(e instanceof Error ? e : new Error('turnstile_exec_failed'));
+    if (!enabled) return Promise.resolve('');
+    // Token already cached from the auto-solve — use it. Then reset the
+    // widget so the next submit gets a fresh token (each Turnstile token
+    // can only be verified server-side once).
+    if (tokenRef.current) {
+      const token = tokenRef.current;
+      tokenRef.current = '';
+      if (widgetIdRef.current && window.turnstile) {
+        try {
+          window.turnstile.reset(widgetIdRef.current);
+        } catch {
+          /* ignore */
+        }
       }
+      return Promise.resolve(token);
+    }
+    // No token yet. Could be: (a) script still loading, (b) widget mid-solve,
+    // (c) post-reset, no fresh token issued yet. Wait up to ~6 seconds for
+    // the success callback to fire.
+    return new Promise<string>((resolve) => {
+      const timer = window.setTimeout(() => {
+        // Drop this waiter from the queue if it's still there.
+        waitersRef.current = waitersRef.current.filter((w) => w !== waiter);
+        resolve('');
+      }, 6000);
+      const waiter = (token: string) => {
+        window.clearTimeout(timer);
+        resolve(token);
+      };
+      waitersRef.current.push(waiter);
     });
   };
 

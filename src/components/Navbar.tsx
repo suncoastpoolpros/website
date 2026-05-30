@@ -60,6 +60,16 @@ export const Navbar = () => {
     };
   }, [isOpen]);
 
+  // Close the mobile drawer + service-areas accordion on any route change.
+  // Otherwise tapping a nav link leaves the drawer covering the new page
+  // until the lazy chunk finishes — which on a real iPhone over LTE can take
+  // a couple seconds and feels like the menu is frozen.
+  useEffect(() => {
+    setIsOpen(false);
+    setAreasOpen(false);
+    setAreasExpanded(false);
+  }, [pathname]);
+
   // Delay close-on-leave so the user can travel from the trigger
   // down into the panel without it snapping shut.
   const openAreas = () => {

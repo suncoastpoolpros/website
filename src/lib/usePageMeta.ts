@@ -1,7 +1,13 @@
 import { useEffect } from 'react';
+import { setSsrMeta } from './serverMeta';
 
 const SITE_ORIGIN = 'https://suncoastpoolpros.com';
 const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/pool-service-st-petersburg-hero.jpg`;
+
+// `window` is undefined in Node — used to detect whether we're rendering on
+// the server (where we populate the serverMeta singleton) vs. the client
+// (where useEffect updates the real DOM head). Vite externalizes this for SSR.
+const IS_SERVER = typeof window === 'undefined';
 
 type PageMeta = {
   title: string;
@@ -62,6 +68,12 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
       ? ogImage
       : `${SITE_ORIGIN}${ogImage}`
     : DEFAULT_OG_IMAGE;
+
+  // Server: populate the SSR meta singleton during render. The prerender script
+  // reads this after renderToString and writes it into the static HTML head.
+  if (IS_SERVER) {
+    setSsrMeta({ title, description, canonicalUrl, ogImage: image });
+  }
 
   useEffect(() => {
     const prevTitle = document.title;

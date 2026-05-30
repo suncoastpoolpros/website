@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Hero } from '@/components/Hero';
 import { FeatureGrid } from '@/components/FeatureGrid';
-import { QuoteForm } from '@/components/QuoteForm';
 import { Process } from '@/components/Process';
 import { Services } from '@/components/Services';
 import { ServiceAreas } from '@/components/ServiceAreas';
@@ -10,8 +9,13 @@ import { CtaBand } from '@/components/CtaBand';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 // import { Testimonials } from '@/components/Testimonials'; // Re-enable once real reviews are added
 import { FAQ } from '@/components/FAQ';
-import { Footer } from '@/components/Footer';
 import { usePageMeta } from '@/lib/usePageMeta';
+
+// Deep below-the-fold pieces are loaded after first paint. The quote form is
+// interactive (heavier) and the footer is a separate chunk shared by all pages;
+// neither needs to block the hero from showing up.
+const QuoteForm = lazy(() => import('@/components/QuoteForm').then((m) => ({ default: m.QuoteForm })));
+const Footer = lazy(() => import('@/components/Footer').then((m) => ({ default: m.Footer })));
 
 export const LandingPage = () => {
   usePageMeta({
@@ -36,9 +40,10 @@ export const LandingPage = () => {
         <CtaBand />
         {/* <Testimonials /> */}
         <FAQ />
-        <QuoteForm />
-
-        <Footer />
+        <Suspense fallback={null}>
+          <QuoteForm />
+          <Footer />
+        </Suspense>
       </div>
       <StickyMobileCta />
     </div>

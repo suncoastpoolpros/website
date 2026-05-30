@@ -1,0 +1,113 @@
+// Post-build prerender script. Runs after `vite build` (client) and
+// `vite build --ssr src/entry-server.tsx` (server). For each route in
+// PRERENDER_ROUTES, calls render(url) to get the rendered HTML body + per-page
+// meta (title, description, canonical, OG), then injects both into the static
+// HTML template Vite produced and writes the result to dist/<route>/index.html.
+//
+// The end state: a real static site. Visiting /faq fetches a fully-rendered
+// HTML file with content already in it. React still hydrates after the JS
+// loads — so animations and interactivity work — but first paint is instant.
+
+import { promises as fs } from 'fs';
+import path from 'path';
+import { pathToFileURL } from 'url';
+
+const ROOT = path.resolve(process.argv[1], '..', '..');
+const CLIENT_DIST = path.join(ROOT, 'dist');
+const SERVER_DIST = path.join(ROOT, 'dist-ssr');
+const SERVER_ENTRY = path.join(SERVER_DIST, 'entry-server.js');
+const TEMPLATE = path.join(CLIENT_DIST, 'index.html');
+
+const escapeHtml = (s) =>
+  s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+/**
+ * Replace or insert per-page meta tags into the HTML head. Idempotent: if a
+ * tag already exists (e.g. <title> from index.html), it is replaced in-place.
+ */
+function injectHead(html, meta) {
+  let out = html;
+  const replacements = [];
+
+  if (meta.title) {
+    out = out.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(meta.title)}</title>`);
+  }
+  if (meta.description) {
+    out = out.replace(
+      /<meta name="description"[^>]*\/?>/,
+      `<meta name="description" content="${escapeHtml(meta.description)}" />`,
+    );
+  }
+  if (meta.canonicalUrl) {
+    out = out.replace(
+      /<link rel="canonical"[^>]*\/?>/,
+      `<link rel="canonical" href="${escapeHtml(meta.canonicalUrl)}" />`,
+    );
+  }
+
+  // OG + Twitter tags — these don't exist in index.html, so append them inside
+  // <head> right before </head>.
+  if (meta.title) replacements.push(`<meta property="og:title" content="${escapeHtml(meta.title)}" />`);
+  if (meta.description) replacements.push(`<meta property="og:description" content="${escapeHtml(meta.description)}" />`);
+  if (meta.canonicalUrl) replacements.push(`<meta property="og:url" content="${escapeHtml(meta.canonicalUrl)}" />`);
+  replacements.push(`<meta property="og:type" content="website" />`);
+  replacements.push(`<meta property="og:site_name" content="Suncoast Pool Pros" />`);
+  if (meta.ogImage) replacements.push(`<meta property="og:image" content="${escapeHtml(meta.ogImage)}" />`);
+  replacements.push(`<meta name="twitter:card" content="summary_large_image" />`);
+  if (meta.title) replacements.push(`<meta name="twitter:title" content="${escapeHtml(meta.title)}" />`);
+  if (meta.description) replacements.push(`<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`);
+  if (meta.ogImage) replacements.push(`<meta name="twitter:image" content="${escapeHtml(meta.ogImage)}" />`);
+
+  out = out.replace('</head>', `  ${replacements.join('\n    ')}\n  </head>`);
+  return out;
+}
+
+function injectBody(html, body) {
+  return html.replace(
+    '<div id="root"></div>',
+    `<div id="root">${body}</div>`,
+  );
+}
+
+async function run() {
+  const template = await fs.readFile(TEMPLATE, 'utf8');
+  // Bun-style file URL import for the SSR bundle so Node ESM resolves correctly.
+  const { render, PRERENDER_ROUTES } = await import(pathToFileURL(SERVER_ENTRY).href);
+
+  let count = 0;
+  for (const route of PRERENDER_ROUTES) {
+    let body, meta;
+    try {
+      const out = render(route);
+      body = out.html;
+      meta = out.meta;
+    } catch (err) {
+      console.error(`✗ ${route} — render failed:`, err.message);
+      continue;
+    }
+
+    let html = template;
+    html = injectHead(html, meta);
+    html = injectBody(html, body);
+
+    const outDir = route === '/'
+      ? CLIENT_DIST
+      : path.join(CLIENT_DIST, route.replace(/^\//, ''));
+    const outFile = path.join(outDir, 'index.html');
+    await fs.mkdir(outDir, { recursive: true });
+    await fs.writeFile(outFile, html);
+    count++;
+    console.log(`✓ ${route} → ${path.relative(ROOT, outFile)} (${html.length} bytes)`);
+  }
+  console.log(`\nPrerendered ${count}/${PRERENDER_ROUTES.length} routes.`);
+}
+
+run().catch((err) => {
+  console.error('Prerender failed:', err);
+  process.exit(1);
+});

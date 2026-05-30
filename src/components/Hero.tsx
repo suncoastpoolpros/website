@@ -17,11 +17,13 @@ const ServiceReport = lazy(() =>
 const formatClock = (d: Date) =>
   d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s?[AP]M/i, '');
 
+// SSR-safe: initial value is an empty string so the server-rendered HTML
+// matches the first client render. The real time is set on mount and ticked
+// every 10s (we only show H:MM, so a 10s tick is enough).
 const useLiveClock = () => {
-  const [time, setTime] = useState(() => formatClock(new Date()));
+  const [time, setTime] = useState('');
   useEffect(() => {
-    // Only H:MM is shown, so a 10s tick is enough to catch minute rollovers
-    // without forcing a repaint every second on the (large) phone layer.
+    setTime(formatClock(new Date()));
     const id = window.setInterval(() => setTime(formatClock(new Date())), 10000);
     return () => window.clearInterval(id);
   }, []);
@@ -43,7 +45,9 @@ export const Hero = () => {
     openQuoteSheet();
   };
   // Parallax: as the hero scrolls out of view, drift the bg image up a bit slower
-  // than the content for a subtle depth effect.
+  // than the content for a subtle depth effect. (useScroll touches window — its
+  // motion value resolves to 0 on the server, which still matches the un-scrolled
+  // first client render, so this is hydration-safe.)
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start start', 'end start'],
