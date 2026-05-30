@@ -33,9 +33,9 @@ const ContactPageInner = () => {
   const [error, setError] = useState<string | null>(null);
 
   usePageMeta({
-    title: 'Contact Suncoast Pool Pros — Pool Service in St. Petersburg, FL',
+    title: 'Talk to a Real Person About Your Pool',
     description:
-      'Reach Suncoast Pool Pros — call, text, or message us for a flat-rate weekly pool service quote in St. Petersburg, Clearwater, and Tampa Bay.',
+      'Call, text, or message Suncoast Pool Pros for a flat-rate weekly pool service quote. We answer on the same day — usually within an hour during business hours.',
     canonicalPath: '/contact',
   });
 

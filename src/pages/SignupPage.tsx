@@ -38,9 +38,9 @@ const SignupPageInner = () => {
   const today = new Date().toISOString().split('T')[0];
 
   usePageMeta({
-    title: 'Become a Customer — Suncoast Pool Pros | St. Petersburg, FL',
+    title: 'Start Weekly Pool Service in the Tampa Bay Area',
     description:
-      'Sign up for flat-rate weekly pool service with Suncoast Pool Pros. Tell us about your pool and we’ll start service in the St. Petersburg area.',
+      "Tell us about your pool and we'll quote your flat weekly rate, usually within the same business day. No contracts, no obligation.",
     canonicalPath: '/signup',
   });
 

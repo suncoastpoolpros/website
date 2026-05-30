@@ -15,9 +15,9 @@ import { usePageMeta } from '@/lib/usePageMeta';
 
 export const LandingPage = () => {
   usePageMeta({
-    title: 'Pool Cleaning St. Petersburg, FL | Flat-Rate, Always Blue',
+    title: 'Pool Cleaning in St. Petersburg, FL — Done Right, Every Week',
     description:
-      'Flat-rate weekly pool cleaning in St. Petersburg — one price covers standard chemicals, plus a photo report every visit. Homes, HOAs & commercial pools.',
+      'Flat-rate weekly pool cleaning in St. Petersburg and the Tampa Bay area. One price covers standard chemicals, the same tech shows up every week, and you get a photo report after every visit.',
     canonicalPath: '/',
   });
 

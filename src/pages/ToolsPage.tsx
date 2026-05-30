@@ -39,9 +39,9 @@ const ToolsPageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
 
   usePageMeta({
-    title: 'Free Pool Tools & Calculators — Suncoast Pool Pros | St. Pete',
+    title: 'Free Tools for Florida Pool Owners',
     description:
-      'Free pool care tools from Suncoast Pool Pros — calculators and references for volume, chemistry, and dosing, built for Florida pool owners.',
+      'Calculators and references for pool volume, chemistry dosing, and salt levels — built by working pool techs, free to use, no email required.',
     canonicalPath: '/tools',
   });
 

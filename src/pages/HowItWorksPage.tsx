@@ -120,9 +120,9 @@ const HowItWorksPageInner = () => {
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
   usePageMeta({
-    title: 'How Pool Service Works — Suncoast Pool Pros | St. Pete',
+    title: 'How Suncoast Pool Service Actually Works',
     description:
-      'See exactly how Suncoast Pool Pros service works — from your free quote to weekly cleanings, water balancing, and a written report after every visit.',
+      "From your first quote to the weekly photo report in your inbox — here's exactly what working with Suncoast Pool Pros looks like, week one through year five.",
     canonicalPath: '/how-it-works',
   });
 

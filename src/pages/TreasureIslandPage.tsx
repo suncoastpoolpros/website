@@ -20,9 +20,9 @@ const TreasureIslandHeroPhone = lazy(() =>
 );
 
 const PAGE_TITLE =
-  'Pool Service Treasure Island, FL | Weekly Care for Rentals & Second Homes';
+  'Treasure Island Pool Service | One Flat Rate, All Year';
 const PAGE_DESC =
-  'Reliable weekly pool service for Treasure Island vacation rentals, Airbnbs, and second homes. The same dedicated technician every week, photo report after every visit, and pools that stay guest-ready when you are not in town.';
+  'Weekly pool care across Treasure Island — Sunset Beach to Isle of Capri. Whether you live here, rent it out, or come down each winter, you get the same tech, the same flat rate, and a photo report after every visit.';
 const PAGE_URL = 'https://suncoastpoolpros.com/treasure-island-fl/';
 
 const HeroSection = () => {

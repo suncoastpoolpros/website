@@ -27,9 +27,9 @@ const APPLY_BODY =
   'Hi Suncoast Pool Pros team,%0D%0A%0D%0AI\'d like to apply for the Pool Service Technician role.%0D%0A%0D%0AName:%0D%0APhone:%0D%0AArea you live in:%0D%0APool / field experience:%0D%0A%0D%0A(Attach your resume if you have one — but it\'s not required.)';
 const APPLY_HREF = `mailto:${EMAIL}?subject=${encodeURIComponent(APPLY_SUBJECT)}&body=${APPLY_BODY}`;
 
-const PAGE_TITLE = 'Careers — Pool Service Technician | Suncoast Pool Pros';
+const PAGE_TITLE = 'Now Hiring: Pool Service Technicians in Tampa Bay';
 const PAGE_DESC =
-  'Join Suncoast Pool Pros in the Tampa Bay area. We hire reliable, professional pool technicians — competitive weekly pay, consistent routes, paid training, and a company truck. Now hiring.';
+  'Steady weekly pay, the same routes every week, paid training, and a company truck. We hire reliable techs who take pride in showing up. Apply by email.';
 
 const lookFor = [
   {

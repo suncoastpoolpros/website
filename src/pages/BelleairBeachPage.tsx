@@ -21,9 +21,9 @@ const BelleairHeroPhone = lazy(() =>
 );
 
 const PAGE_TITLE =
-  'Pool Service Belleair Beach, FL | Discreet Weekly Pool Care';
+  'Belleair Beach Pool Service | Quiet, Reliable, Flat-Rate';
 const PAGE_DESC =
-  'Discreet, reliable pool service for Belleair Beach waterfront homes. The same trusted technician every week, coastal-grade care, and a photo report after every visit.';
+  'Pool service for Belleair Beach homes that runs in the background. Same technician every week, photo report in your inbox, one flat rate.';
 const PAGE_URL = 'https://suncoastpoolpros.com/belleair-beach-fl/';
 
 const HeroSection = () => {
