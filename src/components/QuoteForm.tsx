@@ -17,6 +17,14 @@ export const QuoteForm = () => {
     setLoading(true);
     const data = new FormData(e.currentTarget);
     const value = (key: string) => String(data.get(key) ?? '').trim();
+    // Honeypot — humans can't see/fill the `website` field. If it has a value,
+    // this is almost certainly a bot. Pretend success and bail silently so
+    // bots don't learn from errors.
+    if (value('website')) {
+      setSubmitted(true);
+      setLoading(false);
+      return;
+    }
     try {
       await sendContact({
         name: value('name'),
@@ -100,6 +108,34 @@ export const QuoteForm = () => {
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-brand-blue/20 rounded-full blur-3xl pointer-events-none" />
 
             <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+              {/* Honeypot — hidden from humans (display:none + aria-hidden + tabIndex)
+                  but bot field-fillers see it as a normal field and populate it.
+                  Submissions that include a value here are silently dropped. */}
+              <input
+                type="text"
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ position: 'absolute', left: '-9999px', width: 1, height: 1 }}
+              />
+              <FieldShell id="service" label="What do you need?" floated>
+                <select
+                  id="service"
+                  name="service"
+                  required
+                  defaultValue=""
+                  className={selectClass}
+                >
+                  <option value="" disabled></option>
+                  <option value="weekly">Weekly Pool Cleaning</option>
+                  <option value="green">Green Pool Recovery</option>
+                  <option value="repair">Equipment Repair or Installation</option>
+                  <option value="commercial">Commercial / HOA Pool</option>
+                  <option value="other">Something else</option>
+                </select>
+              </FieldShell>
+
               <FieldShell id="name" label="Full Name">
                 <input
                   type="text"
@@ -149,23 +185,6 @@ export const QuoteForm = () => {
                   className={fieldClass}
                   placeholder=" "
                 />
-              </FieldShell>
-
-              <FieldShell id="service" label="What do you need?" floated>
-                <select
-                  id="service"
-                  name="service"
-                  required
-                  defaultValue=""
-                  className={selectClass}
-                >
-                  <option value="" disabled></option>
-                  <option value="weekly">Weekly Pool Cleaning</option>
-                  <option value="green">Green Pool Recovery</option>
-                  <option value="repair">Equipment Repair or Installation</option>
-                  <option value="commercial">Commercial / HOA Pool</option>
-                  <option value="other">Something else</option>
-                </select>
               </FieldShell>
 
               {error && (

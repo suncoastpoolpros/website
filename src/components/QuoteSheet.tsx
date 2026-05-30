@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { m, AnimatePresence } from 'motion/react';
-import { X } from 'lucide-react';
+import { X, Handshake } from 'lucide-react';
 import { QuoteChooser } from '@/components/QuoteChooser';
+import { PHONE_HREF } from '@/lib/contact';
 
 /**
  * Slide-up bottom sheet (mobile) that hosts the QuoteChooser.
@@ -64,31 +65,47 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="relative w-full sm:max-w-lg max-h-[90vh] overflow-y-auto bg-[#0b1726] border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl px-5 pt-3 pb-8 sm:p-7 shadow-[0_-20px_50px_-10px_rgba(0,0,0,0.7)] sm:shadow-2xl sm:shadow-black/60"
+              className="relative w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0b1726] border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl px-5 pt-3 pb-8 sm:p-8 shadow-[0_-20px_50px_-10px_rgba(0,0,0,0.7)] sm:shadow-2xl sm:shadow-black/60"
             >
               {/* Grab handle (mobile only) */}
               <div className="sm:hidden mx-auto mb-5 h-1.5 w-12 rounded-full bg-white/20" />
 
-              <div className="flex items-start justify-between mb-5">
+              <div className="flex items-start justify-between mb-5 pb-5 border-b border-white/[0.06]">
                 <div>
-                  <h2 className="text-xl font-display font-bold text-white leading-tight">
-                    Get your flat-rate quote
+                  <h2 className="text-[22px] sm:text-2xl font-display font-bold text-white leading-tight tracking-tight">
+                    Tell us about your pool.
                   </h2>
-                  <p className="text-gray-400 text-sm mt-1">
-                    Pick how you'd like to reach us.
+                  <p className="text-gray-400 text-[14px] mt-1.5 leading-snug">
+                    Three ways to start. Pick whichever fits.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={close}
                   aria-label="Close"
-                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white shrink-0"
+                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 shrink-0 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <QuoteChooser />
+
+              {/* Quiet escalation line — signals in-person visits are available
+                  without making them a fourth visible option. Premium buyers who
+                  want this will ask; everyone else picks one of the three above. */}
+              <div className="mt-6 pt-5 border-t border-white/[0.06] flex items-center justify-center gap-2">
+                <Handshake className="w-4 h-4 text-gray-500 shrink-0" />
+                <p className="text-[13px] text-gray-500">
+                  Often the best quotes come from seeing the pool ourselves.{' '}
+                  <a
+                    href={PHONE_HREF}
+                    className="text-gray-200 hover:text-white underline underline-offset-2 decoration-white/20 hover:decoration-white/50 transition-colors"
+                  >
+                    Give us a call to schedule.
+                  </a>
+                </p>
+              </div>
             </m.div>
           </div>
         )}

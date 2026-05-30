@@ -2,30 +2,16 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import { useQuoteSheet } from '@/components/QuoteSheet';
+import { cities } from '@/lib/cities';
+// Re-export so existing consumers `from '@/components/ServiceAreasMenu'` keep
+// compiling. New code should import from '@/lib/cities' directly.
+export { cities, type City } from '@/lib/cities';
 
 /**
  * Tampa Bay service-area mega-menu.
  * Left side: city list with hover highlight.
  * Right side: live Google Maps embed of the Tampa Bay region (free, no API key).
  */
-
-export type City = { slug: string; name: string; blurb: string; to?: string };
-
-export const cities: City[] = [
-  { slug: 'st-petersburg',   name: 'St. Petersburg',  blurb: 'Our home base' },
-  { slug: 'gulfport',        name: 'Gulfport',        blurb: 'Coastal St. Pete' },
-  { slug: 'st-pete-beach',   name: 'St. Pete Beach',  blurb: 'Beach community' },
-  { slug: 'treasure-island', name: 'Treasure Island', blurb: 'Gulf beaches' },
-  { slug: 'seminole',        name: 'Seminole',        blurb: 'Mid-Pinellas' },
-  { slug: 'largo',           name: 'Largo',           blurb: 'Central Pinellas' },
-  { slug: 'belleair-beach',  name: 'Belleair Beach',  blurb: 'Gulf barrier island', to: '/belleair-beach-fl' },
-  { slug: 'clearwater',      name: 'Clearwater',      blurb: 'Beach & mainland' },
-  { slug: 'safety-harbor',   name: 'Safety Harbor',   blurb: 'East shore' },
-  { slug: 'dunedin',         name: 'Dunedin',         blurb: 'Gulf-side' },
-  { slug: 'palm-harbor',     name: 'Palm Harbor',     blurb: 'Northern Pinellas' },
-  { slug: 'davis-island',    name: 'Davis Island',    blurb: 'South Tampa island' },
-  { slug: 'south-tampa',     name: 'South Tampa',     blurb: 'Hyde Park & Bayshore' },
-];
 
 export const ServiceAreasMenu = () => {
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);

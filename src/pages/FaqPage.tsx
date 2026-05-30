@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { m, AnimatePresence } from 'motion/react';
 import {
   Search,
@@ -11,6 +12,7 @@ import {
   Wrench,
   MapPin,
   Rocket,
+  ArrowRight,
   type LucideIcon,
 } from 'lucide-react';
 import { faqs, FAQ_CATEGORIES, type FaqCategory } from '@/data/faqs';
@@ -273,6 +275,15 @@ const FaqPageInner = () => {
                                   </p>
                                 )}
                                 <p className="text-gray-300 leading-[1.75] text-[15px]">{faq.answer}</p>
+                                {faq.relatedTool && (
+                                  <Link
+                                    to={faq.relatedTool.href}
+                                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-orange hover:text-brand-orange-dark transition-colors"
+                                  >
+                                    {faq.relatedTool.label}
+                                    <ArrowRight className="w-4 h-4" />
+                                  </Link>
+                                )}
                               </div>
                             </m.div>
                           )}

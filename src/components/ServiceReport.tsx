@@ -3,12 +3,34 @@ import { PHONE_DISPLAY, PHONE_HREF, EMAIL, EMAIL_HREF } from '@/lib/contact';
 
 // Faithful render of the real Suncoast Pool Pros service-report email,
 // scoped to .sr-root so styles don't leak into the rest of the page.
-export const ServiceReport = () => {
+// `inline` mode skips self-scrolling so a parent (e.g. a phone mockup that
+// wants Gmail subject/sender to scroll *with* the report) can own the scroll.
+// `customerName`, `customerAddress`, and `serviceDate` let a page localize the
+// sample report (e.g. the Belleair Beach page shows a Belleair address).
+type ServiceReportProps = {
+  inline?: boolean;
+  customerName?: string;
+  customerAddress?: React.ReactNode;
+  serviceDate?: string;
+};
+
+export const ServiceReport = ({
+  inline = false,
+  customerName = 'Your Name Here',
+  customerAddress = (
+    <>
+      123 Example Lane, <span style={{ whiteSpace: 'nowrap' }}>St. Petersburg, FL, 33701</span>
+    </>
+  ),
+  serviceDate = 'Thursday, May 14, 2026 · 11:42 AM',
+}: ServiceReportProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   // On touch devices, scroll the report ~2x faster than the finger moves —
   // so a short swipe inside the phone covers more of the report.
+  // Skipped in inline mode (the parent owns scrolling).
   useEffect(() => {
+    if (inline) return;
     const el = rootRef.current;
     if (!el) return;
     let lastY = 0;
@@ -34,10 +56,10 @@ export const ServiceReport = () => {
       el.removeEventListener('touchstart', onTouchStart);
       el.removeEventListener('touchmove', onTouchMove);
     };
-  }, []);
+  }, [inline]);
 
   return (
-    <div className="sr-root" ref={rootRef}>
+    <div className={inline ? 'sr-root sr-root--inline' : 'sr-root'} ref={rootRef}>
       <style>{`
         .sr-root {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -47,6 +69,10 @@ export const ServiceReport = () => {
           height: 100%;
           overflow-y: auto;
           color-scheme: light;
+        }
+        .sr-root--inline {
+          height: auto;
+          overflow: visible;
         }
         .sr-root *, .sr-root *::before, .sr-root *::after { box-sizing: border-box; }
         .sr-root::-webkit-scrollbar { display: none; }
@@ -298,15 +324,13 @@ export const ServiceReport = () => {
           <header className="sr-header">
             <p className="sr-header__company">SUNCOAST POOL PROS</p>
             <p className="sr-header__kicker">Service Report</p>
-            <div className="sr-header__datebadge">Tuesday, May 26, 2026 · 9:42 AM</div>
+            <div className="sr-header__datebadge">{serviceDate}</div>
           </header>
 
           {/* Customer hero */}
           <section className="sr-hero">
-            <p className="sr-hero__name">Your Name Here</p>
-            <p className="sr-hero__address">
-              123 Example Lane, <span style={{ whiteSpace: 'nowrap' }}>St. Petersburg, FL, 33701</span>
-            </p>
+            <p className="sr-hero__name">{customerName}</p>
+            <p className="sr-hero__address">{customerAddress}</p>
             <div className="sr-hero__pills">
               <span className="sr-pill sr-pill--neutral">Serviced by Alex</span>
               <a className="sr-pill sr-pill--link" href="#">GPS Verify ↗</a>
@@ -346,14 +370,33 @@ export const ServiceReport = () => {
             <span className="sr-task"><span className="sr-task__check">✓</span>Water level checked</span>
           </div>
 
-          {/* Photos */}
+          {/* Photos — sources match the hero's responsive preloads so the
+              browser cache is reused on every viewport. Mobile gets the mobile
+              webp; desktop gets the 1280 webp; JPG fallbacks are for browsers
+              that don't support webp. */}
           <div className="sr-section"><h2>Photos</h2></div>
           <div className="sr-photo-wrap">
-            <img
-              className="sr-photo"
-              src="/hero-bg-1280.webp"
-              alt="Service photo"
-            />
+            <picture>
+              <source
+                media="(max-width: 767px)"
+                type="image/webp"
+                srcSet="/pool-service-st-petersburg-hero-mobile.webp"
+              />
+              <source
+                media="(max-width: 767px)"
+                srcSet="/pool-service-st-petersburg-hero-mobile.jpg"
+              />
+              <source type="image/webp" srcSet="/pool-service-st-petersburg-hero.webp" />
+              <img
+                className="sr-photo"
+                src="/pool-service-st-petersburg-hero.jpg"
+                alt="Weekly pool service report photo — clear, balanced backyard pool in St. Petersburg, FL"
+                loading="lazy"
+                decoding="async"
+                width={1280}
+                height={720}
+              />
+            </picture>
           </div>
 
           <div className="sr-body-bottom" />

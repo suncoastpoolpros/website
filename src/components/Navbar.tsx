@@ -12,18 +12,21 @@ import {
   Mail,
   ArrowRight,
   Clock,
+  Wrench,
 } from 'lucide-react';
 import { ServiceAreasMenu } from '@/components/ServiceAreasMenu';
+import { cities } from '@/lib/cities';
 import { Container } from '@/components/Container';
 import { useQuoteSheet } from '@/components/QuoteSheet';
 import { PHONE_DISPLAY, PHONE_HREF, HOURS_SHORT } from '@/lib/contact';
 
 // Mobile drawer nav items. `to` routes; `href` is an in-page anchor (homepage).
 type MobileNavItem = { label: string; icon: React.ComponentType<{ className?: string }>; to?: string; href?: string };
+// "Service Areas" is rendered separately as an expandable accordion (see below).
 const MOBILE_NAV: MobileNavItem[] = [
-  { label: 'Service Areas', icon: MapPin, href: '#service-areas' },
   { label: 'How It Works', icon: Workflow, to: '/how-it-works' },
   { label: 'FAQ', icon: HelpCircle, to: '/faq' },
+  { label: 'Tools', icon: Wrench, to: '/tools' },
   { label: 'Careers', icon: Briefcase, to: '/careers' },
   { label: 'Contact', icon: Mail, to: '/contact' },
 ];
@@ -35,6 +38,7 @@ export const Navbar = () => {
   const closeTimer = useRef<number | null>(null);
   const { open: openQuoteSheet } = useQuoteSheet();
   const { pathname } = useLocation();
+  const [areasExpanded, setAreasExpanded] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -132,6 +136,12 @@ export const Navbar = () => {
               className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors"
             >
               FAQ
+            </Link>
+            <Link
+              to="/tools"
+              className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors"
+            >
+              Tools
             </Link>
             <Link
               to="/careers"
@@ -236,16 +246,70 @@ export const Navbar = () => {
                   Menu
                 </p>
                 <div className="space-y-1">
+                  {/* Service Areas — expandable accordion of cities */}
+                  <m.div
+                    initial={{ opacity: 0, x: 24 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.12 }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setAreasExpanded((v) => !v)}
+                      aria-expanded={areasExpanded}
+                      className="group relative w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors hover:bg-white/[0.04]"
+                    >
+                      <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border bg-white/[0.06] border-white/10 group-hover:bg-brand-blue/15 group-hover:border-brand-blue/30 transition-colors">
+                        <MapPin className="w-[18px] h-[18px] text-brand-blue-light" />
+                      </span>
+                      <span className="flex-1 text-left text-[15px] font-medium text-gray-200 group-hover:text-white transition-colors">
+                        Service Areas
+                      </span>
+                      <ChevronDown
+                        className={`w-4 h-4 text-gray-500 transition-transform ${areasExpanded ? 'rotate-180 text-brand-blue-light' : ''}`}
+                      />
+                    </button>
+
+                    {/* Conditionally render the city list with a simple fade/slide —
+                        no height-auto or grid-fr animation (both misbehaved inside
+                        the drawer's scroll container). */}
+                    {areasExpanded && (
+                      <m.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                        className="ml-[3.25rem] mr-1 mt-1 mb-2 grid grid-cols-2 gap-1 border-l border-white/10 pl-3"
+                      >
+                        {cities.map((city) => {
+                          const cityCls =
+                            'block py-2 px-2 rounded-lg text-[13px] text-gray-400 hover:text-white hover:bg-white/[0.04] transition-colors truncate';
+                          return city.to ? (
+                            <Link
+                              key={city.slug}
+                              to={city.to}
+                              onClick={() => setIsOpen(false)}
+                              className={cityCls}
+                            >
+                              {city.name}
+                            </Link>
+                          ) : (
+                            <a
+                              key={city.slug}
+                              href="#service-areas"
+                              onClick={() => setIsOpen(false)}
+                              className={cityCls}
+                            >
+                              {city.name}
+                            </a>
+                          );
+                        })}
+                      </m.div>
+                    )}
+                  </m.div>
+
                   {MOBILE_NAV.map((item, i) => {
                     const active = !!item.to && pathname === item.to;
                     const content = (
                       <>
-                        {/* Active accent bar */}
-                        <span
-                          className={`absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 rounded-r-full bg-brand-orange transition-opacity ${
-                            active ? 'opacity-100' : 'opacity-0'
-                          }`}
-                        />
                         <span
                           className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border transition-colors ${
                             active
@@ -281,7 +345,7 @@ export const Navbar = () => {
                         key={item.label}
                         initial={{ opacity: 0, x: 24 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.12 + i * 0.05 }}
+                        transition={{ delay: 0.17 + i * 0.05 }}
                       >
                         {item.to ? (
                           <Link to={item.to} onClick={() => setIsOpen(false)} className={cls}>

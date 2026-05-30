@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, Twitter, Phone, Mail, MapPin } from 'lucide-react';
 import { Container } from '@/components/Container';
-import { cities } from '@/components/ServiceAreasMenu';
+import { cities } from '@/lib/cities';
 import {
   BUSINESS_NAME,
   PHONE_DISPLAY,
@@ -21,6 +21,7 @@ const footerCities = cities.slice(0, 7);
 const exploreLinks = [
   { label: 'How It Works', href: '/how-it-works', route: true },
   { label: 'FAQ', href: '/faq', route: true },
+  { label: 'Tools', href: '/tools', route: true },
   { label: 'Careers', href: '/careers', route: true },
   { label: 'Contact', href: '/contact', route: true },
 ];

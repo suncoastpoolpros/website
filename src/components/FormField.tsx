@@ -17,8 +17,10 @@ const fieldBase =
 export const fieldClass = `${fieldBase} placeholder-transparent`;
 
 // Native <select> — same height/padding as inputs so it aligns, with a pointer
-// cursor. Keeps the browser's native dropdown chevron.
-export const selectClass = `${fieldBase} cursor-pointer`;
+// cursor. The native browser chevron sits inconsistently far to the right, so we
+// hide it and paint a custom SVG chevron anchored 1.25rem from the right edge.
+export const selectClass =
+  `${fieldBase} cursor-pointer appearance-none pr-12 bg-no-repeat bg-[right_1.25rem_center] bg-[length:0.75rem_0.75rem] bg-[image:url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 12 12%27 fill=%27none%27 stroke=%27%23737373%27 stroke-width=%271.75%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27><polyline points=%273 4.5 6 7.5 9 4.5%27/></svg>")]`;
 
 // Textarea — no fixed height (it grows with rows); anchors content near the top.
 export const textareaClass =

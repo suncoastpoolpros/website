@@ -111,4 +111,20 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Hide scrollbars site-wide while keeping scroll behavior intact.
+     Targets the page itself and every scrollable descendant. */
+  html,
+  body,
+  * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
 }

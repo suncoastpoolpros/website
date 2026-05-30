@@ -10,6 +10,12 @@ import {
   IcGreenRecovery,
 } from '@/components/PoolIcons';
 
+// Local image asset for the "Weekly Cleaning" visual block. Swap this constant
+// to change the image — saving a file at the same path means zero code change.
+// Reusing the hero asset for now (already preloaded → no extra network cost).
+const SERVICES_IMAGE_WEBP = '/pool-service-st-petersburg-hero.webp';
+const SERVICES_IMAGE_JPG = '/pool-service-st-petersburg-hero.jpg';
+
 const services = [
   {
     icon: IcWeeklyCleaning,
@@ -89,12 +95,18 @@ export const Services = () => {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-brand-blue-light to-brand-blue rounded-[2.5rem] rotate-3 opacity-20 blur-2xl" />
             <div className="glass-panel p-2 rounded-[2.5rem] relative overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1562778612-e1e0cda9915c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
-                alt="Sparkling blue pool water serviced by Suncoast Pool Pros in St. Petersburg, FL"
-                className="w-full h-full object-cover rounded-[2rem]"
-                referrerPolicy="no-referrer"
-              />
+              <picture>
+                <source type="image/webp" srcSet={SERVICES_IMAGE_WEBP} />
+                <img
+                  src={SERVICES_IMAGE_JPG}
+                  alt="Sparkling blue pool water serviced by Suncoast Pool Pros in St. Petersburg, FL"
+                  className="w-full h-full object-cover rounded-[2rem]"
+                  loading="lazy"
+                  decoding="async"
+                  width={1280}
+                  height={720}
+                />
+              </picture>
               <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628] via-transparent to-transparent opacity-40" />
             </div>
           </m.div>

@@ -9,6 +9,8 @@ export type Faq = {
   question: string;
   answer: string;
   category: FaqCategory;
+  /** Optional related tool link rendered below the answer text. */
+  relatedTool?: { label: string; href: string };
 };
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
@@ -26,6 +28,7 @@ export const faqs: Faq[] = [
     question: 'How much does pool cleaning cost in St. Petersburg, FL?',
     answer:
       "Most residential pools in St. Petersburg run between $140 and $200 per month for weekly service. That's a true flat rate — it covers brushing, skimming, vacuuming, emptying baskets, testing and balancing your water, and all the standard chemicals, with no per-visit chemical surcharges. Your exact price depends on your pool's size, surface, and equipment, plus how much shade and debris it deals with. The only things billed separately are major equipment repairs, replacement parts, and major storm recovery — and we always quote those before doing any work. For comparison, full-service weekly pool care across Florida typically falls in the $125–$200 range, so St. Pete pricing is right in line. Want an exact number? Text us a couple of photos of your pool and equipment pad and we'll send a flat-rate quote the same day.",
+    relatedTool: { label: "Estimate your pool's volume", href: '/tools/pool-volume-calculator' },
   },
   {
     category: 'Pricing & Billing',
@@ -83,6 +86,7 @@ export const faqs: Faq[] = [
     question: 'How does stabilizer (CYA) affect my chlorine?',
     answer:
       "Cyanuric acid — CYA, or stabilizer — is sunscreen for your chlorine. Florida sun burns off unprotected chlorine fast, so a little CYA is essential to make it last. But it's a balancing act: the more CYA in your water, the more chlorine you need to get the same sanitizing power, because high stabilizer effectively \"locks up\" your chlorine. That's why a pool can read normal chlorine on a cheap test strip and still turn green — the chlorine is there but isn't active. The fix isn't just dumping in more chlorine; it's keeping CYA in the right range relative to your chlorine, and the only real way to bring CYA down is to dilute with fresh water. Because CYA creeps up over time — most stabilized chlorine tablets add a little every week — we track the ratio on every visit and adjust before it becomes a problem. It's one of the most common reasons a DIY or budget-serviced pool slowly goes green.",
+    relatedTool: { label: "Calculate your pool's gallons (needed for accurate dosing)", href: '/tools/pool-volume-calculator' },
   },
   {
     category: 'Our Service',

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { m, AnimatePresence } from 'motion/react';
-import { MessageSquare, Phone, ChevronDown, Camera, MapPin, Send, ClipboardList } from 'lucide-react';
+import { MessageSquare, Phone, Camera, MapPin, Send, ClipboardList, ArrowLeft, ChevronRight } from 'lucide-react';
 import { sendContact } from '@/lib/contactSubmit';
 import { PHONE_DISPLAY, PHONE_HREF, SMS_HREF, SMS_QUOTE_HREF, HOURS_SHORT } from '@/lib/contact';
 
@@ -31,26 +30,83 @@ const useIsDesktop = () => {
  *   mobile  → Text first (lowest friction on a phone)
  *   desktop → Form first (texting is awkward on a computer)
  */
+// Service types — kept in one place so the <select>, conditional blocks, and
+// submission payload stay aligned. Adding a service here is the only change
+// needed to add another path through the form.
+type Service = '' | 'weekly' | 'green' | 'repair' | 'commercial' | 'other';
+
+// Shared input style — keeps every form field visually consistent. Used by
+// the standard fields and every conditional block below.
+const INPUT_CLS =
+  'w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition';
+
+/**
+ * Wrapper around a conditional block of form fields. Renders a small
+ * section label, then the fields flat in the form flow — no inset
+ * container — so conditional fields read as part of the same form,
+ * not a separate sub-form.
+ */
+const ConditionalBlock = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) => (
+  <div className="space-y-3 pt-1">
+    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-blue-light">
+      {label}
+    </p>
+    {children}
+  </div>
+);
+
 export const QuoteChooser = () => {
   const isDesktop = useIsDesktop();
   // Default-open the most relevant option per device.
   const [choice, setChoice] = useState<Choice>(null);
   const [formSent, setFormSent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  // Service type lives in React state so we can render conditional fields
+  // tailored to what the buyer needs (e.g. green-pool severity, equipment
+  // type for repair). The native <select> stays uncontrolled in the DOM —
+  // we read its value via onChange and mirror it into state for rendering.
+  const [service, setService] = useState<Service>('');
 
-  const toggle = (c: Choice) => setChoice((prev) => (prev === c ? null : c));
+  // Clicking a card from the three-option view commits to that path.
+  // The back button (rendered above the pinned card) is what clears it.
+  const select = (c: Exclude<Choice, null>) => setChoice(c);
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormError(null);
     const data = new FormData(e.currentTarget);
     const value = (key: string) => String(data.get(key) ?? '').trim();
+    // Honeypot — humans can't see/fill the `website` field (display:none + aria-hidden).
+    // If it has a value, this is almost certainly a bot scraping form fields by
+    // name; pretend we sent it and bail. We never want bots to learn from errors.
+    if (value('website')) {
+      setFormSent(true);
+      return;
+    }
     try {
       await sendContact({
         name: value('name'),
+        email: value('email'),
         phone: value('phone'),
         address: value('address'),
         service: value('service'),
+        // Conditional fields — only one set will be populated depending on
+        // the chosen service type. Empty strings are stripped backend-side.
+        greenSeverity: value('greenSeverity'),
+        greenSize: value('greenSize'),
+        greenNotes: value('greenNotes'),
+        repairEquipment: value('repairEquipment'),
+        repairIssue: value('repairIssue'),
+        commercialPropertyType: value('commercialPropertyType'),
+        commercialPoolCount: value('commercialPoolCount'),
+        commercialRole: value('commercialRole'),
+        otherDetails: value('otherDetails'),
         source: 'quote-chooser',
         submittedAt: new Date().toISOString(),
       });
@@ -62,15 +118,20 @@ export const QuoteChooser = () => {
   };
 
   // ---- Card definitions ----
+  // When a choice is committed, the chosen card is "pinned" (no chevron, no
+  // toggle) since the back button replaces that interaction.
+  const pinned = choice !== null;
   const TextCard = (
     <Card
       active={choice === 'text'}
-      onToggle={() => toggle('text')}
+      onToggle={() => select('text')}
+      pinned={pinned}
       accent="orange"
-      icon={<MessageSquare className="w-5 h-5 text-white" />}
-      iconWrap="bg-brand-orange"
-      title="Text us photos"
-      subtitle="Fastest — get a quote without a call"
+      icon={<MessageSquare className="w-[22px] h-[22px] text-white" />}
+      iconWrap="bg-gradient-to-br from-brand-orange to-brand-orange-dark shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_12px_-2px_rgba(255,114,15,0.4)]"
+      title="Text a few photos"
+      subtitle="The fastest way to a quote."
+      badge="Fastest"
     >
       <div className="px-5 pb-5 pt-1">
         {/* Steps: stacked on mobile, 3-across on desktop */}
@@ -124,17 +185,17 @@ export const QuoteChooser = () => {
   const CallCard = (
     <Card
       active={choice === 'call'}
-      onToggle={() => toggle('call')}
+      onToggle={() => select('call')}
+      pinned={pinned}
       accent="neutral"
-      icon={<Phone className="w-5 h-5 text-brand-blue-light" />}
-      iconWrap="bg-white/10 border border-white/15"
-      title="Call us"
-      subtitle="Talk to a real person, not a call center"
+      icon={<Phone className="w-[22px] h-[22px] text-brand-blue-light" />}
+      iconWrap="bg-gradient-to-br from-white/[0.12] to-white/[0.04] border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+      title="Give us a call"
+      subtitle="A real person answers — same day."
     >
       <div className="px-5 pb-5 pt-1">
         <p className="text-sm text-gray-300 leading-relaxed mb-5">
-          We answer <span className="text-white font-medium">{HOURS_SHORT}</span>.
-          Tell us your address and a bit about your pool, and we'll give you a flat-rate quote on the spot.
+          We answer <span className="text-white font-medium">{HOURS_SHORT}</span> — a quick conversation to understand your pool.
         </p>
         <a
           href={PHONE_HREF}
@@ -150,45 +211,37 @@ export const QuoteChooser = () => {
   const FormCard = (
     <Card
       active={choice === 'form'}
-      onToggle={() => toggle('form')}
+      onToggle={() => select('form')}
+      pinned={pinned}
       accent="blue"
-      icon={<ClipboardList className="w-5 h-5 text-white" />}
-      iconWrap="bg-brand-blue"
-      title="Fill out a quick form"
-      subtitle="We'll reach out with your flat-rate quote"
+      icon={<ClipboardList className="w-[22px] h-[22px] text-white" />}
+      iconWrap="bg-gradient-to-br from-brand-blue to-brand-blue-dark shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_12px_-2px_rgba(22,105,174,0.4)]"
+      title="Send us your details"
+      subtitle="We'll come back with a flat rate."
     >
       <div className="px-5 pb-5 pt-1">
         {formSent ? (
           <div className="text-center py-4">
-            <p className="text-white font-semibold mb-1">Thanks — we got it!</p>
-            <p className="text-gray-400 text-sm">We'll text or call you with your flat rate, same day.</p>
+            <p className="text-white font-semibold mb-1">Got it — thanks.</p>
+            <p className="text-gray-400 text-sm">We'll email your flat rate, same day.</p>
           </div>
         ) : (
           <form onSubmit={handleFormSubmit} className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input
-                required
-                name="name"
-                placeholder="Full name"
-                className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
-              />
-              <input
-                required
-                name="phone"
-                type="tel"
-                placeholder="Phone"
-                className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
-              />
-            </div>
+            {/* Honeypot — hidden from humans (display:none + aria-hidden + tabIndex)
+                but bot field-fillers see it as a normal field and populate it.
+                Submissions that include a value here are silently dropped above. */}
             <input
-              required
-              name="address"
-              placeholder="Home address"
-              className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              style={{ position: 'absolute', left: '-9999px', width: 1, height: 1 }}
             />
             <select
               name="service"
-              defaultValue=""
+              value={service}
+              onChange={(e) => setService(e.target.value as Service)}
               required
               className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
             >
@@ -199,6 +252,156 @@ export const QuoteChooser = () => {
               <option value="commercial">Commercial / HOA Pool</option>
               <option value="other">Something else</option>
             </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                required
+                name="name"
+                placeholder="Full name"
+                className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
+              />
+              <input
+                required
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="Email"
+                className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
+              />
+            </div>
+            <input
+              required
+              name="address"
+              placeholder="Home address"
+              className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
+            />
+            <input
+              name="phone"
+              type="tel"
+              autoComplete="tel"
+              placeholder="Phone (optional)"
+              className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
+            />
+
+            {/* ---- Conditional fields, keyed by service type ---- */}
+            {service === 'green' && (
+              <ConditionalBlock label="Tell us about the pool">
+                <select
+                  name="greenSeverity"
+                  defaultValue=""
+                  required
+                  className={INPUT_CLS}
+                >
+                  <option value="" disabled>How green is it?</option>
+                  <option value="tint">Slight tint — still mostly clear</option>
+                  <option value="cloudy">Cloudy green</option>
+                  <option value="opaque">Can't see the bottom</option>
+                  <option value="debris">Algae &amp; debris — full neglect</option>
+                </select>
+                <select
+                  name="greenSize"
+                  defaultValue=""
+                  required
+                  className={INPUT_CLS}
+                >
+                  <option value="" disabled>Approximate pool size</option>
+                  <option value="small">Small (under 10,000 gal)</option>
+                  <option value="medium">Medium (10,000–20,000 gal)</option>
+                  <option value="large">Large (20,000+ gal)</option>
+                  <option value="unsure">Not sure</option>
+                </select>
+                <textarea
+                  name="greenNotes"
+                  rows={2}
+                  placeholder="Anything else? (equipment running, last serviced, etc.)"
+                  className={`${INPUT_CLS} resize-none`}
+                />
+              </ConditionalBlock>
+            )}
+
+            {service === 'repair' && (
+              <ConditionalBlock label="What's the issue?">
+                <select
+                  name="repairEquipment"
+                  defaultValue=""
+                  required
+                  className={INPUT_CLS}
+                >
+                  <option value="" disabled>What needs attention?</option>
+                  <option value="pump">Pump</option>
+                  <option value="filter">Filter</option>
+                  <option value="salt-cell">Salt cell</option>
+                  <option value="heater">Heater</option>
+                  <option value="lights">Lights</option>
+                  <option value="automation">Automation / controls</option>
+                  <option value="multiple">Multiple items</option>
+                  <option value="unsure">Not sure — please help diagnose</option>
+                </select>
+                <textarea
+                  name="repairIssue"
+                  rows={3}
+                  required
+                  placeholder="Briefly describe the issue (sounds, leaks, error codes, etc.)"
+                  className={`${INPUT_CLS} resize-none`}
+                />
+              </ConditionalBlock>
+            )}
+
+            {service === 'commercial' && (
+              <ConditionalBlock label="About the property">
+                <select
+                  name="commercialPropertyType"
+                  defaultValue=""
+                  required
+                  className={INPUT_CLS}
+                >
+                  <option value="" disabled>Property type</option>
+                  <option value="hoa">HOA</option>
+                  <option value="condo">Condo / Apartment</option>
+                  <option value="hotel">Hotel / Resort</option>
+                  <option value="club">Club / Gym</option>
+                  <option value="other">Other commercial</option>
+                </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <select
+                    name="commercialPoolCount"
+                    defaultValue=""
+                    required
+                    className={INPUT_CLS}
+                  >
+                    <option value="" disabled>How many pools?</option>
+                    <option value="1">1</option>
+                    <option value="2-3">2–3</option>
+                    <option value="4+">4+</option>
+                  </select>
+                  <select
+                    name="commercialRole"
+                    defaultValue=""
+                    required
+                    className={INPUT_CLS}
+                  >
+                    <option value="" disabled>Your role</option>
+                    <option value="owner">Owner</option>
+                    <option value="property-manager">Property manager</option>
+                    <option value="board">Board member</option>
+                    <option value="maintenance">Maintenance lead</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </ConditionalBlock>
+            )}
+
+            {service === 'other' && (
+              <ConditionalBlock label="Tell us more">
+                <textarea
+                  name="otherDetails"
+                  rows={4}
+                  required
+                  placeholder="What do you need? The more detail, the more accurate the quote."
+                  className={`${INPUT_CLS} resize-none`}
+                />
+              </ConditionalBlock>
+            )}
+
             {formError && (
               <p className="text-center text-red-300 text-xs">{formError}</p>
             )}
@@ -206,9 +409,9 @@ export const QuoteChooser = () => {
               type="submit"
               className="btn btn-blue w-full"
             >
-              Request My Quote
+              Send to Suncoast
             </button>
-            <p className="text-center text-gray-500 text-xs">No spam · No obligation · Same-day reply</p>
+            <p className="text-center text-gray-500 text-xs">Same-day reply · No obligation</p>
           </form>
         )}
       </div>
@@ -220,9 +423,24 @@ export const QuoteChooser = () => {
     ? [{ k: 'form', el: FormCard }, { k: 'call', el: CallCard }, { k: 'text', el: TextCard }]
     : [{ k: 'text', el: TextCard }, { k: 'call', el: CallCard }, { k: 'form', el: FormCard }];
 
+  // When a choice is locked in, hide the other two and offer a back button so
+  // the buyer can return to the three-option view. Reduces decision noise at
+  // the moment of conversion.
+  const visibleCards = choice ? cards.filter((c) => c.k === choice) : cards;
+
   return (
-    <div className="flex flex-col gap-3 w-full text-left">
-      {cards.map(({ k, el }) => (
+    <div className="flex flex-col gap-3.5 w-full text-left">
+      {choice && (
+        <button
+          type="button"
+          onClick={() => setChoice(null)}
+          className="inline-flex items-center gap-1.5 text-gray-400 hover:text-white text-[13px] -mt-1 mb-1 self-start transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          All options
+        </button>
+      )}
+      {visibleCards.map(({ k, el }) => (
         <React.Fragment key={k}>{el}</React.Fragment>
       ))}
     </div>
@@ -239,6 +457,12 @@ type CardProps = {
   title: string;
   subtitle: string;
   children: React.ReactNode;
+  /** When true, the card is the only visible option (others hidden). The
+   *  collapse chevron is removed and the header becomes static — the back
+   *  button above replaces the toggle interaction. */
+  pinned?: boolean;
+  /** Optional small label aligned to the title (e.g. "Fastest"). */
+  badge?: string;
 };
 
 const accentBorder = {
@@ -252,36 +476,70 @@ const accentBg = {
   neutral: 'bg-white/[0.04]',
 };
 
-const Card = ({ active, onToggle, accent, icon, iconWrap, title, subtitle, children }: CardProps) => (
-  <div className={`rounded-2xl border ${accentBorder[accent]} ${accentBg[accent]} overflow-hidden`}>
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-expanded={active}
-      className="w-full flex items-center gap-3 px-5 py-4 text-left"
-    >
-      <span className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconWrap}`}>
+const accentBadge = {
+  orange: 'bg-brand-orange/15 text-brand-orange-light border border-brand-orange/30',
+  blue: 'bg-brand-blue/15 text-brand-blue-light border border-brand-blue/30',
+  neutral: 'bg-white/10 text-gray-300 border border-white/15',
+};
+
+const Card = ({
+  active,
+  onToggle,
+  accent,
+  icon,
+  iconWrap,
+  title,
+  subtitle,
+  children,
+  pinned = false,
+  badge,
+}: CardProps) => {
+  const HeaderInner = (
+    <>
+      <span className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${iconWrap}`}>
         {icon}
       </span>
-      <span className="flex-1">
-        <span className="block text-white font-semibold text-[15px] leading-tight">{title}</span>
-        <span className="block text-gray-400 text-xs mt-0.5">{subtitle}</span>
+      <span className="flex-1 min-w-0">
+        <span className="flex items-center gap-2">
+          <span className="text-white font-semibold text-[15px] leading-tight">{title}</span>
+          {badge && (
+            <span
+              className={`text-[10px] font-semibold uppercase tracking-[0.08em] px-1.5 py-[2px] rounded-full ${accentBadge[accent]}`}
+            >
+              {badge}
+            </span>
+          )}
+        </span>
+        <span className="block text-gray-400 text-[13px] mt-1 leading-snug">{subtitle}</span>
       </span>
-      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${active ? 'rotate-180' : ''}`} />
-    </button>
-
-    <AnimatePresence initial={false}>
-      {active && (
-        <m.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className="overflow-hidden"
-        >
-          {children}
-        </m.div>
+      {!pinned && (
+        <ChevronRight className="w-5 h-5 text-gray-500 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:text-gray-300" />
       )}
-    </AnimatePresence>
-  </div>
-);
+    </>
+  );
+
+  return (
+    <div
+      className={`rounded-2xl border ${accentBorder[accent]} ${accentBg[accent]} overflow-hidden transition-transform ${
+        !pinned ? 'hover:-translate-y-px hover:shadow-lg hover:shadow-black/20' : ''
+      }`}
+    >
+      {pinned ? (
+        <div className="w-full flex items-center gap-3.5 px-5 py-4">{HeaderInner}</div>
+      ) : (
+        <button
+          type="button"
+          onClick={onToggle}
+          className="group w-full flex items-center gap-3.5 px-5 py-4 text-left hover:bg-white/[0.03] transition-colors"
+        >
+          {HeaderInner}
+        </button>
+      )}
+
+      {/* Body — rendered only in pinned mode. Going from three-button view to
+          focus view is an instant swap (no accordion expand), and going back
+          is an instant swap too. The cards behave as buttons, not accordions. */}
+      {pinned && active && <div>{children}</div>}
+    </div>
+  );
+};
