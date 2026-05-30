@@ -57,10 +57,12 @@ const FaqPageInner = () => {
   const [filter, setFilter] = useState<FaqCategory>(FAQ_CATEGORIES[0]);
   const [openKey, setOpenKey] = useState<string | null>(null);
 
-  usePageMeta(
-    'Pool Service FAQ — Suncoast Pool Pros | St. Petersburg, FL',
-    'Answers to common questions about pool service in St. Petersburg — pricing, what flat-rate weekly cleaning includes, equipment repairs, and service areas.',
-  );
+  usePageMeta({
+    title: 'Pool Service FAQ — Suncoast Pool Pros | St. Petersburg, FL',
+    description:
+      'Answers to common questions about pool service in St. Petersburg — pricing, what flat-rate weekly cleaning includes, equipment repairs, and service areas.',
+    canonicalPath: '/faq',
+  });
 
   // Inject FAQPage JSON-LD for this route.
   useEffect(() => {

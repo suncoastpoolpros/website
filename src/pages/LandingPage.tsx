@@ -11,8 +11,16 @@ import { StickyMobileCta } from '@/components/StickyMobileCta';
 // import { Testimonials } from '@/components/Testimonials'; // Re-enable once real reviews are added
 import { FAQ } from '@/components/FAQ';
 import { Footer } from '@/components/Footer';
+import { usePageMeta } from '@/lib/usePageMeta';
 
 export const LandingPage = () => {
+  usePageMeta({
+    title: 'Pool Cleaning St. Petersburg, FL | Flat-Rate, Always Blue',
+    description:
+      'Flat-rate weekly pool cleaning in St. Petersburg — one price covers standard chemicals, plus a photo report every visit. Homes, HOAs & commercial pools.',
+    canonicalPath: '/',
+  });
+
   return (
     <div className="min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
       {/* Global Background Gradient */}

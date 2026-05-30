@@ -356,10 +356,12 @@ export const PrivacyPolicyPage = () => {
 
   // Intentionally indexable: SMS carrier / A2P 10DLC registration typically
   // requires a publicly reachable privacy policy with the consent language.
-  usePageMeta(
-    'Privacy Policy — Suncoast Pool Pros | St. Petersburg, FL',
-    'Suncoast Pool Pros privacy policy — how we collect, use, and protect customer information, including SMS messaging consent and data handling.',
-  );
+  usePageMeta({
+    title: 'Privacy Policy — Suncoast Pool Pros | St. Petersburg, FL',
+    description:
+      'Suncoast Pool Pros privacy policy — how we collect, use, and protect customer information, including SMS messaging consent and data handling.',
+    canonicalPath: '/privacy-policy',
+  });
 
   // Scroll-spy: highlight the TOC entry for whichever section is nearest the
   // top of the viewport. The rootMargin biases the "active" zone to the upper

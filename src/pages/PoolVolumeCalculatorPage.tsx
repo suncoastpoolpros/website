@@ -856,6 +856,14 @@ const PoolVolumeCalculatorInner = () => {
       setMeta({ selector: 'meta[name="twitter:image"]',       attr: 'name',     key: 'twitter:image',       content: IMAGE }),
     ];
 
+    // Override the homepage canonical baked into index.html.
+    const canon = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    const prevCanon = canon?.getAttribute('href') ?? null;
+    canon?.setAttribute('href', URL);
+    cleanups.push(() => {
+      if (prevCanon !== null) canon?.setAttribute('href', prevCanon);
+    });
+
     // HowTo + FAQPage JSON-LD (two structured-data signals on one page).
     const howToScript = document.createElement('script');
     howToScript.type = 'application/ld+json';

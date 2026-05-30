@@ -37,10 +37,12 @@ const SignupPageInner = () => {
   // Today's date (YYYY-MM-DD) — prevents selecting a start date in the past.
   const today = new Date().toISOString().split('T')[0];
 
-  usePageMeta(
-    'Become a Customer — Suncoast Pool Pros | St. Petersburg, FL',
-    'Sign up for flat-rate weekly pool service with Suncoast Pool Pros. Tell us about your pool and we’ll start service in the St. Petersburg area.',
-  );
+  usePageMeta({
+    title: 'Become a Customer — Suncoast Pool Pros | St. Petersburg, FL',
+    description:
+      'Sign up for flat-rate weekly pool service with Suncoast Pool Pros. Tell us about your pool and we’ll start service in the St. Petersburg area.',
+    canonicalPath: '/signup',
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

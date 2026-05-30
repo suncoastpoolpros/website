@@ -244,6 +244,15 @@ const usePageSeo = () => {
       ensureMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' }),
     ];
 
+    // Override the homepage canonical baked into index.html so Google indexes
+    // this URL on its own, not as a duplicate of /.
+    const canon = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    const prevCanon = canon?.getAttribute('href') ?? null;
+    canon?.setAttribute('href', PAGE_URL);
+    cleanups.push(() => {
+      if (prevCanon !== null) canon?.setAttribute('href', prevCanon);
+    });
+
     const ld = document.createElement('script');
     ld.type = 'application/ld+json';
     ld.textContent = JSON.stringify([

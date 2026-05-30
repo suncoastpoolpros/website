@@ -32,10 +32,12 @@ const ContactPageInner = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  usePageMeta(
-    'Contact Suncoast Pool Pros — Pool Service in St. Petersburg, FL',
-    'Reach Suncoast Pool Pros — call, text, or message us for a flat-rate weekly pool service quote in St. Petersburg, Clearwater, and Tampa Bay.',
-  );
+  usePageMeta({
+    title: 'Contact Suncoast Pool Pros — Pool Service in St. Petersburg, FL',
+    description:
+      'Reach Suncoast Pool Pros — call, text, or message us for a flat-rate weekly pool service quote in St. Petersburg, Clearwater, and Tampa Bay.',
+    canonicalPath: '/contact',
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

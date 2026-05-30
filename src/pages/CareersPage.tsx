@@ -20,6 +20,7 @@ import { Footer } from '@/components/Footer';
 import { Glass } from '@/components/Glass';
 import { Container } from '@/components/Container';
 import { EMAIL } from '@/lib/contact';
+import { usePageMeta } from '@/lib/usePageMeta';
 
 const APPLY_SUBJECT = 'Pool Service Technician — Application';
 const APPLY_BODY =
@@ -406,20 +407,13 @@ const ApplyCta = () => (
 );
 
 export const CareersPage = () => {
+  usePageMeta({
+    title: PAGE_TITLE,
+    description: PAGE_DESC,
+    canonicalPath: '/careers',
+  });
+
   useEffect(() => {
-    const prevTitle = document.title;
-    document.title = PAGE_TITLE;
-
-    let meta = document.head.querySelector<HTMLMetaElement>('meta[name="description"]');
-    const created = !meta;
-    const prevDesc = meta?.getAttribute('content') ?? null;
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', 'description');
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute('content', PAGE_DESC);
-
     const ld = document.createElement('script');
     ld.type = 'application/ld+json';
     ld.textContent = JSON.stringify({
@@ -448,9 +442,6 @@ export const CareersPage = () => {
     document.head.appendChild(ld);
 
     return () => {
-      document.title = prevTitle;
-      if (created) meta!.remove();
-      else if (prevDesc !== null) meta!.setAttribute('content', prevDesc);
       ld.remove();
     };
   }, []);

@@ -38,10 +38,12 @@ const TOOLS: Tool[] = [
 const ToolsPageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
 
-  usePageMeta(
-    'Free Pool Tools & Calculators — Suncoast Pool Pros | St. Pete',
-    'Free pool care tools from Suncoast Pool Pros — calculators and references for volume, chemistry, and dosing, built for Florida pool owners.',
-  );
+  usePageMeta({
+    title: 'Free Pool Tools & Calculators — Suncoast Pool Pros | St. Pete',
+    description:
+      'Free pool care tools from Suncoast Pool Pros — calculators and references for volume, chemistry, and dosing, built for Florida pool owners.',
+    canonicalPath: '/tools',
+  });
 
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();

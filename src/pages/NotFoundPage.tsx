@@ -5,6 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Container } from '@/components/Container';
 import { PHONE_HREF, PHONE_DISPLAY } from '@/lib/contact';
+import { usePageMeta } from '@/lib/usePageMeta';
 
 /**
  * 404 — page not found.
@@ -15,15 +16,20 @@ import { PHONE_HREF, PHONE_DISPLAY } from '@/lib/contact';
  * for someone who probably mistyped a city page or hit a stale link).
  */
 export const NotFoundPage = () => {
-  // Tell crawlers + analytics this isn't a real page. Status code is set by
-  // Cloudflare Pages' _routes config, but the document title is the fastest
-  // signal for SEO tooling.
+  usePageMeta({
+    title: 'Page Not Found — Suncoast Pool Pros',
+    description:
+      "The page you're looking for doesn't exist. Head back home or call Suncoast Pool Pros for help.",
+  });
+
+  // Also emit a noindex robots tag so 404s never get indexed even if a crawler
+  // hits the URL. The status code is set by Cloudflare Pages' _routes config.
   useEffect(() => {
-    const prev = document.title;
-    document.title = 'Page Not Found — Suncoast Pool Pros';
-    return () => {
-      document.title = prev;
-    };
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'robots');
+    meta.setAttribute('content', 'noindex,nofollow');
+    document.head.appendChild(meta);
+    return () => meta.remove();
   }, []);
 
   return (
