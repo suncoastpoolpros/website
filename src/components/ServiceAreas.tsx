@@ -61,7 +61,7 @@ export const ServiceAreas = () => {
                 initial={{ opacity: 0, y: 8 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/10 px-4 py-2 text-sm font-medium text-gray-200 hover:text-white hover:border-brand-blue/50 hover:bg-brand-blue/10 transition-colors"
+                className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/10 px-4 py-2 text-sm font-semibold text-gray-200 hover:text-white hover:border-brand-blue/50 hover:bg-brand-blue/10 transition-colors"
               >
                 {city}
               </m.a>

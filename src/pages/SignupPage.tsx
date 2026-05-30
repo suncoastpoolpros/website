@@ -480,7 +480,7 @@ const SignupPageInner = () => {
                         href="/service-agreement"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-brand-blue-light hover:text-white font-medium underline underline-offset-2"
+                        className="text-brand-blue-light hover:text-white font-semibold underline underline-offset-2"
                       >
                         Service Agreement
                       </a>
@@ -505,7 +505,7 @@ const SignupPageInner = () => {
                         href="/privacy-policy"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-brand-blue-light hover:text-white font-medium underline underline-offset-2"
+                        className="text-brand-blue-light hover:text-white font-semibold underline underline-offset-2"
                       >
                         Privacy Policy
                       </a>

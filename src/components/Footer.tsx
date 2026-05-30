@@ -123,7 +123,7 @@ export const Footer = () => {
               <li>
                 <a
                   href="/#service-areas"
-                  className="inline-flex items-center gap-1 text-brand-orange hover:text-brand-orange-dark transition-colors text-sm font-medium"
+                  className="inline-flex items-center gap-1 text-brand-orange hover:text-brand-orange-dark transition-colors text-sm font-semibold"
                 >
                   View all areas
                 </a>

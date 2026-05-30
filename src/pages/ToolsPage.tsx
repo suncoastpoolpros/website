@@ -65,7 +65,7 @@ const ToolsPageInner = () => {
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm px-3.5 py-1.5">
             <Wrench className="w-3.5 h-3.5 text-brand-orange" />
-            <span className="text-gray-300 font-medium tracking-wide text-xs">Free Pool Tools</span>
+            <span className="text-gray-300 font-semibold tracking-wide text-xs">Free Pool Tools</span>
           </div>
           <h1 className="font-display font-bold text-white text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.05] tracking-tight mb-5">
             Free pool tools &amp; calculators
@@ -108,7 +108,7 @@ const ToolsPageInner = () => {
 
             {/* "More coming" placeholder card */}
             <div className="flex flex-col items-center justify-center text-center rounded-2xl border border-dashed border-white/10 bg-white/[0.01] p-6 min-h-[180px]">
-              <p className="text-gray-400 font-medium mb-1">More tools coming soon</p>
+              <p className="text-gray-400 font-semibold mb-1">More tools coming soon</p>
               <p className="text-gray-600 text-sm">Chlorine dosage, salt, and more.</p>
             </div>
           </div>

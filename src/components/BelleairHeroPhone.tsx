@@ -155,7 +155,7 @@ export const BelleairHeroPhone = () => {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="#f9ab00">
                           <path d="M3 5h12l5 7-5 7H3z" />
                         </svg>
-                        <span className="text-[10px] text-[#3c4043] bg-[#f1f3f4] px-1.5 py-0.5 rounded font-medium">
+                        <span className="text-[10px] text-[#3c4043] bg-[#f1f3f4] px-1.5 py-0.5 rounded font-semibold">
                           Inbox
                         </span>
                       </div>
@@ -223,14 +223,14 @@ export const BelleairHeroPhone = () => {
                 className="absolute bottom-[6px] left-0 right-0 px-3 z-30 flex items-center gap-2"
                 style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
               >
-                <div className="flex-1 rounded-full bg-white border border-[#dadce0] py-1.5 px-3 flex items-center justify-center gap-1.5 text-[#3c4043] text-[11px] font-medium">
+                <div className="flex-1 rounded-full bg-white border border-[#dadce0] py-1.5 px-3 flex items-center justify-center gap-1.5 text-[#3c4043] text-[11px] font-semibold">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="9 17 3 11 9 5" />
                     <path d="M3 11h11a6 6 0 016 6v2" />
                   </svg>
                   Reply
                 </div>
-                <div className="flex-1 rounded-full bg-white border border-[#dadce0] py-1.5 px-3 flex items-center justify-center gap-1.5 text-[#3c4043] text-[11px] font-medium">
+                <div className="flex-1 rounded-full bg-white border border-[#dadce0] py-1.5 px-3 flex items-center justify-center gap-1.5 text-[#3c4043] text-[11px] font-semibold">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="15 17 21 11 15 5" />
                     <path d="M21 11H10a6 6 0 00-6 6v2" />

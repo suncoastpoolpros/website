@@ -79,7 +79,7 @@ const HeroSection = () => {
           >
             <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8">
               <MapPin className="w-3.5 h-3.5 text-brand-blue-light" />
-              <span className="text-xs font-medium text-cyan-50 tracking-wider uppercase">
+              <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
                 Belleair Beach · Gulf Barrier Island
               </span>
             </Glass>
@@ -96,14 +96,14 @@ const HeroSection = () => {
 
             {/* SEO H1 — local keyword for this city page */}
             <h1
-              className="font-display font-medium text-white/90 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 tracking-tight"
+              className="font-display font-normal text-white/90 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 tracking-tight"
               style={{ textShadow: '0 1px 12px rgba(0,0,0,0.6)' }}
             >
               Discreet weekly pool service for Belleair Beach homes.
             </h1>
 
             <p
-              className="text-[15px] sm:text-base text-gray-200 font-light max-w-[38rem] leading-[1.65] mb-7"
+              className="text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7"
               style={{ textShadow: '0 1px 10px rgba(0,0,0,0.55)' }}
             >
               <span className="text-white">One dedicated technician, on the same day every week</span> —
@@ -117,7 +117,7 @@ const HeroSection = () => {
               </a>
               <Glass
                 href={`tel:${PHONE}`}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-medium text-[15px]"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px]"
               >
                 <Phone className="w-4 h-4 text-brand-blue-light" />
                 {PHONE_DISPLAY}
@@ -135,7 +135,7 @@ const HeroSection = () => {
                     <Star key={i} className="w-4 h-4 fill-current" />
                   ))}
                 </div>
-                <span className="font-medium text-white/90">5.0</span>
+                <span className="font-semibold text-white/90">5.0</span>
                 <span className="text-gray-500">on Google</span>
               </div>
               <div className="flex items-center gap-2">

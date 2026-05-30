@@ -545,7 +545,7 @@ const FaqSection = () => {
                   aria-expanded={isOpen}
                   aria-controls={panelId}
                 >
-                  <span className="text-white font-medium text-[17px]">{faq.q}</span>
+                  <span className="text-white font-semibold text-[17px]">{faq.q}</span>
                   {isOpen ? (
                     <Minus className="w-5 h-5 shrink-0 text-brand-blue-light" />
                   ) : (

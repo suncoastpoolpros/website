@@ -157,7 +157,7 @@ const HowItWorksPageInner = () => {
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-14 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm px-3.5 py-1.5">
             <Workflow className="w-3.5 h-3.5 text-brand-orange" />
-            <span className="text-gray-300 font-medium tracking-wide text-xs">How It Works</span>
+            <span className="text-gray-300 font-semibold tracking-wide text-xs">How It Works</span>
           </div>
           <h1 className="font-display font-bold text-white text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.05] tracking-tight mb-5">
             How our pool service works in St. Petersburg
@@ -322,7 +322,7 @@ const HowItWorksPageInner = () => {
                 </h2>
                 <p className="text-gray-400">
                   The questions homeowners ask most.{' '}
-                  <a href="/faq" className="text-brand-orange hover:text-brand-orange-dark font-medium">
+                  <a href="/faq" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
                     See all FAQs →
                   </a>
                 </p>
@@ -339,7 +339,7 @@ const HowItWorksPageInner = () => {
                         aria-expanded={isOpen}
                         className="w-full flex items-start justify-between gap-4 text-left px-5 sm:px-6 py-4"
                       >
-                        <span className="font-display font-semibold text-white text-[15px] sm:text-base leading-snug">
+                        <span className="font-display font-normal text-white text-[15px] sm:text-base leading-snug">
                           {faq.question}
                         </span>
                         <span

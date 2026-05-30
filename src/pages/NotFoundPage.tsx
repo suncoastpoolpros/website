@@ -60,7 +60,7 @@ export const NotFoundPage = () => {
               </Link>
               <a
                 href={PHONE_HREF}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-white/15 bg-white/[0.04] text-white/90 hover:text-white hover:bg-white/[0.08] hover:border-white/25 transition-colors font-medium text-[15px]"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-white/15 bg-white/[0.04] text-white/90 hover:text-white hover:bg-white/[0.08] hover:border-white/25 transition-colors font-semibold text-[15px]"
               >
                 <Phone className="w-4 h-4 text-brand-blue-light" />
                 {PHONE_DISPLAY}

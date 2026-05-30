@@ -197,7 +197,7 @@ const REFERENCE_SIZES = [
 // ── styles ────────────────────────────────────────────────────────
 const fieldClass =
   'w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-white text-[15px] placeholder-gray-500 focus:outline-none focus:border-brand-blue/60 focus:ring-2 focus:ring-brand-blue/30 transition';
-const labelClass = 'block text-sm font-medium text-gray-300 mb-1.5';
+const labelClass = 'block text-sm font-semibold text-gray-300 mb-1.5';
 
 // ── shape diagrams (inline SVGs) ──────────────────────────────────
 const DIAGRAMS: Record<Exclude<Shape, 'freeform'>, React.ReactElement> = {
@@ -1125,7 +1125,7 @@ const PoolVolumeCalculatorInner = () => {
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-10 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm px-3.5 py-1.5">
             <Calculator className="w-3.5 h-3.5 text-brand-orange" />
-            <span className="text-gray-300 font-medium tracking-wide text-xs">Free Pool Tool</span>
+            <span className="text-gray-300 font-semibold tracking-wide text-xs">Free Pool Tool</span>
           </div>
           <h1 className="font-display font-bold text-white text-4xl sm:text-5xl leading-[1.05] tracking-tight mb-5">
             Pool Volume Calculator
@@ -1146,7 +1146,7 @@ const PoolVolumeCalculatorInner = () => {
             ].map((label) => (
               <li
                 key={label}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-gray-300"
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm px-3 py-1.5 text-xs font-semibold text-gray-300"
               >
                 <Check className="w-3.5 h-3.5 text-brand-orange shrink-0" />
                 {label}
@@ -1248,7 +1248,7 @@ const PoolVolumeCalculatorInner = () => {
                     }`}
                   >
                     <Icon className={`w-5 h-5 ${active ? 'text-brand-orange' : ''}`} />
-                    <span className="text-xs font-medium">{label}</span>
+                    <span className="text-xs font-semibold">{label}</span>
                   </button>
                 );
               })}
@@ -1733,7 +1733,7 @@ const PoolVolumeCalculatorInner = () => {
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-orange hover:text-brand-orange-dark transition-colors"
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-orange hover:text-brand-orange-dark transition-colors"
                 >
                   {copied ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
                   {copied ? 'Link copied' : 'Copy shareable link'}
@@ -1832,7 +1832,7 @@ const PoolVolumeCalculatorInner = () => {
                   <tr key={i} className="border-b border-white/[0.06] hover:bg-white/[0.02]">
                     <td className="py-3 px-3 text-gray-400">{row.shape}</td>
                     <td className="py-3 px-3 text-gray-300 tabular-nums">{row.size}</td>
-                    <td className="py-3 px-3 text-white font-medium tabular-nums text-right">
+                    <td className="py-3 px-3 text-white font-semibold tabular-nums text-right">
                       {formatGallons(row.gallons, volumeUnit)}
                     </td>
                   </tr>
@@ -1857,7 +1857,7 @@ const PoolVolumeCalculatorInner = () => {
             {COMMON_QUESTIONS.map((item) => (
               <details key={item.q} className="group">
                 <summary className="list-none cursor-pointer flex items-start justify-between gap-4 px-5 sm:px-6 py-4 text-left">
-                  <span className="font-display font-semibold text-white text-[15px] sm:text-base leading-snug">
+                  <span className="font-display font-normal text-white text-[15px] sm:text-base leading-snug">
                     {item.q}
                   </span>
                   <span className="shrink-0 mt-0.5 text-gray-400 transition-transform duration-200 group-open:rotate-45 group-open:text-brand-orange">

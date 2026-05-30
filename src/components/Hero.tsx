@@ -137,7 +137,7 @@ export const Hero = () => {
               transition={{ duration: 1, ease: "easeOut" }}
             >
               <Glass className="inline-flex items-center px-4 py-2 rounded-full mb-8">
-                <span className="text-xs font-medium text-cyan-50 tracking-wider uppercase">St. Pete · Largo · Clearwater · Tampa</span>
+                <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">St. Pete · Largo · Clearwater · Tampa</span>
               </Glass>
 
               {/* Visual headline (price differentiator) — a div, not h1, so the SEO H1 below carries the keyword weight */}
@@ -161,14 +161,14 @@ export const Hero = () => {
 
               {/* Semantic H1 carries the primary local-SEO keyword: "Pool Cleaning St. Petersburg" */}
               <h1
-                className="font-display font-medium text-white text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 sm:mb-7 sm:whitespace-nowrap tracking-tight"
+                className="font-display font-normal text-white text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 sm:mb-7 sm:whitespace-nowrap tracking-tight"
                 style={{ textShadow: '0 2px 14px rgba(0,0,0,0.75), 0 1px 3px rgba(0,0,0,0.5)' }}
               >
                 St. Petersburg's expert pool cleaning company.
               </h1>
 
               <p
-                className="text-[15px] text-gray-100 font-light max-w-[27rem] leading-[1.6] mb-8 sm:mb-9"
+                className="text-[15px] text-gray-100 font-normal max-w-[27rem] leading-[1.6] mb-8 sm:mb-9"
                 style={{ textShadow: '0 1px 12px rgba(0,0,0,0.7), 0 0 2px rgba(0,0,0,0.4)' }}
               >
                 <span className="text-white">Weekly pool cleaning, full chemical balancing, GPS-verified visits</span>, and a written report after every clean. <span className="text-white">One flat monthly price</span> — no chemical surprises, no contracts, no green water.
@@ -185,7 +185,7 @@ export const Hero = () => {
 
                 <Glass
                   href={PHONE_HREF}
-                  className="hidden sm:inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-medium text-[15px]"
+                  className="hidden sm:inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px]"
                 >
                   <Phone className="w-4 h-4" />
                   {PHONE_DISPLAY}
@@ -434,7 +434,7 @@ export const Hero = () => {
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="#f9ab00">
                                 <path d="M3 5h12l5 7-5 7H3z" />
                               </svg>
-                              <span className="text-[10px] text-[#3c4043] bg-[#f1f3f4] px-1.5 py-0.5 rounded font-medium">
+                              <span className="text-[10px] text-[#3c4043] bg-[#f1f3f4] px-1.5 py-0.5 rounded font-semibold">
                                 Inbox
                               </span>
                             </div>
@@ -495,14 +495,14 @@ export const Hero = () => {
                       className="absolute bottom-[6px] left-0 right-0 px-3 z-30 flex items-center gap-2"
                       style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
                     >
-                      <div className="flex-1 rounded-full bg-white border border-[#dadce0] py-1.5 px-3 flex items-center justify-center gap-1.5 text-[#3c4043] text-[11px] font-medium">
+                      <div className="flex-1 rounded-full bg-white border border-[#dadce0] py-1.5 px-3 flex items-center justify-center gap-1.5 text-[#3c4043] text-[11px] font-semibold">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="9 17 3 11 9 5" />
                           <path d="M3 11h11a6 6 0 016 6v2" />
                         </svg>
                         Reply
                       </div>
-                      <div className="flex-1 rounded-full bg-white border border-[#dadce0] py-1.5 px-3 flex items-center justify-center gap-1.5 text-[#3c4043] text-[11px] font-medium">
+                      <div className="flex-1 rounded-full bg-white border border-[#dadce0] py-1.5 px-3 flex items-center justify-center gap-1.5 text-[#3c4043] text-[11px] font-semibold">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="15 17 21 11 15 5" />
                           <path d="M21 11H10a6 6 0 00-6 6v2" />

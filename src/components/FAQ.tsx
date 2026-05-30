@@ -58,7 +58,7 @@ export const FAQ = () => {
                 className="w-full px-5 sm:px-6 py-4 flex items-center justify-between text-left gap-4"
                 aria-expanded={openIndex === index}
               >
-                <span className="text-white font-medium text-[15px] sm:text-[17px]">{faq.question}</span>
+                <span className="text-white font-semibold text-[15px] sm:text-[17px]">{faq.question}</span>
                 {openIndex === index ? (
                   <Minus className="w-5 h-5 text-brand-orange" />
                 ) : (

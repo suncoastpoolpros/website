@@ -54,7 +54,7 @@ export const ServiceAreasMenu = () => {
                   />
                   <div className="min-w-0">
                     <p
-                      className={`text-sm font-medium leading-tight transition-colors ${
+                      className={`text-sm font-semibold leading-tight transition-colors ${
                         hoveredSlug === city.slug ? 'text-[#0a1628]' : 'text-gray-700'
                       }`}
                     >

@@ -122,7 +122,7 @@ const Hero = () => (
             <span className="absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75 animate-ping" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange" />
           </span>
-          <span className="text-xs font-medium text-cyan-50 tracking-wider uppercase">
+          <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
             Now Hiring · St. Pete / Clearwater
           </span>
         </Glass>
@@ -132,7 +132,7 @@ const Hero = () => (
           <span className="text-brand-blue-light">count on.</span>
         </h1>
 
-        <p className="text-lg text-gray-300 font-light max-w-2xl mx-auto leading-relaxed mb-9">
+        <p className="text-lg text-gray-300 font-normal max-w-2xl mx-auto leading-relaxed mb-9">
           We're a locally owned pool service that runs on reliability, respect, and doing
           honest work right. If you're dependable and take pride in your work, there's a
           steady route and a real team waiting for you.

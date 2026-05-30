@@ -621,7 +621,7 @@ export const ServiceAgreementPage = () => {
             <button
               type="button"
               onClick={() => window.print()}
-              className="print:hidden group inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 py-2 text-sm font-medium text-gray-300 backdrop-blur-sm transition-colors hover:border-brand-blue/50 hover:text-white hover:bg-white/[0.07]"
+              className="print:hidden group inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-gray-300 backdrop-blur-sm transition-colors hover:border-brand-blue/50 hover:text-white hover:bg-white/[0.07]"
             >
               <Printer className="w-4 h-4 text-brand-blue-light transition-transform group-hover:-translate-y-0.5" />
               Print / Save PDF

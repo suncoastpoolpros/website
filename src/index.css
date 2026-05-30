@@ -3,18 +3,15 @@
 /* Self-hosted fonts (latin subset). Replaces a render-blocking @import to
    fonts.googleapis.com — eliminates the third-party DNS+TLS round-trip and
    lets font-display: swap show the system fallback instantly while the woff2
-   downloads. Files live in public/fonts/, generated once from Google's CSS. */
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 300; font-display: swap; src: url('/fonts/inter-300.woff2') format('woff2'); }
+   downloads. Files live in public/fonts/, generated once from Google's CSS.
+   Trimmed to 3 weights per family to keep first-load font bytes minimal:
+   Inter 400/600/700, Montserrat 400/700/900, Caveat 700 (decorative accent). */
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/inter-400.woff2') format('woff2'); }
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/inter-500.woff2') format('woff2'); }
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/inter-600.woff2') format('woff2'); }
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/inter-700.woff2') format('woff2'); }
 @font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/montserrat-400.woff2') format('woff2'); }
-@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/montserrat-500.woff2') format('woff2'); }
-@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/montserrat-600.woff2') format('woff2'); }
 @font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/montserrat-700.woff2') format('woff2'); }
 @font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 900; font-display: swap; src: url('/fonts/montserrat-900.woff2') format('woff2'); }
-@font-face { font-family: 'Caveat'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/caveat-500.woff2') format('woff2'); }
 @font-face { font-family: 'Caveat'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/caveat-700.woff2') format('woff2'); }
 
 @theme {

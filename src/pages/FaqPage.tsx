@@ -111,7 +111,7 @@ const FaqPageInner = () => {
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm px-3.5 py-1.5">
             <HelpCircle className="w-3.5 h-3.5 text-brand-orange" />
-            <span className="text-gray-300 font-medium tracking-wide text-xs">
+            <span className="text-gray-300 font-semibold tracking-wide text-xs">
               Help Center
             </span>
           </div>
@@ -147,7 +147,7 @@ const FaqPageInner = () => {
           </div>
 
           <div className="flex items-center justify-center gap-2.5 mt-5 text-sm text-gray-500">
-            <span><span className="text-gray-300 font-medium tabular-nums">{faqs.length}</span> answers across <span className="text-gray-300 font-medium tabular-nums">{FAQ_CATEGORIES.length}</span> topics</span>
+            <span><span className="text-gray-300 font-semibold tabular-nums">{faqs.length}</span> answers across <span className="text-gray-300 font-semibold tabular-nums">{FAQ_CATEGORIES.length}</span> topics</span>
           </div>
         </section>
 
@@ -174,7 +174,7 @@ const FaqPageInner = () => {
                         setFilter(cat);
                         setOpenKey(null);
                       }}
-                      className={`group shrink-0 lg:w-full inline-flex items-center gap-3 rounded-lg px-2.5 lg:px-3 py-2 lg:py-2.5 text-[13px] sm:text-sm font-medium transition-colors duration-150 ${
+                      className={`group shrink-0 lg:w-full inline-flex items-center gap-3 rounded-lg px-2.5 lg:px-3 py-2 lg:py-2.5 text-[13px] sm:text-sm font-semibold transition-colors duration-150 ${
                         active
                           ? 'bg-white/[0.05] text-white'
                           : 'text-gray-400 hover:text-white lg:hover:bg-white/[0.03]'
@@ -222,7 +222,7 @@ const FaqPageInner = () => {
                   <p className="text-gray-300 text-lg mb-2">No questions match “{query}”.</p>
                   <p className="text-gray-500 text-sm">
                     Try a different search, or{' '}
-                    <a href={PHONE_HREF} className="text-brand-orange hover:text-brand-orange-dark font-medium">
+                    <a href={PHONE_HREF} className="text-brand-orange hover:text-brand-orange-dark font-semibold">
                       call us at {PHONE_DISPLAY}
                     </a>
                     .
@@ -246,7 +246,7 @@ const FaqPageInner = () => {
                           className="w-full py-5 px-1 flex items-start justify-between gap-5 text-left"
                         >
                           <span
-                            className={`min-w-0 break-words font-display font-semibold text-[16px] sm:text-[17px] leading-snug transition-colors ${
+                            className={`min-w-0 break-words font-display font-normal text-[16px] sm:text-[17px] leading-snug transition-colors ${
                               isOpen ? 'text-brand-orange' : 'text-gray-100 group-hover:text-white'
                             }`}
                           >

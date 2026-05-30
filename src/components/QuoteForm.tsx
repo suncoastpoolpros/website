@@ -70,7 +70,7 @@ export const QuoteForm = () => {
             </p>
             <button
               onClick={() => setSubmitted(false)}
-              className="mt-8 text-brand-blue-light hover:text-white font-medium transition-colors"
+              className="mt-8 text-brand-blue-light hover:text-white font-semibold transition-colors"
             >
               Send another request
             </button>

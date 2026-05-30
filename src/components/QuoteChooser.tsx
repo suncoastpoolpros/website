@@ -320,7 +320,7 @@ export const QuoteChooser = () => {
     >
       <div className="px-5 pb-5 pt-1">
         <p className="text-sm text-gray-300 leading-relaxed mb-5">
-          We answer <span className="text-white font-medium">{HOURS_SHORT}</span> — a quick conversation to understand your pool.
+          We answer <span className="text-white font-semibold">{HOURS_SHORT}</span> — a quick conversation to understand your pool.
         </p>
         <a
           href={PHONE_HREF}
@@ -369,7 +369,7 @@ export const QuoteChooser = () => {
             {showRestoredBanner && (
               <div className="mb-4 flex items-start justify-between gap-3 rounded-lg border border-brand-blue/25 bg-brand-blue/[0.06] px-3 py-2.5">
                 <p className="text-[12px] text-gray-200 leading-snug">
-                  <span className="text-white font-medium">Picking up where you left off.</span>
+                  <span className="text-white font-semibold">Picking up where you left off.</span>
                   <span className="block text-gray-400 mt-0.5">Your info is still here from before.</span>
                 </p>
                 <button
@@ -620,7 +620,7 @@ export const QuoteChooser = () => {
                   <button
                     type="button"
                     onClick={() => setFormStep(1)}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-lg bg-white/[0.06] border border-white/10 text-gray-200 hover:text-white hover:bg-white/10 transition-colors text-sm font-medium"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-lg bg-white/[0.06] border border-white/10 text-gray-200 hover:text-white hover:bg-white/10 transition-colors text-sm font-semibold"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Back

@@ -31,9 +31,9 @@ const floatLabelBase =
   'pointer-events-none absolute left-5 text-stone-500 transition-all duration-150';
 // Forced small/top position — used for selects & date inputs that never report
 // `placeholder-shown`.
-const floatLabelFloating = 'top-2 text-xs font-medium';
+const floatLabelFloating = 'top-2 text-xs font-semibold';
 const floatLabelFloatOnFill =
-  'peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-xs peer-focus:font-medium peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:translate-y-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:font-medium';
+  'peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-xs peer-focus:font-semibold peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:translate-y-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:font-semibold';
 // Single-line resting state: vertically centered when empty.
 const floatLabelResting = `top-1/2 -translate-y-1/2 text-base ${floatLabelFloatOnFill}`;
 // Multiline (textarea) resting state: anchored near the top, not centered.
