@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { m, useScroll, useTransform } from 'motion/react';
 import { UserPlus, Send, CheckCircle, Phone, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer';
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { sendSignup } from '@/lib/signupWebhook';
+import { usePageMeta } from '@/lib/usePageMeta';
 
 const US_STATES = [
   { code: 'AL' }, { code: 'AK' }, { code: 'AZ' }, { code: 'AR' }, { code: 'CA' },
@@ -36,9 +37,10 @@ const SignupPageInner = () => {
   // Today's date (YYYY-MM-DD) — prevents selecting a start date in the past.
   const today = new Date().toISOString().split('T')[0];
 
-  useEffect(() => {
-    document.title = 'Become a Customer — Suncoast Pool Pros | St. Petersburg, FL';
-  }, []);
+  usePageMeta(
+    'Become a Customer — Suncoast Pool Pros | St. Petersburg, FL',
+    'Sign up for flat-rate weekly pool service with Suncoast Pool Pros. Tell us about your pool and we’ll start service in the St. Petersburg area.',
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

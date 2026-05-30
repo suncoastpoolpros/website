@@ -75,6 +75,7 @@ export const Navbar = () => {
   };
 
   return (
+    <>
     <nav
       className={`fixed w-full z-50 transition-all duration-300 ${
         scrolled
@@ -191,11 +192,16 @@ export const Navbar = () => {
           </div>
         </div>
       </Container>
+    </nav>
 
-      {/* Mobile drawer — full-height panel sliding in from the right over a backdrop */}
+    {/* Mobile drawer — rendered as a sibling of <nav>, NOT inside it. The
+        scrolled navbar applies backdrop-blur which creates a stacking context;
+        any drawer rendered inside the nav gets trapped at z-50 and the sticky
+        mobile CTA (z-90) bleeds through. Hoisting the drawer to the top level
+        lets its z-[110] work as written. */}
       <AnimatePresence>
         {isOpen && (
-          <div className="md:hidden fixed inset-0 z-[60]">
+          <div className="md:hidden fixed inset-0 z-[110]">
             {/* Backdrop */}
             <m.div
               initial={{ opacity: 0 }}
@@ -392,6 +398,6 @@ export const Navbar = () => {
           </div>
         )}
       </AnimatePresence>
-    </nav>
+    </>
   );
 };

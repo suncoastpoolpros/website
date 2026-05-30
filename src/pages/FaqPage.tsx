@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { faqs, FAQ_CATEGORIES, type FaqCategory } from '@/data/faqs';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
+import { usePageMeta } from '@/lib/usePageMeta';
 import { useQuoteSheet } from '@/components/QuoteSheet';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -56,9 +57,13 @@ const FaqPageInner = () => {
   const [filter, setFilter] = useState<FaqCategory>(FAQ_CATEGORIES[0]);
   const [openKey, setOpenKey] = useState<string | null>(null);
 
-  // Inject FAQPage schema + set the document title for this route.
+  usePageMeta(
+    'Pool Service FAQ — Suncoast Pool Pros | St. Petersburg, FL',
+    'Answers to common questions about pool service in St. Petersburg — pricing, what flat-rate weekly cleaning includes, equipment repairs, and service areas.',
+  );
+
+  // Inject FAQPage JSON-LD for this route.
   useEffect(() => {
-    document.title = 'Pool Service FAQ — Suncoast Pool Pros | St. Petersburg, FL';
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     script.text = JSON.stringify(faqSchema);

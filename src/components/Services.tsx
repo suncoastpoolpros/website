@@ -62,10 +62,10 @@ const weeklyIncludes = [
 
 export const Services = () => {
   return (
-    <section id="services" className="py-24 relative">
+    <section id="services" className="py-16 md:py-24 relative">
       <Container>
         {/* What You Can Expect — weekly service detail + pool image */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 items-center mb-16 md:mb-24">
           <m.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -117,9 +117,9 @@ export const Services = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="max-w-3xl mb-16"
+          className="max-w-3xl mb-10 md:mb-16"
         >
-          <h2 className="section-heading text-white mb-6">
+          <h2 className="section-heading text-white mb-4 md:mb-6">
             Pool Cleaning & <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue-light to-brand-blue">
               Equipment Repair Services
@@ -143,7 +143,7 @@ export const Services = () => {
               <div className="w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center mb-4">
                 <service.icon className="w-6 h-6 text-brand-blue-light" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
+              <h3 className="text-lg md:text-xl font-display font-bold text-white mb-2">{service.title}</h3>
               <p className="text-gray-400 leading-relaxed">{service.description}</p>
             </m.div>
           ))}

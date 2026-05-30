@@ -38,25 +38,27 @@ export const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="py-24 relative">
+    <section id="faq" className="py-16 md:py-24 relative">
       <Container>
-        <div className="text-center mb-12">
+        <div className="text-center mb-10 md:mb-12">
           <h2 className="section-heading text-white mb-4">
             Common Questions
           </h2>
         </div>
 
-        <div className="space-y-4 max-w-3xl mx-auto">
+        <div className="space-y-3 md:space-y-4 max-w-3xl mx-auto">
           {faqs.map((faq, index) => (
             <div 
               key={index}
               className="glass-panel rounded-2xl overflow-hidden transition-colors hover:bg-white/10"
             >
               <button
+                type="button"
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full px-6 py-4 flex items-center justify-between text-left"
+                className="w-full px-5 sm:px-6 py-4 flex items-center justify-between text-left gap-4"
+                aria-expanded={openIndex === index}
               >
-                <span className="text-white font-medium text-lg">{faq.question}</span>
+                <span className="text-white font-medium text-[15px] sm:text-[17px]">{faq.question}</span>
                 {openIndex === index ? (
                   <Minus className="w-5 h-5 text-brand-orange" />
                 ) : (
@@ -64,7 +66,7 @@ export const FAQ = () => {
                 )}
               </button>
               {openIndex === index && (
-                <div className="px-6 pb-6 text-gray-400 leading-relaxed border-t border-white/5 pt-4">
+                <div className="px-5 sm:px-6 pb-5 sm:pb-6 text-[14px] sm:text-[15px] text-gray-400 leading-relaxed border-t border-white/5 pt-4">
                   {faq.answer}
                 </div>
               )}

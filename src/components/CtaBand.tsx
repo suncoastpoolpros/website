@@ -12,7 +12,7 @@ import { PHONE_DISPLAY, PHONE_HREF, SMS_QUOTE_HREF } from '@/lib/contact';
  */
 export const CtaBand = () => {
   return (
-    <section className="relative overflow-hidden bg-[#07111c] py-14 md:py-20">
+    <section className="relative overflow-hidden bg-[#07111c] py-16 md:py-24">
       <Container className="text-center">
         <m.div
           initial={{ opacity: 0, y: 20 }}

@@ -21,12 +21,12 @@ const steps = [
 export const Process = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
   return (
-    <section id="process" className="relative overflow-hidden py-20 md:py-28 bg-gradient-to-b from-[#e4e9f0] to-[#d6dde7]">
+    <section id="process" className="relative overflow-hidden py-16 md:py-24 bg-gradient-to-b from-[#e4e9f0] to-[#d6dde7]">
       {/* Soft brand-blue bloom for depth on the light band */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[50%] bg-brand-blue/[0.05] rounded-full blur-[140px] pointer-events-none" />
 
       <Container className="relative z-10">
-        <div className="text-center mb-14">
+        <div className="text-center mb-10 md:mb-14">
           <m.span
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}

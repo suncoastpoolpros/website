@@ -4,12 +4,14 @@ import { Send, CheckCircle, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Container } from '@/components/Container';
 import { FieldShell, fieldClass, selectClass } from '@/components/FormField';
 import { sendContact } from '@/lib/contactSubmit';
+import { useTurnstile } from '@/lib/turnstile';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 
 export const QuoteForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const turnstile = useTurnstile();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,6 +28,9 @@ export const QuoteForm = () => {
       return;
     }
     try {
+      // Run Turnstile right before submit so the token is fresh. Returns ''
+      // when the widget isn't configured (local dev) — server accepts that.
+      const turnstileToken = await turnstile.execute().catch(() => '');
       await sendContact({
         name: value('name'),
         phone: value('phone'),
@@ -34,6 +39,7 @@ export const QuoteForm = () => {
         service: value('service'),
         source: 'homepage-quote-form',
         submittedAt: new Date().toISOString(),
+        turnstileToken,
       });
       setSubmitted(true);
     } catch (err) {
@@ -48,18 +54,18 @@ export const QuoteForm = () => {
 
   if (submitted) {
     return (
-      <section id="quote" className="py-24 relative">
-        <div className="max-w-3xl mx-auto px-4">
-          <m.div 
+      <section id="quote" className="py-16 md:py-24 relative">
+        <Container className="max-w-3xl">
+          <m.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="glass-panel p-12 text-center rounded-[2.5rem]"
+            className="glass-panel p-8 md:p-12 text-center rounded-[2.5rem]"
           >
             <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30">
               <CheckCircle className="w-10 h-10 text-green-500" />
             </div>
-            <h3 className="text-3xl font-bold text-white mb-4">Quote Request Received!</h3>
-            <p className="text-gray-300 text-lg">
+            <h3 className="text-2xl md:text-3xl font-display font-bold text-white mb-4">Quote Request Received!</h3>
+            <p className="text-gray-300 text-base md:text-lg">
               Thanks for contacting Suncoast Pool Pros. One of our experts will call you shortly to confirm your St. Petersburg address and provide your flat rate.
             </p>
             <button
@@ -69,15 +75,15 @@ export const QuoteForm = () => {
               Send another request
             </button>
           </m.div>
-        </div>
+        </Container>
       </section>
     );
   }
 
   return (
-    <section id="quote" className="py-32 relative">
+    <section id="quote" className="py-16 md:py-24 lg:py-32 relative">
       <Container>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div>
             <h2 className="section-heading text-white leading-tight mb-5">
               Request your flat-rate quote.
@@ -116,6 +122,13 @@ export const QuoteForm = () => {
                 name="website"
                 tabIndex={-1}
                 autoComplete="off"
+                aria-hidden="true"
+                style={{ position: 'absolute', left: '-9999px', width: 1, height: 1 }}
+              />
+              {/* Turnstile widget — invisible. Mounted off-screen so it can
+                  render its iframe without occupying layout. Fires on submit. */}
+              <div
+                ref={turnstile.containerRef}
                 aria-hidden="true"
                 style={{ position: 'absolute', left: '-9999px', width: 1, height: 1 }}
               />

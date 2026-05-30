@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { m } from 'motion/react';
 import {
   Phone,
@@ -16,6 +16,7 @@ import { Footer } from '@/components/Footer';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { FieldShell, fieldClass, textareaClass } from '@/components/FormField';
 import { sendContact } from '@/lib/contactSubmit';
+import { usePageMeta } from '@/lib/usePageMeta';
 import {
   PHONE_DISPLAY,
   PHONE_HREF,
@@ -31,9 +32,10 @@ const ContactPageInner = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    document.title = 'Contact Suncoast Pool Pros — Pool Service in St. Petersburg, FL';
-  }, []);
+  usePageMeta(
+    'Contact Suncoast Pool Pros — Pool Service in St. Petersburg, FL',
+    'Reach Suncoast Pool Pros — call, text, or message us for a flat-rate weekly pool service quote in St. Petersburg, Clearwater, and Tampa Bay.',
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

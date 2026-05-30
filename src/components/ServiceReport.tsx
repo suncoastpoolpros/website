@@ -7,11 +7,24 @@ import { PHONE_DISPLAY, PHONE_HREF, EMAIL, EMAIL_HREF } from '@/lib/contact';
 // wants Gmail subject/sender to scroll *with* the report) can own the scroll.
 // `customerName`, `customerAddress`, and `serviceDate` let a page localize the
 // sample report (e.g. the Belleair Beach page shows a Belleair address).
+type ServiceReportPhoto = {
+  /** Base name without extension. Component looks for `${base}.webp/.jpg` and
+   *  `${base}-mobile.webp/.jpg` in /public, mirroring the hero asset naming. */
+  base: string;
+  alt: string;
+};
+
 type ServiceReportProps = {
   inline?: boolean;
   customerName?: string;
   customerAddress?: React.ReactNode;
   serviceDate?: string;
+  photo?: ServiceReportPhoto;
+};
+
+const DEFAULT_PHOTO: ServiceReportPhoto = {
+  base: '/pool-service-st-petersburg-hero',
+  alt: 'Weekly pool service report photo — clear, balanced backyard pool in St. Petersburg, FL',
 };
 
 export const ServiceReport = ({
@@ -23,6 +36,7 @@ export const ServiceReport = ({
     </>
   ),
   serviceDate = 'Thursday, May 14, 2026 · 11:42 AM',
+  photo = DEFAULT_PHOTO,
 }: ServiceReportProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -380,21 +394,19 @@ export const ServiceReport = ({
               <source
                 media="(max-width: 767px)"
                 type="image/webp"
-                srcSet="/pool-service-st-petersburg-hero-mobile.webp"
+                srcSet={`${photo.base}-mobile.webp`}
               />
               <source
                 media="(max-width: 767px)"
-                srcSet="/pool-service-st-petersburg-hero-mobile.jpg"
+                srcSet={`${photo.base}-mobile.jpg`}
               />
-              <source type="image/webp" srcSet="/pool-service-st-petersburg-hero.webp" />
+              <source type="image/webp" srcSet={`${photo.base}.webp`} />
               <img
                 className="sr-photo"
-                src="/pool-service-st-petersburg-hero.jpg"
-                alt="Weekly pool service report photo — clear, balanced backyard pool in St. Petersburg, FL"
+                src={`${photo.base}.jpg`}
+                alt={photo.alt}
                 loading="lazy"
                 decoding="async"
-                width={1280}
-                height={720}
               />
             </picture>
           </div>

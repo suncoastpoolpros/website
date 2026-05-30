@@ -60,9 +60,11 @@
     @apply text-3xl md:text-[2.5rem] font-display font-bold tracking-tight;
   }
 
-  /* Shared section description — the paragraph under a .section-heading. */
+  /* Shared section description — the paragraph under a .section-heading.
+     Slightly tighter on mobile so it reads as a subtitle, not body copy.
+     Bumps to text-lg from the sm breakpoint up. */
   .section-subtext {
-    @apply text-lg text-gray-400 leading-relaxed;
+    @apply text-base sm:text-lg text-gray-400 leading-relaxed;
   }
 
   /* Global button system. Every button uses `.btn` + a color modifier

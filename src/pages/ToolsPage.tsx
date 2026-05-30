@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -14,6 +14,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
+import { usePageMeta } from '@/lib/usePageMeta';
 
 type Tool = {
   to: string;
@@ -37,9 +38,10 @@ const TOOLS: Tool[] = [
 const ToolsPageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
 
-  useEffect(() => {
-    document.title = 'Free Pool Tools & Calculators — Suncoast Pool Pros | St. Pete';
-  }, []);
+  usePageMeta(
+    'Free Pool Tools & Calculators — Suncoast Pool Pros | St. Pete',
+    'Free pool care tools from Suncoast Pool Pros — calculators and references for volume, chemistry, and dosing, built for Florida pool owners.',
+  );
 
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();

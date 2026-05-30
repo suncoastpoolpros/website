@@ -11,6 +11,7 @@ import {
   ADDRESS_LINE,
   ADDRESS_CITY_STATE_ZIP,
 } from '@/lib/contact';
+import { usePageMeta } from '@/lib/usePageMeta';
 
 const LAST_UPDATED = '02-22-2026';
 
@@ -551,8 +552,12 @@ export const ServiceAgreementPage = () => {
   const [activeId, setActiveId] = useState(SECTIONS[0].id);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
+  usePageMeta(
+    'Service Agreement — Suncoast Pool Pros | St. Petersburg, FL',
+    'The Suncoast Pool Pros service agreement: weekly pool service terms, what’s covered under the flat rate, billing, and the Always Blue Guarantee.',
+  );
+
   useEffect(() => {
-    document.title = 'Service Agreement — Suncoast Pool Pros | St. Petersburg, FL';
     // Keep this legal page out of search results so it doesn't compete with
     // the marketing pages. Remove the tag again on unmount.
     const robots = document.createElement('meta');

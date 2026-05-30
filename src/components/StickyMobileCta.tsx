@@ -26,7 +26,17 @@ export const StickyMobileCta = () => {
         nearForm = rect.top < window.innerHeight && rect.bottom > 0;
       }
 
-      setShow(pastHero && !nearForm);
+      // Hide once the page footer enters the viewport. Use the last <footer>
+      // since the service-report mockup also renders one earlier in the DOM.
+      const footers = document.querySelectorAll('footer');
+      const footer = footers[footers.length - 1];
+      let nearFooter = false;
+      if (footer) {
+        const rect = footer.getBoundingClientRect();
+        nearFooter = rect.top < window.innerHeight;
+      }
+
+      setShow(pastHero && !nearForm && !nearFooter);
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });

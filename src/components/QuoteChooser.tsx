@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MessageSquare, Phone, Camera, MapPin, Send, ClipboardList, ArrowLeft, ChevronRight } from 'lucide-react';
 import { sendContact } from '@/lib/contactSubmit';
+import { useTurnstile } from '@/lib/turnstile';
 import { PHONE_DISPLAY, PHONE_HREF, SMS_HREF, SMS_QUOTE_HREF, HOURS_SHORT } from '@/lib/contact';
 
 const TEXT_STEPS = [
@@ -67,45 +68,87 @@ export const QuoteChooser = () => {
   const [choice, setChoice] = useState<Choice>(null);
   const [formSent, setFormSent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  // Service type lives in React state so we can render conditional fields
-  // tailored to what the buyer needs (e.g. green-pool severity, equipment
-  // type for repair). The native <select> stays uncontrolled in the DOM —
-  // we read its value via onChange and mirror it into state for rendering.
+  const turnstile = useTurnstile();
+  // Service type lives in React state so step 2 can render the right fields
+  // for what the buyer needs (e.g. green-pool severity, equipment type for
+  // repair). Mirrored via onChange from the native <select> on step 1.
   const [service, setService] = useState<Service>('');
+  // Two-step form: step 1 = contact + service type, step 2 = pool/service
+  // specifics. Splitting reduces the visual weight of the form and lets us
+  // ask for the deeper info we actually need to quote accurately.
+  const [formStep, setFormStep] = useState<1 | 2>(1);
+  // Step 1 values are stashed when the user clicks "Next" so the inputs can
+  // safely unmount when step 2 renders. We re-hydrate them at submit time.
+  const [step1Data, setStep1Data] = useState<Record<string, string>>({});
 
   // Clicking a card from the three-option view commits to that path.
   // The back button (rendered above the pinned card) is what clears it.
   const select = (c: Exclude<Choice, null>) => setChoice(c);
 
-  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  // Reset the form back to step 1 when the user backs out of the form card,
+  // so re-entering doesn't drop them mid-flow with stale state.
+  const resetForm = () => {
+    setFormStep(1);
+    setStep1Data({});
+    setService('');
+    setFormError(null);
+  };
+
+  const handleStep1Next = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormError(null);
     const data = new FormData(e.currentTarget);
     const value = (key: string) => String(data.get(key) ?? '').trim();
-    // Honeypot — humans can't see/fill the `website` field (display:none + aria-hidden).
-    // If it has a value, this is almost certainly a bot scraping form fields by
-    // name; pretend we sent it and bail. We never want bots to learn from errors.
+    // Honeypot — humans can't see/fill the `website` field. Bots that fill
+    // every named input will trip it. We silently "succeed" so they don't
+    // learn from errors.
     if (value('website')) {
       setFormSent(true);
       return;
     }
+    setStep1Data({
+      name: value('name'),
+      email: value('email'),
+      phone: value('phone'),
+      address: value('address'),
+      service: value('service'),
+    });
+    setFormStep(2);
+  };
+
+  const handleStep2Submit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setFormError(null);
+    const data = new FormData(e.currentTarget);
+    const value = (key: string) => String(data.get(key) ?? '').trim();
+    // Fresh Turnstile token per submit. '' when widget isn't configured —
+    // server accepts that during the development window before the secret
+    // is set in Cloudflare.
+    const turnstileToken = await turnstile.execute().catch(() => '');
     try {
       await sendContact({
-        name: value('name'),
-        email: value('email'),
-        phone: value('phone'),
-        address: value('address'),
-        service: value('service'),
-        // Conditional fields — only one set will be populated depending on
-        // the chosen service type. Empty strings are stripped backend-side.
+        turnstileToken,
+        ...step1Data,
+        // Step 2 fields. Most are service-specific — empty strings are
+        // stripped backend-side, so unused fields are harmless.
+        // Weekly cleaning specifics
+        poolSize: value('poolSize'),
+        poolType: value('poolType'),
+        heaterType: value('heaterType'),
+        screenEnclosure: value('screenEnclosure'),
+        debrisLoad: value('debrisLoad'),
+        // Green pool recovery
         greenSeverity: value('greenSeverity'),
         greenSize: value('greenSize'),
         greenNotes: value('greenNotes'),
+        // Repair
         repairEquipment: value('repairEquipment'),
         repairIssue: value('repairIssue'),
+        // Commercial
         commercialPropertyType: value('commercialPropertyType'),
         commercialPoolCount: value('commercialPoolCount'),
         commercialRole: value('commercialRole'),
+        // Other
         otherDetails: value('otherDetails'),
         source: 'quote-chooser',
         submittedAt: new Date().toISOString(),
@@ -226,193 +269,252 @@ export const QuoteChooser = () => {
             <p className="text-gray-400 text-sm">We'll email your flat rate, same day.</p>
           </div>
         ) : (
-          <form onSubmit={handleFormSubmit} className="space-y-3">
-            {/* Honeypot — hidden from humans (display:none + aria-hidden + tabIndex)
-                but bot field-fillers see it as a normal field and populate it.
-                Submissions that include a value here are silently dropped above. */}
-            <input
-              type="text"
-              name="website"
-              tabIndex={-1}
-              autoComplete="off"
+          <>
+            {/* Turnstile widget — invisible, mounted at the outer level so it
+                survives the step-1 → step-2 form swap and the token request
+                on submit always has a live widget to call. */}
+            <div
+              ref={turnstile.containerRef}
               aria-hidden="true"
               style={{ position: 'absolute', left: '-9999px', width: 1, height: 1 }}
             />
-            <select
-              name="service"
-              value={service}
-              onChange={(e) => setService(e.target.value as Service)}
-              required
-              className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
-            >
-              <option value="" disabled>What do you need?</option>
-              <option value="weekly">Weekly Pool Cleaning</option>
-              <option value="green">Green Pool Recovery</option>
-              <option value="repair">Equipment Repair / Installation</option>
-              <option value="commercial">Commercial / HOA Pool</option>
-              <option value="other">Something else</option>
-            </select>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input
-                required
-                name="name"
-                placeholder="Full name"
-                className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
-              />
-              <input
-                required
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="Email"
-                className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
-              />
+            {/* Step indicator — quietly tells the buyer they're not stuck in a
+                surprise multi-page form. Two steps, total. */}
+            <div className="flex items-center justify-between mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500">
+              <span>Step {formStep} of 2</span>
+              <span className="flex gap-1.5" aria-hidden="true">
+                <span className={`h-1 w-8 rounded-full ${formStep >= 1 ? 'bg-brand-blue-light' : 'bg-white/10'}`} />
+                <span className={`h-1 w-8 rounded-full ${formStep >= 2 ? 'bg-brand-blue-light' : 'bg-white/10'}`} />
+              </span>
             </div>
-            <input
-              required
-              name="address"
-              placeholder="Home address"
-              className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
-            />
-            <input
-              name="phone"
-              type="tel"
-              autoComplete="tel"
-              placeholder="Phone (optional)"
-              className="w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition"
-            />
 
-            {/* ---- Conditional fields, keyed by service type ---- */}
-            {service === 'green' && (
-              <ConditionalBlock label="Tell us about the pool">
-                <select
-                  name="greenSeverity"
-                  defaultValue=""
-                  required
-                  className={INPUT_CLS}
-                >
-                  <option value="" disabled>How green is it?</option>
-                  <option value="tint">Slight tint — still mostly clear</option>
-                  <option value="cloudy">Cloudy green</option>
-                  <option value="opaque">Can't see the bottom</option>
-                  <option value="debris">Algae &amp; debris — full neglect</option>
-                </select>
-                <select
-                  name="greenSize"
-                  defaultValue=""
-                  required
-                  className={INPUT_CLS}
-                >
-                  <option value="" disabled>Approximate pool size</option>
-                  <option value="small">Small (under 10,000 gal)</option>
-                  <option value="medium">Medium (10,000–20,000 gal)</option>
-                  <option value="large">Large (20,000+ gal)</option>
-                  <option value="unsure">Not sure</option>
-                </select>
-                <textarea
-                  name="greenNotes"
-                  rows={2}
-                  placeholder="Anything else? (equipment running, last serviced, etc.)"
-                  className={`${INPUT_CLS} resize-none`}
+            {formStep === 1 && (
+              <form onSubmit={handleStep1Next} className="space-y-3">
+                {/* Honeypot — hidden from humans (display:none + aria-hidden + tabIndex)
+                    but bot field-fillers see it as a normal field and populate it.
+                    Submissions that include a value here are silently dropped. */}
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  style={{ position: 'absolute', left: '-9999px', width: 1, height: 1 }}
                 />
-              </ConditionalBlock>
-            )}
-
-            {service === 'repair' && (
-              <ConditionalBlock label="What's the issue?">
                 <select
-                  name="repairEquipment"
-                  defaultValue=""
+                  name="service"
+                  value={service}
+                  onChange={(e) => setService(e.target.value as Service)}
                   required
                   className={INPUT_CLS}
                 >
-                  <option value="" disabled>What needs attention?</option>
-                  <option value="pump">Pump</option>
-                  <option value="filter">Filter</option>
-                  <option value="salt-cell">Salt cell</option>
-                  <option value="heater">Heater</option>
-                  <option value="lights">Lights</option>
-                  <option value="automation">Automation / controls</option>
-                  <option value="multiple">Multiple items</option>
-                  <option value="unsure">Not sure — please help diagnose</option>
-                </select>
-                <textarea
-                  name="repairIssue"
-                  rows={3}
-                  required
-                  placeholder="Briefly describe the issue (sounds, leaks, error codes, etc.)"
-                  className={`${INPUT_CLS} resize-none`}
-                />
-              </ConditionalBlock>
-            )}
-
-            {service === 'commercial' && (
-              <ConditionalBlock label="About the property">
-                <select
-                  name="commercialPropertyType"
-                  defaultValue=""
-                  required
-                  className={INPUT_CLS}
-                >
-                  <option value="" disabled>Property type</option>
-                  <option value="hoa">HOA</option>
-                  <option value="condo">Condo / Apartment</option>
-                  <option value="hotel">Hotel / Resort</option>
-                  <option value="club">Club / Gym</option>
-                  <option value="other">Other commercial</option>
+                  <option value="" disabled>What do you need?</option>
+                  <option value="weekly">Weekly Pool Cleaning</option>
+                  <option value="green">Green Pool Recovery</option>
+                  <option value="repair">Equipment Repair / Installation</option>
+                  <option value="commercial">Commercial / HOA Pool</option>
+                  <option value="other">Something else</option>
                 </select>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <select
-                    name="commercialPoolCount"
-                    defaultValue=""
+                  <input
                     required
+                    name="name"
+                    defaultValue={step1Data.name ?? ''}
+                    placeholder="Full name"
                     className={INPUT_CLS}
-                  >
-                    <option value="" disabled>How many pools?</option>
-                    <option value="1">1</option>
-                    <option value="2-3">2–3</option>
-                    <option value="4+">4+</option>
-                  </select>
-                  <select
-                    name="commercialRole"
-                    defaultValue=""
+                  />
+                  <input
                     required
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    defaultValue={step1Data.email ?? ''}
+                    placeholder="Email"
                     className={INPUT_CLS}
-                  >
-                    <option value="" disabled>Your role</option>
-                    <option value="owner">Owner</option>
-                    <option value="property-manager">Property manager</option>
-                    <option value="board">Board member</option>
-                    <option value="maintenance">Maintenance lead</option>
-                    <option value="other">Other</option>
-                  </select>
+                  />
                 </div>
-              </ConditionalBlock>
-            )}
-
-            {service === 'other' && (
-              <ConditionalBlock label="Tell us more">
-                <textarea
-                  name="otherDetails"
-                  rows={4}
+                <input
                   required
-                  placeholder="What do you need? The more detail, the more accurate the quote."
-                  className={`${INPUT_CLS} resize-none`}
+                  name="address"
+                  defaultValue={step1Data.address ?? ''}
+                  placeholder="Home address"
+                  className={INPUT_CLS}
                 />
-              </ConditionalBlock>
+                <input
+                  name="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  defaultValue={step1Data.phone ?? ''}
+                  placeholder="Phone (optional)"
+                  className={INPUT_CLS}
+                />
+
+                <button type="submit" className="btn btn-blue w-full">
+                  Next: Pool details
+                  <ChevronRight className="w-[18px] h-[18px]" />
+                </button>
+                <p className="text-center text-gray-500 text-xs">
+                  Step 2 is a few quick questions about your pool — takes under a minute.
+                </p>
+              </form>
             )}
 
-            {formError && (
-              <p className="text-center text-red-300 text-xs">{formError}</p>
+            {formStep === 2 && (
+              <form onSubmit={handleStep2Submit} className="space-y-3">
+                {/* ---- Weekly Pool Cleaning — pricing essentials ---- */}
+                {service === 'weekly' && (
+                  <ConditionalBlock label="About your pool">
+                    <select name="poolSize" defaultValue="" required className={INPUT_CLS}>
+                      <option value="" disabled>Approximate pool size</option>
+                      <option value="small">Small (under 10,000 gal)</option>
+                      <option value="medium">Medium (10,000–20,000 gal)</option>
+                      <option value="large">Large (20,000+ gal)</option>
+                      <option value="unsure">Not sure</option>
+                    </select>
+                    <select name="poolType" defaultValue="" required className={INPUT_CLS}>
+                      <option value="" disabled>Saltwater or chlorine?</option>
+                      <option value="salt">Saltwater</option>
+                      <option value="chlorine">Traditional chlorine</option>
+                      <option value="unsure">Not sure</option>
+                    </select>
+                    <select name="heaterType" defaultValue="" required className={INPUT_CLS}>
+                      <option value="" disabled>Heater type</option>
+                      <option value="none">No heater</option>
+                      <option value="gas">Gas heater</option>
+                      <option value="electric">Electric / heat pump</option>
+                      <option value="solar">Solar</option>
+                      <option value="unsure">Not sure</option>
+                    </select>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <select name="screenEnclosure" defaultValue="" required className={INPUT_CLS}>
+                        <option value="" disabled>Screen enclosure?</option>
+                        <option value="yes">Yes — screened</option>
+                        <option value="no">No — open</option>
+                      </select>
+                      <select name="debrisLoad" defaultValue="" required className={INPUT_CLS}>
+                        <option value="" disabled>Trees / debris</option>
+                        <option value="low">Little to none</option>
+                        <option value="medium">Some trees nearby</option>
+                        <option value="high">Lots — heavy debris</option>
+                      </select>
+                    </div>
+                  </ConditionalBlock>
+                )}
+
+                {/* ---- Green Pool Recovery ---- */}
+                {service === 'green' && (
+                  <ConditionalBlock label="Tell us about the pool">
+                    <select name="greenSeverity" defaultValue="" required className={INPUT_CLS}>
+                      <option value="" disabled>How green is it?</option>
+                      <option value="tint">Slight tint — still mostly clear</option>
+                      <option value="cloudy">Cloudy green</option>
+                      <option value="opaque">Can't see the bottom</option>
+                      <option value="debris">Algae &amp; debris — full neglect</option>
+                    </select>
+                    <select name="greenSize" defaultValue="" required className={INPUT_CLS}>
+                      <option value="" disabled>Approximate pool size</option>
+                      <option value="small">Small (under 10,000 gal)</option>
+                      <option value="medium">Medium (10,000–20,000 gal)</option>
+                      <option value="large">Large (20,000+ gal)</option>
+                      <option value="unsure">Not sure</option>
+                    </select>
+                    <textarea
+                      name="greenNotes"
+                      rows={2}
+                      placeholder="Anything else? (equipment running, last serviced, etc.)"
+                      className={`${INPUT_CLS} resize-none`}
+                    />
+                  </ConditionalBlock>
+                )}
+
+                {/* ---- Repair / Installation ---- */}
+                {service === 'repair' && (
+                  <ConditionalBlock label="What's the issue?">
+                    <select name="repairEquipment" defaultValue="" required className={INPUT_CLS}>
+                      <option value="" disabled>What needs attention?</option>
+                      <option value="pump">Pump</option>
+                      <option value="filter">Filter</option>
+                      <option value="salt-cell">Salt cell</option>
+                      <option value="heater">Heater</option>
+                      <option value="lights">Lights</option>
+                      <option value="automation">Automation / controls</option>
+                      <option value="multiple">Multiple items</option>
+                      <option value="unsure">Not sure — please help diagnose</option>
+                    </select>
+                    <textarea
+                      name="repairIssue"
+                      rows={3}
+                      required
+                      placeholder="Briefly describe the issue (sounds, leaks, error codes, etc.)"
+                      className={`${INPUT_CLS} resize-none`}
+                    />
+                  </ConditionalBlock>
+                )}
+
+                {/* ---- Commercial / HOA ---- */}
+                {service === 'commercial' && (
+                  <ConditionalBlock label="About the property">
+                    <select name="commercialPropertyType" defaultValue="" required className={INPUT_CLS}>
+                      <option value="" disabled>Property type</option>
+                      <option value="hoa">HOA</option>
+                      <option value="condo">Condo / Apartment</option>
+                      <option value="hotel">Hotel / Resort</option>
+                      <option value="club">Club / Gym</option>
+                      <option value="other">Other commercial</option>
+                    </select>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <select name="commercialPoolCount" defaultValue="" required className={INPUT_CLS}>
+                        <option value="" disabled>How many pools?</option>
+                        <option value="1">1</option>
+                        <option value="2-3">2–3</option>
+                        <option value="4+">4+</option>
+                      </select>
+                      <select name="commercialRole" defaultValue="" required className={INPUT_CLS}>
+                        <option value="" disabled>Your role</option>
+                        <option value="owner">Owner</option>
+                        <option value="property-manager">Property manager</option>
+                        <option value="board">Board member</option>
+                        <option value="maintenance">Maintenance lead</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </ConditionalBlock>
+                )}
+
+                {/* ---- Something else — free text ---- */}
+                {service === 'other' && (
+                  <ConditionalBlock label="Tell us more">
+                    <textarea
+                      name="otherDetails"
+                      rows={4}
+                      required
+                      placeholder="What do you need? The more detail, the more accurate the quote."
+                      className={`${INPUT_CLS} resize-none`}
+                    />
+                  </ConditionalBlock>
+                )}
+
+                {formError && (
+                  <p className="text-center text-red-300 text-xs">{formError}</p>
+                )}
+
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setFormStep(1)}
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-lg bg-white/[0.06] border border-white/10 text-gray-200 hover:text-white hover:bg-white/10 transition-colors text-sm font-medium"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back
+                  </button>
+                  <button type="submit" className="btn btn-blue flex-1">
+                    Send to Suncoast
+                  </button>
+                </div>
+                <p className="text-center text-gray-500 text-xs">Same-day reply · No obligation</p>
+              </form>
             )}
-            <button
-              type="submit"
-              className="btn btn-blue w-full"
-            >
-              Send to Suncoast
-            </button>
-            <p className="text-center text-gray-500 text-xs">Same-day reply · No obligation</p>
-          </form>
+          </>
         )}
       </div>
     </Card>
@@ -433,7 +535,10 @@ export const QuoteChooser = () => {
       {choice && (
         <button
           type="button"
-          onClick={() => setChoice(null)}
+          onClick={() => {
+            setChoice(null);
+            resetForm();
+          }}
           className="inline-flex items-center gap-1.5 text-gray-400 hover:text-white text-[13px] -mt-1 mb-1 self-start transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

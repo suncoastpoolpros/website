@@ -34,7 +34,7 @@ export const FeatureGrid = () => {
   return (
     <section
       id="features"
-      className="pt-16 pb-24 md:pt-20 md:pb-28 relative overflow-hidden bg-[#07111c]"
+      className="pt-12 pb-16 md:pt-20 md:pb-24 relative overflow-hidden bg-[#07111c]"
     >
       <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07111c] to-transparent pointer-events-none" />
 
@@ -44,7 +44,7 @@ export const FeatureGrid = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="max-w-2xl mb-12"
+          className="max-w-2xl mb-10 md:mb-12"
         >
           <h2 className="section-heading text-white leading-[1.1] mb-4">
             Why St. Pete homeowners choose Suncoast.
@@ -73,7 +73,7 @@ export const FeatureGrid = () => {
                 <item.icon className="w-5 h-5 md:w-7 md:h-7 text-brand-blue-light" strokeWidth={1.9} />
               </div>
 
-              <h3 className="text-base font-semibold text-white leading-snug mb-2">
+              <h3 className="font-display text-base font-bold text-white leading-snug mb-2">
                 {item.title}
               </h3>
               <p className="text-sm text-gray-400 leading-relaxed">{item.body}</p>

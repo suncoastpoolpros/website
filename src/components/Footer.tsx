@@ -45,9 +45,9 @@ export const Footer = () => {
   return (
     <footer className="relative z-20 bg-[#02050a] border-t border-white/10">
       <Container>
-        <div className="py-14 grid grid-cols-2 gap-10 sm:grid-cols-4 lg:grid-cols-[1.9fr_0.9fr_1fr_1.5fr_0.9fr] lg:gap-8">
+        <div className="py-14 grid grid-cols-1 gap-y-10 sm:grid-cols-2 sm:gap-x-8 md:grid-cols-4 md:gap-x-10 lg:grid-cols-[1.9fr_0.9fr_1fr_1.5fr_0.9fr] lg:gap-8">
           {/* Brand + blurb */}
-          <div className="col-span-2 sm:col-span-4 lg:col-span-1">
+          <div className="sm:col-span-2 md:col-span-4 lg:col-span-1">
             <div className="flex items-center gap-3 mb-5">
               <img
                 src="/icon-mark.svg"
@@ -132,7 +132,7 @@ export const Footer = () => {
           </nav>
 
           {/* Contact */}
-          <div className="col-span-2 sm:col-span-1">
+          <div>
             <h4 className={colHeading}>Contact</h4>
             <ul className="space-y-3">
               <li>
@@ -142,9 +142,9 @@ export const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href={EMAIL_HREF} className={`group inline-flex items-start gap-2.5 ${linkClass}`}>
+                <a href={EMAIL_HREF} className={`group inline-flex items-start gap-2.5 min-w-0 ${linkClass}`}>
                   <Mail className="w-4 h-4 text-brand-orange shrink-0 mt-0.5" />
-                  <span className="break-words">{EMAIL}</span>
+                  <span className="min-w-0 break-all">{EMAIL}</span>
                 </a>
               </li>
               <li className="flex items-start gap-2.5 text-gray-400 text-sm">
@@ -162,7 +162,7 @@ export const Footer = () => {
           <div>
             <h4 className={colHeading}>Hours</h4>
             <ul className="space-y-2.5 text-gray-400 text-sm">
-              <li>{HOURS_SHORT}</li>
+              <li className="whitespace-nowrap">{HOURS_SHORT}</li>
               <li>Sunday: Closed</li>
             </ul>
           </div>

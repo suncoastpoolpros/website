@@ -11,6 +11,7 @@ import {
   ADDRESS_LINE,
   ADDRESS_CITY_STATE_ZIP,
 } from '@/lib/contact';
+import { usePageMeta } from '@/lib/usePageMeta';
 
 const LAST_UPDATED = '02-20-2026';
 
@@ -353,11 +354,12 @@ export const PrivacyPolicyPage = () => {
   const [activeId, setActiveId] = useState(SECTIONS[0].id);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  useEffect(() => {
-    document.title = 'Privacy Policy — Suncoast Pool Pros | St. Petersburg, FL';
-    // Intentionally indexable: SMS carrier / A2P 10DLC registration typically
-    // requires a publicly reachable privacy policy with the consent language.
-  }, []);
+  // Intentionally indexable: SMS carrier / A2P 10DLC registration typically
+  // requires a publicly reachable privacy policy with the consent language.
+  usePageMeta(
+    'Privacy Policy — Suncoast Pool Pros | St. Petersburg, FL',
+    'Suncoast Pool Pros privacy policy — how we collect, use, and protect customer information, including SMS messaging consent and data handling.',
+  );
 
   // Scroll-spy: highlight the TOC entry for whichever section is nearest the
   // top of the viewport. The rootMargin biases the "active" zone to the upper

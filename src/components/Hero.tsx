@@ -94,9 +94,16 @@ export const Hero = () => {
           aria-hidden
         />
 
-        {/* Gradient overlay — lighter at the very top, building to the section
-            seam color at the bottom. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#02060c]/35 via-[#04090f]/45 to-[#07111c] md:from-[#02060c]/40 md:via-[#04090f]/65" />
+        {/* Gradient overlay — stronger mid-section darkening on mobile so the
+            stacked body copy stays readable over the bright water/sky area.
+            Desktop keeps the lighter pass since the left scrim does the heavy
+            lifting there. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#02060c]/55 via-[#04090f]/70 to-[#07111c] md:from-[#02060c]/40 md:via-[#04090f]/65" />
+
+        {/* Mobile readability scrim — a soft top-down wash that sits behind the
+            stacked text column only. Keeps the photo visually present while
+            lifting contrast on the headline, paragraph, and trust strip. */}
+        <div className="md:hidden absolute inset-0 bg-gradient-to-b from-[#02060c]/35 via-[#02060c]/45 to-transparent pointer-events-none" />
 
         {/* Left scrim — DESKTOP ONLY. On mobile the layout is centered/stacked,
             so a left scrim would just crush the whole image. */}
@@ -142,7 +149,7 @@ export const Hero = () => {
                 </span>
                 <span
                   className="block mt-5 sm:whitespace-nowrap text-white font-normal tracking-tight text-2xl sm:text-3xl md:text-[2.25rem] leading-[1.1]"
-                  style={{ textShadow: '0 1px 14px rgba(0,0,0,0.5)' }}
+                  style={{ textShadow: '0 2px 16px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.5)' }}
                 >
                   No Monthly Chemical Cost
                 </span>
@@ -150,15 +157,15 @@ export const Hero = () => {
 
               {/* Semantic H1 carries the primary local-SEO keyword: "Pool Cleaning St. Petersburg" */}
               <h1
-                className="font-display font-medium text-white/90 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 sm:mb-7 sm:whitespace-nowrap tracking-tight"
-                style={{ textShadow: '0 1px 12px rgba(0,0,0,0.6)' }}
+                className="font-display font-medium text-white text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 sm:mb-7 sm:whitespace-nowrap tracking-tight"
+                style={{ textShadow: '0 2px 14px rgba(0,0,0,0.75), 0 1px 3px rgba(0,0,0,0.5)' }}
               >
                 St. Petersburg's expert pool cleaning company.
               </h1>
 
               <p
-                className="text-[15px] text-gray-200 font-light max-w-[27rem] leading-[1.6] mb-8 sm:mb-9"
-                style={{ textShadow: '0 1px 10px rgba(0,0,0,0.55)' }}
+                className="text-[15px] text-gray-100 font-light max-w-[27rem] leading-[1.6] mb-8 sm:mb-9"
+                style={{ textShadow: '0 1px 12px rgba(0,0,0,0.7), 0 0 2px rgba(0,0,0,0.4)' }}
               >
                 <span className="text-white">Weekly pool cleaning, full chemical balancing, GPS-verified visits</span>, and a written report after every clean. <span className="text-white">One flat monthly price</span> — no chemical surprises, no contracts, no green water.
               </p>
@@ -182,18 +189,21 @@ export const Hero = () => {
               </div>
 
               {/* Trust strip */}
-              <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px] text-gray-400">
+              <div
+                className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px] text-gray-200"
+                style={{ textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
+              >
                 <div className="flex items-center gap-2">
                   <div className="flex gap-0.5 text-brand-orange">
                     {[0,1,2,3,4].map(i => (
                       <Star key={i} className="w-4 h-4 fill-current" />
                     ))}
                   </div>
-                  <span className="font-medium text-white/90">5.0</span>
-                  <span className="text-gray-500">on Google</span>
+                  <span className="font-semibold text-white">5.0</span>
+                  <span className="text-gray-300">on Google</span>
                 </div>
 
-                <span className="hidden sm:inline text-gray-700">•</span>
+                <span className="hidden sm:inline text-gray-500">•</span>
 
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-brand-blue-light" />

@@ -1,0 +1,6 @@
+# Cloudflare Pages SPA fallback.
+# Any non-file, non-/api request falls back to index.html so React Router
+# can handle deep links (e.g. /belleair-beach-fl, /tools/pool-volume-calculator).
+# The 200 (not 301/302) keeps the URL bar unchanged.
+/api/*  /api/:splat  200
+/*      /index.html  200

@@ -22,6 +22,7 @@ import { Footer } from '@/components/Footer';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { Container } from '@/components/Container';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
+import { usePageMeta } from '@/lib/usePageMeta';
 import { faqs } from '@/data/faqs';
 
 // Onboarding steps — also the source for the HowTo JSON-LD below.
@@ -118,8 +119,12 @@ const HowItWorksPageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
+  usePageMeta(
+    'How Pool Service Works — Suncoast Pool Pros | St. Pete',
+    'See exactly how Suncoast Pool Pros service works — from your free quote to weekly cleanings, water balancing, and a written report after every visit.',
+  );
+
   useEffect(() => {
-    document.title = 'How Pool Service Works — Suncoast Pool Pros | St. Pete';
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     script.text = JSON.stringify(howToSchema);

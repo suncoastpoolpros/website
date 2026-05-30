@@ -13,7 +13,7 @@ export const cities: City[] = [
   { slug: 'st-petersburg',   name: 'St. Petersburg',  blurb: 'Our home base' },
   { slug: 'gulfport',        name: 'Gulfport',        blurb: 'Coastal St. Pete' },
   { slug: 'st-pete-beach',   name: 'St. Pete Beach',  blurb: 'Beach community' },
-  { slug: 'treasure-island', name: 'Treasure Island', blurb: 'Gulf beaches' },
+  { slug: 'treasure-island', name: 'Treasure Island', blurb: 'Gulf beaches', to: '/treasure-island-fl' },
   { slug: 'seminole',        name: 'Seminole',        blurb: 'Mid-Pinellas' },
   { slug: 'largo',           name: 'Largo',           blurb: 'Central Pinellas' },
   { slug: 'belleair-beach',  name: 'Belleair Beach',  blurb: 'Gulf barrier island', to: '/belleair-beach-fl' },
