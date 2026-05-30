@@ -1,5 +1,4 @@
 import React from 'react';
-import { m } from 'motion/react';
 import { MessageSquare, Phone } from 'lucide-react';
 import { QuoteChooser } from '@/components/QuoteChooser';
 import { Container } from '@/components/Container';
@@ -14,12 +13,7 @@ export const CtaBand = () => {
   return (
     <section className="relative overflow-hidden bg-[#07111c] py-16 md:py-24">
       <Container className="text-center">
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-2xl mx-auto"
-        >
+        <div className="max-w-2xl mx-auto">
           <h2 className="section-heading text-white leading-tight mb-3">
             Two ways to get your flat-rate quote.
           </h2>
@@ -53,7 +47,7 @@ export const CtaBand = () => {
           <p className="text-gray-500 text-xs mt-5">
             Open Mon–Sat, 8 AM – 6 PM · Serving St. Pete, Clearwater, Largo &amp; Tampa
           </p>
-        </m.div>
+        </div>
       </Container>
     </section>
   );

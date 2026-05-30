@@ -1,18 +1,10 @@
-import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { m, useScroll, useTransform } from 'motion/react';
+import React, { useEffect, useState } from 'react';
 import { Phone, Star, MapPin } from 'lucide-react';
 import { Glass } from '@/components/Glass';
 import { useQuoteSheet } from '@/components/QuoteSheet';
 import { Container } from '@/components/Container';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
-
-// Lazy-load the service-report content (the email body inside the phone mockup).
-// It's visually decorative — pure trust signal — and adds ~24KB of JSX + a
-// large inline <style>. Keeping it out of the initial Hero bundle means the
-// headline + CTAs become interactive sooner (better LCP / TTI / Lighthouse).
-const ServiceReport = lazy(() =>
-  import('@/components/ServiceReport').then((m) => ({ default: m.ServiceReport }))
-);
+import { ServiceReport } from '@/components/ServiceReport';
 
 const formatClock = (d: Date) =>
   d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s?[AP]M/i, '');
@@ -33,7 +25,6 @@ const useLiveClock = () => {
 export const Hero = () => {
   const clock = useLiveClock();
   const { open: openQuoteSheet } = useQuoteSheet();
-  const sectionRef = useRef<HTMLDivElement>(null);
   // Tracks whether the Gmail report body has been scrolled at all — when true,
   // the top icon bar picks up Gmail's gray fill the way it does in the real app.
   const [gmailScrolled, setGmailScrolled] = useState(false);
@@ -44,31 +35,21 @@ export const Hero = () => {
     e.preventDefault();
     openQuoteSheet();
   };
-  // Parallax: as the hero scrolls out of view, drift the bg image up a bit slower
-  // than the content for a subtle depth effect. (useScroll touches window — its
-  // motion value resolves to 0 on the server, which still matches the un-scrolled
-  // first client render, so this is hydration-safe.)
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start start', 'end start'],
-  });
-  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '28%']);
 
   return (
-    <div ref={sectionRef} className="relative min-h-[calc(100vh-2rem)] lg:min-h-[760px] flex items-center justify-center overflow-hidden pt-20 pb-20">
+    <div className="relative min-h-[calc(100vh-2rem)] lg:min-h-[760px] flex items-center justify-center overflow-hidden pt-20 pb-20">
       {/* Immersive Background Elements */}
       <div className="absolute inset-0 z-0">
         {/* Near-black base with a hint of cool undertone */}
         <div className="absolute inset-0 bg-[#02060c]" />
 
         {/* Pool background — desktop (landscape crop) */}
-        <m.div
-          className="absolute -inset-y-[18%] inset-x-0 hidden md:block bg-cover bg-center will-change-transform"
+        <div
+          className="absolute -inset-y-[18%] inset-x-0 hidden md:block bg-cover bg-center"
           style={{
             backgroundImage:
               "image-set(url('/pool-service-st-petersburg-hero.webp') type('image/webp') 1x, url('/pool-service-st-petersburg-hero-1920.webp') type('image/webp') 2x, url('/pool-service-st-petersburg-hero.jpg') type('image/jpeg') 1x)",
             filter: 'saturate(1.45) brightness(0.85) contrast(1.12) hue-rotate(-6deg)',
-            y: bgY,
           }}
           aria-hidden
         />
@@ -131,11 +112,7 @@ export const Hero = () => {
           
           {/* Text Content - Left Side */}
           <div className="lg:col-span-6 pt-10 lg:pt-0">
-            <m.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            >
+            <div>
               <Glass className="inline-flex items-center px-4 py-2 rounded-full mb-8">
                 <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">St. Pete · Largo · Clearwater · Tampa</span>
               </Glass>
@@ -214,7 +191,7 @@ export const Hero = () => {
                   <span>Locally Owned in St. Pete</span>
                 </div>
               </div>
-            </m.div>
+            </div>
           </div>
 
           {/* Visual Content - Right Side (Phone Mockup) — also shown on mobile below the text */}
@@ -224,36 +201,13 @@ export const Hero = () => {
               className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 xl:translate-x-12 flex-col items-start z-20 pointer-events-none"
               style={{ transform: 'translate(-20px, -40px) rotate(-6deg)' }}
             >
-              {/* Text writes in like a pen: each letter is revealed one at a time
-                  with a split-second pause between, via a per-letter clip wipe (the
-                  ink appears solid as the pen passes — no fading). */}
-              <m.span
+              <span
                 className="text-brand-orange text-[1.7rem] xl:text-[2.15rem] leading-tight max-w-[180px]"
                 style={{ fontFamily: '"Caveat", cursive', fontWeight: 700 }}
-                initial="hidden"
-                whileInView="shown"
-                viewport={{ once: true }}
-                transition={{ delayChildren: 0.4, staggerChildren: 0.11 }}
               >
-                {['Sent after', 'every visit'].map((line, lineIdx) => (
-                  <span key={lineIdx} className="block">
-                    {Array.from(line).map((ch, i) => (
-                      <m.span
-                        key={i}
-                        className="inline-block"
-                        style={{ whiteSpace: 'pre' }}
-                        variants={{
-                          hidden: { opacity: 0 },
-                          shown: { opacity: 1 },
-                        }}
-                        transition={{ duration: 0.01 }}
-                      >
-                        {ch}
-                      </m.span>
-                    ))}
-                  </span>
-                ))}
-              </m.span>
+                <span className="block">Sent after</span>
+                <span className="block">every visit</span>
+              </span>
 
               {/* Hand-drawn swooping arrow — strokes draw themselves after the text. */}
               <svg
@@ -264,11 +218,7 @@ export const Hero = () => {
                 className="text-brand-orange mt-1"
                 style={{ transform: 'scale(0.7)', transformOrigin: 'center center', marginLeft: '-5rem' }}
               >
-                {/* Main curve draws first — path defined left→right so the stroke
-                    animates from the left point toward the right.
-                    opacity snaps to 1 the instant the draw starts, so the round
-                    linecap dot isn't visible sitting there beforehand. */}
-                <m.path
+                <path
                   d="M22 38
                      C 30 40, 55 46, 75 52
                      S 112 42, 130 36
@@ -278,42 +228,19 @@ export const Hero = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   fill="none"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  whileInView={{ pathLength: 1, opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    pathLength: { delay: 3.5, duration: 0.8, ease: 'easeInOut' },
-                    opacity: { delay: 3.5, duration: 0.01 },
-                  }}
                 />
-                {/* Chevron draws last, after the line reaches the tip */}
-                <m.path
+                <path
                   d="M37 25 L 22 38 L 31 51"
                   stroke="currentColor"
                   strokeWidth="4"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   fill="none"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  whileInView={{ pathLength: 1, opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    pathLength: { delay: 3.1, duration: 0.3, ease: 'easeOut' },
-                    opacity: { delay: 3.1, duration: 0.01 },
-                  }}
                 />
               </svg>
             </div>
 
-            <m.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                opacity: { duration: 1, delay: 0.2, ease: 'easeOut' },
-                y: { duration: 1, delay: 0.2, ease: 'easeOut' },
-              }}
-              className="relative z-10 w-[300px] scale-90 origin-center"
-            >
+            <div className="relative z-10 w-[300px] scale-90 origin-center">
               {/* Side buttons */}
               <div className="absolute left-[-3px] top-[110px] w-[3px] h-8 bg-[#1a1a1a] rounded-l-sm z-0" />
               <div className="absolute left-[-3px] top-[160px] w-[3px] h-14 bg-[#1a1a1a] rounded-l-sm z-0" />
@@ -449,6 +376,8 @@ export const Hero = () => {
                           <img
                             src="/circle-icon.svg"
                             alt=""
+                            loading="lazy"
+                            decoding="async"
                             className="w-[28px] h-[28px] rounded-full shrink-0"
                           />
                           <div className="flex-1 min-w-0">
@@ -484,9 +413,7 @@ export const Hero = () => {
 
                         {/* Fallback matches .sr-root's #fafafa so there's no
                             flash while the chunk streams in. */}
-                        <Suspense fallback={<div className="w-full h-full bg-[#fafafa]" />}>
-                          <ServiceReport inline />
-                        </Suspense>
+                        <ServiceReport inline />
                       </div>
                     </div>
 
@@ -529,7 +456,7 @@ export const Hero = () => {
               {/* Soft ambient glow behind phone — orange bottom unifies with hero accent.
                   Inset kept tight on the bottom so the bloom doesn't bleed into the hero's fade zone. */}
               <div className="absolute -top-6 -left-6 -right-6 bottom-12 bg-gradient-to-br from-brand-blue/15 via-brand-blue-dark/10 to-brand-orange/15 blur-3xl -z-10 rounded-[3rem]" />
-            </m.div>
+            </div>
           </div>
         </div>
 

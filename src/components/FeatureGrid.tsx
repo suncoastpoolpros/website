@@ -1,5 +1,4 @@
 import React from 'react';
-import { m } from 'motion/react';
 import { UserRound, ScanSearch, Wallet, Zap } from 'lucide-react';
 import { Container } from '@/components/Container';
 
@@ -40,29 +39,20 @@ export const FeatureGrid = () => {
 
       <Container className="relative z-10">
         {/* Header */}
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-2xl mb-10 md:mb-12"
-        >
+        <div className="max-w-2xl mb-10 md:mb-12">
           <h2 className="section-heading text-white leading-[1.1] mb-4">
             Why St. Pete homeowners choose Suncoast.
           </h2>
           <p className="section-subtext">
             Four reasons people switch from a rotating-crew, surprise-bill outfit to us.
           </p>
-        </m.div>
+        </div>
 
         {/* Four equal cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-          {items.map((item, i) => (
-            <m.div
+          {items.map((item) => (
+            <div
               key={item.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
               className="relative rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 shadow-[0_12px_30px_-16px_rgba(0,0,0,0.8)] hover:bg-white/[0.06] hover:border-white/15 transition-colors"
             >
               {/* faint top-edge highlight for subtle depth */}
@@ -77,7 +67,7 @@ export const FeatureGrid = () => {
                 {item.title}
               </h3>
               <p className="text-sm text-gray-400 leading-relaxed">{item.body}</p>
-            </m.div>
+            </div>
           ))}
         </div>
       </Container>

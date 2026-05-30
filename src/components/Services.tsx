@@ -1,5 +1,4 @@
 import React from 'react';
-import { m } from 'motion/react';
 import { Container } from '@/components/Container';
 import {
   IcWeeklyCleaning,
@@ -66,11 +65,7 @@ export const Services = () => {
       <Container>
         {/* What You Can Expect — weekly service detail + pool image */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 items-center mb-16 md:mb-24">
-          <m.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-          >
+          <div>
             <h2 className="section-heading text-white mb-4">
               What You Can Expect From Our <span className="text-brand-orange">Weekly Pool Service</span>
             </h2>
@@ -85,14 +80,9 @@ export const Services = () => {
                 </li>
               ))}
             </ul>
-          </m.div>
+          </div>
 
-          <m.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="relative"
-          >
+          <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-brand-blue-light to-brand-blue rounded-[2.5rem] rotate-3 opacity-20 blur-2xl" />
             <div className="glass-panel p-2 rounded-[2.5rem] relative overflow-hidden">
               <picture>
@@ -109,16 +99,11 @@ export const Services = () => {
               </picture>
               <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628] via-transparent to-transparent opacity-40" />
             </div>
-          </m.div>
+          </div>
         </div>
 
         {/* Pool Cleaning & Equipment Repair Services — header + 6 service cards */}
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-3xl mb-10 md:mb-16"
-        >
+        <div className="max-w-3xl mb-10 md:mb-16">
           <h2 className="section-heading text-white mb-4 md:mb-6">
             Pool Cleaning & <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue-light to-brand-blue">
@@ -128,16 +113,12 @@ export const Services = () => {
           <p className="section-subtext">
             Residential and commercial pool service across St. Petersburg, Clearwater, Seminole, Largo, and the greater Tampa Bay area.
           </p>
-        </m.div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, i) => (
-            <m.div
+            <div
               key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
               className="glass-panel p-6 rounded-2xl border border-white/5 hover:bg-white/5 transition-colors"
             >
               <div className="w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center mb-4">
@@ -145,7 +126,7 @@ export const Services = () => {
               </div>
               <h3 className="text-lg md:text-xl font-display font-bold text-white mb-2">{service.title}</h3>
               <p className="text-gray-400 leading-relaxed">{service.description}</p>
-            </m.div>
+            </div>
           ))}
         </div>
       </Container>

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { m } from 'motion/react';
 import { Phone, Star, MapPin, ShieldCheck, KeyRound } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
@@ -9,15 +9,9 @@ import { useQuoteSheet } from '@/components/QuoteSheet';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
 import { treasureIslandFaqs } from '@/pages/treasureIslandFaqs';
-
-// Below-the-fold + the phone mockup ship as their own lazy chunks so the
-// initial Treasure Island page weight is the hero only. The phone is
-// desktop-only (hidden below lg) so mobile/tablet never downloads it.
-const TreasureIslandBelowFold = lazy(() => import('@/pages/TreasureIslandBelowFold'));
-const CtaBand = lazy(() => import('@/components/CtaBand').then((m) => ({ default: m.CtaBand })));
-const TreasureIslandHeroPhone = lazy(() =>
-  import('@/components/TreasureIslandHeroPhone').then((m) => ({ default: m.TreasureIslandHeroPhone })),
-);
+import { CtaBand } from '@/components/CtaBand';
+import { TreasureIslandHeroPhone } from '@/components/TreasureIslandHeroPhone';
+import TreasureIslandBelowFold from '@/pages/TreasureIslandBelowFold';
 
 const PAGE_TITLE =
   'Treasure Island Pool Service | One Flat Rate, All Year';
@@ -202,9 +196,7 @@ const HeroSection = () => {
               below the text column (centered) so the hero still feels complete;
               on lg+ it sits to the right in the 5-col slot. */}
           <div className="lg:col-span-5 flex justify-center items-center relative mt-8 lg:mt-0">
-            <Suspense fallback={<div className="w-[300px] h-[648px] scale-90" aria-hidden />}>
-              <TreasureIslandHeroPhone />
-            </Suspense>
+            <TreasureIslandHeroPhone />
           </div>
         </div>
       </Container>
@@ -297,10 +289,8 @@ export const TreasureIslandPage = () => {
       <div className="relative z-10">
         <Navbar />
         <HeroSection />
-        <Suspense fallback={null}>
-          <TreasureIslandBelowFold />
-          <CtaBand />
-        </Suspense>
+        <TreasureIslandBelowFold />
+        <CtaBand />
         <Footer />
       </div>
       <StickyMobileCta />

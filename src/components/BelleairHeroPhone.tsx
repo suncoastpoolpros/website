@@ -170,6 +170,8 @@ export const BelleairHeroPhone = () => {
                     <img
                       src="/circle-icon.svg"
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                       className="w-[28px] h-[28px] rounded-full shrink-0"
                     />
                     <div className="flex-1 min-w-0">

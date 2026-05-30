@@ -365,9 +365,15 @@ export const QuoteChooser = () => {
                 draft. Hides itself the moment the buyer touches a field, so
                 it never lingers as nag UI. The "Start over" link clears the
                 draft + resets everything for someone who isn't the original
-                drafter (e.g. shared device). */}
+                drafter (e.g. shared device).
+
+                `pointer-events-none` on the wrapper + `pointer-events-auto`
+                on the button keeps the banner purely informational —
+                belt-and-suspenders so an unexpected layout quirk (sibling
+                margin collapse, transform context, etc.) can never make the
+                banner intercept clicks on the fields/submit button below. */}
             {showRestoredBanner && (
-              <div className="mb-4 flex items-start justify-between gap-3 rounded-lg border border-brand-blue/25 bg-brand-blue/[0.06] px-3 py-2.5">
+              <div className="mb-4 flex items-start justify-between gap-3 rounded-lg border border-brand-blue/25 bg-brand-blue/[0.06] px-3 py-2.5 pointer-events-none">
                 <p className="text-[12px] text-gray-200 leading-snug">
                   <span className="text-white font-semibold">Picking up where you left off.</span>
                   <span className="block text-gray-400 mt-0.5">Your info is still here from before.</span>
@@ -375,7 +381,7 @@ export const QuoteChooser = () => {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="text-[12px] text-brand-blue-light hover:text-white underline underline-offset-2 decoration-brand-blue-light/40 hover:decoration-white/60 transition-colors shrink-0"
+                  className="pointer-events-auto text-[12px] text-brand-blue-light hover:text-white underline underline-offset-2 decoration-brand-blue-light/40 hover:decoration-white/60 transition-colors shrink-0"
                 >
                   Start over
                 </button>

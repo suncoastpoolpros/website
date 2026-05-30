@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { m } from 'motion/react';
 import { Phone, Star, MapPin, ShieldCheck } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
@@ -9,16 +9,9 @@ import { useQuoteSheet } from '@/components/QuoteSheet';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
 import { belleairBeachFaqs } from '@/pages/belleairBeachFaqs';
-
-// Below-the-fold work is split off so the initial page chunk only carries the
-// hero. The phone mockup is split again on top of that — it's the only thing
-// pulling ServiceReport, and it's hidden below lg breakpoints, so we don't
-// pay for it on mobile/tablet at all.
-const BelleairBeachBelowFold = lazy(() => import('@/pages/BelleairBeachBelowFold'));
-const CtaBand = lazy(() => import('@/components/CtaBand').then((m) => ({ default: m.CtaBand })));
-const BelleairHeroPhone = lazy(() =>
-  import('@/components/BelleairHeroPhone').then((m) => ({ default: m.BelleairHeroPhone })),
-);
+import { CtaBand } from '@/components/CtaBand';
+import { BelleairHeroPhone } from '@/components/BelleairHeroPhone';
+import BelleairBeachBelowFold from '@/pages/BelleairBeachBelowFold';
 
 const PAGE_TITLE =
   'Belleair Beach Pool Service | Quiet, Reliable, Flat-Rate';
@@ -150,9 +143,7 @@ const HeroSection = () => {
               this chunk on first paint. A fixed-size placeholder reserves
               layout space so swapping the phone in doesn't shift the hero. */}
           <div className="lg:col-span-5 hidden lg:flex justify-center items-center relative">
-            <Suspense fallback={<div className="w-[300px] h-[648px] scale-90" aria-hidden />}>
-              <BelleairHeroPhone />
-            </Suspense>
+            <BelleairHeroPhone />
           </div>
         </div>
       </Container>
@@ -247,12 +238,8 @@ export const BelleairBeachPage = () => {
       <div className="relative z-10">
         <Navbar />
         <HeroSection />
-        {/* Everything below the hero loads as a separate JS chunk so the
-            initial page weight stays tiny and TTI / LCP win for the hero. */}
-        <Suspense fallback={null}>
-          <BelleairBeachBelowFold />
-          <CtaBand />
-        </Suspense>
+        <BelleairBeachBelowFold />
+        <CtaBand />
         <Footer />
       </div>
       <StickyMobileCta />
