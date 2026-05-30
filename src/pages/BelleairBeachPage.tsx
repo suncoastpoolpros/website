@@ -32,23 +32,11 @@ const HeroSection = () => {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[#02060c]" />
         <div
-          className="absolute -inset-y-[18%] inset-x-0 hidden md:block bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "image-set(url('/pool-service-st-petersburg-hero.webp') type('image/webp') 1x, url('/pool-service-st-petersburg-hero-1920.webp') type('image/webp') 2x, url('/pool-service-st-petersburg-hero.jpg') type('image/jpeg') 1x)",
-            filter: 'saturate(1.3) brightness(0.8) contrast(1.1) hue-rotate(-4deg)',
-          }}
+          className="hero-bg-belleair-desktop absolute -inset-y-[18%] inset-x-0 hidden md:block bg-cover bg-center"
           aria-hidden
         />
         <div
-          className="absolute top-0 inset-x-0 h-screen md:hidden bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "image-set(url('/pool-service-st-petersburg-hero-mobile.webp') type('image/webp'), url('/pool-service-st-petersburg-hero-mobile.jpg') type('image/jpeg'))",
-            filter: 'saturate(1.3) brightness(0.8) contrast(1.1) hue-rotate(-4deg)',
-            WebkitMaskImage: 'linear-gradient(to bottom, black 55%, transparent 92%)',
-            maskImage: 'linear-gradient(to bottom, black 55%, transparent 92%)',
-          }}
+          className="hero-bg-belleair-mobile absolute top-0 inset-x-0 h-screen md:hidden bg-cover bg-center"
           aria-hidden
         />
         <div

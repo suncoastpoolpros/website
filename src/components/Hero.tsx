@@ -45,12 +45,7 @@ export const Hero = () => {
 
         {/* Pool background — desktop (landscape crop) */}
         <div
-          className="absolute -inset-y-[18%] inset-x-0 hidden md:block bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "image-set(url('/pool-service-st-petersburg-hero.webp') type('image/webp') 1x, url('/pool-service-st-petersburg-hero-1920.webp') type('image/webp') 2x, url('/pool-service-st-petersburg-hero.jpg') type('image/jpeg') 1x)",
-            filter: 'saturate(1.45) brightness(0.85) contrast(1.12) hue-rotate(-6deg)',
-          }}
+          className="hero-bg-desktop absolute -inset-y-[18%] inset-x-0 hidden md:block bg-cover bg-center"
           aria-hidden
         />
 
@@ -58,16 +53,7 @@ export const Hero = () => {
             anchored at the top, so it never stretches to the full (taller) section
             content height. */}
         <div
-          className="absolute top-0 inset-x-0 h-screen md:hidden bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "image-set(url('/pool-service-st-petersburg-hero-mobile.webp') type('image/webp'), url('/pool-service-st-petersburg-hero-mobile.jpg') type('image/jpeg'))",
-            filter: 'saturate(1.45) brightness(0.85) contrast(1.12) hue-rotate(-6deg)',
-            // Fade the bottom of the image into transparency so it dissolves into
-            // the dark section instead of a hard horizontal cut.
-            WebkitMaskImage: 'linear-gradient(to bottom, black 55%, transparent 92%)',
-            maskImage: 'linear-gradient(to bottom, black 55%, transparent 92%)',
-          }}
+          className="hero-bg-mobile absolute top-0 inset-x-0 h-screen md:hidden bg-cover bg-center"
           aria-hidden
         />
 

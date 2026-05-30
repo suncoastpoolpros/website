@@ -35,12 +35,7 @@ const HeroSection = () => {
 
         {/* Pool background — desktop (landscape crop) */}
         <div
-          className="absolute -inset-y-[18%] inset-x-0 hidden md:block bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "image-set(url('/treasure-island-hero.webp') type('image/webp') 1x, url('/treasure-island-hero-1920.webp') type('image/webp') 2x, url('/treasure-island-hero.jpg') type('image/jpeg') 1x)",
-            filter: 'saturate(1.45) brightness(0.85) contrast(1.12) hue-rotate(-6deg)',
-          }}
+          className="hero-bg-treasure-desktop absolute -inset-y-[18%] inset-x-0 hidden md:block bg-cover bg-center"
           aria-hidden
         />
 
@@ -48,14 +43,7 @@ const HeroSection = () => {
             so the photo extends past the fold and the pool stays visible behind
             the CTAs / rating strip instead of cutting to solid dark mid-section. */}
         <div
-          className="absolute inset-0 md:hidden bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "image-set(url('/treasure-island-hero-mobile.webp') type('image/webp'), url('/treasure-island-hero-mobile.jpg') type('image/jpeg'))",
-            filter: 'saturate(1.45) brightness(0.85) contrast(1.12) hue-rotate(-6deg)',
-            WebkitMaskImage: 'linear-gradient(to bottom, black 75%, transparent 100%)',
-            maskImage: 'linear-gradient(to bottom, black 75%, transparent 100%)',
-          }}
+          className="hero-bg-treasure-mobile absolute inset-0 md:hidden bg-cover bg-center"
           aria-hidden
         />
 

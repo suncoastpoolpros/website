@@ -127,23 +127,9 @@ const CoastalCareSection = () => (
 const InterludeBand = () => (
   <section className="relative h-[42vh] min-h-[360px] md:h-[50vh] md:min-h-[460px] overflow-hidden">
     {/* Desktop photo */}
-    <div
-      className="absolute inset-0 hidden md:block bg-cover bg-center"
-      style={{
-        backgroundImage:
-          "image-set(url('/pool-service-st-petersburg-hero.webp') type('image/webp') 1x, url('/pool-service-st-petersburg-hero-1920.webp') type('image/webp') 2x, url('/pool-service-st-petersburg-hero.jpg') type('image/jpeg') 1x)",
-        filter: 'saturate(1.15) brightness(0.55) contrast(1.05) hue-rotate(-2deg)',
-      }}
-    />
+    <div className="interlude-bg-pinellas-desktop absolute inset-0 hidden md:block bg-cover bg-center" />
     {/* Mobile photo */}
-    <div
-      className="absolute inset-0 md:hidden bg-cover bg-center"
-      style={{
-        backgroundImage:
-          "image-set(url('/pool-service-st-petersburg-hero-mobile.webp') type('image/webp'), url('/pool-service-st-petersburg-hero-mobile.jpg') type('image/jpeg'))",
-        filter: 'saturate(1.15) brightness(0.55) contrast(1.05) hue-rotate(-2deg)',
-      }}
-    />
+    <div className="interlude-bg-pinellas-mobile absolute inset-0 md:hidden bg-cover bg-center" />
 
     <div
       className="absolute inset-0 pointer-events-none"

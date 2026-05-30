@@ -187,15 +187,15 @@ export const Navbar = () => {
               className="relative inline-flex items-center justify-center w-10 h-10 rounded-md text-gray-200 hover:text-white hover:bg-white/5 transition-colors"
             >
               <span className="relative block w-5 h-[14px]">
-                <m.span
-                  className="absolute left-0 top-0 block h-0.5 w-5 rounded-full bg-current"
-                  animate={isOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
-                  transition={{ duration: 0.25 }}
+                <span
+                  className={`absolute left-0 top-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-[250ms] ${
+                    isOpen ? 'translate-y-[6px] rotate-45' : ''
+                  }`}
                 />
-                <m.span
-                  className="absolute left-0 bottom-0 block h-0.5 w-5 rounded-full bg-current"
-                  animate={isOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
-                  transition={{ duration: 0.25 }}
+                <span
+                  className={`absolute left-0 bottom-0 block h-0.5 w-5 rounded-full bg-current transition-transform duration-[250ms] ${
+                    isOpen ? '-translate-y-[6px] -rotate-45' : ''
+                  }`}
                 />
               </span>
             </button>

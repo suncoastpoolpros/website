@@ -128,22 +128,8 @@ const AbsenteeCareSection = () => (
 // overlay line that ties to the absentee-owner thesis.
 const InterludeBand = () => (
   <section className="relative h-[42vh] min-h-[360px] md:h-[50vh] md:min-h-[460px] overflow-hidden">
-    <div
-      className="absolute inset-0 hidden md:block bg-cover bg-center"
-      style={{
-        backgroundImage:
-          "image-set(url('/treasure-island-hero.webp') type('image/webp') 1x, url('/treasure-island-hero-1920.webp') type('image/webp') 2x, url('/treasure-island-hero.jpg') type('image/jpeg') 1x)",
-        filter: 'saturate(1.25) brightness(0.55) contrast(1.08) hue-rotate(-6deg)',
-      }}
-    />
-    <div
-      className="absolute inset-0 md:hidden bg-cover bg-center"
-      style={{
-        backgroundImage:
-          "image-set(url('/treasure-island-hero-mobile.webp') type('image/webp'), url('/treasure-island-hero-mobile.jpg') type('image/jpeg'))",
-        filter: 'saturate(1.25) brightness(0.55) contrast(1.08) hue-rotate(-6deg)',
-      }}
-    />
+    <div className="interlude-bg-treasure-desktop absolute inset-0 hidden md:block bg-cover bg-center" />
+    <div className="interlude-bg-treasure-mobile absolute inset-0 md:hidden bg-cover bg-center" />
 
     <div
       className="absolute inset-0 pointer-events-none"
