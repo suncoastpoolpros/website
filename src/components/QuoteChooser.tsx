@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MessageSquare, Phone, Camera, MapPin, Send, ClipboardList, ArrowLeft, ChevronRight } from 'lucide-react';
 import { sendContact } from '@/lib/contactSubmit';
 import { useTurnstile } from '@/lib/turnstile';
@@ -65,38 +65,50 @@ const ConditionalBlock = ({
 
 export const QuoteChooser = () => {
   const isDesktop = useIsDesktop();
-  // Lazy-read the saved draft (if any) so the initial state values come from
-  // localStorage instead of empty defaults. Runs once on mount.
-  const initialDraft = useMemo(() => readDraft(), []);
-  // Default-open the most relevant option per device — unless there's a draft,
-  // in which case land directly on the form so the buyer picks up where they
-  // left off without an extra click.
-  const [choice, setChoice] = useState<Choice>(initialDraft ? 'form' : null);
+  // Default-open the most relevant option per device. Starts at `null` to match
+  // the server-rendered HTML; the post-mount draft restore (below) can override
+  // it. NEVER call readDraft() during initial render — localStorage doesn't
+  // exist in the prerender step, so the initial-state values would differ
+  // between SSR and client and React would throw a hydration mismatch (#418).
+  const [choice, setChoice] = useState<Choice>(null);
   const [formSent, setFormSent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const turnstile = useTurnstile();
   // Service type lives in React state so step 2 can render the right fields
   // for what the buyer needs (e.g. green-pool severity, equipment type for
   // repair). Mirrored via onChange from the native <select> on step 1.
-  const [service, setService] = useState<Service>(
-    (initialDraft?.service as Service) ?? ''
-  );
+  const [service, setService] = useState<Service>('');
   // Two-step form: step 1 = contact + service type, step 2 = pool/service
   // specifics. Splitting reduces the visual weight of the form and lets us
   // ask for the deeper info we actually need to quote accurately.
-  const [formStep, setFormStep] = useState<1 | 2>(initialDraft?.step ?? 1);
+  const [formStep, setFormStep] = useState<1 | 2>(1);
   // Step 1 values are stashed when the user clicks "Next" so the inputs can
   // safely unmount when step 2 renders. We re-hydrate them at submit time.
-  const [step1Data, setStep1Data] = useState<Record<string, string>>(
-    initialDraft?.step1 ?? {}
-  );
+  const [step1Data, setStep1Data] = useState<Record<string, string>>({});
   // Step 2 values mirror to state on change so they survive a re-render or
   // tab close. We use uncontrolled inputs with defaultValue elsewhere for
   // simplicity; this ref-mirror is purely for persistence.
-  const step2DraftRef = useRef<Record<string, string>>(initialDraft?.step2 ?? {});
-  // Banner flag — only true on initial render when a draft was hydrated. We
-  // hide the banner the moment the user touches a field so it doesn't nag.
-  const [showRestoredBanner, setShowRestoredBanner] = useState<boolean>(!!initialDraft);
+  const step2DraftRef = useRef<Record<string, string>>({});
+  // Banner flag — set true post-mount if a draft was hydrated. We hide the
+  // banner the moment the user touches a field so it doesn't nag.
+  const [showRestoredBanner, setShowRestoredBanner] = useState<boolean>(false);
+  // Bumped on draft hydration so any uncontrolled inputs that read draftVal()
+  // for their defaultValue re-render with the restored values.
+  const [draftHydrationKey, setDraftHydrationKey] = useState(0);
+
+  // Post-hydration draft restore. Runs once on mount, AFTER React has matched
+  // the server HTML to the client tree. Safe to touch localStorage here.
+  useEffect(() => {
+    const draft = readDraft();
+    if (!draft) return;
+    step2DraftRef.current = draft.step2 ?? {};
+    setStep1Data(draft.step1 ?? {});
+    setService((draft.service as Service) ?? '');
+    setFormStep(draft.step ?? 1);
+    setChoice('form');
+    setShowRestoredBanner(true);
+    setDraftHydrationKey((k) => k + 1);
+  }, []);
 
   // Clicking a card from the three-option view commits to that path.
   // The back button (rendered above the pinned card) is what clears it.
@@ -400,6 +412,9 @@ export const QuoteChooser = () => {
 
             {formStep === 1 && (
               <form
+                // Re-key after draft hydration so each input's defaultValue
+                // is re-read from the now-populated step1Data.
+                key={`step1-${draftHydrationKey}`}
                 onSubmit={handleStep1Next}
                 // Bubble onChange catches any field edit inside the form,
                 // then we serialize the whole form via FormData. No need to
@@ -478,6 +493,11 @@ export const QuoteChooser = () => {
 
             {formStep === 2 && (
               <form
+                // Re-key after draft hydration so each input's defaultValue
+                // is re-read from the now-populated step2DraftRef. Without
+                // this, inputs that rendered before the draft hydrated would
+                // hold their initial empty defaultValue.
+                key={`step2-${draftHydrationKey}`}
                 onSubmit={handleStep2Submit}
                 onChange={(e) => persistStep2FromForm(e.currentTarget)}
                 className="space-y-3"
