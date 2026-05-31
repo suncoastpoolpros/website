@@ -104,10 +104,17 @@ export const QuoteForm = () => {
             </p>
           </div>
 
+          {/* initial={false} — this form is prerendered (SSR). With a normal
+              `initial={{ opacity:0, x:20 }}`, Motion bakes
+              `style="opacity:0;transform:translateX(20px)"` into the static HTML,
+              then re-serializes the transform on the client during hydration,
+              which differs byte-for-byte and throws React #418 (hydration
+              mismatch → full client re-render). initial={false} makes Motion
+              hydrate straight to the resting state — no mismatch — so the
+              conversion form paints stable. (See CLAUDE.md: SSR'd elements must
+              match; we favor stable paint over entry flourishes here.) */}
           <m.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            initial={false}
             className="glass-panel p-6 sm:p-10 rounded-3xl relative"
           >
             {/* Glow Effect */}
