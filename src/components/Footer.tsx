@@ -116,9 +116,8 @@ export const Footer = () => {
                       {city.name}
                     </Link>
                   ) : (
-                    <a href="/#service-areas" className={linkClass}>
-                      {city.name}
-                    </a>
+                    // No dedicated page yet — plain label, not a link.
+                    <span className="text-gray-400 text-sm">{city.name}</span>
                   )}
                 </li>
               ))}

@@ -64,14 +64,17 @@ export const ServiceAreasMenu = () => {
                   </div>
                 </>
               );
+              // Cities with a dedicated page link to it; the rest render as
+              // non-interactive labels for now (no page yet — a dead link or a
+              // jump-to-anchor was worse than doing nothing).
               return city.to ? (
                 <Link key={city.slug} to={city.to} className={cls} {...handlers}>
                   {inner}
                 </Link>
               ) : (
-                <a key={city.slug} href="#service-areas" className={cls} {...handlers}>
+                <div key={city.slug} className={cls} {...handlers}>
                   {inner}
-                </a>
+                </div>
               );
             })}
           </div>

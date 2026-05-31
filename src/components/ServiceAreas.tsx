@@ -43,14 +43,14 @@ export const ServiceAreas = () => {
           {/* RIGHT — city chips flowing freely, no box */}
           <div className="flex flex-wrap gap-2.5 lg:justify-end">
             {cities.map((city) => (
-              <a
+              // Non-interactive coverage labels — informational, not CTAs.
+              // (There are plenty of CTAs elsewhere on the page.)
+              <span
                 key={city}
-                href="#quote"
-                aria-label={`Pool cleaning in ${city}`}
-                className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/10 px-4 py-2 text-sm font-semibold text-gray-200 hover:text-white hover:border-brand-blue/50 hover:bg-brand-blue/10 transition-colors"
+                className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/10 px-4 py-2 text-sm font-semibold text-gray-200"
               >
                 {city}
-              </a>
+              </span>
             ))}
           </div>
         </div>
