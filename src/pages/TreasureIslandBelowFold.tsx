@@ -131,10 +131,7 @@ const InterludeBand = () => (
     <div className="interlude-bg-treasure-desktop absolute inset-0 hidden md:block bg-cover bg-center" />
     <div className="interlude-bg-treasure-mobile absolute inset-0 md:hidden bg-cover bg-center" />
 
-    <div
-      className="absolute inset-0 pointer-events-none"
-      style={{ backgroundColor: '#1669AE', mixBlendMode: 'overlay', opacity: 0.35 }}
-    />
+    <div className="interlude-tint-treasure absolute inset-0 pointer-events-none" />
 
     <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07111c] to-transparent pointer-events-none" />
     <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0a1422] to-transparent pointer-events-none" />

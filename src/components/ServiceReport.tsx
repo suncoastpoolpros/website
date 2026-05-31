@@ -1,5 +1,16 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { PHONE_DISPLAY, PHONE_HREF, EMAIL, EMAIL_HREF } from '@/lib/contact';
+
+// Renders an <a href="mailto:..."> only on the client. During SSR it emits a
+// matching empty placeholder so React hydration sees the same DOM Cloudflare's
+// email-obfuscation rewriter produced server-side. After mount we swap in the
+// real mailto link.
+const ClientOnlyEmailLink = ({ href, label }: { href: string; label: string }) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return <a href="#"> </a>;
+  return <a href={href}>{label}</a>;
+};
 
 // Faithful render of the real Suncoast Pool Pros service-report email,
 // scoped to .sr-root so styles don't leak into the rest of the page.
@@ -284,6 +295,7 @@ export const ServiceReport = ({
           color: #a3a3a3;
           text-decoration: none;
         }
+        .sr-email-line { margin-top: 2px; }
         .sr-footer__dot { color: #404040; margin: 0 4px; }
         .sr-footer__address {
           margin: 3px 0 0;
@@ -419,12 +431,16 @@ export const ServiceReport = ({
             <p className="sr-footer__contact">
               <a href={PHONE_HREF}>{PHONE_DISPLAY}</a>
             </p>
-            <p className="sr-footer__contact" style={{ marginTop: 2 }}>
-              <a href={EMAIL_HREF}>{EMAIL}</a>
+            {/* Cloudflare's Email Address Obfuscation rewrites mailto: in the
+                SSR HTML stream — but React hydration sees the original mailto,
+                causing a #418 mismatch. Render the email link only after mount
+                so Cloudflare and React stay in sync. */}
+            <p className="sr-footer__contact sr-email-line">
+              <ClientOnlyEmailLink href={EMAIL_HREF} label={EMAIL} />
             </p>
             <div className="sr-footer__reply">
               Questions about this report?
-              <a href={EMAIL_HREF}>Reply to this email</a>
+              <ClientOnlyEmailLink href={EMAIL_HREF} label="Reply to this email" />
             </div>
 
             <a className="sr-footer__prefs" href="#">Manage email preferences</a>

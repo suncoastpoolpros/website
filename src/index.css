@@ -201,6 +201,26 @@
   mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
 }
 
+/* Text shadows for hero copy. As classes (not inline style) so the browser's
+   normalization of shadow values ("0 2px 16px rgba(...)" → "rgba(...) 0px 2px
+   16px") doesn't trip SSR hydration on every page. */
+.text-shadow-hero-headline { text-shadow: 0 0 60px rgba(255, 114, 15, 0.45), 0 2px 0 rgba(0, 0, 0, 0.35); }
+.text-shadow-hero-sub { text-shadow: 0 2px 16px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5); }
+.text-shadow-hero-h1 { text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75), 0 1px 3px rgba(0, 0, 0, 0.5); }
+.text-shadow-hero-body { text-shadow: 0 1px 12px rgba(0, 0, 0, 0.7), 0 0 2px rgba(0, 0, 0, 0.4); }
+.text-shadow-hero-strip { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7); }
+.text-shadow-city-h1 { text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6); }
+.text-shadow-city-body { text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55); }
+.text-shadow-interlude { text-shadow: 0 2px 24px rgba(0, 0, 0, 0.55), 0 1px 4px rgba(0, 0, 0, 0.5); }
+
+/* Overlay tints. Live as classes (not inline style) so the browser's color
+   normalization (#1669AE → rgb(...)) doesn't bail SSR hydration. */
+.hero-blue-tint { background-color: #1669AE; mix-blend-mode: overlay; opacity: 0.4; }
+.hero-belleair-tint { background-color: #0f4d80; mix-blend-mode: overlay; opacity: 0.45; }
+.hero-treasure-tint { background-color: #1669AE; mix-blend-mode: overlay; opacity: 0.4; }
+.interlude-tint-pinellas { background-color: #0a2540; mix-blend-mode: overlay; opacity: 0.5; }
+.interlude-tint-treasure { background-color: #1669AE; mix-blend-mode: overlay; opacity: 0.35; }
+
 /* Dimmer interlude photo bands used between sections on city pages. */
 .interlude-bg-pinellas-desktop {
   background-image: image-set(

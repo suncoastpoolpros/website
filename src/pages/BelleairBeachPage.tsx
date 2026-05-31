@@ -40,8 +40,7 @@ const HeroSection = () => {
           aria-hidden
         />
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ backgroundColor: '#0f4d80', mixBlendMode: 'overlay', opacity: 0.45 }}
+          className="hero-belleair-tint absolute inset-0 pointer-events-none"
           aria-hidden
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#02060c]/40 via-[#04090f]/55 to-[#07111c] md:via-[#04090f]/70" />

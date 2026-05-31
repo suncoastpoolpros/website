@@ -50,8 +50,7 @@ const HeroSection = () => {
         {/* Blue tint pass — 'overlay' blend deepens the blue in the sky, clouds,
             and water without darkening the warm house lights. Hidden on mobile. */}
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ backgroundColor: '#1669AE', mixBlendMode: 'overlay', opacity: 0.4 }}
+          className="hero-treasure-tint absolute inset-0 pointer-events-none"
           aria-hidden
         />
 

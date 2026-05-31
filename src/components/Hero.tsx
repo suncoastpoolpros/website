@@ -58,10 +58,11 @@ export const Hero = () => {
         />
 
         {/* Blue tint pass — 'overlay' blend deepens the blue in the sky, clouds,
-            and water without darkening the warm house lights. Hidden on mobile. */}
+            and water without darkening the warm house lights. Hidden on mobile.
+            Class instead of inline style: the browser re-serializes inline color
+            values (#1669AE → rgb(...)), which mismatches the SSR HTML. */}
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ backgroundColor: '#1669AE', mixBlendMode: 'overlay', opacity: 0.4 }}
+          className="hero-blue-tint absolute inset-0 pointer-events-none"
           aria-hidden
         />
 
@@ -105,35 +106,20 @@ export const Hero = () => {
 
               {/* Visual headline (price differentiator) — a div, not h1, so the SEO H1 below carries the keyword weight */}
               <div className="font-display font-bold text-white tracking-tight mb-7 text-3xl sm:text-4xl md:text-[2.7rem] leading-[1.15]">
-                <span
-                  className="block text-brand-orange font-black text-5xl sm:text-6xl md:text-[4.5rem] leading-[0.95] tracking-tight"
-                  style={{
-                    textShadow:
-                      '0 0 60px rgba(255, 114, 15, 0.45), 0 2px 0 rgba(0, 0, 0, 0.35)',
-                  }}
-                >
+                <span className="text-shadow-hero-headline block text-brand-orange font-black text-5xl sm:text-6xl md:text-[4.5rem] leading-[0.95] tracking-tight">
                   One Flat Rate
                 </span>
-                <span
-                  className="block mt-5 sm:whitespace-nowrap text-white font-normal tracking-tight text-2xl sm:text-3xl md:text-[2.25rem] leading-[1.1]"
-                  style={{ textShadow: '0 2px 16px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.5)' }}
-                >
+                <span className="text-shadow-hero-sub block mt-5 sm:whitespace-nowrap text-white font-normal tracking-tight text-2xl sm:text-3xl md:text-[2.25rem] leading-[1.1]">
                   No Monthly Chemical Cost
                 </span>
               </div>
 
               {/* Semantic H1 carries the primary local-SEO keyword: "Pool Cleaning St. Petersburg" */}
-              <h1
-                className="font-display font-normal text-white text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 sm:mb-7 sm:whitespace-nowrap tracking-tight"
-                style={{ textShadow: '0 2px 14px rgba(0,0,0,0.75), 0 1px 3px rgba(0,0,0,0.5)' }}
-              >
+              <h1 className="text-shadow-hero-h1 font-display font-normal text-white text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 sm:mb-7 sm:whitespace-nowrap tracking-tight">
                 St. Petersburg's expert pool cleaning company.
               </h1>
 
-              <p
-                className="text-[15px] text-gray-100 font-normal max-w-[27rem] leading-[1.6] mb-8 sm:mb-9"
-                style={{ textShadow: '0 1px 12px rgba(0,0,0,0.7), 0 0 2px rgba(0,0,0,0.4)' }}
-              >
+              <p className="text-shadow-hero-body text-[15px] text-gray-100 font-normal max-w-[27rem] leading-[1.6] mb-8 sm:mb-9">
                 <span className="text-white">Weekly pool cleaning, full chemical balancing, GPS-verified visits</span>, and a written report after every clean. <span className="text-white">One flat monthly price</span> — no chemical surprises, no contracts, no green water.
               </p>
 
