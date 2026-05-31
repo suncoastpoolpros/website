@@ -142,7 +142,7 @@ const HeroSection = () => {
               </a>
               <Glass
                 href={`tel:${PHONE}`}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px]"
+                className="glass-mobile-blur inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px]"
               >
                 <Phone className="w-4 h-4 text-brand-blue-light" />
                 {PHONE_DISPLAY}

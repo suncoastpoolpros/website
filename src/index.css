@@ -362,4 +362,18 @@
   [class*="blur-["].rounded-full {
     display: none !important;
   }
+
+  /* Opt-in exception to the mobile blur ban above. backdrop-filter is banned on
+     mobile because TOGGLING/STACKED/large-radius blurs cause iOS re-raster jank
+     — but a single, STATIC, small-radius blur (a class selector beats the `*`
+     ban) is cheap. `translate3d(0,0,0)` promotes it to its own GPU layer so iOS
+     isolates the blur instead of re-rasterizing the page (the Safari fix). Use
+     ONLY on always-present, non-toggling elements — e.g. the hero phone button.
+     Do NOT add to anything that mounts/unmounts or there are many of. */
+  .glass-mobile-blur {
+    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
 }
