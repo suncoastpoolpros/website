@@ -15,7 +15,7 @@ import BelleairBeachBelowFold from '@/pages/BelleairBeachBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 
 const PAGE_TITLE =
-  'Belleair Beach Pool Service | Quiet, Reliable, Flat-Rate';
+  'Belleair Beach Pool Service — Never a Missed Visit';
 const PAGE_DESC =
   'Pool service for Belleair Beach homes that runs in the background. Same technician every week, photo report in your inbox, one flat rate.';
 const PAGE_URL = 'https://suncoastpoolpros.com/belleair-beach-fl/';

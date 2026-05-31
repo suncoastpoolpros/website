@@ -15,7 +15,7 @@ import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 
 export const LandingPage = () => {
   usePageMeta({
-    title: 'Pool Cleaning in St. Petersburg, FL — Done Right, Every Week',
+    title: 'Pool Cleaning St. Petersburg & Pinellas | Suncoast',
     description:
       'Flat-rate weekly pool cleaning in St. Petersburg and the Tampa Bay area. One price covers standard chemicals, the same tech shows up every week, and you get a photo report after every visit.',
     canonicalPath: '/',

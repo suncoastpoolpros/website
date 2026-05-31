@@ -15,7 +15,7 @@ import TreasureIslandBelowFold from '@/pages/TreasureIslandBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 
 const PAGE_TITLE =
-  'Treasure Island Pool Service | One Flat Rate, All Year';
+  'Treasure Island Pool Service — Always Guest-Ready';
 const PAGE_DESC =
   'Weekly pool care across Treasure Island — Sunset Beach to Isle of Capri. Whether you live here, rent it out, or come down each winter, you get the same tech, the same flat rate, and a photo report after every visit.';
 const PAGE_URL = 'https://suncoastpoolpros.com/treasure-island-fl/';
