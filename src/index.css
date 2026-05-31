@@ -277,3 +277,28 @@
     transform: none !important;
   }
 }
+
+/* Kill backdrop-filter entirely on mobile. backdrop-blur forces iOS Safari to
+   re-rasterize everything behind the element — and when blurred elements
+   mount/unmount or toggle (nav drawer, quote sheet, sticky CTA, the
+   scroll-triggered navbar), the whole page blanks and repaints, causing the
+   load/scroll jank. Below 768px we disable it globally (one rule covers Glass,
+   .glass-panel, .btn-glass, every page's pill badge, etc.) and lean on solid
+   backgrounds instead. The glass surfaces use very low bg opacity that only
+   reads as "frosted" *because* of the blur, so we raise their opacity on
+   mobile so they stay legible without it. Desktop is untouched. */
+@media (max-width: 767px) {
+  *,
+  *::before,
+  *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  /* Opacity bumps so blur-dependent surfaces don't look washed out on mobile. */
+  .glass-panel {
+    background-color: rgb(255 255 255 / 0.08);
+  }
+  .btn-glass {
+    background-color: rgb(255 255 255 / 0.12);
+  }
+}
