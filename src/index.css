@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
-/* Self-hosted fonts (latin subset). Replaces a render-blocking @import to
+/* Self-hosted fonts, Latin-subset. Replaces a render-blocking @import to
    fonts.googleapis.com — eliminates the third-party DNS+TLS round-trip and
    lets font-display: swap show the system fallback instantly while the woff2
-   downloads. Files live in public/fonts/, generated once from Google's CSS.
+   downloads. Files live in public/fonts/; originals in public/fonts/_orig/.
+   Re-subset with `node scripts/subset-fonts.mjs` after replacing an _orig file.
    Trimmed to 3 weights per family to keep first-load font bytes minimal:
    Inter 400/600/700, Montserrat 400/700/900, Caveat 700 (decorative accent). */
 @font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/inter-400.woff2') format('woff2'); }
@@ -14,9 +15,37 @@
 @font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 900; font-display: swap; src: url('/fonts/montserrat-900.woff2') format('woff2'); }
 @font-face { font-family: 'Caveat'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/caveat-700.woff2') format('woff2'); }
 
+/* Size-adjusted fallbacks. The LCP element on the homepage is the orange
+   "One Flat Rate" headline (Montserrat 900) — with plain font-display:swap it
+   paints in a default system font whose metrics differ from Montserrat, so the
+   real webfont swap causes a visible reflow/CLS and the headline's "final"
+   paint waits on the woff2. These fallbacks render local system fonts
+   pre-scaled (size-adjust / ascent / descent overrides) to match Montserrat's
+   and Inter's box, so the first paint is already near-pixel-identical and the
+   webfont swap is nearly invisible. Overrides computed against the subset
+   woff2 metrics; tweak size-adjust if the swap shifts noticeably.
+   Ref: https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/size-adjust */
+@font-face {
+  font-family: 'Montserrat Fallback';
+  src: local('Arial Bold'), local('Arial');
+  font-weight: 700 900;
+  ascent-override: 87%;
+  descent-override: 22.5%;
+  line-gap-override: 0%;
+  size-adjust: 112%;
+}
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial');
+  ascent-override: 90%;
+  descent-override: 22.5%;
+  line-gap-override: 0%;
+  size-adjust: 107%;
+}
+
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", "Montserrat Fallback", ui-sans-serif, system-ui, sans-serif;
   
   /* === Brand color tokens (global reference) === */
   /* Orange */
