@@ -19,9 +19,11 @@ type PageMeta = {
   /** Per-page LCP hero to preload (server-injected). Lets each route preload
    *  its own hero rather than the global default in index.html. */
   heroPreload?: { mobile: string; desktop: string; wide?: string };
-  /** Per-page above-the-fold font files (paths under /fonts) to preload, so
-   *  each route preloads only the weights it actually paints. See FONTS. */
-  fontPreload?: string[];
+  /** Per-page above-the-fold font files to preload, so each route preloads only
+   *  the weights it actually paints. A string preloads unconditionally; use
+   *  `{ href, media }` to scope a font to a viewport (e.g. a desktop-only
+   *  decorative font shouldn't preload on mobile). See FONTS. */
+  fontPreload?: Array<string | { href: string; media: string }>;
 };
 
 /** Named font weights, so pages declare above-the-fold fonts semantically.

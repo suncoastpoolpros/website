@@ -76,10 +76,11 @@ function injectHead(html, meta) {
   // homepage or Montserrat-900 on content pages).
   if (meta.fontPreload && meta.fontPreload.length) {
     out = out.replace(/\s*<link rel="preload" as="font"[^>]*\/?>/g, '');
-    const fontPreloads = meta.fontPreload.map(
-      (href) =>
-        `<link rel="preload" as="font" type="font/woff2" href="${escapeHtml(href)}" crossorigin />`,
-    );
+    const fontPreloads = meta.fontPreload.map((f) => {
+      const href = typeof f === 'string' ? f : f.href;
+      const media = typeof f === 'string' ? '' : ` media="${escapeHtml(f.media)}"`;
+      return `<link rel="preload" as="font" type="font/woff2" href="${escapeHtml(href)}" crossorigin${media} />`;
+    });
     out = out.replace('</head>', `  ${fontPreloads.join('\n    ')}\n  </head>`);
   }
 

@@ -26,8 +26,16 @@ export const LandingPage = () => {
     },
     // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
     // hero headline (Montserrat 900), hero H1 (font-display font-normal =
-    // Montserrat 400), and the Caveat script accent.
-    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat400, FONTS.montserrat900, FONTS.caveat700],
+    // Montserrat 400). Caveat (the "Sent after every visit" script accent) is
+    // hidden lg:flex — desktop only — so only preload it at lg+; on mobile it
+    // would be a wasted font fetch on the LCP critical path.
+    fontPreload: [
+      ...NAV_FONTS,
+      FONTS.inter400,
+      FONTS.montserrat400,
+      FONTS.montserrat900,
+      { href: FONTS.caveat700, media: '(min-width: 1024px)' },
+    ],
   });
 
   return (

@@ -19,10 +19,10 @@ export type SsrMeta = {
     desktop: string;
     wide?: string;
   };
-  /** Per-page above-the-fold font files to preload (paths under /fonts). Each
-   *  route preloads only the weights it actually paints above the fold, so the
-   *  critical request chain isn't spent on fonts the page doesn't use. */
-  fontPreload?: string[];
+  /** Per-page above-the-fold font files to preload. Each route preloads only the
+   *  weights it paints above the fold. A string preloads unconditionally; an
+   *  `{ href, media }` entry scopes it to a viewport (e.g. desktop-only fonts). */
+  fontPreload?: Array<string | { href: string; media: string }>;
 };
 
 let current: SsrMeta = {};
