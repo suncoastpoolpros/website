@@ -422,8 +422,16 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled }: HomeHeroPhone
                         </div>
 
                         {/* Fallback matches .sr-root's #fafafa so there's no
-                            flash while the chunk streams in. */}
-                        <ServiceReport inline />
+                            flash while the chunk streams in. The homepage shows
+                            the waterfront pool photo in the report (city pages
+                            keep the ServiceReport DEFAULT_PHOTO). */}
+                        <ServiceReport
+                          inline
+                          photo={{
+                            base: '/waterfront-pool-st-petersburg',
+                            alt: 'Waterfront pool at dusk in St. Petersburg, FL — cleaned and chemically balanced by Suncoast Pool Pros',
+                          }}
+                        />
                       </div>
                     </div>
 
