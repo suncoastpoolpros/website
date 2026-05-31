@@ -65,7 +65,7 @@ const ContactPageInner = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
+    <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
       <div className="absolute md:fixed inset-0 bg-mesh opacity-60 pointer-events-none" />
 
       {/* Spread ambient glows — distinct from the top-clustered hero glow on

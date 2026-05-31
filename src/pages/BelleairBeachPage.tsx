@@ -192,7 +192,7 @@ export const BelleairBeachPage = () => {
   // Mobile JS-motion stripping is handled globally by the app-level MotionConfig
   // in App.tsx (+ the force-visible mobile CSS in index.css).
   return (
-    <div className="min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#1669AE] selection:text-white">
+    <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#1669AE] selection:text-white">
       <div className="absolute md:fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
       <div className="relative z-10">
         <Navbar />

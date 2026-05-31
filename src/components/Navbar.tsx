@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { SmartLink as Link } from '@/components/SmartLink';
 import { m, AnimatePresence, MotionConfig } from 'motion/react';
@@ -214,11 +215,16 @@ export const Navbar = () => {
         any drawer rendered inside the nav gets trapped at z-50 and the sticky
         mobile CTA (z-90) bleeds through. Hoisting the drawer to the top level
         lets its z-[110] work as written. */}
-      {/* reducedMotion="never" re-enables motion for the drawer specifically:
-          the app-level MotionConfig strips animation on mobile, but the drawer
-          slide-in/out is an interactive affordance (it signals open/close), not
-          decorative scroll motion, so we keep it. It animates only on tap, off
-          the load/scroll critical path. */}
+      {/* Drawer is portaled to <body> so it renders OUTSIDE the page's
+          .force-static-motion wrapper — otherwise the mobile force-visible CSS
+          (which keeps below-fold scroll-reveal content from sticking invisible)
+          would also flatten the drawer's staggered entrance animation. The
+          portal puts it beyond that wrapper's reach. Guarded for SSR (the drawer
+          only renders when isOpen, which is always false server-side anyway).
+          reducedMotion="never" re-enables motion here since the app-level config
+          strips it on mobile — the drawer slide/stagger is an interactive
+          affordance, not decorative scroll motion. */}
+      {typeof document !== 'undefined' && createPortal(
       <MotionConfig reducedMotion="never">
       <AnimatePresence>
         {isOpen && (
@@ -422,7 +428,9 @@ export const Navbar = () => {
           </div>
         )}
       </AnimatePresence>
-      </MotionConfig>
+      </MotionConfig>,
+      document.body,
+      )}
     </>
   );
 };

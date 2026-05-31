@@ -302,15 +302,27 @@
    Scope: matches only elements with an inline `opacity`/`transform` in their
    style attribute — i.e. motion-controlled ones. Tailwind utilities use classes,
    not inline style, so intentional opacity-40 overlays, centering transforms,
-   icon rotations, etc. are untouched. EXCLUDED: the nav drawer (.nav-drawer) and
-   quote sheet (.quote-sheet), which keep their interactive open/close animation
-   via their own reducedMotion="never" — :not() keeps this rule from freezing
-   them. <=767px only; desktop is untouched. */
+   icon rotations, etc. are untouched.
+
+   The nav drawer (.nav-drawer) and quote sheet (.quote-sheet) KEEP their
+   interactive open/close + staggered-item animation (via their own
+   reducedMotion="never"). We restore that by re-overriding inside those
+   containers below — NOT by excluding them in the selector above: a complex
+   `:not(.nav-drawer *)` (descendant combinator inside :not) is unreliable on
+   Safari and was flattening the drawer's entrance animation on iOS.
+   <=767px only; desktop untouched. */
 @media (max-width: 767px) {
-  [style*="opacity"]:not(.nav-drawer *):not(.quote-sheet *):not(.nav-drawer):not(.quote-sheet) {
+  /* Force motion-controlled page content (whileInView sections that re-run
+     their lifecycle on overlay open/close) to its visible state, so it can't
+     get stuck invisible on mobile. Scoped to .force-static-motion (page root)
+     and excluded from any subtree marked .keep-motion — the nav drawer and
+     quote sheet carry that class so their open/close + staggered-item animation
+     still plays. `.keep-motion` is a simple class selector (well-supported on
+     Safari, unlike a complex :not(.x *)). <=767px only. */
+  .force-static-motion [style*="opacity"] {
     opacity: 1 !important;
   }
-  [style*="transform"]:not(.nav-drawer *):not(.quote-sheet *):not(.nav-drawer):not(.quote-sheet) {
+  .force-static-motion [style*="transform"] {
     transform: none !important;
   }
 }
