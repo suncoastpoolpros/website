@@ -240,8 +240,9 @@ export const TreasureIslandPage = () => {
       wide: '/treasure-island-hero-1920.webp',
     },
     // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
-    // hero headline (Montserrat 900).
-    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
+    // hero headline (Montserrat 900), hero H1 (font-display font-normal =
+    // Montserrat 400).
+    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat400, FONTS.montserrat900],
   });
   usePageSchema();
 

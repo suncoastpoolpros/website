@@ -31,6 +31,7 @@ export const FONTS = {
   inter400: '/fonts/inter-400.woff2',
   inter600: '/fonts/inter-600.woff2',
   inter700: '/fonts/inter-700.woff2',
+  montserrat400: '/fonts/montserrat-400.woff2',
   montserrat700: '/fonts/montserrat-700.woff2',
   montserrat900: '/fonts/montserrat-900.woff2',
   caveat700: '/fonts/caveat-700.woff2',

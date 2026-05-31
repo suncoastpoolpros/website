@@ -53,6 +53,8 @@ export const Footer = () => {
                 src="/icon-mark.svg"
                 alt=""
                 aria-hidden="true"
+                width={50}
+                height={32}
                 className="h-8 w-auto shrink-0"
                 loading="lazy"
               />

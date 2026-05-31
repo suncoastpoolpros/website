@@ -25,8 +25,9 @@ export const LandingPage = () => {
       wide: '/pool-service-st-petersburg-hero-1920.webp',
     },
     // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
-    // hero headline (Montserrat 900), and the Caveat script accent.
-    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900, FONTS.caveat700],
+    // hero headline (Montserrat 900), hero H1 (font-display font-normal =
+    // Montserrat 400), and the Caveat script accent.
+    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat400, FONTS.montserrat900, FONTS.caveat700],
   });
 
   return (

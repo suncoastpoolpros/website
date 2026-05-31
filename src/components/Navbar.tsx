@@ -255,7 +255,7 @@ export const Navbar = () => {
                   aria-label="Suncoast Pool Pros home"
                   className="flex items-center gap-2.5"
                 >
-                  <img src="/icon-mark.svg" alt="" aria-hidden="true" className="h-6 w-auto" />
+                  <img src="/icon-mark.svg" alt="" aria-hidden="true" width={37} height={24} className="h-6 w-auto" />
                   <span className="font-display font-bold text-sm tracking-wide text-white uppercase">
                     Suncoast Pool Pros
                   </span>
