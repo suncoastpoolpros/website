@@ -72,7 +72,7 @@ const ContactPageInner = () => {
       {/* Spread ambient glows — distinct from the top-clustered hero glow on
           other pages, same brand palette. */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-24 right-[-8%] w-[560px] h-[560px] rounded-full bg-brand-orange/10 blur-[130px] animate-float" />
+        <div className="hidden md:block absolute -top-24 right-[-8%] w-[560px] h-[560px] rounded-full bg-brand-orange/10 blur-[130px] animate-float" />
         <div className="absolute bottom-[-15%] left-[-10%] w-[680px] h-[680px] rounded-full bg-brand-blue/15 blur-[150px]" />
       </div>
 

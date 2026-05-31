@@ -252,3 +252,19 @@
   );
   filter: saturate(1.25) brightness(0.55) contrast(1.08) hue-rotate(-6deg);
 }
+
+/* Belleair mobile: strip all JS-driven motion (see MotionConfig in
+   BelleairBeachPage). Motion ships its `initial` state as inline
+   `opacity:0;transform:...` in the prerendered HTML, which would leave
+   below-fold content invisible during the paint→hydration gap on a slow
+   phone. On mobile we force every motion element under .belleair-page to its
+   final visible, untransformed state at first paint — so content is shown
+   immediately regardless of when (or whether) JS hydrates. !important beats
+   the inline style. Scoped to <=767px so desktop animations are untouched. */
+@media (max-width: 767px) {
+  .belleair-page [style*="opacity:0"],
+  .belleair-page [style*="opacity: 0"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

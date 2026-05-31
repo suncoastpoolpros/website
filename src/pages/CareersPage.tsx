@@ -108,7 +108,7 @@ const Hero = () => (
   <div className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
     <div className="absolute inset-0 z-0">
       <div className="absolute inset-0 bg-mesh opacity-60" />
-      <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[70%] h-[60%] bg-brand-blue/15 rounded-full blur-[150px] animate-float" />
+      <div className="hidden md:block absolute top-[-10%] left-1/2 -translate-x-1/2 w-[70%] h-[60%] bg-brand-blue/15 rounded-full blur-[150px] animate-float" />
       <div className="absolute inset-x-0 bottom-0 h-60 bg-gradient-to-t from-[#07111c] to-transparent" />
     </div>
     <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

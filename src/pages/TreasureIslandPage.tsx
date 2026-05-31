@@ -70,10 +70,10 @@ const HeroSection = () => {
         <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#02060c]/70 via-[#02060c]/20 to-transparent pointer-events-none" />
 
         {/* Spotlight glow behind the phone — lower and pulled in toward center */}
-        <div className="absolute top-[35%] right-[12%] w-[45vw] h-[55vh] bg-brand-orange/14 rounded-full blur-[130px] animate-float" />
+        <div className="hidden md:block absolute top-[35%] right-[12%] w-[45vw] h-[55vh] bg-brand-orange/14 rounded-full blur-[130px] animate-float" />
 
         {/* Deep-blue ambient — moved to lower-left for asymmetric balance */}
-        <div className="absolute bottom-[5%] left-[-15%] w-[45vw] h-[45vw] bg-[#0a2540]/35 rounded-full blur-[130px] animate-morph" />
+        <div className="hidden md:block absolute bottom-[5%] left-[-15%] w-[45vw] h-[45vw] bg-[#0a2540]/35 rounded-full blur-[130px] animate-morph" />
 
         {/* Softer vignette — wider transparent core, less aggressive edge falloff */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_95%_75%_at_center,transparent_0%,transparent_65%,rgba(5,11,20,0.45)_100%)] pointer-events-none" />

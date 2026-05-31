@@ -82,10 +82,10 @@ export const Hero = () => {
         <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#02060c]/85 via-[#02060c]/30 to-transparent pointer-events-none" />
 
         {/* Spotlight glow behind the phone (right side) — pulls the eye to it */}
-        <div className="absolute top-[18%] right-[5%] w-[40vw] h-[60vh] bg-brand-orange/12 rounded-full blur-[120px] animate-float" />
+        <div className="hidden md:block absolute top-[18%] right-[5%] w-[40vw] h-[60vh] bg-brand-orange/12 rounded-full blur-[120px] animate-float" />
 
         {/* Subtle deep-blue ambient on the left for balance */}
-        <div className="absolute top-[10%] left-[-10%] w-[40vw] h-[50vw] bg-[#0a2540]/30 rounded-full blur-[120px] animate-morph" />
+        <div className="hidden md:block absolute top-[10%] left-[-10%] w-[40vw] h-[50vw] bg-[#0a2540]/30 rounded-full blur-[120px] animate-morph" />
 
         {/* Side vignette only — fades left/right edges, leaves bottom open for blend */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_center,transparent_0%,transparent_60%,rgba(5,11,20,0.55)_100%)] pointer-events-none" />

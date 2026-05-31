@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { m } from 'motion/react';
+import React, { useEffect, useState } from 'react';
+import { m, MotionConfig } from 'motion/react';
 import { Phone, Star, MapPin, ShieldCheck } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -45,7 +45,7 @@ const HeroSection = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#02060c]/40 via-[#04090f]/55 to-[#07111c] md:via-[#04090f]/70" />
         <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#02060c]/85 via-[#02060c]/35 to-transparent pointer-events-none" />
-        <div className="absolute top-[12%] left-[-8%] w-[45vw] h-[55vh] bg-brand-blue/15 rounded-full blur-[130px] animate-float" />
+        <div className="hidden md:block absolute top-[12%] left-[-8%] w-[45vw] h-[55vh] bg-brand-blue/15 rounded-full blur-[130px] animate-float" />
         <div className="absolute inset-x-0 bottom-0 h-80 bg-gradient-to-t from-[#07111c] from-25% to-transparent pointer-events-none" />
       </div>
 
@@ -216,20 +216,43 @@ const usePageSeo = () => {
   }, []);
 };
 
+// True on phone-width viewports. Starts false so it matches the prerendered
+// HTML (no `window` during the Node prerender) and the first client render,
+// then flips after mount — avoiding a hydration mismatch. Used to strip all
+// JS-driven motion on mobile, where the animations caused GPU jank on real
+// iPhones. Below `md` (768px) only, so desktop keeps its animations.
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  return isMobile;
+};
+
 export const BelleairBeachPage = () => {
   usePageSeo();
+  const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#1669AE] selection:text-white">
-      <div className="fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
-      <div className="relative z-10">
-        <Navbar />
-        <HeroSection />
-        <BelleairBeachBelowFold />
-        <CtaBand />
-        <Footer />
+    // reducedMotion="always" makes every <m.*> below skip its animation and
+    // render at its final (visible) state — content never sticks at opacity:0.
+    // Gated to mobile so desktop animations are untouched.
+    <MotionConfig reducedMotion={isMobile ? 'always' : 'never'}>
+      <div className="belleair-page min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#1669AE] selection:text-white">
+        <div className="fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
+        <div className="relative z-10">
+          <Navbar />
+          <HeroSection />
+          <BelleairBeachBelowFold />
+          <CtaBand />
+          <Footer />
+        </div>
+        <StickyMobileCta />
       </div>
-      <StickyMobileCta />
-    </div>
+    </MotionConfig>
   );
 };
