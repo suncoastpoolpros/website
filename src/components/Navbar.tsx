@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { SmartLink as Link } from '@/components/SmartLink';
 import { m, AnimatePresence } from 'motion/react';
 import {
   X,

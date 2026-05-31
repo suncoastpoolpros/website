@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { SmartLink as Link } from '@/components/SmartLink';
 import { Instagram, Facebook, Twitter, Phone, Mail, MapPin } from 'lucide-react';
 import { Container } from '@/components/Container';
 import { cities } from '@/lib/cities';
