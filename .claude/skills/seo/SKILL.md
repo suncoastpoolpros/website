@@ -38,18 +38,18 @@ If you change the phone, name, or service area, update **every** occurrence
 ## Checklist
 
 ### Technical / meta — lives in `index.html`
-Current baseline already has: `<title>`, `meta description`, `theme-color`,
-`canonical`, and hero image `preload`s. Known gaps to flag/fix:
+Per-page `<title>`, description, canonical, OG, and hero/font preloads are set
+via `usePageMeta` (runs during prerender → lands in static HTML), NOT hardcoded
+in `index.html`. `index.html` holds only site-wide defaults. Known gaps:
 
-- [ ] **Open Graph** — `og:title`, `og:description`, `og:image` (1200×630),
-      `og:url`, `og:type=website`, `og:site_name`. None exist yet.
-- [ ] **Twitter card** — `twitter:card=summary_large_image` + title/desc/image.
-- [ ] **LocalBusiness JSON-LD** — add a `<script type="application/ld+json">`
-      block. Use schema type `LocalBusiness` (or `HomeAndConstructionBusiness`)
-      with name, telephone, areaServed (the cities), url, priceRange `$$`,
-      and `aggregateRating` only if real reviews back it.
-- [ ] **Favicon / apple-touch-icon** — `logo.svg` exists in `public/` but isn't
-      linked. Add `<link rel="icon">`.
+- [x] **Open Graph + Twitter** — DONE, set per-page via `usePageMeta`
+      (`og:title/description/image/url/type/site_name` + `twitter:card` etc.).
+      Verify in `dist/<route>/index.html`, not just `index.html`.
+- [x] **LocalBusiness JSON-LD** — DONE. City pages (Belleair/Treasure) inject
+      `LocalBusiness` + `FAQPage` via a `usePageSchema` effect; homepage has its
+      own. When adding a city page, add the schema block. Only encode true facts;
+      no `aggregateRating` unless real reviews back it.
+- [x] **Favicon** — DONE (`<link rel="icon">` in `index.html`).
 - [ ] **`robots.txt`** and **`sitemap.xml`** in `public/` — single page, but
       both should exist; sitemap lists the canonical URL.
 - [ ] **`<html lang="en">`** — present, keep it.
@@ -76,16 +76,34 @@ Current baseline already has: `<title>`, `meta description`, `theme-color`,
 - [ ] Recommend (don't auto-do): Google Business Profile, consistent citations.
 
 ### Performance — Core Web Vitals
-This is a Vite SPA; the hero image is the likely LCP element.
-- [ ] **LCP** — hero images are preloaded + served as `.webp` responsive sizes
-      (`public/hero-bg-*.webp`). Keep the `preload` links in sync with any new
-      breakpoints. Don't lazy-load the LCP/hero image.
-- [ ] **Lazy-load below-the-fold images** — `loading="lazy"` on the Services
-      pool photo, testimonial avatars, etc. (NOT the hero).
-- [ ] **CLS** — give images explicit width/height or aspect-ratio so layout
-      doesn't shift as they load.
-- [ ] **Bundle** — `motion` (Framer) is the heavy dep; flag if animations grow.
-- [ ] Verify with `npm run build` and a Lighthouse/PageSpeed run on the deploy.
+**The authoritative speed reference is the root `CLAUDE.md` ("site speed &
+optimization") — read it first.** It documents the prerender pipeline, per-page
+preloading, the mobile blur ban, the mobile motion-strip, and CSS inlining. This
+section is just the SEO-audit checklist; don't duplicate CLAUDE.md here.
+
+- [ ] **Per-page above-the-fold preloads.** Each page preloads only the hero
+      image + font weights it paints, via `usePageMeta({ heroPreload, fontPreload })`
+      → injected by `scripts/prerender.mjs`. NOT a global list in `index.html`
+      anymore. When auditing a page, grep its `dist/<route>/index.html` head:
+      it should preload its own hero (or none) and only the fonts it renders.
+      Watch the sneaky one: a hero H1 with `font-display font-normal` =
+      **Montserrat 400** (not Inter) — must be in that page's `fontPreload`.
+- [ ] **LCP is often the headline TEXT, not the hero image** (the hero is a CSS
+      `background-image`). So the font on the H1 is on the LCP path — preload it.
+      Don't assume the image is LCP; check the PageSpeed "LCP element".
+- [ ] **CLS** — give `<img>` explicit `width`/`height` (intrinsic ratio) even
+      when CSS sizes them, so the box is reserved before load. SVG logos need it.
+- [ ] **No blur on mobile** — `backdrop-filter` and large `filter: blur()` glows
+      are disabled `<768px` (they caused real-iPhone jank). Don't reintroduce
+      blur on mobile; desktop frosted glass is capped at 10px. See CLAUDE.md.
+- [ ] **Every page's meta via `usePageMeta`, never an inline `useEffect`** — or
+      its prerendered HTML ships the homepage title/canonical (bad for indexing).
+- [ ] Verify with `npm run build` + a real-device-profile PageSpeed/Lighthouse
+      run on the deploy. Don't trust desktop-Chromium-only numbers; GPU and font
+      cost on real iPhones is what bites. All these audits are "Unscored"
+      diagnostics — fix the ones with real latency (font long-poles), skip the
+      cosmetic ones (e.g. "unused JS" in the React vendor chunk; cache lifetimes
+      are already `immutable`/1yr).
 
 ## Guardrails
 - Don't invent reviews, ratings, addresses, or claims for schema — only encode
