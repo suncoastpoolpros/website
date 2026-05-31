@@ -16,7 +16,29 @@ type PageMeta = {
   canonicalPath?: string;
   /** Absolute URL or path. Defaults to the St. Pete hero. */
   ogImage?: string;
+  /** Per-page LCP hero to preload (server-injected). Lets each route preload
+   *  its own hero rather than the global default in index.html. */
+  heroPreload?: { mobile: string; desktop: string; wide?: string };
+  /** Per-page above-the-fold font files (paths under /fonts) to preload, so
+   *  each route preloads only the weights it actually paints. See FONTS. */
+  fontPreload?: string[];
 };
+
+/** Named font weights, so pages declare above-the-fold fonts semantically.
+ *  Inter = body (--font-sans), Montserrat = display (--font-display),
+ *  Caveat = script accent. */
+export const FONTS = {
+  inter400: '/fonts/inter-400.woff2',
+  inter600: '/fonts/inter-600.woff2',
+  inter700: '/fonts/inter-700.woff2',
+  montserrat700: '/fonts/montserrat-700.woff2',
+  montserrat900: '/fonts/montserrat-900.woff2',
+  caveat700: '/fonts/caveat-700.woff2',
+} as const;
+
+/** Above-the-fold fonts shared by every page (the Navbar): body semibold +
+ *  the display weight used in the nav. Pages spread this then add hero weights. */
+export const NAV_FONTS = [FONTS.inter600, FONTS.montserrat700];
 
 const setTag = (selector: string, attrName: 'name' | 'property', attrValue: string, content: string) => {
   let el = document.head.querySelector<HTMLMetaElement>(selector);
@@ -61,7 +83,7 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
       ? { title: metaOrTitle, description: maybeDesc ?? '' }
       : metaOrTitle;
 
-  const { title, description, canonicalPath, ogImage } = meta;
+  const { title, description, canonicalPath, ogImage, heroPreload, fontPreload } = meta;
   const canonicalUrl = `${SITE_ORIGIN}${canonicalPath ?? '/'}`;
   const image = ogImage
     ? ogImage.startsWith('http')
@@ -72,7 +94,7 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
   // Server: populate the SSR meta singleton during render. The prerender script
   // reads this after renderToString and writes it into the static HTML head.
   if (IS_SERVER) {
-    setSsrMeta({ title, description, canonicalUrl, ogImage: image });
+    setSsrMeta({ title, description, canonicalUrl, ogImage: image, heroPreload, fontPreload });
   }
 
   useEffect(() => {

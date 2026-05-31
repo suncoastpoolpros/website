@@ -78,13 +78,18 @@
     <!-- Preload the fonts used above the fold (Montserrat headings + Inter body)
          so they start downloading the moment HTML arrives, in parallel with the
          CSS. Without these the browser only learns about them after CSS parses. -->
-    <link rel="preload" as="font" type="font/woff2" href="/fonts/montserrat-900.woff2" crossorigin />
+    <!-- Default above-the-fold font set, used by content pages (nav + text H1):
+         Inter 600 (nav/semibold), Montserrat 700 (nav/headings display), Inter
+         400 (body). Hero pages override this set per-route via
+         usePageMeta({ fontPreload }) in scripts/prerender.mjs (e.g. adding
+         Montserrat 900 for the big headline, or Caveat on the homepage). -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-600.woff2" crossorigin />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/montserrat-700.woff2" crossorigin />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400.woff2" crossorigin />
 
-    <link rel="preload" as="image" href="/pool-service-st-petersburg-hero-mobile.webp" type="image/webp" media="(max-width: 767px)" />
-    <link rel="preload" as="image" href="/pool-service-st-petersburg-hero.webp" type="image/webp" media="(min-width: 768px) and (max-width: 1535px)" />
-    <link rel="preload" as="image" href="/pool-service-st-petersburg-hero-1920.webp" type="image/webp" media="(min-width: 1536px)" />
+    <!-- Hero image preloads are injected per-page by scripts/prerender.mjs from
+         each route's usePageMeta({ heroPreload }) — so a page only preloads the
+         hero it actually paints (and content pages preload no hero at all). -->
   </head>
   <body>
     <div id="root"></div>

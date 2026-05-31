@@ -50,6 +50,39 @@ function injectHead(html, meta) {
     );
   }
 
+  // Per-page LCP hero preload. The template ships the homepage (St. Pete) hero
+  // preloads; if this page declares its own hero, swap those out so the page
+  // preloads only its real LCP image (e.g. Belleair/Treasure heroes) instead of
+  // wasting the critical path on an image it doesn't paint.
+  if (meta.heroPreload) {
+    // Drop every hero <link rel="preload" as="image"> the template hardcoded.
+    out = out.replace(/\s*<link rel="preload" as="image"[^>]*\/?>/g, '');
+    const h = meta.heroPreload;
+    const imgPreloads = [
+      `<link rel="preload" as="image" href="${escapeHtml(h.mobile)}" type="image/webp" media="(max-width: 767px)" />`,
+      `<link rel="preload" as="image" href="${escapeHtml(h.desktop)}" type="image/webp" media="(min-width: 768px)${h.wide ? ' and (max-width: 1535px)' : ''}" />`,
+    ];
+    if (h.wide) {
+      imgPreloads.push(
+        `<link rel="preload" as="image" href="${escapeHtml(h.wide)}" type="image/webp" media="(min-width: 1536px)" />`,
+      );
+    }
+    out = out.replace('</head>', `  ${imgPreloads.join('\n    ')}\n  </head>`);
+  }
+
+  // Per-page font preload. The template ships a default set; if this page
+  // declares its own above-the-fold fonts, swap them so the route preloads only
+  // the weights it actually paints (and not ones it doesn't, e.g. Caveat off the
+  // homepage or Montserrat-900 on content pages).
+  if (meta.fontPreload && meta.fontPreload.length) {
+    out = out.replace(/\s*<link rel="preload" as="font"[^>]*\/?>/g, '');
+    const fontPreloads = meta.fontPreload.map(
+      (href) =>
+        `<link rel="preload" as="font" type="font/woff2" href="${escapeHtml(href)}" crossorigin />`,
+    );
+    out = out.replace('</head>', `  ${fontPreloads.join('\n    ')}\n  </head>`);
+  }
+
   // OG + Twitter tags — these don't exist in index.html, so append them inside
   // <head> right before </head>.
   if (meta.title) replacements.push(`<meta property="og:title" content="${escapeHtml(meta.title)}" />`);

@@ -11,6 +11,18 @@ export type SsrMeta = {
   description?: string;
   canonicalUrl?: string;
   ogImage?: string;
+  /** Per-page LCP hero image to preload, responsive by viewport. The prerender
+   *  writes these as <link rel="preload" as="image"> into the page's head so
+   *  each route preloads its OWN hero instead of the global default. */
+  heroPreload?: {
+    mobile: string;
+    desktop: string;
+    wide?: string;
+  };
+  /** Per-page above-the-fold font files to preload (paths under /fonts). Each
+   *  route preloads only the weights it actually paints above the fold, so the
+   *  critical request chain isn't spent on fonts the page doesn't use. */
+  fontPreload?: string[];
 };
 
 let current: SsrMeta = {};

@@ -12,6 +12,7 @@ import { belleairBeachFaqs } from '@/pages/belleairBeachFaqs';
 import { CtaBand } from '@/components/CtaBand';
 import { BelleairHeroPhone } from '@/components/BelleairHeroPhone';
 import BelleairBeachBelowFold from '@/pages/BelleairBeachBelowFold';
+import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 
 const PAGE_TITLE =
   'Belleair Beach Pool Service | Quiet, Reliable, Flat-Rate';
@@ -138,49 +139,12 @@ const HeroSection = () => {
   );
 };
 
-const usePageSeo = () => {
+// JSON-LD (LocalBusiness + FAQPage) injected client-side. Title, description,
+// canonical, and OG are handled by usePageMeta (which runs during SSR so they
+// land in the prerendered HTML); usePageMeta doesn't do JSON-LD, so this effect
+// adds it.
+const usePageSchema = () => {
   useEffect(() => {
-    const prevTitle = document.title;
-    document.title = PAGE_TITLE;
-
-    // Meta + OG tags — created if missing, restored on unmount.
-    const ensureMeta = (selector: string, attrs: Record<string, string>) => {
-      let el = document.head.querySelector<HTMLMetaElement>(selector);
-      const created = !el;
-      if (!el) {
-        el = document.createElement('meta');
-        document.head.appendChild(el);
-      }
-      const prev: Record<string, string | null> = {};
-      Object.entries(attrs).forEach(([k, v]) => {
-        prev[k] = el!.getAttribute(k);
-        el!.setAttribute(k, v);
-      });
-      return () => {
-        if (created) el!.remove();
-        else Object.entries(prev).forEach(([k, v]) => (v === null ? el!.removeAttribute(k) : el!.setAttribute(k, v)));
-      };
-    };
-
-    const cleanups = [
-      ensureMeta('meta[name="description"]', { name: 'description', content: PAGE_DESC }),
-      ensureMeta('meta[property="og:title"]', { property: 'og:title', content: PAGE_TITLE }),
-      ensureMeta('meta[property="og:description"]', { property: 'og:description', content: PAGE_DESC }),
-      ensureMeta('meta[property="og:type"]', { property: 'og:type', content: 'website' }),
-      ensureMeta('meta[property="og:url"]', { property: 'og:url', content: PAGE_URL }),
-      ensureMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' }),
-    ];
-
-    // Override the homepage canonical baked into index.html so Google indexes
-    // this URL on its own, not as a duplicate of /.
-    const canon = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    const prevCanon = canon?.getAttribute('href') ?? null;
-    canon?.setAttribute('href', PAGE_URL);
-    cleanups.push(() => {
-      if (prevCanon !== null) canon?.setAttribute('href', prevCanon);
-    });
-
-    // JSON-LD: LocalBusiness scoped to Belleair Beach + FAQPage.
     const ld = document.createElement('script');
     ld.type = 'application/ld+json';
     ld.textContent = JSON.stringify([
@@ -207,12 +171,7 @@ const usePageSeo = () => {
       },
     ]);
     document.head.appendChild(ld);
-
-    return () => {
-      document.title = prevTitle;
-      cleanups.forEach((fn) => fn());
-      ld.remove();
-    };
+    return () => ld.remove();
   }, []);
 };
 
@@ -234,7 +193,23 @@ const useIsMobile = () => {
 };
 
 export const BelleairBeachPage = () => {
-  usePageSeo();
+  usePageMeta({
+    title: PAGE_TITLE,
+    description: PAGE_DESC,
+    canonicalPath: '/belleair-beach-fl/',
+    ogImage: '/pool-service-st-petersburg-hero.jpg',
+    // Belleair reuses the St. Pete hero image (see hero-bg-belleair-* in
+    // index.css), so preload those — they're what this page actually paints.
+    heroPreload: {
+      mobile: '/pool-service-st-petersburg-hero-mobile.webp',
+      desktop: '/pool-service-st-petersburg-hero.webp',
+      wide: '/pool-service-st-petersburg-hero-1920.webp',
+    },
+    // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
+    // hero headline (Montserrat 900).
+    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
+  });
+  usePageSchema();
   const isMobile = useIsMobile();
 
   return (

@@ -11,7 +11,7 @@ import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { FAQ } from '@/components/FAQ';
 import { QuoteForm } from '@/components/QuoteForm';
 import { Footer } from '@/components/Footer';
-import { usePageMeta } from '@/lib/usePageMeta';
+import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 
 export const LandingPage = () => {
   usePageMeta({
@@ -19,6 +19,14 @@ export const LandingPage = () => {
     description:
       'Flat-rate weekly pool cleaning in St. Petersburg and the Tampa Bay area. One price covers standard chemicals, the same tech shows up every week, and you get a photo report after every visit.',
     canonicalPath: '/',
+    heroPreload: {
+      mobile: '/pool-service-st-petersburg-hero-mobile.webp',
+      desktop: '/pool-service-st-petersburg-hero.webp',
+      wide: '/pool-service-st-petersburg-hero-1920.webp',
+    },
+    // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
+    // hero headline (Montserrat 900), and the Caveat script accent.
+    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900, FONTS.caveat700],
   });
 
   return (
