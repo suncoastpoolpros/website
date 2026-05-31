@@ -110,7 +110,7 @@ const SignupPageInner = () => {
             transition={{ duration: 0.5, ease: 'easeOut' }}
             className="relative"
           >
-            <span className="inline-flex items-center gap-2 mb-6 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 backdrop-blur-sm">
+            <span className="inline-flex items-center gap-2 mb-6 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 backdrop-blur-[10px]">
               <UserPlus className="w-3.5 h-3.5 text-brand-blue-light" />
               <span className="text-gray-300 font-semibold tracking-[0.18em] uppercase text-[11px]">
                 New Customer Onboarding

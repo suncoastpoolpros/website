@@ -21,7 +21,6 @@ import {
 import { QuoteSheetProvider, useQuoteSheet } from '@/components/QuoteSheet';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 
 // ── constants ─────────────────────────────────────────────────────
@@ -1123,7 +1122,7 @@ const PoolVolumeCalculatorInner = () => {
 
         {/* Hero */}
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-10 text-center">
-          <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm px-3.5 py-1.5">
+          <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-[10px] px-3.5 py-1.5">
             <Calculator className="w-3.5 h-3.5 text-brand-orange" />
             <span className="text-gray-300 font-semibold tracking-wide text-xs">Free Pool Tool</span>
           </div>
@@ -1146,7 +1145,7 @@ const PoolVolumeCalculatorInner = () => {
             ].map((label) => (
               <li
                 key={label}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm px-3 py-1.5 text-xs font-semibold text-gray-300"
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-[10px] px-3 py-1.5 text-xs font-semibold text-gray-300"
               >
                 <Check className="w-3.5 h-3.5 text-brand-orange shrink-0" />
                 {label}
@@ -1906,7 +1905,6 @@ const PoolVolumeCalculatorInner = () => {
         <Footer />
       </div>
 
-      <StickyMobileCta />
     </div>
   );
 };

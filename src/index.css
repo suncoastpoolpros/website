@@ -95,12 +95,12 @@
            shadow-lg shadow-brand-blue/20;
   }
   .btn-glass {
-    @apply text-white bg-white/[0.07] backdrop-blur-sm border border-white/20
+    @apply text-white bg-white/[0.07] backdrop-blur-[10px] border border-white/20
            hover:bg-white/[0.12] hover:border-white/30;
   }
 
   .glass-panel {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)];
+    @apply bg-white/5 backdrop-blur-[10px] border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)];
   }
   
   .glass-card-hover {

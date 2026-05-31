@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { MessageSquare, Phone, Camera, MapPin, Send, ClipboardList, ArrowLeft, ChevronRight } from 'lucide-react';
+import { MessageSquare, Phone, Camera, MapPin, Send, ClipboardList, ArrowLeft, ChevronRight, Check } from 'lucide-react';
 import { sendContact } from '@/lib/contactSubmit';
 import { useTurnstile } from '@/lib/turnstile';
 import { clearDraft, readDraft, writeDraft } from '@/lib/quoteDraft';
@@ -63,7 +63,7 @@ const ConditionalBlock = ({
   </div>
 );
 
-export const QuoteChooser = () => {
+export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {}) => {
   const isDesktop = useIsDesktop();
   // Default-open the most relevant option per device. Starts at `null` to match
   // the server-rendered HTML; the post-mount draft restore (below) can override
@@ -248,6 +248,7 @@ export const QuoteChooser = () => {
       clearDraft();
       step2DraftRef.current = {};
       setFormSent(true);
+      onSubmitted?.();
     } catch (err) {
       setFormError(`Something went wrong. Please call or text ${PHONE_DISPLAY}.`);
       console.error('Quote chooser submit failed:', err);
@@ -358,9 +359,20 @@ export const QuoteChooser = () => {
     >
       <div className="px-5 pb-5 pt-1">
         {formSent ? (
-          <div className="text-center py-4">
-            <p className="text-white font-semibold mb-1">Got it — thanks.</p>
-            <p className="text-gray-400 text-sm">We'll email your flat rate, same day.</p>
+          <div className="flex flex-col items-center text-center py-6">
+            <span className="w-14 h-14 rounded-full bg-green-500/15 border border-green-400/30 flex items-center justify-center mb-4 shadow-[0_0_0_6px_rgba(34,197,94,0.06)]">
+              <Check className="w-7 h-7 text-green-400" strokeWidth={2.5} />
+            </span>
+            <p className="text-white font-display font-bold text-lg leading-tight mb-1.5">
+              We've got your details.
+            </p>
+            <p className="text-gray-300 text-sm leading-relaxed max-w-xs">
+              Thank you — we've received your information and will be in touch
+              soon with your flat-rate quote.
+            </p>
+            <p className="text-gray-500 text-xs mt-3">
+              Same-day reply · Mon–Sat
+            </p>
           </div>
         ) : (
           <>

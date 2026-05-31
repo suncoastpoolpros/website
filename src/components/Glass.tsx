@@ -15,7 +15,7 @@ type GlassProps = {
 } & React.HTMLAttributes<HTMLElement>;
 
 const GLASS_BASE =
-  'bg-white/[0.07] backdrop-blur-sm border border-white/20 shadow-lg shadow-black/20';
+  'bg-white/[0.07] backdrop-blur-[10px] border border-white/20 shadow-lg shadow-black/20';
 
 // Hover lift — only meaningful on interactive (link) variants.
 const GLASS_INTERACTIVE = 'hover:bg-white/[0.12] hover:border-white/30 transition-colors';

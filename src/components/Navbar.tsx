@@ -94,7 +94,7 @@ export const Navbar = () => {
       // bg on mobile reads the same without the GPU re-raster.
       className={`fixed w-full z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-[#0a1628]/95 md:bg-[#0a1628]/85 md:backdrop-blur-xl border-b border-white/10'
+          ? 'bg-[#0a1628]/95 md:bg-[#0a1628]/85 md:backdrop-blur-[10px] border-b border-white/10'
           : 'bg-transparent border-b border-transparent'
       }`}
     >
@@ -227,7 +227,7 @@ export const Navbar = () => {
               // Solid scrim instead of backdrop-blur: on mobile the blur's
               // unmount re-rasterizes the page behind it (blank/repaint flash
               // on iOS). Higher opacity keeps the same dimmed look.
-              className="absolute inset-0 bg-black/75 md:backdrop-blur-sm md:bg-black/60"
+              className="absolute inset-0 bg-black/75 md:backdrop-blur-[10px] md:bg-black/60"
             />
 
             {/* Panel */}

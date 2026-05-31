@@ -65,7 +65,7 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
               // Solid scrim on mobile (md:backdrop-blur only): the blur's
               // unmount otherwise re-rasterizes the page behind it on iOS,
               // causing a blank/repaint flash when the sheet closes.
-              className="absolute inset-0 bg-black/80 md:bg-black/70 md:backdrop-blur-sm"
+              className="absolute inset-0 bg-black/80 md:bg-black/70 md:backdrop-blur-[10px]"
               onClick={close}
             />
 
