@@ -266,6 +266,13 @@ export const ServiceReport = ({
         .sr-photo-wrap { padding: 0 14px; }
         .sr-photo {
           width: 100%;
+          /* Reserve space before the image loads so it can't push content
+             down on arrival (CLS). aspect-ratio matches the 16:9 src; the
+             mobile <source> is taller, so object-fit:cover crops it cleanly
+             into the same reserved box. */
+          aspect-ratio: 16 / 9;
+          height: auto;
+          object-fit: cover;
           border-radius: 12px;
           display: block;
         }
@@ -417,6 +424,8 @@ export const ServiceReport = ({
                 className="sr-photo"
                 src={`${photo.base}.jpg`}
                 alt={photo.alt}
+                width={1600}
+                height={900}
                 loading="lazy"
                 decoding="async"
               />
