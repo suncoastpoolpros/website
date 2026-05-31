@@ -4,6 +4,7 @@ import { m } from 'motion/react';
 import {
   Wrench,
   Calculator,
+  Flame,
   Phone,
   MessageSquare,
   ArrowRight,
@@ -30,6 +31,14 @@ const TOOLS: Tool[] = [
     title: 'Pool Volume Calculator',
     description:
       'Find out how many gallons your pool holds — the number you need for dosing chemicals and sizing equipment.',
+    available: true,
+  },
+  {
+    to: '/tools/pool-heating-cost-calculator',
+    icon: Flame,
+    title: 'Pool Heating Cost Calculator',
+    description:
+      'Estimate the cost and time to heat your pool — gas heater vs. electric heat pump — with Florida energy rates built in.',
     available: true,
   },
 ];

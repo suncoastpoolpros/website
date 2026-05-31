@@ -23,6 +23,7 @@ import { FaqPage } from '@/pages/FaqPage';
 import { HowItWorksPage } from '@/pages/HowItWorksPage';
 import { ToolsPage } from '@/pages/ToolsPage';
 import { PoolVolumeCalculatorPage } from '@/pages/PoolVolumeCalculatorPage';
+import { PoolHeatingCostCalculatorPage } from '@/pages/PoolHeatingCostCalculatorPage';
 import { ContactPage } from '@/pages/ContactPage';
 import { SignupPage } from '@/pages/SignupPage';
 import { ServiceAgreementPage } from '@/pages/ServiceAgreementPage';
@@ -41,6 +42,7 @@ export const PRERENDER_ROUTES = [
   '/how-it-works',
   '/tools',
   '/tools/pool-volume-calculator',
+  '/tools/pool-heating-cost-calculator',
   '/contact',
   '/signup',
   '/service-agreement',
@@ -57,6 +59,7 @@ const Routing = () => (
     <Route path="/how-it-works" element={<HowItWorksPage />} />
     <Route path="/tools" element={<ToolsPage />} />
     <Route path="/tools/pool-volume-calculator" element={<PoolVolumeCalculatorPage />} />
+    <Route path="/tools/pool-heating-cost-calculator" element={<PoolHeatingCostCalculatorPage />} />
     <Route path="/contact" element={<ContactPage />} />
     <Route path="/signup" element={<SignupPage />} />
     <Route path="/service-agreement" element={<ServiceAgreementPage />} />

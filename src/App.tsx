@@ -22,6 +22,7 @@ const FaqPage = lazy(() => import('@/pages/FaqPage').then((m) => ({ default: m.F
 const HowItWorksPage = lazy(() => import('@/pages/HowItWorksPage').then((m) => ({ default: m.HowItWorksPage })));
 const ToolsPage = lazy(() => import('@/pages/ToolsPage').then((m) => ({ default: m.ToolsPage })));
 const PoolVolumeCalculatorPage = lazy(() => import('@/pages/PoolVolumeCalculatorPage').then((m) => ({ default: m.PoolVolumeCalculatorPage })));
+const PoolHeatingCostCalculatorPage = lazy(() => import('@/pages/PoolHeatingCostCalculatorPage').then((m) => ({ default: m.PoolHeatingCostCalculatorPage })));
 const ContactPage = lazy(() => import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage })));
 const SignupPage = lazy(() => import('@/pages/SignupPage').then((m) => ({ default: m.SignupPage })));
 const ServiceAgreementPage = lazy(() => import('@/pages/ServiceAgreementPage').then((m) => ({ default: m.ServiceAgreementPage })));
@@ -85,6 +86,7 @@ export default function App() {
           <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/tools" element={<ToolsPage />} />
           <Route path="/tools/pool-volume-calculator" element={<PoolVolumeCalculatorPage />} />
+          <Route path="/tools/pool-heating-cost-calculator" element={<PoolHeatingCostCalculatorPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/service-agreement" element={<ServiceAgreementPage />} />
