@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navbar } from '@/components/Navbar';
-import { Hero } from '@/components/Hero';
+import { Hero, HomeHeroPhoneSection } from '@/components/Hero';
 import { FeatureGrid } from '@/components/FeatureGrid';
 import { Process } from '@/components/Process';
 import { Services } from '@/components/Services';
@@ -25,15 +25,16 @@ export const LandingPage = () => {
       wide: '/pool-service-st-petersburg-hero-1920.webp',
     },
     // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
-    // hero headline (Montserrat 900), hero H1 (font-display font-normal =
-    // Montserrat 400). Caveat (the "Sent after every visit" script accent) is
-    // hidden lg:flex — desktop only — so only preload it at lg+; on mobile it
-    // would be a wasted font fetch on the LCP critical path.
+    // hero H1 (font-display font-normal = Montserrat 400). The "One Flat Rate"
+    // headline is font-bold md:font-black (Montserrat 700 mobile, 900 desktop),
+    // so preload 900 only at md+. Caveat (the "Sent after every visit" script
+    // accent) is hidden lg:flex — desktop only — so preload it only at lg+.
+    // Mobile thus loads just inter-400/600 + montserrat-400/700.
     fontPreload: [
       ...NAV_FONTS,
       FONTS.inter400,
       FONTS.montserrat400,
-      FONTS.montserrat900,
+      { href: FONTS.montserrat900, media: '(min-width: 768px)' },
       { href: FONTS.caveat700, media: '(min-width: 1024px)' },
     ],
   });
@@ -46,6 +47,7 @@ export const LandingPage = () => {
       <div className="relative z-10">
         <Navbar />
         <Hero />
+        <HomeHeroPhoneSection />
         <FeatureGrid />
         <ServiceAreas />
         <Process />

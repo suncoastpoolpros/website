@@ -106,7 +106,7 @@ export const Hero = () => {
 
               {/* Visual headline (price differentiator) — a div, not h1, so the SEO H1 below carries the keyword weight */}
               <div className="font-display font-bold text-white tracking-tight mb-7 text-3xl sm:text-4xl md:text-[2.7rem] leading-[1.15]">
-                <span className="text-shadow-hero-headline block text-brand-orange font-black text-5xl sm:text-6xl md:text-[4.5rem] leading-[0.95] tracking-tight">
+                <span className="text-shadow-hero-headline block text-brand-orange font-bold md:font-black text-5xl sm:text-6xl md:text-[4.5rem] leading-[0.95] tracking-tight">
                   One Flat Rate
                 </span>
                 <span className="text-shadow-hero-sub block mt-5 sm:whitespace-nowrap text-white font-normal tracking-tight text-2xl sm:text-3xl md:text-[2.25rem] leading-[1.1]">
@@ -163,8 +163,36 @@ export const Hero = () => {
             </div>
           </div>
 
-          {/* Visual Content - Right Side (Phone Mockup) — also shown on mobile below the text */}
-          <div className="lg:col-span-6 relative flex justify-center items-center mt-4 lg:mt-0">
+          {/* Visual Content - Right Side (Phone Mockup) — DESKTOP ONLY in the
+              hero. On mobile it renders in its own section below the hero (see
+              <HomeHeroPhone> usage in the page), so the hero is a clean 100vh of
+              headline + CTAs and the phone never sits above the fold. */}
+          <div className="hidden lg:flex lg:col-span-6 relative justify-center items-center">
+            <HomeHeroPhone clock={clock} gmailScrolled={gmailScrolled} setGmailScrolled={setGmailScrolled} />
+          </div>
+        </div>
+      </Container>
+    </div>
+  );
+};
+
+/**
+ * The iPhone + Gmail service-report mockup from the homepage hero. Extracted so
+ * it can render in two places: inside the hero's right column on desktop, and in
+ * a standalone section below the hero on mobile (HomeHeroPhoneSection) — keeping
+ * the heavy mockup out of the above-the-fold 100vh on phones. The Gmail
+ * scroll-tint state lives in the parent (Hero) and is threaded through as props,
+ * since the desktop instance shares Hero's clock tick.
+ */
+type HomeHeroPhoneProps = {
+  clock: string;
+  gmailScrolled: boolean;
+  setGmailScrolled: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled }: HomeHeroPhoneProps) => {
+  return (
+    <>
             {/* Handwritten label + arrow — animates as if being written/drawn in. */}
             <div
               className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 xl:translate-x-12 flex-col items-start z-20 pointer-events-none"
@@ -426,10 +454,24 @@ export const Hero = () => {
                   Inset kept tight on the bottom so the bloom doesn't bleed into the hero's fade zone. */}
               <div className="absolute -top-6 -left-6 -right-6 bottom-12 bg-gradient-to-br from-brand-blue/15 via-brand-blue-dark/10 to-brand-orange/15 blur-3xl -z-10 rounded-[3rem]" />
             </div>
-          </div>
-        </div>
+    </>
+  );
+};
 
-      </Container>
-    </div>
+/**
+ * Mobile-only section that renders the homepage phone mockup below the hero, so
+ * the heavy mockup stays out of the above-the-fold 100vh on phones. Owns its own
+ * clock + Gmail-scroll state (independent of the desktop hero instance). Hidden
+ * on lg+, where the phone lives inside the hero instead.
+ */
+export const HomeHeroPhoneSection = () => {
+  const clock = useLiveClock();
+  const [gmailScrolled, setGmailScrolled] = useState(false);
+  return (
+    <section className="lg:hidden relative bg-[#07111c] pt-4 pb-12 flex justify-center overflow-hidden">
+      <div className="relative flex justify-center items-center">
+        <HomeHeroPhone clock={clock} gmailScrolled={gmailScrolled} setGmailScrolled={setGmailScrolled} />
+      </div>
+    </section>
   );
 };
