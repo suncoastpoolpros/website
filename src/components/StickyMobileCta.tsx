@@ -53,7 +53,7 @@ export const StickyMobileCta = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-          className="sm:hidden fixed bottom-0 inset-x-0 z-[90] px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 bg-[#07111c] border-t border-white/10"
+          className="sm:hidden fixed bottom-0 inset-x-0 z-[90] px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-3 bg-[#07111c] border-t border-white/10"
         >
           <div className="flex gap-2.5">
             {/* Compact tap-to-call — matches the chooser's "Call us" icon tile */}
