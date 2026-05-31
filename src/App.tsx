@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { MotionConfig } from 'motion/react';
 import { QuoteSheetProvider } from '@/components/QuoteSheet';
+import { ChunkErrorBoundary, clearChunkReloadFlag } from '@/components/ChunkErrorBoundary';
 
 // Routes are lazy-loaded so the homepage hydration only has to parse
 // LandingPage code (~36 KB gz), not every page on the site. On real iPhone
@@ -52,6 +53,11 @@ const useIsMobile = () => {
 
 export default function App() {
   const isMobile = useIsMobile();
+  // A route mounted successfully — reset the chunk-reload one-shot so a future
+  // chunk failure later in the session can self-heal too.
+  useEffect(() => {
+    clearChunkReloadFlag();
+  }, []);
   return (
     <QuoteSheetProvider>
       <ScrollToTop />
@@ -64,7 +70,11 @@ export default function App() {
           global force-visible CSS keeps content shown regardless of hydration. */}
       <MotionConfig reducedMotion={isMobile ? 'always' : 'never'}>
       {/* fallback={null} so the current page stays visible during the brief
-          chunk-load gap on slow connections, instead of flashing a blank div. */}
+          chunk-load gap on slow connections, instead of flashing a blank div.
+          ChunkErrorBoundary catches a lazy import that FAILS (e.g. a stale chunk
+          after a deploy) and hard-reloads once, so a footer/nav link tap can't
+          leave the user on a permanent blank page (was reproducible on iOS). */}
+      <ChunkErrorBoundary>
       <Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -83,6 +93,7 @@ export default function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
+      </ChunkErrorBoundary>
       </MotionConfig>
     </QuoteSheetProvider>
   );
