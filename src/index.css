@@ -156,6 +156,14 @@
     scrollbar-width: none;
   }
 
+  /* Dark page base so the iOS safe-area / home-indicator strip (below the fixed
+     mobile CTA, now that viewport-fit=cover lets content draw into it) shows the
+     site's navy, not the browser's default white. */
+  html,
+  body {
+    background-color: #07111c;
+  }
+
   /* Hide scrollbars site-wide while keeping scroll behavior intact.
      Targets the page itself and every scrollable descendant. */
   html,
