@@ -57,6 +57,22 @@ type SubmissionPayload = {
 };
 
 export const onRequestPost = async (ctx: PagesContext): Promise<Response> => {
+  // Top-level guard: a Pages Function that throws (or exceeds a limit)
+  // before returning a Response makes Cloudflare serve a bare `error code:
+  // 502` HTML page instead of our JSON. That page is opaque to the client
+  // and impossible to debug from the browser. Wrapping the whole handler
+  // guarantees we always return our own JSON with a `detail` we can read.
+  try {
+    return await handlePost(ctx);
+  } catch (err) {
+    return json(
+      { ok: false, error: 'server_error', detail: String(err).slice(0, 300) },
+      500
+    );
+  }
+};
+
+const handlePost = async (ctx: PagesContext): Promise<Response> => {
   const { request, env } = ctx;
 
   // 1. Origin allow-list. Cheap CSRF / curl-from-script guard. In production
@@ -106,7 +122,7 @@ export const onRequestPost = async (ctx: PagesContext): Promise<Response> => {
     // Use a tagged log line for easy grep later.
     // (No console.error in prod since esbuild strips it; logs come from the
     //  Pages dashboard runtime, which prints thrown errors automatically.)
-    return json({ ok: false, error: 'delivery_failed', detail: String(err).slice(0, 200) }, 502);
+    return json({ ok: false, error: 'delivery_failed', detail: String(err).slice(0, 300) }, 502);
   }
 
   return json({ ok: true }, 200);
@@ -188,7 +204,16 @@ const sendViaResend = async (payload: SubmissionPayload, env: Env): Promise<void
   const to = env.CONTACT_TO_EMAIL;
   const from = env.CONTACT_FROM_EMAIL;
   if (!apiKey || !to || !from) {
-    throw new Error('email_config_missing');
+    // Report WHICH var is missing so a misconfigured deploy is diagnosable
+    // from the response body instead of a generic failure.
+    const missing = [
+      !apiKey && 'RESEND_API_KEY',
+      !to && 'CONTACT_TO_EMAIL',
+      !from && 'CONTACT_FROM_EMAIL',
+    ]
+      .filter(Boolean)
+      .join(', ');
+    throw new Error(`email_config_missing: ${missing}`);
   }
 
   const subject = composeSubject(payload);
@@ -219,13 +244,14 @@ const sendViaResend = async (payload: SubmissionPayload, env: Env): Promise<void
         }),
       });
       if (res.ok) return; // success — bail out of retry loop
-      // 4xx → permanent failure, don't retry
+      const body = await res.text();
+      // 4xx → permanent failure (bad data, unverified sender domain, bad
+      // API key, etc.), don't retry. The body carries Resend's reason.
       if (res.status >= 400 && res.status < 500) {
-        const body = await res.text();
-        throw new Error(`resend_${res.status}: ${body.slice(0, 200)}`);
+        throw new Error(`resend_${res.status}: ${body.slice(0, 250)}`);
       }
       // 5xx → transient, retry once
-      lastErr = new Error(`resend_${res.status}`);
+      lastErr = new Error(`resend_${res.status}: ${body.slice(0, 250)}`);
     } catch (err) {
       lastErr = err;
     }
