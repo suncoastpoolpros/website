@@ -67,6 +67,30 @@ Every page preloads **only the hero image and font weights it actually paints ab
 - When adding a hero/city page, set both `heroPreload` and `fontPreload`, and point `heroPreload` at the image the page *actually paints* (check `hero-bg-*` in `index.css` — e.g. Belleair reuses the St-Pete image).
 - To verify after build: `grep` the `dist/<route>/index.html` head for `preload" as="image"` and `preload" as="font"` — each route should list only its own.
 
+## Mobile motion & animation (strip on mobile, keep on desktop)
+
+JS-driven animation is the other big real-iPhone cost (alongside blur). The rule: **page animations play on desktop, are stripped on mobile; interactive overlay animations (nav drawer, quote sheet) play on both.**
+
+**How it's wired:**
+
+- `App.tsx` wraps `<Routes>` in `<MotionConfig reducedMotion={isMobile ? 'always' : 'never'}>` (via a `useIsMobile` hook, `max-width:767px`). On mobile every `<m.*>` renders at its **final** state (no animation); desktop animates normally. `useIsMobile` starts `false` to match SSR/first paint, then flips after mount.
+- **Force-visible CSS safety net** (`src/index.css`, `@media (max-width:767px)`): `.force-static-motion [style*="opacity"] { opacity:1 !important }` (+ `transform:none`). This exists because below-fold `whileInView`+`viewport{once:true}` elements re-run their lifecycle when an overlay opens/closes and get **stuck invisible** (whileInView won't re-fire). Forcing them visible on mobile prevents that. **Every page's root wrapper carries the `.force-static-motion` class.**
+- **Keep the nav drawer + quote sheet animating on mobile.** The drawer is **portaled to `document.body`** (`createPortal` in `Navbar.tsx`) so it renders *outside* `.force-static-motion` and the force-visible rule can't flatten its staggered entrance. It also has its own nested `<MotionConfig reducedMotion="never">`. The quote sheet renders from `QuoteSheetProvider` at the app root, already outside `.force-static-motion`.
+
+**Gotchas:**
+- Don't use a complex `:not(.x *)` (descendant combinator inside `:not()`) to exclude a subtree from the force-visible rule — it's unreliable on Safari and silently flattened the drawer. Use a portal (drawer) or render outside the marker instead.
+- If you add a desktop page animation, it auto-strips on mobile — no per-element work needed. If you add an overlay that must animate on mobile, portal it out of `.force-static-motion` + wrap in `reducedMotion="never"`.
+- `entry-server.tsx` has its own `reducedMotion="user"` MotionConfig (SSR path) — harmless, separate from the client `App.tsx` one.
+
+## Other mobile/iOS fixes baked in (don't regress these)
+
+- **CSS is inlined into each page's `<head>`** by `prerender.mjs` (a `<style>` block, with the render-blocking `<link>` dropped — only a `<noscript>` fallback link remains). This removes the render-blocking stylesheet round-trip on cold mobile loads. Inline-only (not inline + async link) is correct here: it's an SPA, so in-app nav never re-fetches CSS — a cached link would only double-download on first visit. Cost: ~13 KB brotli more HTML per direct page load.
+- **`viewport-fit=cover`** is in the `index.html` viewport meta, and `html, body { background:#07111c }` — without these, the iOS home-indicator safe-area strip rendered **white** under the fixed sticky CTA, and `env(safe-area-inset-bottom)` returned 0. The sticky CTA uses `pb-[max(0.5rem,env(safe-area-inset-bottom))]` (max, not `0.75rem + inset`, which over-padded).
+- **`ChunkErrorBoundary`** (`src/components/`) wraps the lazy routes: if a `lazy()` import fails (commonly a stale hashed chunk after a deploy — iOS keeps pages alive across deploys), it hard-reloads once instead of leaving a permanent blank page (was reproducible by tapping a footer link on iOS). sessionStorage one-shot guards against reload loops.
+- **Full-height heros use `min-h-dvh`** (not `min-h-screen`/`100vh`) so they fill the *visible* iOS viewport without the URL-bar overshoot, and the next section starts at the true fold. Only the hero sections; page wrappers stay `min-h-screen`.
+- **Heavy phone mockups are desktop-only in the hero + rendered in a separate `lg:hidden` section below on mobile** (homepage `HomeHeroPhoneSection`, Treasure `PhoneShowcaseMobile`) — keeps the mockup out of the above-the-fold 100vh on phones.
+- **Decorative mockup labels are `<p>`, not `<h2>`** — the ServiceReport "Water Chemistry / Chemicals Added / …" labels were polluting the page heading outline. Keep UI-graphic text out of `<h1>`–`<h6>`.
+
 ## Files that matter most
 
 - `src/App.tsx` — route table. Pages are `lazy()` (see non-negotiable #2), wrapped in one `<Suspense fallback={null}>`. Nav links use `SmartLink` to preload chunks on intent.
@@ -89,7 +113,7 @@ Targets on Slow 4G + 4× CPU throttle (Lighthouse mobile profile):
 | TBT | < 200ms | Google ranking signal |
 | CLS | < 0.1 | Set `width`/`height` on every `<img>` |
 
-Current homepage LCP is ~3s on first load — bottlenecked on the hero image. Below-the-fold sections (FeatureGrid, ServiceAreas, Process, Services, CtaBand) have **no JS animations**; they're plain CSS. Motion is only used in Navbar drawer + QuoteSheet (interactive, off the critical path).
+Below-the-fold homepage sections (FeatureGrid, ServiceAreas, Process, Services, CtaBand) are plain CSS, no JS animation. The hero text/phone columns DO use `m.*` entrance animations (desktop only — stripped on mobile by the motion system above). City-page below-folds use `whileInView` reveals (also desktop-only on mobile). See "Mobile motion & animation."
 
 ## Lessons learned the hard way this session
 
@@ -103,6 +127,13 @@ Current homepage LCP is ~3s on first load — bottlenecked on the hero image. Be
 8. **`backdrop-filter` blur was the #1 cause of real-iPhone jank** — far worse than the static glow orbs. On iOS each blurred surface re-rasters everything behind it; toggling one (drawer/popup/sticky-CTA close) blanked and repainted the page ("blank, then fades back in"). Killing all blur on mobile was the single biggest perceived-speed win. TBT stayed 0ms throughout — GPU cost is invisible to it. See non-negotiable #10.
 9. **City pages had wrong prerendered SEO** because their meta ran in a client-only `useEffect`. The static HTML Google sees shipped the homepage title + canonical → `/`. Fixed by moving them to `usePageMeta`. See non-negotiable #9.
 10. **Per-page preloads beat a global set.** Content pages were preloading the St-Pete hero (never shown) and Montserrat-900 (never rendered), while `inter-600` — needed on every page — wasn't preloaded at all. See "Per-page above-the-fold preloading."
+11. **JS animation, not just blur, janks real iPhones — strip page motion on mobile.** `whileInView`/entrance animations across the site were stuttering on phones while the lab looked fine (GPU/compositing, invisible to TBT). Global `MotionConfig reducedMotion` on mobile fixed it. Keep interactive overlays (drawer/sheet) animating via portal + nested `reducedMotion="never"`.
+12. **A complex `:not(.x *)` to exclude a subtree is unreliable on Safari.** It silently flattened the nav drawer's entrance animation on iOS. Portal the overlay out of the scoped wrapper instead of trying to exclude it via CSS.
+13. **Inline CSS removes the render-blocking stylesheet on cold loads** — but inline-*only* (drop the `<link>`), not inline + async link, for an SPA (in-app nav never re-fetches CSS). Done in `prerender.mjs`.
+14. **iOS safe area renders white without `viewport-fit=cover`** + a dark `html/body` background, and `env(safe-area-inset-*)` returns 0. Use `max(floor, env(...))` for safe-area padding, not `floor + env(...)`.
+15. **A failed `lazy()` chunk = permanent blank page** (Suspense `fallback={null}` shows nothing, no recovery) — common with stale chunks after a deploy on iOS. `ChunkErrorBoundary` hard-reloads once to recover.
+16. **Use `min-h-dvh` for full-height heros, not `100vh`/`min-h-screen`** — `100vh` overshoots behind the iOS URL bar, leaving the next section peeking into the fold.
+17. **Title tags: lead with keyword + city, 40–60 chars, city-page statement hooks.** Separator (pipe/dash) has no proven CTR edge — front-loading + length + audience-matched wording do. Belleair → "Never a Missed Visit" (absentee owners); Treasure → "Always Guest-Ready" (rentals).
 
 ## What to do if mobile feels slow
 
@@ -119,8 +150,10 @@ Current homepage LCP is ~3s on first load — bottlenecked on the hero image. Be
 - `npm run lint` clean (it's just `tsc --noEmit`).
 - `npm run build` succeeds and prints "Prerendered N/N routes".
 - No `<template data-msg="Switched to client rendering...">` in any `dist/*/index.html` (grep for it).
-- No hydration warnings when you open the deployed page in a real browser with DevTools open.
+- No hydration warnings (React #418) in the deployed page's console — inline `style={{}}` colors/shadows on SSR'd elements are the usual cause (non-negotiable #4).
 - Real mobile measurement (Slow 4G + 4× CPU) — FCP < 1.5s, LCP < 2.5s, TBT < 200ms on the homepage.
+- On a real iPhone: no white safe-area strip under the sticky CTA; nav drawer entrance animates; footer/nav links don't land on a blank page; no blur visible.
+- New/changed pages: correct `<title>`/canonical in the *prerendered* HTML; each route's `<head>` preloads only its own hero + fonts; root wrapper has `.force-static-motion`.
 - Each `dist/<route>/index.html` head preloads only its own hero + fonts (grep for `preload" as="image"` / `as="font"`); content pages preload no hero.
 - New/changed city pages: correct `<title>` + canonical in the *prerendered* HTML (they use `usePageMeta`, not an inline effect).
 - No `backdrop-filter`/blur visible on a real phone (it's globally disabled `<768px`).
