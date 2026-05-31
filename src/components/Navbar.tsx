@@ -94,7 +94,7 @@ export const Navbar = () => {
       // bg on mobile reads the same without the GPU re-raster.
       className={`fixed w-full z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-[#0a1628]/95 md:bg-[#0a1628]/85 md:backdrop-blur-[10px] border-b border-white/10'
+          ? 'bg-[#0a1628] md:bg-[#0a1628]/85 md:backdrop-blur-[10px] border-b border-white/10'
           : 'bg-transparent border-b border-transparent'
       }`}
     >
