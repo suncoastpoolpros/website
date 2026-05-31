@@ -88,9 +88,13 @@ export const Navbar = () => {
   return (
     <>
     <nav
+      // backdrop-blur is desktop-only (md:). On mobile, toggling it on scroll
+      // and unmounting the drawer's blur together forces iOS Safari to
+      // re-rasterize the whole page — a visible blank/repaint flash. A solid
+      // bg on mobile reads the same without the GPU re-raster.
       className={`fixed w-full z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-[#0a1628]/85 backdrop-blur-xl border-b border-white/10'
+          ? 'bg-[#0a1628]/95 md:bg-[#0a1628]/85 md:backdrop-blur-xl border-b border-white/10'
           : 'bg-transparent border-b border-transparent'
       }`}
     >
@@ -220,7 +224,10 @@ export const Navbar = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
               onClick={() => setIsOpen(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              // Solid scrim instead of backdrop-blur: on mobile the blur's
+              // unmount re-rasterizes the page behind it (blank/repaint flash
+              // on iOS). Higher opacity keeps the same dimmed look.
+              className="absolute inset-0 bg-black/75 md:backdrop-blur-sm md:bg-black/60"
             />
 
             {/* Panel */}

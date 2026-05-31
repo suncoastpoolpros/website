@@ -19,6 +19,10 @@ export const useQuoteSheet = () => {
 
 export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
+  // Tracks whether the form inside the chooser was successfully submitted, so
+  // the sheet header can swap to a confirmation. Reset whenever the sheet is
+  // (re)opened so a fresh visit always starts on the question, not the thanks.
+  const [submitted, setSubmitted] = useState(false);
 
   // Lock body scroll while the sheet is open.
   useEffect(() => {
@@ -39,7 +43,10 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen]);
 
-  const open = () => setIsOpen(true);
+  const open = () => {
+    setSubmitted(false);
+    setIsOpen(true);
+  };
   const close = () => setIsOpen(false);
 
   return (
@@ -55,7 +62,10 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
-              className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+              // Solid scrim on mobile (md:backdrop-blur only): the blur's
+              // unmount otherwise re-rasterizes the page behind it on iOS,
+              // causing a blank/repaint flash when the sheet closes.
+              className="absolute inset-0 bg-black/80 md:bg-black/70 md:backdrop-blur-sm"
               onClick={close}
             />
 
@@ -73,10 +83,12 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
               <div className="flex items-start justify-between mb-5 pb-5 border-b border-white/[0.06]">
                 <div>
                   <h2 className="text-[22px] sm:text-2xl font-display font-bold text-white leading-tight tracking-tight">
-                    Tell us about your pool.
+                    {submitted ? 'Thank you!' : 'Tell us about your pool.'}
                   </h2>
                   <p className="text-gray-400 text-[14px] mt-1.5 leading-snug">
-                    Three ways to start. Pick whichever fits.
+                    {submitted
+                      ? "We've received your details and will be in touch soon."
+                      : 'Three ways to start. Pick whichever fits.'}
                   </p>
                 </div>
                 <button
@@ -89,11 +101,13 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
                 </button>
               </div>
 
-              <QuoteChooser />
+              <QuoteChooser onSubmitted={() => setSubmitted(true)} />
 
               {/* Quiet escalation line — signals in-person visits are available
                   without making them a fourth visible option. Premium buyers who
-                  want this will ask; everyone else picks one of the three above. */}
+                  want this will ask; everyone else picks one of the three above.
+                  Hidden after a successful submit so the confirmation reads clean. */}
+              {!submitted && (
               <div className="mt-6 pt-5 border-t border-white/[0.06] flex items-center justify-center gap-2">
                 <Handshake className="w-4 h-4 text-gray-500 shrink-0" />
                 <p className="text-[13px] text-gray-500">
@@ -106,6 +120,7 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
                   </a>
                 </p>
               </div>
+              )}
             </m.div>
           </div>
         )}
