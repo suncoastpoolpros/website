@@ -28,7 +28,7 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center overflow-hidden pt-24 pb-16">
+    <div className="relative min-h-dvh flex items-center overflow-hidden pt-24 pb-16">
       {/* Immersive Background Elements */}
       <div className="absolute inset-0 z-0">
         {/* Near-black base with a hint of cool undertone */}

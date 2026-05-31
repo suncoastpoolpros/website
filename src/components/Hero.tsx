@@ -37,7 +37,7 @@ export const Hero = () => {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-2rem)] lg:min-h-[760px] flex items-center justify-center overflow-hidden pt-20 pb-20">
+    <div className="relative min-h-dvh lg:min-h-[760px] flex items-center justify-center overflow-hidden pt-20 pb-20">
       {/* Immersive Background Elements */}
       <div className="absolute inset-0 z-0">
         {/* Near-black base with a hint of cool undertone */}
@@ -468,7 +468,7 @@ export const HomeHeroPhoneSection = () => {
   const clock = useLiveClock();
   const [gmailScrolled, setGmailScrolled] = useState(false);
   return (
-    <section className="lg:hidden relative bg-[#07111c] pt-4 pb-12 flex justify-center overflow-hidden">
+    <section className="lg:hidden relative bg-[#07111c] pt-16 pb-12 flex justify-center overflow-hidden">
       <div className="relative flex justify-center items-center">
         <HomeHeroPhone clock={clock} gmailScrolled={gmailScrolled} setGmailScrolled={setGmailScrolled} />
       </div>

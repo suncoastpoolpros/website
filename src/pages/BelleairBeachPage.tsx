@@ -28,7 +28,7 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center overflow-hidden pt-24 pb-16">
+    <div className="relative min-h-dvh flex items-center overflow-hidden pt-24 pb-16">
       {/* Background — coastal, calm, premium */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[#02060c]" />
