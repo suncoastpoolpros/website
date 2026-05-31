@@ -194,7 +194,10 @@ export const ServiceReport = ({
 
         /* ---- Section headings ---- */
         .sr-section { padding: 22px 24px 8px; }
-        .sr-section h2 {
+        /* These are decorative labels inside the email-mockup graphic, not page
+           content — kept as <p> (not <h2>) so they don't pollute the page's
+           heading outline / SEO hierarchy. */
+        .sr-section p {
           margin: 0;
           color: #0f0f0e;
           font-size: 12px;
@@ -371,7 +374,7 @@ export const ServiceReport = ({
           </section>
 
           {/* Water Chemistry */}
-          <div className="sr-section"><h2>Water Chemistry</h2></div>
+          <div className="sr-section"><p>Water Chemistry</p></div>
           <div className="sr-table-wrap">
             <div className="sr-table">
               <div className="sr-trow"><span className="sr-tlabel">Free Chlorine</span><span className="sr-tvalue">3.5</span><span className="sr-tunit">ppm</span></div>
@@ -385,7 +388,7 @@ export const ServiceReport = ({
           </div>
 
           {/* Chemicals Added */}
-          <div className="sr-section"><h2>Chemicals Added</h2></div>
+          <div className="sr-section"><p>Chemicals Added</p></div>
           <div className="sr-table-wrap">
             <div className="sr-table">
               <div className="sr-trow"><span className="sr-tlabel">Muriatic Acid (gal)</span><span className="sr-tvalue">0.25</span><span className="sr-tunit"></span></div>
@@ -393,7 +396,7 @@ export const ServiceReport = ({
           </div>
 
           {/* Tasks Completed */}
-          <div className="sr-section"><h2>Tasks Completed</h2></div>
+          <div className="sr-section"><p>Tasks Completed</p></div>
           <div className="sr-tasks">
             <span className="sr-task"><span className="sr-task__check">✓</span>Skimmed debris</span>
             <span className="sr-task"><span className="sr-task__check">✓</span>Emptied skimmer basket(s)</span>
@@ -407,7 +410,7 @@ export const ServiceReport = ({
               browser cache is reused on every viewport. Mobile gets the mobile
               webp; desktop gets the 1280 webp; JPG fallbacks are for browsers
               that don't support webp. */}
-          <div className="sr-section"><h2>Photos</h2></div>
+          <div className="sr-section"><p>Photos</p></div>
           <div className="sr-photo-wrap">
             <picture>
               <source
