@@ -253,18 +253,27 @@
   filter: saturate(1.25) brightness(0.55) contrast(1.08) hue-rotate(-6deg);
 }
 
-/* Belleair mobile: strip all JS-driven motion (see MotionConfig in
-   BelleairBeachPage). Motion ships its `initial` state as inline
-   `opacity:0;transform:...` in the prerendered HTML, which would leave
-   below-fold content invisible during the paint→hydration gap on a slow
-   phone. On mobile we force every motion element under .belleair-page to its
-   final visible, untransformed state at first paint — so content is shown
-   immediately regardless of when (or whether) JS hydrates. !important beats
-   the inline style. Scoped to <=767px so desktop animations are untouched. */
+/* Belleair mobile: keep all motion-controlled content unconditionally
+   visible. The below-fold uses whileInView + viewport{once:true}; opening and
+   closing the quote sheet re-runs those elements' lifecycle, which re-applies
+   their `initial` opacity:0/transform but does NOT re-fire whileInView (it
+   already counted as "seen"), leaving sections stuck invisible after the
+   popup closes. Rather than chase motion's inline-style churn by matching a
+   specific opacity value, we force EVERY descendant under .belleair-page to
+   full opacity and no transform on mobile — so no motion state, at any point
+   in the open/close cycle, can hide content. !important beats motion's inline
+   style. <=767px only, so desktop animations are untouched. */
 @media (max-width: 767px) {
-  .belleair-page [style*="opacity:0"],
-  .belleair-page [style*="opacity: 0"] {
+  /* Only elements motion controls carry an inline `opacity`/`transform` in
+     their style attribute — Tailwind utilities use classes, not inline style,
+     so this leaves intentional opacity-40 overlays, centering transforms,
+     icon rotations, etc. untouched. Matching on the presence of the inline
+     property (any value) rather than a specific one means it holds through
+     every state of the popup open/close cycle. */
+  .belleair-page [style*="opacity"] {
     opacity: 1 !important;
+  }
+  .belleair-page [style*="transform"] {
     transform: none !important;
   }
 }
