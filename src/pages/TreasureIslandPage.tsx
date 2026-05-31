@@ -174,10 +174,12 @@ const HeroSection = () => {
             </div>
           </m.div>
 
-          {/* Right column: the phone mockup. Lazy-loaded. On mobile it renders
-              below the text column (centered) so the hero still feels complete;
-              on lg+ it sits to the right in the 5-col slot. */}
-          <div className="lg:col-span-5 flex justify-center items-center relative mt-8 lg:mt-0">
+          {/* Right column: the phone mockup. DESKTOP ONLY (lg+) — it sits in the
+              5-col slot beside the text. On mobile it's pulled out of the hero
+              into its own section below (see TreasureIslandHeroSection's sibling)
+              so the hero is a clean 100vh of text/CTAs and the phone never sits
+              above the fold competing for paint. */}
+          <div className="hidden lg:flex lg:col-span-5 justify-center items-center relative">
             <TreasureIslandHeroPhone />
           </div>
         </div>
@@ -185,6 +187,15 @@ const HeroSection = () => {
     </div>
   );
 };
+
+// Mobile-only phone-mockup section, rendered immediately after the hero. Keeps
+// the heavy phone out of the above-the-fold 100vh hero on phones; on lg+ the
+// phone lives inside the hero grid instead (this section is hidden there).
+const PhoneShowcaseMobile = () => (
+  <section className="lg:hidden relative bg-[#07111c] py-12 flex justify-center">
+    <TreasureIslandHeroPhone />
+  </section>
+);
 
 // JSON-LD (LocalBusiness + FAQPage) injected client-side. Title, description,
 // canonical, and OG tags are handled by usePageMeta (which runs during SSR so
@@ -248,6 +259,7 @@ export const TreasureIslandPage = () => {
       <div className="relative z-10">
         <Navbar />
         <HeroSection />
+        <PhoneShowcaseMobile />
         <TreasureIslandBelowFold />
         <CtaBand />
         <Footer />
