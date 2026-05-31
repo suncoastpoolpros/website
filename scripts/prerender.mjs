@@ -107,10 +107,45 @@ function injectBody(html, body) {
   );
 }
 
+/**
+ * Inline the build CSS into a <style> in <head> and DROP the render-blocking
+ * <link>, so first paint never waits on a stylesheet request.
+ *
+ * Why inline-only (not inline + async link): this is a prerendered SPA. On a
+ * cold visit, inlining removes a render-blocking round-trip — the CSS arrives
+ * in the same HTML response, fastest possible first paint. On in-app nav React
+ * Router swaps components and never re-fetches CSS, so a cached <link> would
+ * buy nothing; keeping it would just double-download the CSS on first visit.
+ * The trade — each direct/hard-refresh page load re-sends ~13KB brotli of
+ * inlined CSS uncached — is worth it for a marketing site optimizing cold
+ * mobile landings. A <noscript> <link> covers the JS-off case.
+ */
+function inlineCss(html, cssHref, cssText) {
+  const linkRe = new RegExp(
+    `<link rel="stylesheet"[^>]*href="${cssHref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>`,
+  );
+  if (!linkRe.test(html)) return html;
+  const replacement =
+    `<style>${cssText}</style>\n    ` +
+    `<noscript><link rel="stylesheet" crossorigin href="${cssHref}" /></noscript>`;
+  return html.replace(linkRe, replacement);
+}
+
 async function run() {
   const template = await fs.readFile(TEMPLATE, 'utf8');
   // Bun-style file URL import for the SSR bundle so Node ESM resolves correctly.
   const { render, PRERENDER_ROUTES } = await import(pathToFileURL(SERVER_ENTRY).href);
+
+  // Read the build CSS once so we can inline it into every page's <head>
+  // (kills the render-blocking stylesheet request). The href in the template
+  // is hashed by Vite; resolve it to a file under dist/.
+  const cssHref = (template.match(/<link rel="stylesheet"[^>]*href="([^"]+)"/) || [])[1];
+  let cssText = '';
+  if (cssHref) {
+    cssText = await fs.readFile(path.join(CLIENT_DIST, cssHref.replace(/^\//, '')), 'utf8');
+  } else {
+    console.warn('⚠ No stylesheet <link> found in template — skipping CSS inline.');
+  }
 
   let count = 0;
   for (const route of PRERENDER_ROUTES) {
@@ -127,6 +162,7 @@ async function run() {
     let html = template;
     html = injectHead(html, meta);
     html = injectBody(html, body);
+    if (cssText) html = inlineCss(html, cssHref, cssText);
 
     const outDir = route === '/'
       ? CLIENT_DIST
