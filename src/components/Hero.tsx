@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { m } from 'motion/react';
 import { Phone, Star, MapPin } from 'lucide-react';
 import { Glass } from '@/components/Glass';
 import { useQuoteSheet } from '@/components/QuoteSheet';
@@ -97,8 +98,15 @@ export const Hero = () => {
       <Container className="relative z-10 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
-          {/* Text Content - Left Side */}
-          <div className="lg:col-span-6 pt-10 lg:pt-0">
+          {/* Text Content - Left Side. Slide-in entrance (desktop only — the
+              global MotionConfig in App.tsx sets reducedMotion on mobile, so
+              this renders static there). */}
+          <m.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className="lg:col-span-6 pt-10 lg:pt-0"
+          >
             <div>
               <Glass className="inline-flex items-center px-4 py-2 rounded-full mb-8">
                 <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">St. Pete · Largo · Clearwater · Tampa</span>
@@ -161,15 +169,20 @@ export const Hero = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </m.div>
 
           {/* Visual Content - Right Side (Phone Mockup) — DESKTOP ONLY in the
               hero. On mobile it renders in its own section below the hero (see
               <HomeHeroPhone> usage in the page), so the hero is a clean 100vh of
               headline + CTAs and the phone never sits above the fold. */}
-          <div className="hidden lg:flex lg:col-span-6 relative justify-center items-center">
+          <m.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
+            className="hidden lg:flex lg:col-span-6 relative justify-center items-center"
+          >
             <HomeHeroPhone clock={clock} gmailScrolled={gmailScrolled} setGmailScrolled={setGmailScrolled} />
-          </div>
+          </m.div>
         </div>
       </Container>
     </div>
