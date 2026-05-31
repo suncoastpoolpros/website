@@ -67,20 +67,12 @@ export const Hero = () => {
           aria-hidden
         />
 
-        {/* Gradient overlay — lightened (~25-30%) so the dusk waterfront photo
-            reads through. Mobile keeps a slightly stronger pass for stacked
-            body copy; desktop is lighter since the left scrim does the work. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#02060c]/40 via-[#04090f]/52 to-[#07111c] md:from-[#02060c]/28 md:via-[#04090f]/45" />
-
-        {/* Mobile readability scrim — a soft top-down wash behind the stacked
-            text column only. Lightened so the photo stays present while still
-            lifting contrast on the headline, paragraph, and trust strip. */}
-        <div className="md:hidden absolute inset-0 bg-gradient-to-b from-[#02060c]/25 via-[#02060c]/32 to-transparent pointer-events-none" />
-
-        {/* Left scrim — DESKTOP ONLY. On mobile the layout is centered/stacked,
-            so a left scrim would just crush the whole image. Eased so the photo
-            shows through more on the right while text stays readable on the left. */}
-        <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#02060c]/70 via-[#02060c]/20 to-transparent pointer-events-none" />
+        {/* Readability + framing scrim — ONE element (see .hero-scrim in
+            index.css) that replaces the former four divs: vertical darken,
+            mobile text scrim, desktop left scrim, and edge vignette. It layers
+            those gradients in a single background and swaps mobile↔desktop at
+            md. Same look, fewer DOM nodes / paint layers. */}
+        <div className="hero-scrim absolute inset-0 pointer-events-none" aria-hidden />
 
         {/* Spotlight glow behind the phone (right side) — pulls the eye to it */}
         <div className="hidden md:block absolute top-[18%] right-[5%] w-[40vw] h-[60vh] bg-brand-orange/12 rounded-full blur-[120px] animate-float" />
