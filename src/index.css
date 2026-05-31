@@ -190,14 +190,16 @@
     url('/waterfront-pool-st-petersburg-1920.webp') type('image/webp') 2x,
     url('/waterfront-pool-st-petersburg.jpg') type('image/jpeg') 1x
   );
-  filter: saturate(1.45) brightness(0.85) contrast(1.12) hue-rotate(-6deg);
+  /* Dusk photo is already dark; brightness raised 0.85 -> 1.0 so the overlay
+     passes (see Hero.tsx) don't crush it. */
+  filter: saturate(1.4) brightness(1) contrast(1.08) hue-rotate(-6deg);
 }
 .hero-bg-mobile {
   background-image: image-set(
     url('/waterfront-pool-st-petersburg-mobile.webp') type('image/webp'),
     url('/waterfront-pool-st-petersburg-mobile.jpg') type('image/jpeg')
   );
-  filter: saturate(1.45) brightness(0.85) contrast(1.12) hue-rotate(-6deg);
+  filter: saturate(1.4) brightness(1) contrast(1.08) hue-rotate(-6deg);
   -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 92%);
   mask-image: linear-gradient(to bottom, black 55%, transparent 92%);
 }
