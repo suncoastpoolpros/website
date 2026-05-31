@@ -142,8 +142,7 @@ const InterludeBand = () => (
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-15%' }}
         transition={{ duration: 1, ease: 'easeOut' }}
-        className="font-display italic text-white/90 text-2xl sm:text-3xl md:text-[2.25rem] leading-snug text-center px-6 max-w-2xl tracking-tight"
-        style={{ textShadow: '0 2px 24px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.5)' }}
+        className="text-shadow-interlude font-display italic text-white/90 text-2xl sm:text-3xl md:text-[2.25rem] leading-snug text-center px-6 max-w-2xl tracking-tight"
       >
         Quietly handled. Year-round.
       </m.p>
