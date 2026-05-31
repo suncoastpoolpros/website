@@ -115,7 +115,7 @@ const HeroSection = () => {
             </Glass>
 
             {/* Visual headline — a div, so the SEO h1 below carries keyword weight */}
-            <div className="font-display font-bold text-white tracking-tight mb-6 leading-[1.08]">
+            <div className="font-display font-bold md:font-black text-white tracking-tight mb-6 leading-[1.08]">
               <span className="block text-4xl sm:text-5xl md:text-[3.4rem] leading-[1.04]">
                 Guest-Ready.
               </span>
@@ -245,10 +245,15 @@ export const TreasureIslandPage = () => {
       wide: '/treasure-island-hero-1920.webp',
     },
     // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
-    // hero headline + H1 (now both Montserrat 700/400 — the big headline was
-    // dropped from 900 to 700, so Montserrat 900 is no longer above the fold
-    // here and isn't preloaded).
-    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat400],
+    // H1 (Montserrat 400). The big headline is font-bold md:font-black — i.e.
+    // Montserrat 700 on mobile, 900 on desktop — so preload 900 only at md+;
+    // mobile never fetches it.
+    fontPreload: [
+      ...NAV_FONTS,
+      FONTS.inter400,
+      FONTS.montserrat400,
+      { href: FONTS.montserrat900, media: '(min-width: 768px)' },
+    ],
   });
   usePageSchema();
 
