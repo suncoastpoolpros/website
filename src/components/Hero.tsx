@@ -142,10 +142,7 @@ export const Hero = () => {
               </div>
 
               {/* Trust strip */}
-              <div
-                className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px] text-gray-200"
-                style={{ textShadow: '0 1px 8px rgba(0,0,0,0.7)' }}
-              >
+              <div className="text-shadow-hero-strip mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px] text-gray-200">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-0.5 text-brand-orange">
                     {[0,1,2,3,4].map(i => (

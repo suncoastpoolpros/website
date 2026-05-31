@@ -76,17 +76,11 @@ const HeroSection = () => {
             </div>
 
             {/* SEO H1 — local keyword for this city page */}
-            <h1
-              className="font-display font-normal text-white/90 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 tracking-tight"
-              style={{ textShadow: '0 1px 12px rgba(0,0,0,0.6)' }}
-            >
+            <h1 className="text-shadow-city-h1 font-display font-normal text-white/90 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 tracking-tight">
               Discreet weekly pool service for Belleair Beach homes.
             </h1>
 
-            <p
-              className="text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7"
-              style={{ textShadow: '0 1px 10px rgba(0,0,0,0.55)' }}
-            >
+            <p className="text-shadow-city-body text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
               <span className="text-white">One dedicated technician, on the same day every week</span> —
               full pool cleaning, chemistry balancing, and equipment care for Belleair Beach's
               waterfront and Gulf-front homes. Clear, balanced, and guest-ready year-round.

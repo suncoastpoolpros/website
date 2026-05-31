@@ -14,6 +14,13 @@ export const StickyMobileCta = () => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    // This bar is sm:hidden (mobile only). Don't run the scroll listener or any
+    // layout reads on >=sm viewports — on desktop the bar never renders, so the
+    // getBoundingClientRect/querySelectorAll work was pure waste and showed up
+    // as a forced reflow in Lighthouse. Bail unless we're on a phone.
+    const mq = window.matchMedia('(max-width: 639px)');
+    if (!mq.matches) return;
+
     // The scroll handler reads layout (getBoundingClientRect / querySelectorAll),
     // which is expensive to run on every scroll event and can thrash layout on a
     // phone. Throttle to one read per animation frame via rAF so we never do
