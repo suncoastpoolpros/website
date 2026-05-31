@@ -95,7 +95,7 @@ const FaqPageInner = () => {
 
   return (
     <div className="min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
-      <div className="fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
+      <div className="absolute md:fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
 
       {/* SaaS hero glow */}
       <div className="absolute top-0 inset-x-0 h-[460px] pointer-events-none overflow-hidden">

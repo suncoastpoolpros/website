@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { m, useScroll, useTransform } from 'motion/react';
 import { UserPlus, Send, CheckCircle, Phone, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
@@ -28,11 +28,21 @@ const SignupPageInner = () => {
   const [error, setError] = useState<string | null>(null);
   const [firstName, setFirstName] = useState('');
 
-  // Parallax: the blue glow lags behind the page as you scroll down, so the
-  // form appears to scroll faster than the backdrop. Positive offset = the glow
-  // trails downward relative to content; ~40% of scroll distance = medium effect.
+  // Parallax: the blue glow lags behind the page as you scroll down (desktop
+  // only). The scroll transform runs every frame, so on mobile — where it caused
+  // scroll jank — we disable it and render the glow static. Starts disabled to
+  // match SSR/first paint, enables after mount on >=md.
+  const [parallaxOn, setParallaxOn] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const update = () => setParallaxOn(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
   const { scrollY } = useScroll();
-  const glowY = useTransform(scrollY, [0, 1000], [0, 400]);
+  const glowYTransform = useTransform(scrollY, [0, 1000], [0, 400]);
+  const glowY = parallaxOn ? glowYTransform : 0;
 
   // Today's date (YYYY-MM-DD) — prevents selecting a start date in the past.
   const today = new Date().toISOString().split('T')[0];
@@ -88,7 +98,7 @@ const SignupPageInner = () => {
 
   return (
     <div className="min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
-      <div className="fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
+      <div className="absolute md:fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
 
       {/* Signup-only shadow overlay: darkens the edges & corners for depth */}
       <div

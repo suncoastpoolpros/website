@@ -34,7 +34,7 @@ export const NotFoundPage = () => {
 
   return (
     <div className="min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#1669AE] selection:text-white flex flex-col">
-      <div className="fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
+      <div className="absolute md:fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
       <div className="relative z-10 flex-1 flex flex-col">
         <Navbar />
         <main className="flex-1 flex items-center justify-center py-24">
