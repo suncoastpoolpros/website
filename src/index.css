@@ -301,4 +301,16 @@
   .btn-glass {
     background-color: rgb(255 255 255 / 0.12);
   }
+
+  /* Decorative ambient glow divs use filter: blur() at huge radii (90–160px).
+     Unlike backdrop-filter these are a one-time paint cost, but a blur-[150px]
+     on a ~500px element is still a heavy GPU rasterization at paint and on any
+     repaint, and there are ~32 of them across pages. Every one is the same
+     pattern: an absolutely-positioned, content-less `rounded-full` div with a
+     translucent brand color — pure ambiance, never content. Hide them on
+     mobile (removing the blur instead would leave a hard-edged colored blob).
+     Desktop keeps the glows. */
+  [class*="blur-["].rounded-full {
+    display: none !important;
+  }
 }
