@@ -65,6 +65,7 @@ export const onRequestPost = async (ctx: PagesContext): Promise<Response> => {
   try {
     return await handlePost(ctx);
   } catch (err) {
+    console.log('[contact] server_error:', String(err).slice(0, 300));
     return json(
       { ok: false, error: 'server_error', detail: String(err).slice(0, 300) },
       500
@@ -117,11 +118,11 @@ const handlePost = async (ctx: PagesContext): Promise<Response> => {
   try {
     await sendViaResend(payload, env);
   } catch (err) {
-    // Genuinely failed after retry. Surface a generic error to the client
-    // (no internal details leak). Keep the error in CF logs for debugging.
-    // Use a tagged log line for easy grep later.
-    // (No console.error in prod since esbuild strips it; logs come from the
-    //  Pages dashboard runtime, which prints thrown errors automatically.)
+    // Log to the Pages real-time log stream so the failure reason is visible
+    // in the dashboard even when the edge replaces our JSON body with a
+    // generic error page. console.log shows up in the deployment's
+    // Real-time Logs `logs` array.
+    console.log('[contact] delivery_failed:', String(err).slice(0, 300));
     return json({ ok: false, error: 'delivery_failed', detail: String(err).slice(0, 300) }, 502);
   }
 
