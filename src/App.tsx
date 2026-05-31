@@ -1,5 +1,6 @@
-import React, { lazy, Suspense, useEffect } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { MotionConfig } from 'motion/react';
 import { QuoteSheetProvider } from '@/components/QuoteSheet';
 
 // Routes are lazy-loaded so the homepage hydration only has to parse
@@ -35,10 +36,33 @@ const ScrollToTop = () => {
   return null;
 };
 
+// Phone-width detection. Starts false to match the prerendered HTML + first
+// client render (no `window` during prerender), then flips after mount.
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  return isMobile;
+};
+
 export default function App() {
+  const isMobile = useIsMobile();
   return (
     <QuoteSheetProvider>
       <ScrollToTop />
+      {/* On mobile, strip all JS-driven page animations (reducedMotion="always"
+          → every <m.*> renders at its final visible state). This kills the
+          scroll-reveal / entrance motion that caused jank on real iPhones. The
+          QuoteSheet popup is rendered by QuoteSheetProvider OUTSIDE this config,
+          so its open/close animation is preserved; the Navbar drawer re-enables
+          motion via its own nested MotionConfig. The .belleair/.treasure-page +
+          global force-visible CSS keeps content shown regardless of hydration. */}
+      <MotionConfig reducedMotion={isMobile ? 'always' : 'never'}>
       {/* fallback={null} so the current page stays visible during the brief
           chunk-load gap on slow connections, instead of flashing a blank div. */}
       <Suspense fallback={null}>
@@ -59,6 +83,7 @@ export default function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
+      </MotionConfig>
     </QuoteSheetProvider>
   );
 }

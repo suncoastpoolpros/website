@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { m, MotionConfig } from 'motion/react';
+import React, { useEffect } from 'react';
+import { m } from 'motion/react';
 import { Phone, Star, MapPin, ShieldCheck } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -175,23 +175,6 @@ const usePageSchema = () => {
   }, []);
 };
 
-// True on phone-width viewports. Starts false so it matches the prerendered
-// HTML (no `window` during the Node prerender) and the first client render,
-// then flips after mount — avoiding a hydration mismatch. Used to strip all
-// JS-driven motion on mobile, where the animations caused GPU jank on real
-// iPhones. Below `md` (768px) only, so desktop keeps its animations.
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)');
-    const update = () => setIsMobile(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, []);
-  return isMobile;
-};
-
 export const BelleairBeachPage = () => {
   usePageMeta({
     title: PAGE_TITLE,
@@ -210,24 +193,20 @@ export const BelleairBeachPage = () => {
     fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
   });
   usePageSchema();
-  const isMobile = useIsMobile();
 
+  // Mobile JS-motion stripping is handled globally by the app-level MotionConfig
+  // in App.tsx (+ the force-visible mobile CSS in index.css).
   return (
-    // reducedMotion="always" makes every <m.*> below skip its animation and
-    // render at its final (visible) state — content never sticks at opacity:0.
-    // Gated to mobile so desktop animations are untouched.
-    <MotionConfig reducedMotion={isMobile ? 'always' : 'never'}>
-      <div className="belleair-page min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#1669AE] selection:text-white">
-        <div className="fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
-        <div className="relative z-10">
-          <Navbar />
-          <HeroSection />
-          <BelleairBeachBelowFold />
-          <CtaBand />
-          <Footer />
-        </div>
-        <StickyMobileCta />
+    <div className="min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#1669AE] selection:text-white">
+      <div className="fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
+      <div className="relative z-10">
+        <Navbar />
+        <HeroSection />
+        <BelleairBeachBelowFold />
+        <CtaBand />
+        <Footer />
       </div>
-    </MotionConfig>
+      <StickyMobileCta />
+    </div>
   );
 };

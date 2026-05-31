@@ -253,27 +253,27 @@
   filter: saturate(1.25) brightness(0.55) contrast(1.08) hue-rotate(-6deg);
 }
 
-/* Belleair mobile: keep all motion-controlled content unconditionally
-   visible. The below-fold uses whileInView + viewport{once:true}; opening and
-   closing the quote sheet re-runs those elements' lifecycle, which re-applies
-   their `initial` opacity:0/transform but does NOT re-fire whileInView (it
-   already counted as "seen"), leaving sections stuck invisible after the
-   popup closes. Rather than chase motion's inline-style churn by matching a
-   specific opacity value, we force EVERY descendant under .belleair-page to
-   full opacity and no transform on mobile — so no motion state, at any point
-   in the open/close cycle, can hide content. !important beats motion's inline
-   style. <=767px only, so desktop animations are untouched. */
+/* Mobile motion strip — force-visible safety net. The app-level MotionConfig
+   (App.tsx) sets reducedMotion on mobile so page animations don't run, but the
+   below-fold uses whileInView + viewport{once:true}; opening/closing the quote
+   sheet or nav drawer re-runs those elements' lifecycle, which re-applies their
+   `initial` opacity:0/transform without re-firing whileInView (already counted
+   as "seen"), leaving sections stuck invisible after the overlay closes. So we
+   force every motion-controlled element to full opacity / no transform on
+   mobile, at every point in the open/close cycle.
+
+   Scope: matches only elements with an inline `opacity`/`transform` in their
+   style attribute — i.e. motion-controlled ones. Tailwind utilities use classes,
+   not inline style, so intentional opacity-40 overlays, centering transforms,
+   icon rotations, etc. are untouched. EXCLUDED: the nav drawer (.nav-drawer) and
+   quote sheet (.quote-sheet), which keep their interactive open/close animation
+   via their own reducedMotion="never" — :not() keeps this rule from freezing
+   them. <=767px only; desktop is untouched. */
 @media (max-width: 767px) {
-  /* Only elements motion controls carry an inline `opacity`/`transform` in
-     their style attribute — Tailwind utilities use classes, not inline style,
-     so this leaves intentional opacity-40 overlays, centering transforms,
-     icon rotations, etc. untouched. Matching on the presence of the inline
-     property (any value) rather than a specific one means it holds through
-     every state of the popup open/close cycle. */
-  .belleair-page [style*="opacity"] {
+  [style*="opacity"]:not(.nav-drawer *):not(.quote-sheet *):not(.nav-drawer):not(.quote-sheet) {
     opacity: 1 !important;
   }
-  .belleair-page [style*="transform"] {
+  [style*="transform"]:not(.nav-drawer *):not(.quote-sheet *):not(.nav-drawer):not(.quote-sheet) {
     transform: none !important;
   }
 }

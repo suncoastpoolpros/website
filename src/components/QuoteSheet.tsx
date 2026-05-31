@@ -55,7 +55,7 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
 
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-[100] flex items-end sm:items-center sm:justify-center sm:p-6">
+          <div className="quote-sheet fixed inset-0 z-[100] flex items-end sm:items-center sm:justify-center sm:p-6">
             {/* Backdrop */}
             <m.div
               initial={{ opacity: 0 }}
