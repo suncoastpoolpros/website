@@ -14,55 +14,35 @@ export const StickyMobileCta = () => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    // This bar is sm:hidden (mobile only). Don't run the scroll listener or any
-    // layout reads on >=sm viewports — on desktop the bar never renders, so the
-    // getBoundingClientRect/querySelectorAll work was pure waste and showed up
-    // as a forced reflow in Lighthouse. Bail unless we're on a phone.
+    // This bar is sm:hidden (mobile only); skip all work on >=sm viewports.
     const mq = window.matchMedia('(max-width: 639px)');
     if (!mq.matches) return;
 
-    // The scroll handler reads layout (getBoundingClientRect / querySelectorAll),
-    // which is expensive to run on every scroll event and can thrash layout on a
-    // phone. Throttle to one read per animation frame via rAF so we never do
-    // more layout work than the screen can paint.
-    let ticking = false;
-    const measure = () => {
-      ticking = false;
-      // Show once we've scrolled roughly past the hero (~70% of viewport).
-      const pastHero = window.scrollY > window.innerHeight * 0.7;
+    // Use IntersectionObserver instead of reading layout (getBoundingClientRect)
+    // on every scroll — the latter forces synchronous reflow (flagged by
+    // Lighthouse). IO reports visibility off the main thread with no layout
+    // thrash. The bar shows once the hero has scrolled away AND neither the
+    // #quote form nor the footer is on screen (so it never covers them).
+    const hero = document.querySelector('h1');                 // hero is the first H1
+    const quote = document.getElementById('quote');
+    const footers = document.querySelectorAll('footer');
+    const footer = footers[footers.length - 1] || null;        // page footer (last)
 
-      // Hide when the footer quote form is in view so we don't cover it.
-      const quote = document.getElementById('quote');
-      let nearForm = false;
-      if (quote) {
-        const rect = quote.getBoundingClientRect();
-        nearForm = rect.top < window.innerHeight && rect.bottom > 0;
+    const state = { heroVisible: true, formVisible: false, footerVisible: false };
+    const apply = () => setShow(!state.heroVisible && !state.formVisible && !state.footerVisible);
+
+    const obs = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.target === hero) state.heroVisible = e.isIntersecting;
+        else if (e.target === quote) state.formVisible = e.isIntersecting;
+        else if (e.target === footer) state.footerVisible = e.isIntersecting;
       }
-
-      // Hide once the page footer enters the viewport. Use the last <footer>
-      // since the service-report mockup also renders one earlier in the DOM.
-      const footers = document.querySelectorAll('footer');
-      const footer = footers[footers.length - 1];
-      let nearFooter = false;
-      if (footer) {
-        const rect = footer.getBoundingClientRect();
-        nearFooter = rect.top < window.innerHeight;
-      }
-
-      setShow(pastHero && !nearForm && !nearFooter);
-    };
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(measure);
-    };
-    measure();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-    };
+      apply();
+    });
+    if (hero) obs.observe(hero);
+    if (quote) obs.observe(quote);
+    if (footer) obs.observe(footer);
+    return () => obs.disconnect();
   }, []);
 
   return (
