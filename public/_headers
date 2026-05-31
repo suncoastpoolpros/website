@@ -13,6 +13,13 @@
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
+# Self-hosted fonts. Filenames (inter-400.woff2 etc.) are stable across
+# deploys so we can immutable-cache them too. Previously these were defaulting
+# to a 4-hour Cloudflare TTL — meaning return visitors re-downloaded all the
+# fonts every half-day for no reason.
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
 # Long-cache fonts and images that don't change often.
 /*.webp
   Cache-Control: public, max-age=31536000, immutable
@@ -20,3 +27,12 @@
   Cache-Control: public, max-age=31536000, immutable
 /*.svg
   Cache-Control: public, max-age=31536000, immutable
+
+# Prerendered HTML — browser always revalidates with Cloudflare (so a redeploy
+# rolls out immediately to all visitors), but the edge keeps a cached copy and
+# can answer a conditional GET with a 304 in single-digit ms. CF Pages does NOT
+# honor stale-while-revalidate for background revalidation, so we don't bother
+# setting it. Reference:
+# https://developers.cloudflare.com/cache/concepts/cache-control/
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate

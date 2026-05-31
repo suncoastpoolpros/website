@@ -91,11 +91,16 @@ export const useTurnstile = () => {
   // right after a manual reset).
   const waitersRef = useRef<Array<(token: string) => void>>([]);
   const [ready, setReady] = useState(false);
+  // Defer loading the Turnstile script until the user is actually about to
+  // need it. Loading on mount would block popup paint by the time we ship the
+  // ~20 KB Cloudflare script + run its widget bootstrap on every "Get a Quote"
+  // click. We toggle this on first submit attempt (see execute() below).
+  const [shouldLoad, setShouldLoad] = useState(false);
 
   const enabled = Boolean(SITE_KEY);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !shouldLoad) return;
     let cancelled = false;
     loadScript()
       .then(() => {
@@ -150,10 +155,14 @@ export const useTurnstile = () => {
       waitersRef.current = [];
       tokenRef.current = '';
     };
-  }, [enabled]);
+  }, [enabled, shouldLoad]);
 
   const execute = (): Promise<string> => {
     if (!enabled) return Promise.resolve('');
+    // First execute() call kicks off the script load. The promise below
+    // waits for the token to arrive (up to 6s), which gives the script time
+    // to load + the widget to auto-solve.
+    if (!shouldLoad) setShouldLoad(true);
     // Token already cached from the auto-solve — use it. Then reset the
     // widget so the next submit gets a fresh token (each Turnstile token
     // can only be verified server-side once).

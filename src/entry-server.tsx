@@ -1,7 +1,12 @@
-// Server entry for static prerendering. Bypasses React.lazy / Suspense (which
-// don't resolve synchronously with renderToString) by importing every page
-// directly. The client entry (main.tsx + App.tsx) still uses lazy() for SPA
-// code-splitting; this file is only used at build time to produce static HTML.
+// Server entry for static prerendering. Used only at build time
+// (scripts/prerender.mjs) to walk each public route and emit a fully-rendered
+// dist/<route>/index.html. The client entry (main.tsx + App.tsx) eagerly
+// imports every page too, so SSR and CSR produce matching DOM during hydrate.
+//
+// Why no React.lazy() anywhere: renderToString is synchronous and bails on
+// Suspense, swapping in the fallback. We avoid Suspense entirely on prerender
+// routes so the rendered HTML is the real content.
+// Ref: https://react.dev/reference/react-dom/server/renderToString
 
 import { renderToString } from 'react-dom/server';
 import { StaticRouter, Routes, Route } from 'react-router-dom';
