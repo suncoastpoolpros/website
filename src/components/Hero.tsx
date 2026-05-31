@@ -135,18 +135,23 @@ export const Hero = () => {
                 <a
                   href="#quote"
                   onClick={handleQuoteClick}
-                  className="btn btn-blue"
+                  className="btn btn-blue w-full sm:w-auto"
                 >
-                  Get a Free Quote
+                  Get My Free Quote
                 </a>
 
-                <Glass
+                {/* Call button — full-width on mobile (sits under the quote
+                    CTA), inline on desktop. Uses .btn-glass: its solid
+                    bg-white/[0.07] fallback keeps it looking like a button even
+                    though backdrop-blur is globally disabled below 768px
+                    (CLAUDE.md #10), so no bare/transparent button on phones. */}
+                <a
                   href={PHONE_HREF}
-                  className="hidden sm:inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px]"
+                  className="btn btn-glass w-full sm:w-auto"
                 >
                   <Phone className="w-4 h-4" />
                   {PHONE_DISPLAY}
-                </Glass>
+                </a>
               </div>
 
               {/* Trust strip */}
