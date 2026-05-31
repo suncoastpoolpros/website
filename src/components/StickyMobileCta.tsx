@@ -14,7 +14,13 @@ export const StickyMobileCta = () => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => {
+    // The scroll handler reads layout (getBoundingClientRect / querySelectorAll),
+    // which is expensive to run on every scroll event and can thrash layout on a
+    // phone. Throttle to one read per animation frame via rAF so we never do
+    // more layout work than the screen can paint.
+    let ticking = false;
+    const measure = () => {
+      ticking = false;
       // Show once we've scrolled roughly past the hero (~70% of viewport).
       const pastHero = window.scrollY > window.innerHeight * 0.7;
 
@@ -38,7 +44,12 @@ export const StickyMobileCta = () => {
 
       setShow(pastHero && !nearForm && !nearFooter);
     };
-    onScroll();
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(measure);
+    };
+    measure();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     return () => {
@@ -62,7 +73,7 @@ export const StickyMobileCta = () => {
             <a
               href={PHONE_HREF}
               aria-label={`Call ${PHONE_DISPLAY}`}
-              className="w-1/4 shrink-0 flex items-center justify-center py-3.5 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md active:scale-[0.96] transition-transform"
+              className="w-1/4 shrink-0 flex items-center justify-center py-3.5 rounded-xl bg-white/[0.14] border border-white/15 active:scale-[0.96] transition-transform"
             >
               <Phone className="w-5 h-5 text-brand-blue-light" />
             </a>
