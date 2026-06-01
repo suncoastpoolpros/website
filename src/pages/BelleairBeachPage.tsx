@@ -174,13 +174,13 @@ export const BelleairBeachPage = () => {
     title: PAGE_TITLE,
     description: PAGE_DESC,
     canonicalPath: '/belleair-beach-fl/',
-    ogImage: '/pool-service-st-petersburg-hero.jpg',
-    // Belleair reuses the St. Pete hero image (see hero-bg-belleair-* in
+    ogImage: '/belleair-beach-hero.jpg',
+    // Belleair has its own hero image now (see hero-bg-belleair-* in
     // index.css), so preload those — they're what this page actually paints.
     heroPreload: {
-      mobile: '/pool-service-st-petersburg-hero-mobile.webp',
-      desktop: '/pool-service-st-petersburg-hero.webp',
-      wide: '/pool-service-st-petersburg-hero-1920.webp',
+      mobile: '/belleair-beach-hero-mobile.webp',
+      desktop: '/belleair-beach-hero.webp',
+      wide: '/belleair-beach-hero-1920.webp',
     },
     // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
     // hero headline (Montserrat 900), hero H1 (font-display font-normal =

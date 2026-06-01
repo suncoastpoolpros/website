@@ -216,6 +216,10 @@ export const BelleairHeroPhone = () => {
                         <span style={{ whiteSpace: 'nowrap' }}>Belleair Beach, FL 33786</span>
                       </>
                     }
+                    photo={{
+                      base: '/belleair-beach-hero',
+                      alt: 'Waterfront pool at a Belleair Beach, FL home — cleaned and chemically balanced by Suncoast Pool Pros',
+                    }}
                   />
                 </div>
               </div>
