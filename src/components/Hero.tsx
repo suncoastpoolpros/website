@@ -128,27 +128,38 @@ export const Hero = () => {
                 <span className="text-white">Weekly pool cleaning, full chemical balancing, GPS-verified visits</span>, and a written report after every clean. <span className="text-white">One flat monthly price</span> — no chemical surprises, no contracts, no green water.
               </p>
 
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                <a
-                  href="#quote"
-                  onClick={handleQuoteClick}
-                  className="btn btn-blue w-full sm:w-auto"
-                >
-                  Get My Free Quote
-                </a>
+              <div className="relative">
+                {/* Mobile-only soft scrim behind just the CTAs so they read
+                    cleanly over the bright pool photo. It fades to transparent on
+                    every side (radial gradient in .hero-cta-scrim) so the rest of
+                    the hero stays bright. CSS class, not inline style, to keep SSR
+                    hydration stable (CLAUDE.md #4). */}
+                <div
+                  className="hero-cta-scrim md:hidden absolute -inset-x-8 -top-6 -bottom-8 pointer-events-none"
+                  aria-hidden
+                />
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  <a
+                    href="#quote"
+                    onClick={handleQuoteClick}
+                    className="btn btn-blue w-full sm:w-auto"
+                  >
+                    Get My Free Quote
+                  </a>
 
-                {/* Call button — matches the city pages' (St. Pete Beach, etc.)
-                    Glass call button: frosted glass on desktop, solid grey
-                    surface on mobile via .glass-mobile-blur (backdrop-blur is
-                    globally disabled below 768px, CLAUDE.md #10). Kept full-width
-                    on mobile so it aligns under the quote CTA, inline on desktop. */}
-                <Glass
-                  href={PHONE_HREF}
-                  className="glass-mobile-blur inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px] w-full sm:w-auto"
-                >
-                  <Phone className="w-4 h-4 text-brand-blue-light" />
-                  {PHONE_DISPLAY}
-                </Glass>
+                  {/* Call button — matches the city pages' (St. Pete Beach, etc.)
+                      Glass call button: frosted glass on desktop, solid grey
+                      surface on mobile via .glass-mobile-blur (backdrop-blur is
+                      globally disabled below 768px, CLAUDE.md #10). Kept full-width
+                      on mobile so it aligns under the quote CTA, inline on desktop. */}
+                  <Glass
+                    href={PHONE_HREF}
+                    className="glass-mobile-blur inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px] w-full sm:w-auto"
+                  >
+                    <Phone className="w-4 h-4 text-brand-blue-light" />
+                    {PHONE_DISPLAY}
+                  </Glass>
+                </div>
               </div>
 
               {/* Trust strip */}
@@ -202,9 +213,15 @@ type HomeHeroPhoneProps = {
   clock: string;
   gmailScrolled: boolean;
   setGmailScrolled: React.Dispatch<React.SetStateAction<boolean>>;
+  // When false, the Gmail body is NOT an independent scroll region. The mobile
+  // instance (HomeHeroPhoneSection) passes false: an inner overflow-y-auto whose
+  // content is taller than the phone traps the touch scroll, so dragging over
+  // the phone scrolls that box first and the page "hesitates" until it bottoms
+  // out. Desktop keeps it scrollable so the report can be read in place.
+  interactive?: boolean;
 };
 
-const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled }: HomeHeroPhoneProps) => {
+const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = true }: HomeHeroPhoneProps) => {
   return (
     <>
             {/* Handwritten label + arrow — animates as if being written/drawn in. */}
@@ -360,12 +377,16 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled }: HomeHeroPhone
                       {/* Scrollable area — subject, sender, and the report all
                           scroll together. Only the top icon bar stays pinned. */}
                       <div
-                        className="flex-1 min-h-0 overflow-y-auto bg-white"
+                        className={`flex-1 min-h-0 bg-white ${interactive ? 'overflow-y-auto' : 'overflow-hidden'}`}
                         style={{ scrollbarWidth: 'none' }}
-                        onScroll={(e) => {
-                          const scrolled = (e.currentTarget.scrollTop || 0) > 4;
-                          setGmailScrolled((prev) => (prev === scrolled ? prev : scrolled));
-                        }}
+                        onScroll={
+                          interactive
+                            ? (e) => {
+                                const scrolled = (e.currentTarget.scrollTop || 0) > 4;
+                                setGmailScrolled((prev) => (prev === scrolled ? prev : scrolled));
+                              }
+                            : undefined
+                        }
                       >
                         {/* Subject line + Inbox label + star */}
                         <div className="px-3 pt-1.5 pb-2 flex items-start gap-2">
@@ -497,7 +518,10 @@ export const HomeHeroPhoneSection = () => {
   return (
     <section className="lg:hidden relative bg-[#07111c] pt-16 pb-12 flex justify-center overflow-hidden">
       <div className="relative flex justify-center items-center">
-        <HomeHeroPhone clock={clock} gmailScrolled={gmailScrolled} setGmailScrolled={setGmailScrolled} />
+        {/* interactive={false}: on mobile this is a static showcase, so the
+            phone's inner Gmail body must NOT be its own scroll region (that traps
+            the page scroll and makes scrolling past the phone hesitate). */}
+        <HomeHeroPhone clock={clock} gmailScrolled={gmailScrolled} setGmailScrolled={setGmailScrolled} interactive={false} />
       </div>
     </section>
   );

@@ -300,6 +300,20 @@
       radial-gradient(ellipse 80% 60% at center, transparent 55%, rgba(5,11,20,0.60) 100%);
   }
 }
+/* Mobile-only soft backing behind the homepage hero CTAs. A single radial
+   gradient that's darkest at the center and fades fully to transparent before
+   its edges, so it deepens contrast under the two buttons without darkening the
+   surrounding photo. Mobile-only (the element is md:hidden); desktop CTAs sit on
+   the left scrim and don't need it. */
+.hero-cta-scrim {
+  background: radial-gradient(
+    ellipse 78% 72% at center,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.34) 45%,
+    transparent 78%
+  );
+}
+
 .hero-belleair-tint { background-color: #0f4d80; mix-blend-mode: overlay; opacity: 0.28; }
 
 /* Belleair hero readability scrim — one element merging the old vertical
