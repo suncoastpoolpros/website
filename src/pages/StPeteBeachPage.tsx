@@ -38,7 +38,7 @@ const HeroSection = () => {
           aria-hidden
         />
         <div
-          className="hero-bg-stpetebeach-mobile absolute inset-0 md:hidden bg-cover bg-center"
+          className="hero-bg-stpetebeach-mobile absolute inset-x-0 top-0 h-[100lvh] md:hidden bg-cover bg-center"
           aria-hidden
         />
 
