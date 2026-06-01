@@ -85,7 +85,18 @@ export default function App() {
       if (fired) return;
       fired = true;
       events.forEach((evt) => window.removeEventListener(evt, onFirstInteraction));
-      initAnalytics();
+      // Defer gtag injection OFF this interaction's critical path. Calling
+      // initAnalytics() inline ran ~200ms of gtag.js parse/exec on the very tap
+      // that opens the nav drawer (the user's first interaction is often the
+      // hamburger), freezing the main thread so the drawer lagged on open —
+      // invisible to the lab because analytics only runs on the prod hostname.
+      // requestIdleCallback lets the tap's UI (drawer slide) paint first, then
+      // gtag loads in the next idle gap; the timeout caps how long it waits.
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(() => initAnalytics(), { timeout: 2000 });
+      } else {
+        window.setTimeout(() => initAnalytics(), 500); // Safari < 16.4 fallback
+      }
     };
     events.forEach((evt) =>
       window.addEventListener(evt, onFirstInteraction, { once: true, passive: true }),
