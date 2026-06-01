@@ -296,13 +296,14 @@ export const Navbar = () => {
                 <p className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
                   Menu
                 </p>
+                {/* Items render statically (no per-item entrance stagger). The
+                    panel slide + backdrop fade are the open affordance; animating
+                    ~6 items at once on top of the slide + mounting this subtree in
+                    one frame made the open hesitate on mobile (this drawer is
+                    md:hidden, so the stagger only ever ran on phones anyway). */}
                 <div className="space-y-1">
                   {/* Service Areas — expandable accordion of cities */}
-                  <m.div
-                    initial={{ opacity: 0, x: 24 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.12 }}
-                  >
+                  <div>
                     <button
                       type="button"
                       onClick={() => setAreasExpanded((v) => !v)}
@@ -355,9 +356,9 @@ export const Navbar = () => {
                         })}
                       </m.div>
                     )}
-                  </m.div>
+                  </div>
 
-                  {MOBILE_NAV.map((item, i) => {
+                  {MOBILE_NAV.map((item) => {
                     const active = !!item.to && pathname === item.to;
                     const content = (
                       <>
@@ -392,12 +393,7 @@ export const Navbar = () => {
                       active ? 'bg-white/[0.06]' : 'hover:bg-white/[0.04]'
                     }`;
                     return (
-                      <m.div
-                        key={item.label}
-                        initial={{ opacity: 0, x: 24 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.17 + i * 0.05 }}
-                      >
+                      <div key={item.label}>
                         {item.to ? (
                           <Link to={item.to} onClick={() => setIsOpen(false)} className={cls}>
                             {content}
@@ -407,7 +403,7 @@ export const Navbar = () => {
                             {content}
                           </a>
                         )}
-                      </m.div>
+                      </div>
                     );
                   })}
                 </div>

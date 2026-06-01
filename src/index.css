@@ -192,7 +192,7 @@
     url('/treasure-island-hero-1920.webp') type('image/webp') 2x,
     url('/treasure-island-hero.jpg') type('image/jpeg') 1x
   );
-  filter: saturate(1.45) brightness(0.85) contrast(1.12) hue-rotate(-6deg);
+  filter: saturate(1.2) brightness(0.85) contrast(1.12) hue-rotate(-6deg);
 }
 .hero-bg-mobile {
   /* Swapped to the Treasure Island photo (see .hero-bg-desktop note). */
@@ -260,13 +260,11 @@
 
 /* Overlay tints. Live as classes (not inline style) so the browser's color
    normalization (#1669AE → rgb(...)) doesn't bail SSR hydration. */
-.hero-blue-tint { background-color: #1669AE; mix-blend-mode: overlay; opacity: 0.4; }
-/* The blue tint is a desktop-only treatment (deepens sky/water on the wide
-   crop). On mobile it just made the whole hero read blue, so hide it there —
-   matching the "Hidden on mobile" note on the element in Hero.tsx. */
-@media (max-width: 767px) {
-  .hero-blue-tint { display: none; }
-}
+/* Blue tint disabled on every viewport. The #1669AE overlay-blend pass read as
+   an unnatural blue cast over the hero photo, so it's off entirely — the photo
+   keeps its own natural sky/water blue. (Kept as a no-op class rather than
+   removing the element so the Hero markup/comment stays self-explanatory.) */
+.hero-blue-tint { display: none; }
 
 /* Homepage hero readability scrim — one element replacing the old four
    (vertical darken, mobile text scrim, desktop left scrim, edge vignette).
