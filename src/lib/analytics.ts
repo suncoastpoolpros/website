@@ -1,8 +1,12 @@
 // Google Analytics 4 — loaded deferred so it never touches the critical render
 // chain (CLAUDE.md: defer third-party scripts; nothing render-blocking). The
-// gtag script is injected async AFTER mount, and everything no-ops safely when
-// VITE_GA_ID isn't set (local dev, or before the ID is configured in
-// Cloudflare Pages env vars). Same env-var pattern as VITE_TURNSTILE_SITE_KEY.
+// gtag script is injected async AFTER mount.
+//
+// The Measurement ID is NOT secret (it ships in the client bundle and is
+// visible in page source), so it's hardcoded as the default rather than
+// requiring a build-time env var — VITE_GA_ID can still override it. To avoid
+// polluting the property with dev/preview traffic, analytics only activates on
+// the production hostname (see initAnalytics).
 //
 // What we track:
 //   - page_view on every SPA route change (GA4 won't see client-side nav on its
@@ -11,13 +15,18 @@
 //   - contact (method: phone) when any tel: link is tapped, via one delegated
 //     click listener so every phone link site-wide is covered
 
-const GA_ID = import.meta.env.VITE_GA_ID as string | undefined;
+const GA_ID = (import.meta.env.VITE_GA_ID as string | undefined) || 'G-X5B7LL8BSV';
+
+// Only send data from the live site — never localhost, the dev server, or
+// *.pages.dev preview deploys.
+const PROD_HOSTS = ['suncoastpoolpros.com', 'www.suncoastpoolpros.com'];
 
 let initialized = false;
 
 /** Inject gtag.js (async) and configure GA4. Safe to call more than once. */
 export function initAnalytics(): void {
   if (initialized || !GA_ID || typeof window === 'undefined') return;
+  if (!PROD_HOSTS.includes(window.location.hostname)) return;
   initialized = true;
 
   const s = document.createElement('script');
