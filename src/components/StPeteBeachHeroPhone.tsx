@@ -189,9 +189,7 @@ export const StPeteBeachHeroPhone = () => {
                   </div>
 
                   {/* The real report, inline so it joins the parent scroll.
-                      Localized to a St. Pete Beach beachfront address. The photo
-                      is a temporary placeholder (waterfront image) until the
-                      dedicated St. Pete Beach hero photo is added. */}
+                      Localized to a St. Pete Beach beachfront address. */}
                   <ServiceReport
                     inline
                     customerName="The Sandpiper House"
@@ -202,7 +200,7 @@ export const StPeteBeachHeroPhone = () => {
                       </>
                     }
                     photo={{
-                      base: '/waterfront-pool-st-petersburg',
+                      base: '/st-pete-beach-hero',
                       alt: 'Beachfront pool in St. Pete Beach, FL — cleaned and chemically balanced by Suncoast Pool Pros',
                     }}
                   />

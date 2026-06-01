@@ -136,10 +136,10 @@ const IslandTollSection = () => (
 // ── Section 2: interlude band — beach-specific line ────────────────
 const InterludeBand = () => (
   <section className="relative h-[42vh] min-h-[360px] md:h-[50vh] md:min-h-[460px] overflow-hidden">
-    <div className="interlude-bg-pinellas-desktop absolute inset-0 hidden md:block bg-cover bg-center" />
-    <div className="interlude-bg-pinellas-mobile absolute inset-0 md:hidden bg-cover bg-center" />
+    <div className="interlude-bg-stpetebeach-desktop absolute inset-0 hidden md:block bg-cover bg-center" />
+    <div className="interlude-bg-stpetebeach-mobile absolute inset-0 md:hidden bg-cover bg-center" />
 
-    <div className="interlude-tint-pinellas absolute inset-0 pointer-events-none" />
+    <div className="interlude-tint-stpetebeach absolute inset-0 pointer-events-none" />
 
     <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07111c] to-transparent pointer-events-none" />
     <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0a1422] to-transparent pointer-events-none" />

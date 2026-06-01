@@ -193,11 +193,11 @@ export const StPeteBeachPage = () => {
     title: PAGE_TITLE,
     description: PAGE_DESC,
     canonicalPath: '/st-pete-beach-fl/',
-    ogImage: '/waterfront-pool-st-petersburg.jpg',
+    ogImage: '/st-pete-beach-hero.jpg',
     heroPreload: {
-      mobile: '/waterfront-pool-st-petersburg-mobile.webp',
-      desktop: '/waterfront-pool-st-petersburg.webp',
-      wide: '/waterfront-pool-st-petersburg-1920.webp',
+      mobile: '/st-pete-beach-hero-mobile.webp',
+      desktop: '/st-pete-beach-hero.webp',
+      wide: '/st-pete-beach-hero-1920.webp',
     },
     // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
     // H1 (Montserrat 400). The big headline is font-bold md:font-black —

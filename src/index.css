@@ -317,22 +317,20 @@
 }
 .hero-treasure-tint { background-color: #1669AE; mix-blend-mode: overlay; opacity: 0.4; }
 
-/* St. Pete Beach hero. Photo is a temporary placeholder (the waterfront image)
-   until a dedicated St. Pete Beach hero is uploaded — only these url()s + the
-   page's heroPreload need to change when it is. Slightly warmer/brighter
-   treatment than the other city pages to read "open beach". */
+/* St. Pete Beach hero — dedicated photo. Slightly warmer/brighter treatment
+   than the other city pages to read "open beach". */
 .hero-bg-stpetebeach-desktop {
   background-image: image-set(
-    url('/waterfront-pool-st-petersburg.webp') type('image/webp') 1x,
-    url('/waterfront-pool-st-petersburg-1920.webp') type('image/webp') 2x,
-    url('/waterfront-pool-st-petersburg.jpg') type('image/jpeg') 1x
+    url('/st-pete-beach-hero.webp') type('image/webp') 1x,
+    url('/st-pete-beach-hero-1920.webp') type('image/webp') 2x,
+    url('/st-pete-beach-hero.jpg') type('image/jpeg') 1x
   );
   filter: saturate(1.35) contrast(1.08) hue-rotate(2deg);
 }
 .hero-bg-stpetebeach-mobile {
   background-image: image-set(
-    url('/waterfront-pool-st-petersburg-mobile.webp') type('image/webp'),
-    url('/waterfront-pool-st-petersburg-mobile.jpg') type('image/jpeg')
+    url('/st-pete-beach-hero-mobile.webp') type('image/webp'),
+    url('/st-pete-beach-hero-mobile.jpg') type('image/jpeg')
   );
   filter: saturate(1.35) contrast(1.08) hue-rotate(2deg);
   -webkit-mask-image: linear-gradient(to bottom, black 72%, transparent 96%);
@@ -358,6 +356,25 @@
 
 .interlude-tint-pinellas { background-color: #0a2540; mix-blend-mode: overlay; opacity: 0.5; }
 .interlude-tint-treasure { background-color: #1669AE; mix-blend-mode: overlay; opacity: 0.35; }
+.interlude-tint-stpetebeach { background-color: #0a2540; mix-blend-mode: overlay; opacity: 0.45; }
+
+/* St. Pete Beach below-fold interlude — its own classes (not shared with
+   Belleair's pinellas interlude) so it shows the St. Pete Beach hero photo. */
+.interlude-bg-stpetebeach-desktop {
+  background-image: image-set(
+    url('/st-pete-beach-hero.webp') type('image/webp') 1x,
+    url('/st-pete-beach-hero-1920.webp') type('image/webp') 2x,
+    url('/st-pete-beach-hero.jpg') type('image/jpeg') 1x
+  );
+  filter: saturate(1.15) brightness(0.55) contrast(1.05) hue-rotate(-2deg);
+}
+.interlude-bg-stpetebeach-mobile {
+  background-image: image-set(
+    url('/st-pete-beach-hero-mobile.webp') type('image/webp'),
+    url('/st-pete-beach-hero-mobile.jpg') type('image/jpeg')
+  );
+  filter: saturate(1.15) brightness(0.55) contrast(1.05) hue-rotate(-2deg);
+}
 
 /* Dimmer interlude photo bands used between sections on city pages. */
 /* Belleair below-fold interlude — matches the Belleair hero photo. */
