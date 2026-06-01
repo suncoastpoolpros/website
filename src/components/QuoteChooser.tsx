@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MessageSquare, Phone, Camera, MapPin, Send, ClipboardList, ArrowLeft, ChevronRight, Check } from 'lucide-react';
 import { sendContact } from '@/lib/contactSubmit';
+import { trackEvent } from '@/lib/analytics';
 import { useTurnstile } from '@/lib/turnstile';
 import { clearDraft, readDraft, writeDraft } from '@/lib/quoteDraft';
 import { PHONE_DISPLAY, PHONE_HREF, SMS_HREF, SMS_QUOTE_HREF, HOURS_SHORT } from '@/lib/contact';
@@ -249,6 +250,7 @@ export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {})
       step2DraftRef.current = {};
       setFormSent(true);
       onSubmitted?.();
+      trackEvent('generate_lead', { source: 'quote-chooser', service });
     } catch (err) {
       setFormError(`Something went wrong. Please call or text ${PHONE_DISPLAY}.`);
       console.error('Quote chooser submit failed:', err);

@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { MotionConfig } from 'motion/react';
 import { QuoteSheetProvider } from '@/components/QuoteSheet';
 import { ChunkErrorBoundary, clearChunkReloadFlag } from '@/components/ChunkErrorBoundary';
+import { initAnalytics, trackPageView } from '@/lib/analytics';
 
 // Routes are lazy-loaded so the homepage hydration only has to parse
 // LandingPage code (~36 KB gz), not every page on the site. On real iPhone
@@ -31,11 +32,16 @@ const ServiceAgreementPage = lazy(() => import('@/pages/ServiceAgreementPage').t
 const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage').then((m) => ({ default: m.PrivacyPolicyPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
-// On route change, jump to top (unless navigating to an in-page #anchor).
+// On route change, jump to top (unless navigating to an in-page #anchor) and
+// send a GA4 page_view (SPA nav isn't auto-tracked). Runs on the initial route
+// too, so the first load is counted once.
 const ScrollToTop = () => {
   const { pathname, hash } = useLocation();
   useEffect(() => {
     if (!hash) window.scrollTo(0, 0);
+  }, [pathname, hash]);
+  useEffect(() => {
+    trackPageView(pathname + (hash || ''));
   }, [pathname, hash]);
   return null;
 };
@@ -60,6 +66,11 @@ export default function App() {
   // chunk failure later in the session can self-heal too.
   useEffect(() => {
     clearChunkReloadFlag();
+  }, []);
+
+  // Load GA4 (deferred, async) after first mount — never on the critical path.
+  useEffect(() => {
+    initAnalytics();
   }, []);
   return (
     <QuoteSheetProvider>

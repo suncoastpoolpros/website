@@ -4,6 +4,7 @@ import { Send, CheckCircle, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Container } from '@/components/Container';
 import { FieldShell, fieldClass, selectClass } from '@/components/FormField';
 import { sendContact } from '@/lib/contactSubmit';
+import { trackEvent } from '@/lib/analytics';
 import { useTurnstile } from '@/lib/turnstile';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 
@@ -42,6 +43,7 @@ export const QuoteForm = () => {
         turnstileToken,
       });
       setSubmitted(true);
+      trackEvent('generate_lead', { source: 'homepage-quote-form' });
     } catch (err) {
       setError(
         `We couldn't submit your request. Please try again, or call us at ${PHONE_DISPLAY}.`

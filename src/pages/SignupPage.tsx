@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer';
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { sendSignup } from '@/lib/signupWebhook';
+import { trackEvent } from '@/lib/analytics';
 import { usePageMeta } from '@/lib/usePageMeta';
 
 const US_STATES = [
@@ -90,6 +91,7 @@ const SignupPageInner = () => {
         submittedAt: new Date().toISOString(),
       });
       setSubmitted(true);
+      trackEvent('generate_lead', { source: 'signup-page' });
     } catch (err) {
       setError(
         `We couldn't submit your signup. Please try again, or call us at ${PHONE_DISPLAY}.`
