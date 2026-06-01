@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { m } from 'motion/react';
-import { Phone, Star, MapPin, ShieldCheck } from 'lucide-react';
+import { Phone, Star, MapPin, ShieldCheck, Wind } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Glass } from '@/components/Glass';
@@ -8,17 +8,16 @@ import { Container } from '@/components/Container';
 import { useQuoteSheet } from '@/components/QuoteSheet';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
-import { belleairBeachFaqs } from '@/pages/belleairBeachFaqs';
+import { stPeteBeachFaqs } from '@/pages/stPeteBeachFaqs';
 import { CtaBand } from '@/components/CtaBand';
-import { BelleairHeroPhone } from '@/components/BelleairHeroPhone';
-import BelleairBeachBelowFold from '@/pages/BelleairBeachBelowFold';
+import { StPeteBeachHeroPhone } from '@/components/StPeteBeachHeroPhone';
+import StPeteBeachBelowFold from '@/pages/StPeteBeachBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 
-const PAGE_TITLE =
-  'Belleair Beach Pool Service — Never a Missed Visit';
+const PAGE_TITLE = 'St. Pete Beach Pool Service — Salt-Tested, Always Clear';
 const PAGE_DESC =
-  'Pool service for Belleair Beach homes that runs in the background. Same technician every week, photo report in your inbox, one flat rate.';
-const PAGE_URL = 'https://suncoastpoolpros.com/belleair-beach-fl/';
+  'Weekly pool service for St. Pete Beach, FL — Gulf Blvd to Pass-a-Grille. Built for barrier-island salt air, full sun, and heavy use: same dedicated tech, equipment checked every visit, and a photo report after every clean.';
+const PAGE_URL = 'https://suncoastpoolpros.com/st-pete-beach-fl/';
 
 const HeroSection = () => {
   const { open } = useQuoteSheet();
@@ -29,27 +28,34 @@ const HeroSection = () => {
 
   return (
     <div className="relative min-h-dvh flex items-center overflow-hidden pt-24 pb-16">
-      {/* Background — coastal, calm, premium */}
+      {/* Background — bright, open-beach feel. Reuses the Pinellas interlude
+          image set via the city hero classes; swap to a dedicated St. Pete
+          Beach photo when one is uploaded (see heroPreload + index.css). */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[#02060c]" />
         <div
-          className="hero-bg-belleair-desktop absolute -inset-y-[18%] inset-x-0 hidden md:block bg-cover bg-center"
+          className="hero-bg-stpetebeach-desktop absolute -inset-y-[18%] inset-x-0 hidden md:block bg-cover bg-center"
           aria-hidden
         />
         <div
-          className="hero-bg-belleair-mobile absolute top-0 inset-x-0 h-screen md:hidden bg-cover bg-center"
+          className="hero-bg-stpetebeach-mobile absolute inset-0 md:hidden bg-cover bg-center"
           aria-hidden
         />
+
         <div
-          className="hero-belleair-tint absolute inset-0 pointer-events-none"
+          className="hero-stpetebeach-tint absolute inset-0 pointer-events-none"
           aria-hidden
         />
-        {/* Single readability scrim (see .hero-belleair-scrim in index.css) —
-            merges the former vertical-darken + left-scrim divs. */}
-        <div className="hero-belleair-scrim absolute inset-0 pointer-events-none" aria-hidden />
-        <div className="hidden md:block absolute top-[12%] left-[-8%] w-[45vw] h-[55vh] bg-brand-blue/10 rounded-full blur-[130px] animate-float" />
-        {/* Bottom blend — fades to #07111c at the section edge so the seam into
-            the next section is invisible. */}
+
+        {/* Single readability scrim — merged gradients (see
+            .hero-stpetebeach-scrim in index.css). */}
+        <div className="hero-stpetebeach-scrim absolute inset-0 pointer-events-none" aria-hidden />
+
+        {/* Warm beach glow upper-right, cool ambient lower-left for balance */}
+        <div className="hidden md:block absolute top-[20%] right-[8%] w-[42vw] h-[52vh] bg-brand-orange/12 rounded-full blur-[130px] animate-float" />
+        <div className="hidden md:block absolute bottom-[5%] left-[-12%] w-[42vw] h-[42vw] bg-[#0a2540]/35 rounded-full blur-[130px] animate-morph" />
+
+        {/* Bottom blend into the next section (#07111c). */}
         <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-[#07111c] from-25% via-[#07111c]/70 to-transparent pointer-events-none" />
       </div>
 
@@ -62,31 +68,32 @@ const HeroSection = () => {
             className="lg:col-span-7"
           >
             <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8">
-              <MapPin className="w-3.5 h-3.5 text-brand-blue-light" />
+              <MapPin className="w-3.5 h-3.5 text-brand-orange-light" />
               <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
-                Belleair Beach · Gulf Barrier Island
+                St. Pete Beach · Gulf Barrier Island
               </span>
             </Glass>
 
             {/* Visual headline — a div, so the SEO h1 below carries keyword weight */}
-            <div className="font-display font-black text-white tracking-tight mb-6 leading-[1.08]">
+            <div className="font-display font-bold md:font-black text-white tracking-tight mb-6 leading-[1.08]">
               <span className="block text-4xl sm:text-5xl md:text-[3.4rem] leading-[1.04]">
-                Off Your Mind.
+                Salt-Tested.
               </span>
               <span className="block text-4xl sm:text-5xl md:text-[3.4rem] leading-[1.04]">
-                On Our Calendar.
+                Always Clear.
               </span>
             </div>
 
             {/* SEO H1 — local keyword for this city page */}
             <h1 className="text-shadow-city-h1 font-display font-normal text-white/90 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 tracking-tight">
-              Discreet weekly pool service for Belleair Beach homes.
+              Weekly pool service in St. Pete Beach, FL.
             </h1>
 
             <p className="text-shadow-city-body text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
-              <span className="text-white">One dedicated technician, on the same day every week</span> —
-              full pool cleaning, chemistry balancing, and equipment care for Belleair Beach's
-              waterfront and Gulf-front homes. Clear, balanced, and guest-ready year-round.
+              From <span className="text-white">Gulf Blvd to Pass-a-Grille</span>, barrier-island
+              pools take a beating from salt air, blowing sand, and full afternoon sun. We run a
+              weekly service built for exactly that — balanced water, inspected equipment, and a
+              photo report after every visit.
             </p>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
@@ -102,10 +109,10 @@ const HeroSection = () => {
               </Glass>
             </div>
             <p className="mt-3 text-[13px] text-gray-400">
-              Prefer to talk it through? Call us directly — a real person, same day.
+              On the beach or up north for the season — call or text any time, we handle it either way.
             </p>
 
-            {/* Trust strip */}
+            {/* Trust strip — beach-specific signal */}
             <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px] text-gray-400">
               <div className="flex items-center gap-2">
                 <div className="flex gap-0.5 text-brand-orange">
@@ -117,18 +124,20 @@ const HeroSection = () => {
                 <span className="text-gray-500">on Google</span>
               </div>
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-brand-blue-light" />
+                <ShieldCheck className="w-4 h-4 text-brand-orange-light" />
                 <span>Always Blue Guarantee</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Wind className="w-4 h-4 text-brand-orange-light" />
+                <span>Built for salt-air equipment</span>
               </div>
             </div>
           </m.div>
 
-          {/* Right column: the real service-report phone mockup. Lazy-loaded
-              and hidden below `lg` so mobile/tablet visitors never download
-              this chunk on first paint. A fixed-size placeholder reserves
-              layout space so swapping the phone in doesn't shift the hero. */}
-          <div className="lg:col-span-5 hidden lg:flex justify-center items-center relative">
-            <BelleairHeroPhone />
+          {/* Right column: phone mockup. DESKTOP ONLY (lg+); on mobile it
+              renders in its own section below the hero. */}
+          <div className="hidden lg:flex lg:col-span-5 justify-center items-center relative">
+            <StPeteBeachHeroPhone />
           </div>
         </div>
       </Container>
@@ -136,10 +145,17 @@ const HeroSection = () => {
   );
 };
 
+// Mobile-only phone-mockup section, rendered immediately after the hero — keeps
+// the heavy phone out of the above-the-fold 100vh hero on phones.
+const PhoneShowcaseMobile = () => (
+  <section className="lg:hidden relative bg-[#07111c] py-12 flex justify-center">
+    <StPeteBeachHeroPhone />
+  </section>
+);
+
 // JSON-LD (LocalBusiness + FAQPage) injected client-side. Title, description,
-// canonical, and OG are handled by usePageMeta (which runs during SSR so they
-// land in the prerendered HTML); usePageMeta doesn't do JSON-LD, so this effect
-// adds it.
+// canonical, and OG come from usePageMeta (SSR'd into the prerendered HTML);
+// usePageMeta doesn't do JSON-LD, so this slim effect adds it.
 const usePageSchema = () => {
   useEffect(() => {
     const ld = document.createElement('script');
@@ -153,14 +169,14 @@ const usePageSchema = () => {
         url: PAGE_URL,
         telephone: '+1-727-295-3621',
         priceRange: '$$',
-        areaServed: { '@type': 'City', name: 'Belleair Beach', addressRegion: 'FL' },
+        areaServed: { '@type': 'City', name: 'St. Pete Beach', addressRegion: 'FL' },
         description:
-          'Discreet, reliable weekly pool cleaning and maintenance for Belleair Beach waterfront and seasonal homes.',
+          'Weekly pool service for St. Pete Beach, FL barrier-island homes and rentals — salt-air equipment inspection, sun-tuned chemistry, same dedicated technician, and a photo report after every visit.',
       },
       {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
-        mainEntity: belleairBeachFaqs.map((f) => ({
+        mainEntity: stPeteBeachFaqs.map((f) => ({
           '@type': 'Question',
           name: f.q,
           acceptedAnswer: { '@type': 'Answer', text: f.a },
@@ -172,35 +188,37 @@ const usePageSchema = () => {
   }, []);
 };
 
-export const BelleairBeachPage = () => {
+export const StPeteBeachPage = () => {
   usePageMeta({
     title: PAGE_TITLE,
     description: PAGE_DESC,
-    canonicalPath: '/belleair-beach-fl/',
-    ogImage: '/belleair-beach-hero.jpg',
-    // Belleair has its own hero image now (see hero-bg-belleair-* in
-    // index.css), so preload those — they're what this page actually paints.
+    canonicalPath: '/st-pete-beach-fl/',
+    ogImage: '/waterfront-pool-st-petersburg.jpg',
     heroPreload: {
-      mobile: '/belleair-beach-hero-mobile.webp',
-      desktop: '/belleair-beach-hero.webp',
-      wide: '/belleair-beach-hero-1920.webp',
+      mobile: '/waterfront-pool-st-petersburg-mobile.webp',
+      desktop: '/waterfront-pool-st-petersburg.webp',
+      wide: '/waterfront-pool-st-petersburg-1920.webp',
     },
     // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
-    // hero headline (Montserrat 900), hero H1 (font-display font-normal =
-    // Montserrat 400).
-    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat400, FONTS.montserrat900],
+    // H1 (Montserrat 400). The big headline is font-bold md:font-black —
+    // Montserrat 700 on mobile, 900 on desktop — so preload 900 only at md+.
+    fontPreload: [
+      ...NAV_FONTS,
+      FONTS.inter400,
+      FONTS.montserrat400,
+      { href: FONTS.montserrat900, media: '(min-width: 768px)' },
+    ],
   });
   usePageSchema();
 
-  // Mobile JS-motion stripping is handled globally by the app-level MotionConfig
-  // in App.tsx (+ the force-visible mobile CSS in index.css).
   return (
-    <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#1669AE] selection:text-white">
+    <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
       <div className="absolute md:fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
       <div className="relative z-10">
         <Navbar />
         <HeroSection />
-        <BelleairBeachBelowFold />
+        <PhoneShowcaseMobile />
+        <StPeteBeachBelowFold />
         <CtaBand />
         <Footer />
       </div>

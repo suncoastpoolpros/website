@@ -556,7 +556,7 @@ export const ServiceAgreementPage = () => {
     title: 'Service Agreement — Suncoast Pool Pros | St. Petersburg, FL',
     description:
       'The Suncoast Pool Pros service agreement: weekly pool service terms, what’s covered under the flat rate, billing, and the Always Blue Guarantee.',
-    canonicalPath: '/service-agreement',
+    canonicalPath: '/service-agreement/',
   });
 
   useEffect(() => {

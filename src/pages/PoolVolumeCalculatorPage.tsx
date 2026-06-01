@@ -22,6 +22,7 @@ import { QuoteSheetProvider, useQuoteSheet } from '@/components/QuoteSheet';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
+import { usePageMeta } from '@/lib/usePageMeta';
 
 // ── constants ─────────────────────────────────────────────────────
 const GAL_PER_CUFT = 7.48052;
@@ -666,6 +667,20 @@ const SimpleSpaDiagram: React.FC<SimpleSpaDiagramProps> = ({ topW, depth, unitLa
 const SHARE_KEYS = ['shape', 'l', 'w', 'd', 's', 'deep', 'shallow', 'u', 'v', 'mode'] as const;
 
 const PoolVolumeCalculatorInner = () => {
+  // SEO meta via usePageMeta so title/description/canonical/OG land in the
+  // PRERENDERED HTML (runs synchronously during renderToString). Previously
+  // these were set in a client effect, which shipped the homepage's defaults
+  // (wrong title + canonical → "/") in the static HTML Google indexes.
+  // See CLAUDE.md #9. JSON-LD stays in the effect below (the documented
+  // exception — usePageMeta doesn't emit JSON-LD).
+  usePageMeta({
+    title: 'Free Pool Volume Calculator (Gallons + Liters) | Suncoast Pool Pros',
+    description:
+      'Free pool volume calculator — instantly get gallons or liters for rectangle, round, oval, kidney, freeform pools, plus spas. No email required.',
+    canonicalPath: '/tools/pool-volume-calculator/',
+    ogImage: '/logo.svg',
+  });
+
   const { open: openQuoteSheet } = useQuoteSheet();
   const [shape, setShape] = useState<Shape>('rectangle');
   const [lengthUnit, setLengthUnit] = useState<LenUnit>('ft');
@@ -804,66 +819,11 @@ const PoolVolumeCalculatorInner = () => {
     if (params.get('deep')) setDeepDepth(params.get('deep')!);
   }, []);
 
-  // Title, meta description, social card tags, and HowTo JSON-LD. All cleaned
-  // up on unmount so other routes get their own values.
+  // HowTo + FAQPage JSON-LD (two structured-data signals on one page). Injected
+  // client-side — usePageMeta (above) handles title/description/canonical/OG in
+  // the prerendered HTML, but doesn't emit JSON-LD, so this slim effect adds it
+  // (same pattern as the city pages' usePageSchema). See CLAUDE.md #9.
   useEffect(() => {
-    const TITLE = 'Free Pool Volume Calculator (Gallons + Liters) | Suncoast Pool Pros';
-    const DESCRIPTION =
-      'Free pool volume calculator — instantly get gallons or liters for rectangle, round, oval, kidney, freeform pools, plus spas. No email required.';
-    const URL = 'https://suncoastpoolpros.com/tools/pool-volume-calculator';
-    const IMAGE = 'https://suncoastpoolpros.com/logo.svg';
-
-    // Title.
-    const originalTitle = document.title;
-    document.title = TITLE;
-
-    // Sets meta name=… or meta property=… in <head>. Captures the previous
-    // content (if a tag already existed) so we can restore it on unmount.
-    type MetaSpec = { selector: string; attr: 'name' | 'property'; key: string; content: string };
-    const setMeta = (spec: MetaSpec) => {
-      let el = document.head.querySelector<HTMLMetaElement>(spec.selector);
-      const created = !el;
-      const previous = el?.getAttribute('content') ?? null;
-      if (!el) {
-        el = document.createElement('meta');
-        el.setAttribute(spec.attr, spec.key);
-        document.head.appendChild(el);
-      }
-      el.setAttribute('content', spec.content);
-      return () => {
-        if (created) {
-          el!.remove();
-        } else if (previous !== null) {
-          el!.setAttribute('content', previous);
-        }
-      };
-    };
-
-    const cleanups = [
-      setMeta({ selector: 'meta[name="description"]',         attr: 'name',     key: 'description',         content: DESCRIPTION }),
-      // Open Graph — used by Facebook, LinkedIn, iMessage, Slack, etc.
-      setMeta({ selector: 'meta[property="og:type"]',         attr: 'property', key: 'og:type',             content: 'website' }),
-      setMeta({ selector: 'meta[property="og:title"]',        attr: 'property', key: 'og:title',            content: TITLE }),
-      setMeta({ selector: 'meta[property="og:description"]',  attr: 'property', key: 'og:description',      content: DESCRIPTION }),
-      setMeta({ selector: 'meta[property="og:url"]',          attr: 'property', key: 'og:url',              content: URL }),
-      setMeta({ selector: 'meta[property="og:image"]',        attr: 'property', key: 'og:image',            content: IMAGE }),
-      setMeta({ selector: 'meta[property="og:site_name"]',    attr: 'property', key: 'og:site_name',        content: 'Suncoast Pool Pros' }),
-      // Twitter Card.
-      setMeta({ selector: 'meta[name="twitter:card"]',        attr: 'name',     key: 'twitter:card',        content: 'summary_large_image' }),
-      setMeta({ selector: 'meta[name="twitter:title"]',       attr: 'name',     key: 'twitter:title',       content: TITLE }),
-      setMeta({ selector: 'meta[name="twitter:description"]', attr: 'name',     key: 'twitter:description', content: DESCRIPTION }),
-      setMeta({ selector: 'meta[name="twitter:image"]',       attr: 'name',     key: 'twitter:image',       content: IMAGE }),
-    ];
-
-    // Override the homepage canonical baked into index.html.
-    const canon = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    const prevCanon = canon?.getAttribute('href') ?? null;
-    canon?.setAttribute('href', URL);
-    cleanups.push(() => {
-      if (prevCanon !== null) canon?.setAttribute('href', prevCanon);
-    });
-
-    // HowTo + FAQPage JSON-LD (two structured-data signals on one page).
     const howToScript = document.createElement('script');
     howToScript.type = 'application/ld+json';
     howToScript.text = JSON.stringify(howToSchema);
@@ -875,8 +835,6 @@ const PoolVolumeCalculatorInner = () => {
     document.head.appendChild(faqScript);
 
     return () => {
-      document.title = originalTitle;
-      cleanups.forEach((fn) => fn());
       howToScript.remove();
       faqScript.remove();
     };

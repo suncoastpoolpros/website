@@ -122,7 +122,7 @@ const HowItWorksPageInner = () => {
     title: 'How Suncoast Pool Service Actually Works',
     description:
       "From your first quote to the weekly photo report in your inbox — here's exactly what working with Suncoast Pool Pros looks like, week one through year five.",
-    canonicalPath: '/how-it-works',
+    canonicalPath: '/how-it-works/',
   });
 
   useEffect(() => {

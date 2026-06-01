@@ -50,7 +50,7 @@ const ToolsPageInner = () => {
     title: 'Free Tools for Florida Pool Owners',
     description:
       'Calculators and references for pool volume, chemistry dosing, and salt levels — built by working pool techs, free to use, no email required.',
-    canonicalPath: '/tools',
+    canonicalPath: '/tools/',
   });
 
   const handleQuoteClick = (e: React.MouseEvent) => {

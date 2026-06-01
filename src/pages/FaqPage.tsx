@@ -60,7 +60,7 @@ const FaqPageInner = () => {
     title: 'Pool Service Questions, Answered | Suncoast Pool Pros',
     description:
       "Everything you've wondered about flat-rate weekly pool service — what's included, what isn't, how pricing works, and what happens if your water turns green. Straight answers, no sales fluff.",
-    canonicalPath: '/faq',
+    canonicalPath: '/faq/',
   });
 
   // Inject FAQPage JSON-LD for this route.

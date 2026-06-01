@@ -18,6 +18,7 @@ import { resetSsrMeta, readSsrMeta } from '@/lib/serverMeta';
 import { LandingPage } from '@/pages/LandingPage';
 import { BelleairBeachPage } from '@/pages/BelleairBeachPage';
 import { TreasureIslandPage } from '@/pages/TreasureIslandPage';
+import { StPeteBeachPage } from '@/pages/StPeteBeachPage';
 import { CareersPage } from '@/pages/CareersPage';
 import { FaqPage } from '@/pages/FaqPage';
 import { HowItWorksPage } from '@/pages/HowItWorksPage';
@@ -37,6 +38,7 @@ export const PRERENDER_ROUTES = [
   '/',
   '/belleair-beach-fl',
   '/treasure-island-fl',
+  '/st-pete-beach-fl',
   '/careers',
   '/faq',
   '/how-it-works',
@@ -54,6 +56,7 @@ const Routing = () => (
     <Route path="/" element={<LandingPage />} />
     <Route path="/belleair-beach-fl" element={<BelleairBeachPage />} />
     <Route path="/treasure-island-fl" element={<TreasureIslandPage />} />
+    <Route path="/st-pete-beach-fl" element={<StPeteBeachPage />} />
     <Route path="/careers" element={<CareersPage />} />
     <Route path="/faq" element={<FaqPage />} />
     <Route path="/how-it-works" element={<HowItWorksPage />} />

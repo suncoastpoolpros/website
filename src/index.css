@@ -294,8 +294,68 @@
       radial-gradient(ellipse 80% 60% at center, transparent 55%, rgba(5,11,20,0.60) 100%);
   }
 }
-.hero-belleair-tint { background-color: #0f4d80; mix-blend-mode: overlay; opacity: 0.45; }
+.hero-belleair-tint { background-color: #0f4d80; mix-blend-mode: overlay; opacity: 0.28; }
+
+/* Belleair hero readability scrim — one element merging the old vertical
+   darken + desktop left scrim (the separate divs were removed). Lighter than
+   before per design tweak. The fade to #07111c at the section's bottom edge is
+   handled by the separate bottom-blend div (pinned to the bottom), not here. */
+.hero-belleair-scrim {
+  /* mobile: gentle top-down darken for the stacked text + soft edge vignette */
+  background-image:
+    linear-gradient(to bottom, rgba(2,6,12,0.28) 0%, rgba(4,9,15,0.34) 60%, transparent 100%),
+    radial-gradient(ellipse 85% 65% at center, transparent 60%, rgba(5,11,20,0.45) 100%);
+}
+@media (min-width: 768px) {
+  .hero-belleair-scrim {
+    /* desktop: left scrim (behind text) + light overall darken + edge vignette */
+    background-image:
+      linear-gradient(to right, rgba(2,6,12,0.65) 0%, rgba(2,6,12,0.22) 45%, transparent 100%),
+      linear-gradient(to bottom, rgba(2,6,12,0.20) 0%, rgba(4,9,15,0.28) 60%, transparent 100%),
+      radial-gradient(ellipse 85% 65% at center, transparent 60%, rgba(5,11,20,0.45) 100%);
+  }
+}
 .hero-treasure-tint { background-color: #1669AE; mix-blend-mode: overlay; opacity: 0.4; }
+
+/* St. Pete Beach hero. Photo is a temporary placeholder (the waterfront image)
+   until a dedicated St. Pete Beach hero is uploaded — only these url()s + the
+   page's heroPreload need to change when it is. Slightly warmer/brighter
+   treatment than the other city pages to read "open beach". */
+.hero-bg-stpetebeach-desktop {
+  background-image: image-set(
+    url('/waterfront-pool-st-petersburg.webp') type('image/webp') 1x,
+    url('/waterfront-pool-st-petersburg-1920.webp') type('image/webp') 2x,
+    url('/waterfront-pool-st-petersburg.jpg') type('image/jpeg') 1x
+  );
+  filter: saturate(1.35) contrast(1.08) hue-rotate(2deg);
+}
+.hero-bg-stpetebeach-mobile {
+  background-image: image-set(
+    url('/waterfront-pool-st-petersburg-mobile.webp') type('image/webp'),
+    url('/waterfront-pool-st-petersburg-mobile.jpg') type('image/jpeg')
+  );
+  filter: saturate(1.35) contrast(1.08) hue-rotate(2deg);
+  -webkit-mask-image: linear-gradient(to bottom, black 72%, transparent 96%);
+  mask-image: linear-gradient(to bottom, black 72%, transparent 96%);
+}
+.hero-stpetebeach-tint { background-color: #1f6f9e; mix-blend-mode: overlay; opacity: 0.26; }
+/* Single readability scrim (merged gradients), lighter for the open-beach look. */
+.hero-stpetebeach-scrim {
+  /* mobile: gentle top-down darken for the stacked text + soft edge vignette */
+  background-image:
+    linear-gradient(to bottom, rgba(2,6,12,0.30) 0%, rgba(4,9,15,0.36) 60%, transparent 100%),
+    radial-gradient(ellipse 85% 65% at center, transparent 60%, rgba(5,11,20,0.45) 100%);
+}
+@media (min-width: 768px) {
+  .hero-stpetebeach-scrim {
+    /* desktop: left scrim (behind text) + light overall darken + edge vignette */
+    background-image:
+      linear-gradient(to right, rgba(2,6,12,0.68) 0%, rgba(2,6,12,0.22) 48%, transparent 100%),
+      linear-gradient(to bottom, rgba(2,6,12,0.18) 0%, rgba(4,9,15,0.26) 60%, transparent 100%),
+      radial-gradient(ellipse 85% 65% at center, transparent 60%, rgba(5,11,20,0.45) 100%);
+  }
+}
+
 .interlude-tint-pinellas { background-color: #0a2540; mix-blend-mode: overlay; opacity: 0.5; }
 .interlude-tint-treasure { background-color: #1669AE; mix-blend-mode: overlay; opacity: 0.35; }
 

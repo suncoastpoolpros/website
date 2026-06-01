@@ -410,7 +410,7 @@ export const CareersPage = () => {
   usePageMeta({
     title: PAGE_TITLE,
     description: PAGE_DESC,
-    canonicalPath: '/careers',
+    canonicalPath: '/careers/',
   });
 
   useEffect(() => {

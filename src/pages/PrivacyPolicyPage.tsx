@@ -360,7 +360,7 @@ export const PrivacyPolicyPage = () => {
     title: 'Privacy Policy — Suncoast Pool Pros | St. Petersburg, FL',
     description:
       'Suncoast Pool Pros privacy policy — how we collect, use, and protect customer information, including SMS messaging consent and data handling.',
-    canonicalPath: '/privacy-policy',
+    canonicalPath: '/privacy-policy/',
   });
 
   // Scroll-spy: highlight the TOC entry for whichever section is nearest the

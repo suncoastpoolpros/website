@@ -35,7 +35,7 @@ const ContactPageInner = () => {
     title: 'Talk to a Real Person About Your Pool',
     description:
       'Call, text, or message Suncoast Pool Pros for a flat-rate weekly pool service quote. We answer on the same day — usually within an hour during business hours.',
-    canonicalPath: '/contact',
+    canonicalPath: '/contact/',
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

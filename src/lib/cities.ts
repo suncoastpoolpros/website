@@ -12,7 +12,7 @@ export type City = { slug: string; name: string; blurb: string; to?: string };
 export const cities: City[] = [
   { slug: 'st-petersburg',   name: 'St. Petersburg',  blurb: 'Our home base' },
   { slug: 'gulfport',        name: 'Gulfport',        blurb: 'Coastal St. Pete' },
-  { slug: 'st-pete-beach',   name: 'St. Pete Beach',  blurb: 'Beach community' },
+  { slug: 'st-pete-beach',   name: 'St. Pete Beach',  blurb: 'Beach community', to: '/st-pete-beach-fl' },
   { slug: 'treasure-island', name: 'Treasure Island', blurb: 'Gulf beaches', to: '/treasure-island-fl' },
   { slug: 'seminole',        name: 'Seminole',        blurb: 'Mid-Pinellas' },
   { slug: 'largo',           name: 'Largo',           blurb: 'Central Pinellas' },

@@ -51,7 +51,7 @@ const SignupPageInner = () => {
     title: 'Start Weekly Pool Service in the Tampa Bay Area',
     description:
       "Tell us about your pool and we'll quote your flat weekly rate, usually within the same business day. No contracts, no obligation.",
-    canonicalPath: '/signup',
+    canonicalPath: '/signup/',
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
