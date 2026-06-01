@@ -242,13 +242,19 @@ export const Navbar = () => {
               className="absolute inset-0 bg-black/75 md:backdrop-blur-[10px] md:bg-black/60"
             />
 
-            {/* Panel */}
+            {/* Panel. will-change-transform promotes it to its own compositor
+                layer so the large shadow-2xl rasterizes ONCE and just composites
+                as the panel slides — without it, iOS repaints that big soft
+                shadow every frame, which read as a slightly laggy open. A short
+                deterministic tween (iOS-style ease) also avoids the extra
+                settling frames a spring runs. (Drawer is client-only — isOpen is
+                always false on SSR — so this never affects prerendered HTML.) */}
             <m.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="absolute right-0 top-0 h-full w-[82%] max-w-sm flex flex-col bg-[#0a1628] border-l border-white/10 shadow-2xl shadow-black/60"
+              transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+              className="absolute right-0 top-0 h-full w-[82%] max-w-sm flex flex-col will-change-transform bg-[#0a1628] border-l border-white/10 shadow-2xl shadow-black/60"
             >
               {/* Brand bloom for depth */}
               <div className="absolute top-0 right-0 w-56 h-56 bg-brand-blue/15 rounded-full blur-[100px] pointer-events-none" />
