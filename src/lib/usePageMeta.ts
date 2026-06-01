@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { setSsrMeta } from './serverMeta';
 
 const SITE_ORIGIN = 'https://suncoastpoolpros.com';
-const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/pool-service-st-petersburg-hero.jpg`;
 
 // `window` is undefined in Node — used to detect whether we're rendering on
 // the server (where we populate the serverMeta singleton) vs. the client
@@ -14,7 +13,8 @@ type PageMeta = {
   description: string;
   /** Path-only (e.g. "/treasure-island-fl") or omit for homepage. */
   canonicalPath?: string;
-  /** Absolute URL or path. Defaults to the St. Pete hero. */
+  /** Deprecated/ignored: link shares no longer emit og:image (no preview photo).
+   *  Kept so existing callers compile; the value is not used. */
   ogImage?: string;
   /** Per-page LCP hero to preload (server-injected). Lets each route preload
    *  its own hero rather than the global default in index.html. */
@@ -90,18 +90,14 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
       ? { title: metaOrTitle, description: maybeDesc ?? '' }
       : metaOrTitle;
 
-  const { title, description, canonicalPath, ogImage, heroPreload, fontPreload, noindex } = meta;
+  const { title, description, canonicalPath, heroPreload, fontPreload, noindex } = meta;
   const canonicalUrl = `${SITE_ORIGIN}${canonicalPath ?? '/'}`;
-  const image = ogImage
-    ? ogImage.startsWith('http')
-      ? ogImage
-      : `${SITE_ORIGIN}${ogImage}`
-    : DEFAULT_OG_IMAGE;
 
   // Server: populate the SSR meta singleton during render. The prerender script
   // reads this after renderToString and writes it into the static HTML head.
+  // No og:image is emitted — link shares render as a plain card with no photo.
   if (IS_SERVER) {
-    setSsrMeta({ title, description, canonicalUrl, ogImage: image, heroPreload, fontPreload, noindex });
+    setSsrMeta({ title, description, canonicalUrl, heroPreload, fontPreload, noindex });
   }
 
   useEffect(() => {
@@ -114,13 +110,12 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
     const ogDesc = setTag('meta[property="og:description"]', 'property', 'og:description', description);
     const ogUrl = setTag('meta[property="og:url"]', 'property', 'og:url', canonicalUrl);
     const ogType = setTag('meta[property="og:type"]', 'property', 'og:type', 'website');
-    const ogImg = setTag('meta[property="og:image"]', 'property', 'og:image', image);
-    const twCard = setTag('meta[name="twitter:card"]', 'name', 'twitter:card', 'summary_large_image');
+    // No og:image / twitter:image — shares render as a plain card (no photo).
+    const twCard = setTag('meta[name="twitter:card"]', 'name', 'twitter:card', 'summary');
     const twTitle = setTag('meta[name="twitter:title"]', 'name', 'twitter:title', title);
     const twDesc = setTag('meta[name="twitter:description"]', 'name', 'twitter:description', description);
-    const twImg = setTag('meta[name="twitter:image"]', 'name', 'twitter:image', image);
 
-    const restore = [desc, ogTitle, ogDesc, ogUrl, ogType, ogImg, twCard, twTitle, twDesc, twImg];
+    const restore = [desc, ogTitle, ogDesc, ogUrl, ogType, twCard, twTitle, twDesc];
 
     // Robots noindex — only present on pages that opt in. On SPA nav away from
     // a noindex page, the cleanup removes it so the next (indexable) page isn't
@@ -142,5 +137,5 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
         else if (robots.prev !== null) robots.el.setAttribute('content', robots.prev);
       }
     };
-  }, [title, description, canonicalUrl, image, noindex]);
+  }, [title, description, canonicalUrl, noindex]);
 }

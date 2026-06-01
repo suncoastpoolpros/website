@@ -101,11 +101,12 @@ function injectHead(html, meta) {
   if (meta.canonicalUrl) replacements.push(`<meta property="og:url" content="${escapeHtml(meta.canonicalUrl)}" />`);
   replacements.push(`<meta property="og:type" content="website" />`);
   replacements.push(`<meta property="og:site_name" content="Suncoast Pool Pros" />`);
-  if (meta.ogImage) replacements.push(`<meta property="og:image" content="${escapeHtml(meta.ogImage)}" />`);
-  replacements.push(`<meta name="twitter:card" content="summary_large_image" />`);
+  // No og:image / twitter:image — link shares render as a plain card (title +
+  // description + site icon), no large background photo. twitter:card is the
+  // small "summary" type accordingly.
+  replacements.push(`<meta name="twitter:card" content="summary" />`);
   if (meta.title) replacements.push(`<meta name="twitter:title" content="${escapeHtml(meta.title)}" />`);
   if (meta.description) replacements.push(`<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`);
-  if (meta.ogImage) replacements.push(`<meta name="twitter:image" content="${escapeHtml(meta.ogImage)}" />`);
 
   out = out.replace('</head>', `  ${replacements.join('\n    ')}\n  </head>`);
   return out;
