@@ -50,11 +50,15 @@ export const Hero = () => {
           aria-hidden
         />
 
-        {/* Pool background — mobile. Locked to one screen height (100vh) and
-            anchored at the top, so it never stretches to the full (taller) section
-            content height. */}
+        {/* Pool background — mobile. Locked to one screen height and anchored at
+            the top, so it never stretches to the full (taller) section content
+            height. Uses h-dvh (the *dynamic* viewport unit), NOT h-screen/100vh:
+            the section is min-h-dvh, so matching units keeps the photo tracking
+            the text as iOS shows/hides the URL bar. A fixed 100vh background here
+            stayed put while the dvh-sized content reflowed on scroll, which read
+            as an unintended parallax (CLAUDE.md non-negotiable #16). */}
         <div
-          className="hero-bg-mobile absolute top-0 inset-x-0 h-screen md:hidden bg-cover bg-center"
+          className="hero-bg-mobile absolute top-0 inset-x-0 h-dvh md:hidden bg-cover bg-center"
           aria-hidden
         />
 
