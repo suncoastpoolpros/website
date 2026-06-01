@@ -44,9 +44,18 @@ export const Navbar = () => {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
+    // Defer the initial read to the next frame instead of calling onScroll()
+    // synchronously here. Reading window.scrollY right after React commits the
+    // hydrated DOM forces the browser to flush layout (a "forced reflow"). The
+    // page loads at the top (scrollY 0 → scrolled:false, the initial state), so
+    // a one-frame-late first check is only meaningful for loads that start
+    // mid-page (hash/refresh) — and it no longer blocks the hydration commit.
+    const raf = requestAnimationFrame(onScroll);
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
 
   // While the mobile drawer is open: lock body scroll and close on Escape.
