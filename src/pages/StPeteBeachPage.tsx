@@ -195,7 +195,7 @@ export const StPeteBeachPage = () => {
     canonicalPath: '/st-pete-beach-fl/',
     ogImage: '/st-pete-beach-hero.jpg',
     heroPreload: {
-      mobile: '/st-pete-beach-hero-mobile.webp',
+      mobile: '/st-pete-beach-hero-mobile-v2.webp',
       desktop: '/st-pete-beach-hero.webp',
       wide: '/st-pete-beach-hero-1920.webp',
     },

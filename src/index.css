@@ -329,8 +329,8 @@
 }
 .hero-bg-stpetebeach-mobile {
   background-image: image-set(
-    url('/st-pete-beach-hero-mobile.webp') type('image/webp'),
-    url('/st-pete-beach-hero-mobile.jpg') type('image/jpeg')
+    url('/st-pete-beach-hero-mobile-v2.webp') type('image/webp'),
+    url('/st-pete-beach-hero-mobile-v2.jpg') type('image/jpeg')
   );
   filter: saturate(1.35) contrast(1.08) hue-rotate(2deg);
   -webkit-mask-image: linear-gradient(to bottom, black 72%, transparent 96%);
@@ -424,8 +424,8 @@
 }
 .interlude-bg-stpetebeach-mobile {
   background-image: image-set(
-    url('/st-pete-beach-hero-mobile.webp') type('image/webp'),
-    url('/st-pete-beach-hero-mobile.jpg') type('image/jpeg')
+    url('/st-pete-beach-hero-mobile-v2.webp') type('image/webp'),
+    url('/st-pete-beach-hero-mobile-v2.jpg') type('image/jpeg')
   );
   filter: saturate(1.15) brightness(0.55) contrast(1.05) hue-rotate(-2deg);
 }
