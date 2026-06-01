@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { m, AnimatePresence } from 'motion/react';
 import { X, Handshake } from 'lucide-react';
 import { QuoteChooser } from '@/components/QuoteChooser';
 import { PHONE_HREF } from '@/lib/contact';
+import { useScrollLock } from '@/lib/useScrollLock';
+import { useOverlayTransition } from '@/lib/useOverlayTransition';
 
 /**
  * Slide-up bottom sheet (mobile) that hosts the QuoteChooser.
@@ -23,17 +24,11 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
   // the sheet header can swap to a confirmation. Reset whenever the sheet is
   // (re)opened so a fresh visit always starts on the question, not the thanks.
   const [submitted, setSubmitted] = useState(false);
+  // Mount/visible timing for the CSS-driven slide (see useOverlayTransition).
+  const sheet = useOverlayTransition(isOpen);
 
-  // Lock body scroll while the sheet is open.
-  useEffect(() => {
-    if (isOpen) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }
-  }, [isOpen]);
+  // Lock body scroll while the sheet is open (iOS-safe, shared hook).
+  useScrollLock(isOpen);
 
   // Close on Escape.
   useEffect(() => {
@@ -53,29 +48,22 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
     <QuoteSheetContext.Provider value={{ open, close, isOpen }}>
       {children}
 
-      <AnimatePresence>
-        {isOpen && (
+      {sheet.mounted && (
           <div className="quote-sheet fixed inset-0 z-[100] flex items-end sm:items-center sm:justify-center sm:p-6">
-            {/* Backdrop */}
-            <m.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              // Solid scrim on mobile (md:backdrop-blur only): the blur's
-              // unmount otherwise re-rasterizes the page behind it on iOS,
-              // causing a blank/repaint flash when the sheet closes.
-              className="absolute inset-0 bg-black/80 md:bg-black/70 md:backdrop-blur-[10px]"
+            {/* Backdrop. Solid scrim on mobile (md:backdrop-blur only): the
+                blur's unmount otherwise re-rasterizes the page behind it on iOS,
+                causing a blank/repaint flash when the sheet closes. */}
+            <div
+              className={`overlay-scrim absolute inset-0 bg-black/80 md:bg-black/70 md:backdrop-blur-[10px] ${sheet.visible ? 'is-open' : ''}`}
               onClick={close}
             />
 
-            {/* Panel — bottom sheet on mobile, centered modal on desktop */}
-            <m.div
-              initial={{ y: '100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="relative w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0b1726] border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl px-5 pt-3 pb-8 sm:p-8 shadow-[0_-20px_50px_-10px_rgba(0,0,0,0.7)] sm:shadow-2xl sm:shadow-black/60"
+            {/* Panel — bottom sheet on mobile, centered modal on desktop. The
+                slide-up is a composited CSS transform (overlay-panel-bottom),
+                off the main thread, replacing the old Framer spring that
+                recomputed physics every frame while the chooser form mounted. */}
+            <div
+              className={`overlay-panel-bottom relative w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0b1726] border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl px-5 pt-3 pb-8 sm:p-8 shadow-[0_-20px_50px_-10px_rgba(0,0,0,0.7)] sm:shadow-2xl sm:shadow-black/60 ${sheet.visible ? 'is-open' : ''}`}
             >
               {/* Grab handle (mobile only) */}
               <div className="sm:hidden mx-auto mb-5 h-1.5 w-12 rounded-full bg-white/20" />
@@ -121,10 +109,9 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
                 </p>
               </div>
               )}
-            </m.div>
+            </div>
           </div>
         )}
-      </AnimatePresence>
     </QuoteSheetContext.Provider>
   );
 };

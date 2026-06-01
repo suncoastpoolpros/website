@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { SmartLink as Link } from '@/components/SmartLink';
-import { m, AnimatePresence, MotionConfig } from 'motion/react';
+import { useScrollLock } from '@/lib/useScrollLock';
+import { useOverlayTransition } from '@/lib/useOverlayTransition';
 import {
   X,
   Phone,
@@ -41,6 +42,8 @@ export const Navbar = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
   const { pathname } = useLocation();
   const [areasExpanded, setAreasExpanded] = useState(false);
+  // Mount/visible timing for the CSS-driven drawer slide (see useOverlayTransition).
+  const drawer = useOverlayTransition(isOpen);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -58,17 +61,14 @@ export const Navbar = () => {
     };
   }, []);
 
-  // While the mobile drawer is open: lock body scroll and close on Escape.
+  // While the mobile drawer is open: lock body scroll (iOS-safe, shared hook)
+  // and close on Escape.
+  useScrollLock(isOpen);
   useEffect(() => {
     if (!isOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setIsOpen(false);
     window.addEventListener('keydown', onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener('keydown', onKey);
-    };
+    return () => window.removeEventListener('keydown', onKey);
   }, [isOpen]);
 
   // Close the mobile drawer + service-areas accordion on any route change.
@@ -224,46 +224,30 @@ export const Navbar = () => {
         any drawer rendered inside the nav gets trapped at z-50 and the sticky
         mobile CTA (z-90) bleeds through. Hoisting the drawer to the top level
         lets its z-[110] work as written. */}
-      {/* Drawer is portaled to <body> so it renders OUTSIDE the page's
-          .force-static-motion wrapper — otherwise the mobile force-visible CSS
-          (which keeps below-fold scroll-reveal content from sticking invisible)
-          would also flatten the drawer's staggered entrance animation. The
-          portal puts it beyond that wrapper's reach. Guarded for SSR (the drawer
-          only renders when isOpen, which is always false server-side anyway).
-          reducedMotion="never" re-enables motion here since the app-level config
-          strips it on mobile — the drawer slide/stagger is an interactive
-          affordance, not decorative scroll motion. */}
-      {typeof document !== 'undefined' && createPortal(
-      <MotionConfig reducedMotion="never">
-      <AnimatePresence>
-        {isOpen && (
+      {/* Drawer is portaled to <body> so it sits above the page's stacking
+          contexts (the z-[110] works as written). The slide is now a CSS
+          transform transition (.overlay-* in index.css), driven by
+          useOverlayTransition — it runs on the compositor thread, so the panel
+          glides even while React mounts its contents (no main-thread tween), and
+          mounting is plain divs with no animation-library cost on open. Guarded
+          for SSR: drawer.mounted is false until the client opens it, so nothing
+          ships in the prerendered HTML. */}
+      {typeof document !== 'undefined' && drawer.mounted && createPortal(
           <div className="nav-drawer md:hidden fixed inset-0 z-[110]">
-            {/* Backdrop */}
-            <m.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
+            {/* Backdrop. Solid scrim instead of backdrop-blur: on mobile the
+                blur's unmount re-rasterizes the page behind it (blank/repaint
+                flash on iOS). Higher opacity keeps the same dimmed look. */}
+            <div
               onClick={() => setIsOpen(false)}
-              // Solid scrim instead of backdrop-blur: on mobile the blur's
-              // unmount re-rasterizes the page behind it (blank/repaint flash
-              // on iOS). Higher opacity keeps the same dimmed look.
-              className="absolute inset-0 bg-black/75 md:backdrop-blur-[10px] md:bg-black/60"
+              className={`overlay-scrim absolute inset-0 bg-black/75 md:backdrop-blur-[10px] md:bg-black/60 ${drawer.visible ? 'is-open' : ''}`}
             />
 
-            {/* Panel. will-change-transform promotes it to its own compositor
-                layer so the large shadow-2xl rasterizes ONCE and just composites
-                as the panel slides — without it, iOS repaints that big soft
-                shadow every frame, which read as a slightly laggy open. A short
-                deterministic tween (iOS-style ease) also avoids the extra
-                settling frames a spring runs. (Drawer is client-only — isOpen is
-                always false on SSR — so this never affects prerendered HTML.) */}
-            <m.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-              className="absolute right-0 top-0 h-full w-[82%] max-w-sm flex flex-col will-change-transform bg-[#0a1628] border-l border-white/10 shadow-2xl shadow-black/60"
+            {/* Panel. overlay-panel-right slides it in from the right via a
+                composited transform; will-change is set in CSS so the large
+                shadow-2xl rasterizes once and just composites as it slides.
+                (Drawer is client-only, so this never affects prerendered HTML.) */}
+            <div
+              className={`overlay-panel-right absolute right-0 top-0 h-full w-[82%] max-w-sm flex flex-col bg-[#0a1628] border-l border-white/10 shadow-2xl shadow-black/60 ${drawer.visible ? 'is-open' : ''}`}
             >
               {/* Brand bloom for depth */}
               <div className="absolute top-0 right-0 w-56 h-56 bg-brand-blue/15 rounded-full blur-[100px] pointer-events-none" />
@@ -321,15 +305,13 @@ export const Navbar = () => {
                       />
                     </button>
 
-                    {/* Conditionally render the city list with a simple fade/slide —
-                        no height-auto or grid-fr animation (both misbehaved inside
-                        the drawer's scroll container). */}
+                    {/* Conditionally render the city list with a simple CSS
+                        fade/slide (overlay-accordion-in keyframe, plays on mount)
+                        — no height-auto or grid-fr animation (both misbehaved
+                        inside the drawer's scroll container). */}
                     {areasExpanded && (
-                      <m.div
-                        initial={{ opacity: 0, y: -6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.2, ease: 'easeOut' }}
-                        className="ml-[3.25rem] mr-1 mt-1 mb-2 grid grid-cols-2 gap-1 border-l border-white/10 pl-3"
+                      <div
+                        className="overlay-accordion-in ml-[3.25rem] mr-1 mt-1 mb-2 grid grid-cols-2 gap-1 border-l border-white/10 pl-3"
                       >
                         {cities.map((city) => {
                           const cityCls =
@@ -354,7 +336,7 @@ export const Navbar = () => {
                             </a>
                           );
                         })}
-                      </m.div>
+                      </div>
                     )}
                   </div>
 
@@ -435,11 +417,8 @@ export const Navbar = () => {
                   Open {HOURS_SHORT}
                 </p>
               </div>
-            </m.div>
-          </div>
-        )}
-      </AnimatePresence>
-      </MotionConfig>,
+            </div>
+          </div>,
       document.body,
       )}
     </>

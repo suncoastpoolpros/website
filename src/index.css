@@ -522,6 +522,55 @@
   }
 }
 
+/* ===== Overlay entrance primitive (nav drawer + quote sheet) =====
+   The slide is a GPU-composited CSS transform transition, NOT a JS animation
+   library. Framer Motion interpolated the panel's x/y on the main thread every
+   frame, so the slide stuttered whenever the main thread was busy mounting the
+   panel's contents — and mounting AnimatePresence/MotionConfig on tap added a
+   delay before the panel even appeared. A `transform` transition runs on the
+   compositor thread, so the panel glides regardless of main-thread work, and
+   the overlays mount as plain divs (no animation-library cost on open).
+
+   Driven by useOverlayTransition: mount → next frame add `.is-open` → transition
+   in; remove `.is-open` → transition out → unmount after the duration. Shared by
+   both overlays so they slide identically and timing/easing live in one place.
+   Class-based transforms (not inline style) are also NOT matched by the mobile
+   `.force-static-motion [style*="transform"]` rule, so these can't get flattened
+   the way the old inline-style motion ones could. */
+.overlay-scrim {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.overlay-scrim.is-open {
+  opacity: 1;
+}
+
+.overlay-panel-right,
+.overlay-panel-bottom {
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.overlay-panel-right {
+  transform: translate3d(100%, 0, 0); /* off-screen right — drawer */
+}
+.overlay-panel-bottom {
+  transform: translate3d(0, 100%, 0); /* off-screen bottom — sheet */
+}
+.overlay-panel-right.is-open,
+.overlay-panel-bottom.is-open {
+  transform: translate3d(0, 0, 0);
+}
+
+/* Drawer Service-Areas accordion: a CSS keyframe plays once on mount (no rAF
+   dance needed for a one-shot enter), replacing the old per-item Framer fade. */
+@keyframes overlayInUp {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.overlay-accordion-in {
+  animation: overlayInUp 0.2s ease-out;
+}
+
 /* Kill backdrop-filter entirely on mobile. backdrop-blur forces iOS Safari to
    re-rasterize everything behind the element — and when blurred elements
    mount/unmount or toggle (nav drawer, quote sheet, sticky CTA, the
