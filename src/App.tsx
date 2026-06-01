@@ -68,9 +68,20 @@ export default function App() {
     clearChunkReloadFlag();
   }, []);
 
-  // Load GA4 (deferred, async) after first mount — never on the critical path.
+  // Load GA4 only when the browser is idle — after the critical work (LCP
+  // image, fonts, hydration) is done — so the analytics request never competes
+  // with the things that determine page speed. requestIdleCallback where
+  // supported (Safari lacks it), with a setTimeout fallback.
   useEffect(() => {
-    initAnalytics();
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    };
+    if (w.requestIdleCallback) {
+      w.requestIdleCallback(() => initAnalytics(), { timeout: 4000 });
+    } else {
+      const id = window.setTimeout(initAnalytics, 2500);
+      return () => window.clearTimeout(id);
+    }
   }, []);
   return (
     <QuoteSheetProvider>
