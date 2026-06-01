@@ -75,7 +75,7 @@ export const Hero = () => {
         <div className="hero-scrim absolute inset-0 pointer-events-none" aria-hidden />
 
         {/* Spotlight glow behind the phone (right side) — pulls the eye to it */}
-        <div className="hidden md:block absolute top-[18%] right-[5%] w-[40vw] h-[60vh] bg-brand-orange/12 rounded-full blur-[120px] animate-float" />
+        <div className="hidden md:block absolute top-[18%] right-[5%] w-[40vw] h-[60vh] bg-brand-blue/12 rounded-full blur-[120px] animate-float" />
 
         {/* Subtle deep-blue ambient on the left for balance */}
         <div className="hidden md:block absolute top-[10%] left-[-10%] w-[40vw] h-[50vw] bg-[#0a2540]/30 rounded-full blur-[120px] animate-morph" />
@@ -171,15 +171,14 @@ export const Hero = () => {
           {/* Visual Content - Right Side (Phone Mockup) — DESKTOP ONLY in the
               hero. On mobile it renders in its own section below the hero (see
               <HomeHeroPhone> usage in the page), so the hero is a clean 100vh of
-              headline + CTAs and the phone never sits above the fold. */}
-          <m.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
-            className="hidden lg:flex lg:col-span-6 relative justify-center items-center"
-          >
+              headline + CTAs and the phone never sits above the fold.
+              NOT animated (plain div, matching the Treasure Island hero): the
+              phone is a heavy subtree (full Gmail/ServiceReport mockup), and
+              sliding it up on load made the homepage load-in janky vs. Treasure,
+              whose phone just appears. Only the text column animates. */}
+          <div className="hidden lg:flex lg:col-span-6 relative justify-center items-center">
             <HomeHeroPhone clock={clock} gmailScrolled={gmailScrolled} setGmailScrolled={setGmailScrolled} />
-          </m.div>
+          </div>
         </div>
       </Container>
     </div>
@@ -470,7 +469,7 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled }: HomeHeroPhone
 
               {/* Soft ambient glow behind phone — orange bottom unifies with hero accent.
                   Inset kept tight on the bottom so the bloom doesn't bleed into the hero's fade zone. */}
-              <div className="absolute -top-6 -left-6 -right-6 bottom-12 bg-gradient-to-br from-brand-blue/15 via-brand-blue-dark/10 to-brand-orange/15 blur-3xl -z-10 rounded-[3rem]" />
+              <div className="absolute -top-6 -left-6 -right-6 bottom-12 bg-gradient-to-br from-brand-blue/15 via-brand-blue-dark/10 to-brand-blue/15 blur-3xl -z-10 rounded-[3rem]" />
             </div>
     </>
   );

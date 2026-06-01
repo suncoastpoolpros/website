@@ -20,9 +20,9 @@ export const LandingPage = () => {
       'Flat-rate weekly pool cleaning in St. Petersburg and the Tampa Bay area. One price covers standard chemicals, the same tech shows up every week, and you get a photo report after every visit.',
     canonicalPath: '/',
     heroPreload: {
-      mobile: '/waterfront-pool-st-petersburg-mobile.webp',
-      desktop: '/waterfront-pool-st-petersburg.webp',
-      wide: '/waterfront-pool-st-petersburg-1920.webp',
+      mobile: '/treasure-island-hero-mobile.webp',
+      desktop: '/treasure-island-hero.webp',
+      wide: '/treasure-island-hero-1920.webp',
     },
     // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
     // hero H1 (font-display font-normal = Montserrat 400). The "One Flat Rate"

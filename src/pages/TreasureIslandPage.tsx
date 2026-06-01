@@ -240,9 +240,9 @@ export const TreasureIslandPage = () => {
     canonicalPath: '/treasure-island-fl/',
     ogImage: '/treasure-island-hero.jpg',
     heroPreload: {
-      mobile: '/treasure-island-hero-mobile.webp',
-      desktop: '/treasure-island-hero.webp',
-      wide: '/treasure-island-hero-1920.webp',
+      mobile: '/waterfront-pool-st-petersburg-mobile.webp',
+      desktop: '/waterfront-pool-st-petersburg.webp',
+      wide: '/waterfront-pool-st-petersburg-1920.webp',
     },
     // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
     // H1 (Montserrat 400). The big headline is font-bold md:font-black — i.e.
