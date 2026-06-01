@@ -24,6 +24,10 @@ type PageMeta = {
    *  `{ href, media }` to scope a font to a viewport (e.g. a desktop-only
    *  decorative font shouldn't preload on mobile). See FONTS. */
   fontPreload?: Array<string | { href: string; media: string }>;
+  /** Keep this page out of search results (transactional/thank-you pages).
+   *  Emits <meta name="robots" content="noindex,follow"> — page stays
+   *  crawlable and prerendered, just not indexed. */
+  noindex?: boolean;
 };
 
 /** Named font weights, so pages declare above-the-fold fonts semantically.
@@ -86,7 +90,7 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
       ? { title: metaOrTitle, description: maybeDesc ?? '' }
       : metaOrTitle;
 
-  const { title, description, canonicalPath, ogImage, heroPreload, fontPreload } = meta;
+  const { title, description, canonicalPath, ogImage, heroPreload, fontPreload, noindex } = meta;
   const canonicalUrl = `${SITE_ORIGIN}${canonicalPath ?? '/'}`;
   const image = ogImage
     ? ogImage.startsWith('http')
@@ -97,7 +101,7 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
   // Server: populate the SSR meta singleton during render. The prerender script
   // reads this after renderToString and writes it into the static HTML head.
   if (IS_SERVER) {
-    setSsrMeta({ title, description, canonicalUrl, ogImage: image, heroPreload, fontPreload });
+    setSsrMeta({ title, description, canonicalUrl, ogImage: image, heroPreload, fontPreload, noindex });
   }
 
   useEffect(() => {
@@ -118,6 +122,13 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
 
     const restore = [desc, ogTitle, ogDesc, ogUrl, ogType, ogImg, twCard, twTitle, twDesc, twImg];
 
+    // Robots noindex — only present on pages that opt in. On SPA nav away from
+    // a noindex page, the cleanup removes it so the next (indexable) page isn't
+    // accidentally suppressed.
+    const robots = noindex
+      ? setTag('meta[name="robots"]', 'name', 'robots', 'noindex,follow')
+      : null;
+
     return () => {
       document.title = prevTitle;
       for (const r of restore) {
@@ -126,6 +137,10 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
       }
       if (canon.created) canon.el.remove();
       else if (canon.prev !== null) canon.el.setAttribute('href', canon.prev);
+      if (robots) {
+        if (robots.created) robots.el.remove();
+        else if (robots.prev !== null) robots.el.setAttribute('content', robots.prev);
+      }
     };
-  }, [title, description, canonicalUrl, image]);
+  }, [title, description, canonicalUrl, image, noindex]);
 }

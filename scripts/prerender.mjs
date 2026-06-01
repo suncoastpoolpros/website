@@ -50,6 +50,16 @@ function injectHead(html, meta) {
     );
   }
 
+  // Robots noindex for opt-in pages (transactional/thank-you). Injected right
+  // after the canonical so it's in the static HTML Google reads. Indexable
+  // pages get no robots tag (default = index,follow).
+  if (meta.noindex) {
+    out = out.replace(
+      '</head>',
+      `  <meta name="robots" content="noindex,follow" />\n  </head>`,
+    );
+  }
+
   // Per-page LCP hero preload. The template ships the homepage (St. Pete) hero
   // preloads; if this page declares its own hero, swap those out so the page
   // preloads only its real LCP image (e.g. Belleair/Treasure heroes) instead of

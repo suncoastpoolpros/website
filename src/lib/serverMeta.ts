@@ -23,6 +23,10 @@ export type SsrMeta = {
    *  weights it paints above the fold. A string preloads unconditionally; an
    *  `{ href, media }` entry scopes it to a viewport (e.g. desktop-only fonts). */
   fontPreload?: Array<string | { href: string; media: string }>;
+  /** When true, the page emits <meta name="robots" content="noindex,follow">
+   *  so it's kept out of search results (e.g. transactional/thank-you pages)
+   *  while still crawlable and prerendered. */
+  noindex?: boolean;
 };
 
 let current: SsrMeta = {};

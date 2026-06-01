@@ -52,6 +52,10 @@ const SignupPageInner = () => {
     description:
       "Tell us about your pool and we'll quote your flat weekly rate, usually within the same business day. No contracts, no obligation.",
     canonicalPath: '/signup/',
+    // Transactional onboarding page — keep it out of search (thin, post-quote),
+    // but crawlable + prerendered so the noindex is actually read and direct
+    // visits (email/ad links) still paint fast.
+    noindex: true,
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

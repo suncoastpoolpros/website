@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 
-Disallow: /signup
+# /signup is kept out of search via a per-page noindex meta tag (it must stay
+# crawlable for Google to read that tag), not a Disallow rule.
 
 Sitemap: https://suncoastpoolpros.com/sitemap.xml
