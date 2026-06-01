@@ -4,10 +4,16 @@ import { ArrowRight, Phone } from 'lucide-react';
 import { useQuoteSheet } from '@/components/QuoteSheet';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 
+// Fraction of the page the user must scroll past before the CTA appears.
+// Tunable: lower = sooner, higher = further down. Page-length-relative, so it
+// scales with each page (later on long pages, sooner on short ones).
+const SHOW_AFTER_PAGE_FRACTION = 0.2;
+
 /**
- * Mobile-only sticky bottom CTA bar. Appears after the user scrolls past the
- * hero (so it never competes with the hero's own CTA), and hides while the
- * quote sheet is open or once the footer quote form is reached.
+ * Mobile-only sticky bottom CTA bar. Appears once the user has scrolled past
+ * ~20% of the page (page-length-relative, so it scales per page), and hides
+ * while the quote sheet is open or once the #quote form / footer is on screen
+ * (so it never covers them).
  */
 export const StickyMobileCta = () => {
   const { open, isOpen } = useQuoteSheet();
@@ -18,31 +24,57 @@ export const StickyMobileCta = () => {
     const mq = window.matchMedia('(max-width: 639px)');
     if (!mq.matches) return;
 
-    // Use IntersectionObserver instead of reading layout (getBoundingClientRect)
-    // on every scroll — the latter forces synchronous reflow (flagged by
-    // Lighthouse). IO reports visibility off the main thread with no layout
-    // thrash. The bar shows once the hero has scrolled away AND neither the
-    // #quote form nor the footer is on screen (so it never covers them).
-    const hero = document.querySelector('h1');                 // hero is the first H1
     const quote = document.getElementById('quote');
     const footers = document.querySelectorAll('footer');
     const footer = footers[footers.length - 1] || null;        // page footer (last)
 
-    const state = { heroVisible: true, formVisible: false, footerVisible: false };
-    const apply = () => setShow(!state.heroVisible && !state.formVisible && !state.footerVisible);
+    const state = { pastThreshold: false, formVisible: false, footerVisible: false };
+    const apply = () =>
+      setShow(state.pastThreshold && !state.formVisible && !state.footerVisible);
 
+    // The #quote form and footer still gate via IntersectionObserver (no layout
+    // thrash) so the bar never covers them.
     const obs = new IntersectionObserver((entries) => {
       for (const e of entries) {
-        if (e.target === hero) state.heroVisible = e.isIntersecting;
-        else if (e.target === quote) state.formVisible = e.isIntersecting;
+        if (e.target === quote) state.formVisible = e.isIntersecting;
         else if (e.target === footer) state.footerVisible = e.isIntersecting;
       }
       apply();
     });
-    if (hero) obs.observe(hero);
     if (quote) obs.observe(quote);
     if (footer) obs.observe(footer);
-    return () => obs.disconnect();
+
+    // %-of-page trigger. All layout reads (scrollY/scrollHeight/innerHeight)
+    // happen inside a rAF — which runs after the browser's own layout and with
+    // no DOM mutations in between, so it's a clean read, not a forced reflow.
+    // Reading scrollHeight per frame (vs caching) keeps the threshold correct
+    // as below-fold lazy images load and grow the page.
+    let ticking = false;
+    const evaluate = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const past = max > 0 && window.scrollY / max >= SHOW_AFTER_PAGE_FRACTION;
+      if (past !== state.pastThreshold) {
+        state.pastThreshold = past;
+        apply();
+      }
+    };
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        evaluate();
+      });
+    };
+    // Defer the initial check to rAF too (don't read layout synchronously in the
+    // mount effect — that forces a reflow during hydration commit).
+    const raf = requestAnimationFrame(evaluate);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      obs.disconnect();
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
 
   return (
