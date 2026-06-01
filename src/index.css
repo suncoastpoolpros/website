@@ -200,7 +200,7 @@
     url('/treasure-island-hero-mobile.webp') type('image/webp'),
     url('/treasure-island-hero-mobile.jpg') type('image/jpeg')
   );
-  filter: saturate(1.45) brightness(0.85) contrast(1.12) hue-rotate(-6deg);
+  filter: saturate(1.4) brightness(0.96) contrast(1.08) hue-rotate(-6deg);
   /* Photo stays fully visible until 72% down (was 55%) so the pool shows
      further down the mobile hero before fading out. */
   -webkit-mask-image: linear-gradient(to bottom, black 72%, transparent 96%);
@@ -261,6 +261,12 @@
 /* Overlay tints. Live as classes (not inline style) so the browser's color
    normalization (#1669AE → rgb(...)) doesn't bail SSR hydration. */
 .hero-blue-tint { background-color: #1669AE; mix-blend-mode: overlay; opacity: 0.4; }
+/* The blue tint is a desktop-only treatment (deepens sky/water on the wide
+   crop). On mobile it just made the whole hero read blue, so hide it there —
+   matching the "Hidden on mobile" note on the element in Hero.tsx. */
+@media (max-width: 767px) {
+  .hero-blue-tint { display: none; }
+}
 
 /* Homepage hero readability scrim — one element replacing the old four
    (vertical darken, mobile text scrim, desktop left scrim, edge vignette).
@@ -278,9 +284,9 @@
      bottom-blend div, NOT here (a % stop in this full-height gradient lands in
      the wrong spot and caused a seam). */
   background-image:
-    linear-gradient(to bottom, rgba(2,6,12,0.50) 0%, rgba(4,9,15,0.42) 65%, rgba(4,9,15,0.28) 100%),
-    linear-gradient(to bottom, rgba(2,6,12,0.30) 0%, transparent 42%),
-    radial-gradient(ellipse 80% 60% at center, transparent 55%, rgba(5,11,20,0.60) 100%);
+    linear-gradient(to bottom, rgba(0,0,0,0.40) 0%, rgba(0,0,0,0.42) 65%, rgba(0,0,0,0.30) 100%),
+    linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, transparent 42%),
+    radial-gradient(ellipse 80% 60% at center, transparent 55%, rgba(0,0,0,0.50) 100%);
 }
 @media (min-width: 768px) {
   .hero-scrim {
