@@ -47,6 +47,12 @@ export function initAnalytics(): void {
   // route change (see trackPageView) to avoid missing or double-counting.
   window.gtag('config', GA_ID, { send_page_view: false });
 
+  // Because gtag now loads lazily (on first interaction), the page_view that
+  // ScrollToTop fired on mount happened before gtag existed and was dropped.
+  // Emit the current page's view here so the landing page is still counted;
+  // subsequent SPA route changes are covered by trackPageView as before.
+  trackPageView(window.location.pathname + window.location.hash);
+
   // One delegated listener catches every tel: link on the site (hero, footer,
   // sticky CTA, quote chooser, etc.) without wiring each one individually.
   document.addEventListener(

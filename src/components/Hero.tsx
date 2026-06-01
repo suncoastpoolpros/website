@@ -298,7 +298,12 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled }: HomeHeroPhone
                             shown in Low Power Mode; normal charge is just black. */}
                         <div className="flex items-center">
                           <div className="relative w-[22px] h-[10px] rounded-[3px] bg-black flex items-center justify-center">
-                            <span className="text-white text-[7px] font-bold leading-none tabular-nums tracking-tight">
+                            {/* font-semibold (Inter 600, already preloaded), not
+                                font-bold (Inter 700): at 7px it's visually
+                                identical, and using 600 keeps this near-fold
+                                phone mockup from pulling the 48 KiB inter-700.woff2
+                                into the homepage's critical request chain. */}
+                            <span className="text-white text-[7px] font-semibold leading-none tabular-nums tracking-tight">
                               78
                             </span>
                           </div>
