@@ -19,6 +19,9 @@ export const LandingPage = () => {
     description:
       'Flat-rate weekly pool cleaning in St. Petersburg and the Tampa Bay area. One price covers standard chemicals, the same tech shows up every week, and you get a photo report after every visit.',
     canonicalPath: '/',
+    // OG image matches the hero the page actually shows (the waterfront/Treasure
+    // scene after the hero swap), not the default St-Pete image.
+    ogImage: '/treasure-island-hero.jpg',
     heroPreload: {
       mobile: '/treasure-island-hero-mobile.webp',
       desktop: '/treasure-island-hero.webp',

@@ -12,8 +12,9 @@ import {
 // Local image asset for the "Weekly Cleaning" visual block. Swap this constant
 // to change the image — saving a file at the same path means zero code change.
 // Reusing the hero asset for now (already preloaded → no extra network cost).
-const SERVICES_IMAGE_WEBP = '/pool-service-st-petersburg-hero.webp';
-const SERVICES_IMAGE_JPG = '/pool-service-st-petersburg-hero.jpg';
+// Matches the homepage hero background (the waterfront/Treasure scene).
+const SERVICES_IMAGE_WEBP = '/treasure-island-hero.webp';
+const SERVICES_IMAGE_JPG = '/treasure-island-hero.jpg';
 
 const services = [
   {
@@ -89,7 +90,7 @@ export const Services = () => {
                 <source type="image/webp" srcSet={SERVICES_IMAGE_WEBP} />
                 <img
                   src={SERVICES_IMAGE_JPG}
-                  alt="Sparkling blue pool water serviced by Suncoast Pool Pros in St. Petersburg, FL"
+                  alt="Waterfront infinity pool with palm trees, professionally cleaned and balanced by Suncoast Pool Pros in St. Petersburg, FL"
                   className="w-full h-full object-cover rounded-[2rem]"
                   loading="lazy"
                   decoding="async"

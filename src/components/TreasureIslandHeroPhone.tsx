@@ -220,8 +220,8 @@ export const TreasureIslandHeroPhone = () => {
                       </>
                     }
                     photo={{
-                      base: '/treasure-island-hero',
-                      alt: 'Weekly pool service report photo — waterfront pool in Treasure Island, FL',
+                      base: '/waterfront-pool-st-petersburg',
+                      alt: 'Waterfront vacation-rental pool in Treasure Island, FL — cleaned and chemically balanced by Suncoast Pool Pros',
                     }}
                   />
                 </div>

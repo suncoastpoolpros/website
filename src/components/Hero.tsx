@@ -80,11 +80,12 @@ export const Hero = () => {
         {/* Subtle deep-blue ambient on the left for balance */}
         <div className="hidden md:block absolute top-[10%] left-[-10%] w-[40vw] h-[50vw] bg-[#0a2540]/30 rounded-full blur-[120px] animate-morph" />
 
-        {/* Side vignette only — fades left/right edges, leaves bottom open for blend */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_center,transparent_0%,transparent_60%,rgba(5,11,20,0.55)_100%)] pointer-events-none" />
-
-        {/* Bottom blend: fades into the next section's color (#07111C) so the seam is invisible. */}
-        <div className="absolute inset-x-0 bottom-0 h-80 bg-gradient-to-t from-[#07111c] from-25% to-transparent pointer-events-none" />
+        {/* Bottom blend — pinned to the section's bottom edge, fades the photo
+            up into #07111c so the seam into the next section (also #07111c) is
+            invisible. A fixed-height band at the edge (like the Treasure hero),
+            NOT a % stop in the full-height scrim — that lands in the wrong spot
+            since the hero height varies. */}
+        <div className="absolute inset-x-0 bottom-0 h-44 md:h-72 bg-gradient-to-t from-[#07111c] from-20% via-[#07111c]/70 to-transparent pointer-events-none" />
       </div>
 
       <Container className="relative z-10 w-full">
@@ -424,8 +425,8 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled }: HomeHeroPhone
                         <ServiceReport
                           inline
                           photo={{
-                            base: '/waterfront-pool-st-petersburg',
-                            alt: 'Waterfront pool at dusk in St. Petersburg, FL — cleaned and chemically balanced by Suncoast Pool Pros',
+                            base: '/treasure-island-hero',
+                            alt: 'Waterfront infinity pool with palm trees in St. Petersburg, FL — cleaned and chemically balanced by Suncoast Pool Pros',
                           }}
                         />
                       </div>

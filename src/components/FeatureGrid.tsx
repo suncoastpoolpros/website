@@ -35,7 +35,10 @@ export const FeatureGrid = () => {
       id="features"
       className="pt-12 pb-16 md:pt-20 md:pb-24 relative overflow-hidden bg-[#07111c]"
     >
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07111c] to-transparent pointer-events-none" />
+      {/* (Removed the redundant top fade: the hero scrim already lands on solid
+          #07111c at its bottom, so re-fading #07111c→transparent here stacked a
+          second darken over the seam and read as a visible line. Both sections
+          are the same #07111c, so a flat join is seamless.) */}
 
       <Container className="relative z-10">
         {/* Header */}

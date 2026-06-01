@@ -201,8 +201,10 @@
     url('/treasure-island-hero-mobile.jpg') type('image/jpeg')
   );
   filter: saturate(1.45) brightness(0.85) contrast(1.12) hue-rotate(-6deg);
-  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 92%);
-  mask-image: linear-gradient(to bottom, black 55%, transparent 92%);
+  /* Photo stays fully visible until 72% down (was 55%) so the pool shows
+     further down the mobile hero before fading out. */
+  -webkit-mask-image: linear-gradient(to bottom, black 72%, transparent 96%);
+  mask-image: linear-gradient(to bottom, black 72%, transparent 96%);
 }
 
 /* City-page hero overrides — same images, slightly cooler filter tuning. */
@@ -267,21 +269,29 @@
    Kept in CSS (not an arbitrary Tailwind bg-[…]) because Tailwind v4 doesn't
    reliably emit a multi-gradient arbitrary value. */
 .hero-scrim {
-  /* mobile: top-down darken for the stacked text + soft edge vignette */
+  /* Layers (top wins):
+     1. a near-flat overall darkening WASH over the whole photo (premium,
+        readable look — without this the bright daytime photo is fully exposed);
+     2. a top-down darken for the stacked mobile text;
+     3. the edge vignette.
+     The fade to #07111c at the section's BOTTOM edge is handled by the separate
+     bottom-blend div, NOT here (a % stop in this full-height gradient lands in
+     the wrong spot and caused a seam). */
   background-image:
-    linear-gradient(to bottom, rgba(2,6,12,0.40) 0%, rgba(4,9,15,0.52) 55%, #07111c 100%),
-    radial-gradient(ellipse 80% 60% at center, transparent 60%, rgba(5,11,20,0.55) 100%);
+    linear-gradient(to bottom, rgba(2,6,12,0.50) 0%, rgba(4,9,15,0.42) 65%, rgba(4,9,15,0.28) 100%),
+    linear-gradient(to bottom, rgba(2,6,12,0.30) 0%, transparent 42%),
+    radial-gradient(ellipse 80% 60% at center, transparent 55%, rgba(5,11,20,0.60) 100%);
 }
 @media (min-width: 768px) {
   .hero-scrim {
-    /* desktop: left scrim (behind text) + right-edge darken (tames the bright
-       orange sunset / palm area on the far right, fading out by ~the second
-       tree, ~38% in) + lighter vertical darken + edge vignette. */
+    /* desktop: overall wash + left scrim (behind text) + right-edge darken
+       (tames the bright palm/sky on the far right, fading out ~38% in) + edge
+       vignette. */
     background-image:
-      linear-gradient(to right, rgba(2,6,12,0.70) 0%, rgba(2,6,12,0.20) 45%, transparent 100%),
+      linear-gradient(to bottom, rgba(2,6,12,0.42) 0%, rgba(4,9,15,0.42) 60%, rgba(4,9,15,0.30) 100%),
+      linear-gradient(to right, rgba(2,6,12,0.85) 0%, rgba(2,6,12,0.55) 25%, rgba(2,6,12,0.18) 55%, transparent 100%),
       linear-gradient(to left, rgba(2,6,12,0.45) 0%, rgba(2,6,12,0.18) 22%, transparent 38%),
-      linear-gradient(to bottom, rgba(2,6,12,0.28) 0%, rgba(4,9,15,0.45) 55%, #07111c 100%),
-      radial-gradient(ellipse 80% 60% at center, transparent 60%, rgba(5,11,20,0.55) 100%);
+      radial-gradient(ellipse 80% 60% at center, transparent 55%, rgba(5,11,20,0.60) 100%);
   }
 }
 .hero-belleair-tint { background-color: #0f4d80; mix-blend-mode: overlay; opacity: 0.45; }
@@ -306,17 +316,19 @@
   filter: saturate(1.15) brightness(0.55) contrast(1.05) hue-rotate(-2deg);
 }
 .interlude-bg-treasure-desktop {
+  /* Matches the Treasure Island hero (now the waterfront photo after the swap). */
   background-image: image-set(
-    url('/treasure-island-hero.webp') type('image/webp') 1x,
-    url('/treasure-island-hero-1920.webp') type('image/webp') 2x,
-    url('/treasure-island-hero.jpg') type('image/jpeg') 1x
+    url('/waterfront-pool-st-petersburg.webp') type('image/webp') 1x,
+    url('/waterfront-pool-st-petersburg-1920.webp') type('image/webp') 2x,
+    url('/waterfront-pool-st-petersburg.jpg') type('image/jpeg') 1x
   );
   filter: saturate(1.25) brightness(0.55) contrast(1.08) hue-rotate(-6deg);
 }
 .interlude-bg-treasure-mobile {
+  /* Matches the Treasure Island hero (now the waterfront photo after the swap). */
   background-image: image-set(
-    url('/treasure-island-hero-mobile.webp') type('image/webp'),
-    url('/treasure-island-hero-mobile.jpg') type('image/jpeg')
+    url('/waterfront-pool-st-petersburg-mobile.webp') type('image/webp'),
+    url('/waterfront-pool-st-petersburg-mobile.jpg') type('image/jpeg')
   );
   filter: saturate(1.25) brightness(0.55) contrast(1.08) hue-rotate(-6deg);
 }

@@ -238,7 +238,7 @@ export const TreasureIslandPage = () => {
     title: PAGE_TITLE,
     description: PAGE_DESC,
     canonicalPath: '/treasure-island-fl/',
-    ogImage: '/treasure-island-hero.jpg',
+    ogImage: '/waterfront-pool-st-petersburg.jpg',
     heroPreload: {
       mobile: '/waterfront-pool-st-petersburg-mobile.webp',
       desktop: '/waterfront-pool-st-petersburg.webp',
