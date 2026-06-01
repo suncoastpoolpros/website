@@ -107,7 +107,7 @@ export const Hero = () => {
 
               {/* Visual headline (price differentiator) — a div, not h1, so the SEO H1 below carries the keyword weight */}
               <div className="font-display font-bold text-white tracking-tight mb-7 text-3xl sm:text-4xl md:text-[2.7rem] leading-[1.15]">
-                <span className="text-shadow-hero-headline block text-brand-orange font-bold md:font-black text-5xl sm:text-6xl md:text-[4.5rem] leading-[0.95] tracking-tight">
+                <span className="text-shadow-hero-headline block text-white md:text-brand-orange font-bold md:font-black text-5xl sm:text-6xl md:text-[4.5rem] leading-[0.95] tracking-tight">
                   One Flat Rate
                 </span>
                 <span className="text-shadow-hero-sub block mt-5 sm:whitespace-nowrap text-white font-normal tracking-tight text-2xl sm:text-3xl md:text-[2.25rem] leading-[1.1]">
@@ -133,18 +133,18 @@ export const Hero = () => {
                   Get My Free Quote
                 </a>
 
-                {/* Call button — full-width on mobile (sits under the quote
-                    CTA), inline on desktop. Uses .btn-glass: its solid
-                    bg-white/[0.07] fallback keeps it looking like a button even
-                    though backdrop-blur is globally disabled below 768px
-                    (CLAUDE.md #10), so no bare/transparent button on phones. */}
-                <a
+                {/* Call button — matches the city pages' (St. Pete Beach, etc.)
+                    Glass call button: frosted glass on desktop, solid grey
+                    surface on mobile via .glass-mobile-blur (backdrop-blur is
+                    globally disabled below 768px, CLAUDE.md #10). Kept full-width
+                    on mobile so it aligns under the quote CTA, inline on desktop. */}
+                <Glass
                   href={PHONE_HREF}
-                  className="btn btn-glass w-full sm:w-auto"
+                  className="glass-mobile-blur inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px] w-full sm:w-auto"
                 >
-                  <Phone className="w-4 h-4" />
+                  <Phone className="w-4 h-4 text-brand-blue-light" />
                   {PHONE_DISPLAY}
-                </a>
+                </Glass>
               </div>
 
               {/* Trust strip */}
