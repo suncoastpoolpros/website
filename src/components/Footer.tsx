@@ -23,6 +23,7 @@ const exploreLinks = [
   { label: 'FAQ', href: '/faq', route: true },
   { label: 'Tools', href: '/tools', route: true },
   { label: 'Nitrates Guide', href: '/pool-care/nitrates', route: true },
+  { label: 'CYA & Chlorine', href: '/pool-care/cyanuric-acid', route: true },
   { label: 'Careers', href: '/careers', route: true },
   { label: 'Contact', href: '/contact', route: true },
 ];
