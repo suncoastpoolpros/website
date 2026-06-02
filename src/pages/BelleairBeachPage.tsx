@@ -188,7 +188,7 @@ export const BelleairBeachPage = () => {
     // Belleair has its own hero image now (see hero-bg-belleair-* in
     // index.css), so preload those — they're what this page actually paints.
     heroPreload: {
-      mobile: '/belleair-beach-hero-mobile-v2.webp',
+      mobile: '/belleair-beach-hero-mobile-portrait.webp',
       desktop: '/belleair-beach-hero.webp',
       wide: '/belleair-beach-hero-1920.webp',
     },
