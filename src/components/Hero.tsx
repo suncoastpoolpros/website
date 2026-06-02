@@ -120,15 +120,15 @@ export const Hero = () => {
               </div>
 
               {/* Semantic H1 carries the primary local-SEO keyword: "Pool Cleaning St. Petersburg" */}
-              <h1 className="text-shadow-hero-h1 font-display font-normal text-white text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 sm:mb-7 sm:whitespace-nowrap tracking-tight">
+              <h1 className="text-shadow-hero-h1 font-display font-normal text-white text-xl md:text-[1.25rem] leading-snug mb-5 sm:mb-7 sm:whitespace-nowrap tracking-tight">
                 St. Petersburg's expert pool cleaning company.
               </h1>
 
               {/* Mobile: one tight benefit line so the hero stays airy over the
                   bright photo (the headline + "No Monthly Chemical Cost" already
                   carry the flat-price hook). The full value prop shows md+ below. */}
-              <p className="text-shadow-hero-body md:hidden text-[15px] text-gray-100 max-w-[24rem] leading-[1.6] mb-8">
-                <span className="text-white">Weekly cleaning, full chemical balancing</span>, and a written report after every visit.
+              <p className="text-shadow-hero-body md:hidden text-[15px] text-gray-100 max-w-[26rem] leading-[1.6] mb-8">
+                <span className="text-white">Weekly pool cleaning, full chemical balancing, GPS-verified visits</span>, and a written report after every visit — <span className="text-white">one flat price</span>.
               </p>
 
               <p className="text-shadow-hero-body hidden md:block text-[15px] text-gray-100 font-normal max-w-[27rem] leading-[1.6] mb-8 sm:mb-9">
