@@ -82,17 +82,7 @@ const HeroSection = () => {
         {/* Bottom blend: solid on the left (under the text column) so the seam
             into the next section stays invisible there; fades out toward the
             right so the pool in the lower-right stays visible. */}
-        <div
-          className="absolute inset-x-0 bottom-0 h-80 pointer-events-none"
-          style={{
-            background:
-              'linear-gradient(to top, #07111c 25%, transparent 100%)',
-            WebkitMaskImage:
-              'linear-gradient(to right, black 0%, black 45%, rgba(0,0,0,0.35) 75%, transparent 100%)',
-            maskImage:
-              'linear-gradient(to right, black 0%, black 45%, rgba(0,0,0,0.35) 75%, transparent 100%)',
-          }}
-        />
+        <div className="hero-treasure-bottom-blend absolute inset-x-0 bottom-0 h-80 pointer-events-none" />
 
         {/* Tiny solid sliver at the very bottom edge so the section still seams
             cleanly into the next #07111c block on the right side. */}

@@ -59,7 +59,14 @@ export const BelleairHeroPhone = () => {
                 {/* Left slot — width matches the right-icon cluster so the
                     clock centers in the gap between screen edge and Island */}
                 <div className="flex justify-center" style={{ width: '60px' }}>
-                  <span className="text-black text-[13px] font-semibold tracking-tight tabular-nums">
+                  {/* suppressHydrationWarning: the clock differs between the
+                      build-time prerender and the client's current time; without
+                      this the text mismatch throws React #418 and forces a full
+                      client re-render. */}
+                  <span
+                    suppressHydrationWarning
+                    className="text-black text-[13px] font-semibold tracking-tight tabular-nums"
+                  >
                     {clock}
                   </span>
                 </div>

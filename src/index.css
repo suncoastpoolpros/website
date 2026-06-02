@@ -288,9 +288,9 @@
      bottom-blend div, NOT here (a % stop in this full-height gradient lands in
      the wrong spot and caused a seam). */
   background-image:
-    linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.32) 38%, rgba(0,0,0,0.48) 72%, rgba(0,0,0,0.50) 100%),
-    linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.16) 100%),
-    radial-gradient(ellipse 80% 60% at center, transparent 55%, rgba(0,0,0,0.46) 100%);
+    linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.42) 38%, rgba(0,0,0,0.56) 72%, rgba(0,0,0,0.58) 100%),
+    linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.20) 100%),
+    radial-gradient(ellipse 80% 60% at center, transparent 55%, rgba(0,0,0,0.54) 100%);
 }
 @media (min-width: 768px) {
   .hero-scrim {
@@ -340,6 +340,17 @@
   }
 }
 .hero-treasure-tint { background-color: #1669AE; mix-blend-mode: overlay; opacity: 0.4; }
+
+/* Treasure hero bottom-blend — solid fade to #07111c under the left text column,
+   masked away toward the right so the pool stays visible there. Lives as a class
+   (not inline React style) because the browser re-serializes inline #07111c →
+   rgb(7,17,28) and reorders -webkit-mask/mask, which tripped React #418 (full
+   client re-render = dark flash on real iPhones). See CLAUDE.md non-negotiable #4. */
+.hero-treasure-bottom-blend {
+  background: linear-gradient(to top, #07111c 25%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 0%, black 45%, rgba(0, 0, 0, 0.35) 75%, transparent 100%);
+  mask-image: linear-gradient(to right, black 0%, black 45%, rgba(0, 0, 0, 0.35) 75%, transparent 100%);
+}
 
 /* St. Pete Beach hero — dedicated photo. Slightly warmer/brighter treatment
    than the other city pages to read "open beach". */

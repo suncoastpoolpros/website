@@ -69,7 +69,7 @@ const LOCK_SIGNS = [
   'A pool that drinks chlorine all summer and slowly creeps green',
 ];
 
-// Health-department / safety section (emerald accent).
+// Health-department / safety section (brand-blue accent).
 const HEALTH_CARDS = [
   {
     icon: Scale,
@@ -132,7 +132,7 @@ const articleSchema = {
 };
 
 const toneStyles: Record<string, string> = {
-  good: 'text-emerald-300',
+  good: 'text-brand-blue-light',
   warn: 'text-amber-300',
   bad: 'text-red-300',
 };
@@ -177,7 +177,7 @@ const CyanuricAcidPageInner = () => {
         <Navbar />
 
         {/* Hero */}
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-14 text-center">
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-14 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-[10px] px-3.5 py-1.5">
             <FlaskConical className="w-3.5 h-3.5 text-brand-orange" />
             <span className="text-gray-300 font-semibold tracking-wide text-xs">Pool Water Science</span>
@@ -198,7 +198,7 @@ const CyanuricAcidPageInner = () => {
         {/* Pull stat */}
         <section className="pb-16">
           <Container>
-            <div className="max-w-3xl mx-auto text-center rounded-3xl border border-white/10 bg-white/[0.03] px-6 py-10 sm:py-12">
+            <div className="max-w-5xl mx-auto text-center rounded-3xl border border-white/10 bg-white/[0.03] px-6 py-10 sm:py-12">
               <div className="font-display font-bold text-white leading-none text-5xl sm:text-6xl mb-4">
                 &lt;&nbsp;3%
               </div>
@@ -249,7 +249,7 @@ const CyanuricAcidPageInner = () => {
             </div>
 
             {/* The chemistry, stated plainly for the curious. */}
-            <div className="max-w-3xl mx-auto mt-8 rounded-2xl border border-brand-blue/20 bg-brand-blue/[0.06] p-6">
+            <div className="max-w-5xl mx-auto mt-8 rounded-2xl border border-brand-blue/20 bg-brand-blue/[0.06] p-6">
               <div className="flex items-center gap-2.5 mb-2">
                 <Beaker className="w-[18px] h-[18px] text-brand-blue" />
                 <h3 className="text-[#0a1628] font-display font-bold text-base">The reaction, in one line</h3>
@@ -281,7 +281,7 @@ const CyanuricAcidPageInner = () => {
             </div>
 
             {/* Interactive calculator */}
-            <div className="max-w-3xl mx-auto rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8">
+            <div className="max-w-5xl mx-auto rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-8">
               <div className="flex items-center justify-between gap-4 mb-2">
                 <label htmlFor="cya-range" className="text-white font-semibold flex items-center gap-2">
                   <Gauge className="w-[18px] h-[18px] text-brand-orange" />
@@ -315,10 +315,10 @@ const CyanuricAcidPageInner = () => {
                   <div className="font-display font-bold text-white text-2xl tabular-nums">{minFc}</div>
                   <div className="text-gray-500 text-xs mt-0.5">don&rsquo;t drop below</div>
                 </div>
-                <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/[0.08] p-4 text-center">
-                  <div className="text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-1.5">Target FC</div>
+                <div className="rounded-2xl border border-brand-blue/40 bg-brand-blue/[0.08] p-4 text-center">
+                  <div className="text-brand-blue-light text-xs font-semibold uppercase tracking-wider mb-1.5">Target FC</div>
                   <div className="font-display font-bold text-white text-2xl tabular-nums">{targetFc}</div>
-                  <div className="text-emerald-300/70 text-xs mt-0.5">aim for this</div>
+                  <div className="text-brand-blue-light/70 text-xs mt-0.5">aim for this</div>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-center">
                   <div className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5">To clear algae</div>
@@ -344,7 +344,7 @@ const CyanuricAcidPageInner = () => {
             </div>
 
             {/* Ratio reference table */}
-            <div className="max-w-3xl mx-auto mt-8 overflow-hidden rounded-3xl border border-white/10">
+            <div className="max-w-5xl mx-auto mt-8 overflow-hidden rounded-3xl border border-white/10">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-white/[0.05] text-gray-300 text-xs uppercase tracking-wider">
@@ -372,7 +372,7 @@ const CyanuricAcidPageInner = () => {
         {/* ── Chlorine-lock warning band ───────────────────────────── */}
         <section className="pb-4 sm:pb-8">
           <Container>
-            <div className="max-w-4xl mx-auto rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-500/[0.12] via-amber-500/[0.04] to-transparent p-7 sm:p-9 relative overflow-hidden">
+            <div className="max-w-5xl mx-auto rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-500/[0.12] via-amber-500/[0.04] to-transparent p-7 sm:p-9 relative overflow-hidden">
               <div className="absolute -top-16 -right-12 w-56 h-56 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
               <div className="relative">
                 <div className="flex items-start gap-3.5 mb-4">
@@ -412,11 +412,11 @@ const CyanuricAcidPageInner = () => {
           </Container>
         </section>
 
-        {/* ── Health & safety / regulations (emerald accent) ───────── */}
+        {/* ── Health & safety / regulations (brand-blue accent) ────── */}
         <section className="py-16 sm:py-20">
           <Container>
             <div className="text-center mb-12 max-w-2xl mx-auto">
-              <span className="text-emerald-400 font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+              <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
                 Health &amp; Safety
               </span>
               <h2 className="font-display font-bold text-white text-3xl sm:text-4xl leading-tight mb-3">
@@ -436,10 +436,10 @@ const CyanuricAcidPageInner = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.08 }}
-                  className="rounded-2xl border border-emerald-400/20 bg-emerald-500/[0.04] p-6 hover:bg-emerald-500/[0.07] transition-colors"
+                  className="rounded-2xl border border-brand-blue/20 bg-brand-blue/[0.04] p-6 hover:bg-brand-blue/[0.08] transition-colors"
                 >
-                  <span className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-400/25 flex items-center justify-center mb-4">
-                    <card.icon className="w-5 h-5 text-emerald-300" />
+                  <span className="w-11 h-11 rounded-xl bg-brand-blue/15 border border-brand-blue/30 flex items-center justify-center mb-4">
+                    <card.icon className="w-5 h-5 text-brand-blue-light" />
                   </span>
                   <h3 className="text-white font-display font-bold text-lg mb-2">{card.title}</h3>
                   <p className="text-gray-400 text-[15px] leading-relaxed">{card.text}</p>
@@ -459,7 +459,7 @@ const CyanuricAcidPageInner = () => {
         {/* ── Quick answers — FAQ accordion ────────────────────────── */}
         <section className="pb-16 sm:pb-20">
           <Container>
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <div className="text-center mb-10">
                 <h2 className="font-display font-bold text-white text-2xl sm:text-3xl mb-3">
                   CYA &amp; chlorine, answered

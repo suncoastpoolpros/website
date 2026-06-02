@@ -62,7 +62,16 @@ export const TreasureIslandHeroPhone = () => {
                 {/* Left slot — width matches the right-icon cluster so the
                     clock centers in the gap between screen edge and Island */}
                 <div className="flex justify-center" style={{ width: '60px' }}>
-                  <span className="text-black text-[13px] font-semibold tracking-tight tabular-nums">
+                  {/* The clock is computed from new Date() at render time, so the
+                      build-time prerender value differs from the client's current
+                      time. suppressHydrationWarning lets React keep the server text
+                      and patch it on the next tick instead of throwing #418 — a
+                      single mismatch would otherwise force a full client re-render
+                      (dark flash on real iPhones). */}
+                  <span
+                    suppressHydrationWarning
+                    className="text-black text-[13px] font-semibold tracking-tight tabular-nums"
+                  >
                     {clock}
                   </span>
                 </div>
