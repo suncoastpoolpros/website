@@ -21,6 +21,8 @@ Quick reference for keeping the marketing site fast on **mobile** (Slow 4G, real
 8. **Cloudflare Email Address Obfuscation must be OFF in the dashboard** (Scrape Shield → Email Address Obfuscation → off). CF rewrites `mailto:` in the SSR'd HTML, which mismatches React hydration. We also defensively render the email link in an effect-driven state in ServiceReport so SSR ships no mailto. ([developers.cloudflare.com/waf/tools/scrape-shield/email-address-obfuscation](https://developers.cloudflare.com/waf/tools/scrape-shield/email-address-obfuscation/))
 9. **Every page sets its meta via `usePageMeta` — NEVER an inline `useEffect` SEO block.** `usePageMeta` runs synchronously during `renderToString` (via the `serverMeta` singleton), so title/description/canonical/OG land in the *prerendered HTML*. A page that injects meta only in a `useEffect` ships the homepage's defaults in its static HTML (wrong `<title>`, canonical → `/`) because effects don't run during prerender — bad for SEO and what Google indexes first. JSON-LD is the one exception: `usePageMeta` doesn't do it, so add a slim schema-only `useEffect` (see Belleair/Treasure `usePageSchema`).
 10. **No `backdrop-filter`/blur on mobile.** A global rule in `src/index.css` (`@media (max-width:767px){ *,::before,::after{ backdrop-filter:none !important } }`) disables it below 768px. On iOS Safari, blurred surfaces force a re-raster of everything behind them, and mounting/toggling them (nav drawer, quote sheet, sticky CTA, scroll-triggered navbar) blanks and repaints the whole page. Desktop keeps frosted glass, capped at **10px** (`backdrop-blur-[10px]`, not the old `-xl`/24px). Decorative `filter: blur()` glow orbs (`[class*="blur-["].rounded-full`) are also `display:none` on mobile.
+11. **Defer interaction-triggered third-party scripts OFF the interaction's critical path.** GA4 loads on the first user interaction (`App.tsx`), but the first interaction is often the *hamburger tap* — and gtag.js parses/executes ~190ms on the main thread, freezing the nav drawer's open. `initAnalytics()` is now scheduled via `setTimeout(…, 1200)` (clears the open animation) **then** `requestIdleCallback`. Don't move it back to a synchronous call in the interaction handler. **This is invisible to the lab: analytics only runs on the prod hostname** (`suncoastpoolpros.com`), so local/preview/Lighthouse never see the block — measure on the live site (see "What to do if mobile feels slow").
+12. **Overlays slide via CSS transforms, not Framer Motion, and the nav drawer is pre-mounted.** The nav drawer + quote sheet animate with composited CSS `transform` transitions (`.overlay-*` in `index.css`), NOT `m.*`/`AnimatePresence` — a JS tween runs on the main thread and stutters; a transform transition runs on the compositor and stays smooth even while React works. The **nav drawer is mounted once after hydration and kept in the DOM off-screen** (`inert` + `pointer-events:none` when closed), so opening is a class toggle — no on-tap React mount, no frame wait. Body scroll-lock uses `useScrollLock` (`position:fixed` pin), NOT `overflow:hidden` (a no-op for touch scroll on iOS). See "Overlays (nav drawer + quote sheet)".
 
 ## How nav actually works
 
@@ -91,6 +93,16 @@ JS-driven animation is the other big real-iPhone cost (alongside blur). The rule
 - **Heavy phone mockups are desktop-only in the hero + rendered in a separate `lg:hidden` section below on mobile** (homepage `HomeHeroPhoneSection`, Treasure `PhoneShowcaseMobile`) — keeps the mockup out of the above-the-fold 100vh on phones.
 - **Decorative mockup labels are `<p>`, not `<h2>`** — the ServiceReport "Water Chemistry / Chemicals Added / …" labels were polluting the page heading outline. Keep UI-graphic text out of `<h1>`–`<h6>`.
 
+## Overlays (nav drawer + quote sheet)
+
+Both overlays must open **instantly and slide smoothly on a real iPhone** — the place this was hardest to get right. The pattern (don't regress it):
+
+- **Slide = composited CSS transform, not Framer Motion.** `.overlay-scrim` / `.overlay-panel-right` (drawer) / `.overlay-panel-bottom` (sheet) in `src/index.css` animate `transform`/`opacity` via CSS transition. A JS tween (`m.*` animating `x`/`y`, or a spring) runs on the main thread and stuttered; a transform transition runs on the **compositor**, so it stays smooth even while the main thread is busy. The old `m.*`/`AnimatePresence`/`MotionConfig` were removed from both overlays.
+- **Nav drawer is PRE-MOUNTED** (`src/components/Navbar.tsx`): mounted once after hydration (gated on a `hydrated` state so it's never in the prerendered HTML) and parked off-screen at `translateX(100%)`. Opening just toggles `is-open` → no on-tap React mount, no animation-frame wait → instant. When closed it's `inert` + `pointer-events:none` (CSS `.nav-drawer`), and `overflow:hidden` keeps the parked panel from adding horizontal scroll.
+- **Quote sheet is MOUNT-ON-OPEN** (`src/components/QuoteSheet.tsx`) via `useOverlayTransition` (mount → next frame add `is-open` → transition; remove → unmount after the duration). It is NOT pre-mounted: it hosts the heavy `QuoteChooser` form, so keeping it always-mounted would tax every page load. If its open ever feels slow, warm it on intent (mount on the trigger's `pointerdown`, like `SmartLink`) — don't pre-mount the form.
+- **Scroll-lock = `useScrollLock` (`src/lib/`)**, a `position:fixed` body pin with scroll restore — NOT `overflow:hidden`, which does nothing for touch scroll on iOS (the page behind an open overlay would still drift). Safe here because scrollbars are globally hidden (no layout shift).
+- **The drawer's open lag had TWO causes, both invisible to the lab.** (1) gtag.js ran ~190ms on the first tap — see non-negotiable #11. (2) the drawer mounted on tap — fixed by pre-mounting. Traced tap→first-paint dropped from a ~190ms main-thread block to ~28ms with the main thread free. Diagnosed with `scripts/trace-drawer.mjs` + `trace-timing.mjs` against the **live** site.
+
 ## Files that matter most
 
 - `src/App.tsx` — route table. Pages are `lazy()` (see non-negotiable #2), wrapped in one `<Suspense fallback={null}>`. Nav links use `SmartLink` to preload chunks on intent.
@@ -101,6 +113,8 @@ JS-driven animation is the other big real-iPhone cost (alongside blur). The rule
 - `src/lib/turnstile.ts` — deferred-load Turnstile so the Quote popup paints instantly.
 - `public/_headers` — Cloudflare cache config. Hashed assets get `immutable`, HTML gets `max-age=0, must-revalidate` (browser always revalidates with edge — fast 304).
 - `vite.config.ts` — `manualChunks` keep `react`, `motion`, `router`, `lucide-react` in separate chunks so each is hashed-and-cached independently.
+- `src/lib/useScrollLock.ts` + `src/lib/useOverlayTransition.ts` — overlay primitives (iOS-safe scroll-lock; CSS mount/visibility timing). See "Overlays".
+- `scripts/trace-drawer.mjs` + `scripts/trace-timing.mjs` — CPU-throttled drawer-open trace (puppeteer-core + system Chrome). Run against the **live** site to catch main-thread blocks on tap (analytics, mount cost) that the lab misses.
 
 ## Mobile performance budget
 
@@ -134,6 +148,7 @@ Below-the-fold homepage sections (FeatureGrid, ServiceAreas, Process, Services, 
 15. **A failed `lazy()` chunk = permanent blank page** (Suspense `fallback={null}` shows nothing, no recovery) — common with stale chunks after a deploy on iOS. `ChunkErrorBoundary` hard-reloads once to recover.
 16. **Use `min-h-dvh` for full-height heros, not `100vh`/`min-h-screen`** — `100vh` overshoots behind the iOS URL bar, leaving the next section peeking into the fold.
 17. **Title tags: lead with keyword + city, 40–60 chars, city-page statement hooks.** Separator (pipe/dash) has no proven CTR edge — front-loading + length + audience-matched wording do. Belleair → "Never a Missed Visit" (absentee owners); Treasure → "Always Guest-Ready" (rentals).
+18. **A laggy nav drawer was analytics + on-tap mount, NOT the animation.** Spent a round rewriting the slide (Framer → CSS) with no perceived improvement, because the real cost was elsewhere: gtag.js ran ~190ms on the first tap (only on the prod hostname, so every local/Lighthouse run looked clean), and the drawer mounted on tap. Fixes: defer gtag past the open animation (non-negotiable #11) + pre-mount the drawer (see "Overlays"). Lesson: when an interaction feels slow, **trace the interaction on the live site first** (`scripts/trace-drawer.mjs`) — don't assume it's the animation, and don't trust local where third-party scripts are gated off.
 
 ## What to do if mobile feels slow
 
@@ -144,6 +159,7 @@ Below-the-fold homepage sections (FeatureGrid, ServiceAreas, Process, Services, 
 5. If nav feels slow, confirm `SmartLink` intent-preloading is firing (chunk should download on `touchstart`/hover, before the click). `App.tsx` is lazy-loaded, so without intent-preload each `<Link>` click waits on a fetch.
 6. If a page paints blank/janky on a real iPhone but the lab looks fine, suspect **GPU compositing**, not JS — `backdrop-filter`/blur and large `filter: blur()` glows don't show up in TBT. Confirm no blur leaked onto mobile (the `<=767px` `backdrop-filter:none` rule + glow-orb `display:none`).
 7. Consider [React Compiler 1.0](https://www.infoq.com/news/2025/12/react-compiler-meta/) for automatic memoization — Meta reports ~10% LCP improvement.
+8. **If a specific interaction (menu/sheet open) feels slow, trace the interaction itself — on the LIVE site.** `node scripts/trace-drawer.mjs https://suncoastpoolpros.com/` then `node scripts/trace-timing.mjs /tmp/drawer-trace.json`. It breaks the tap down into Scripting/Layout/Paint and shows *when* each runs relative to the tap. Run it against production, not local: third-party scripts (GA) only fire on the prod hostname, so a local trace hides exactly the kind of main-thread block that froze the drawer open.
 
 ## Don't deploy without
 
