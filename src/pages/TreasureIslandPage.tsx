@@ -119,7 +119,14 @@ const HeroSection = () => {
               Weekly pool service in Treasure Island, FL.
             </h1>
 
-            <p className="text-shadow-city-body text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
+            {/* Mobile: tighter line — keeps the audience keywords (vacation
+                rentals, Airbnbs, snowbird homes) + weekly + photo report +
+                guest-ready. Full copy with the Sunset Beach–Isle of Capri
+                range stays on desktop (md+) for richer local SEO. */}
+            <p className="text-shadow-city-body md:hidden text-[15px] text-gray-200 max-w-[34rem] leading-[1.6] mb-7">
+              Vacation rentals, Airbnbs, and snowbird homes — <span className="text-white">weekly service with a photo report after every visit</span>. Guest-ready between bookings.
+            </p>
+            <p className="text-shadow-city-body hidden md:block text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
               Vacation rentals, Airbnbs, and snowbird homes from{' '}
               <span className="text-white">Sunset Beach to Isle of Capri</span> —
               weekly service with a photo report after every visit. Guest-ready
