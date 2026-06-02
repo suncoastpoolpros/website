@@ -328,10 +328,11 @@
    before per design tweak. The fade to #07111c at the section's bottom edge is
    handled by the separate bottom-blend div (pinned to the bottom), not here. */
 .hero-belleair-scrim {
-  /* mobile: gentle top-down darken for the stacked text + soft edge vignette */
+  /* mobile: top-down darken for the stacked text + soft edge vignette.
+     Slightly deeper overall darkness per design tweak. */
   background-image:
-    linear-gradient(to bottom, rgba(2,6,12,0.28) 0%, rgba(4,9,15,0.34) 60%, transparent 100%),
-    radial-gradient(ellipse 85% 65% at center, transparent 60%, rgba(5,11,20,0.45) 100%);
+    linear-gradient(to bottom, rgba(2,6,12,0.40) 0%, rgba(4,9,15,0.46) 60%, rgba(4,9,15,0.12) 100%),
+    radial-gradient(ellipse 85% 65% at center, transparent 55%, rgba(5,11,20,0.55) 100%);
 }
 @media (min-width: 768px) {
   .hero-belleair-scrim {
