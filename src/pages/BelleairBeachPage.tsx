@@ -83,7 +83,14 @@ const HeroSection = () => {
               Discreet weekly pool service for Belleair Beach homes.
             </h1>
 
-            <p className="text-shadow-city-body text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
+            {/* Mobile: tighter line, still keyword-complete (Belleair Beach +
+                weekly cleaning + chemistry + equipment care). Full local copy
+                with the Gulf-front detail stays on desktop (md+) for richer
+                local SEO. */}
+            <p className="text-shadow-city-body md:hidden text-[15px] text-gray-200 max-w-[34rem] leading-[1.6] mb-5">
+              <span className="text-white">One dedicated technician, same day every week</span> — pool cleaning, chemistry, and equipment care for Belleair Beach homes.
+            </p>
+            <p className="text-shadow-city-body hidden md:block text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
               <span className="text-white">One dedicated technician, on the same day every week</span> —
               full pool cleaning, chemistry balancing, and equipment care for Belleair Beach's
               waterfront and Gulf-front homes. Clear, balanced, and guest-ready year-round.
