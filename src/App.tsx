@@ -85,18 +85,26 @@ export default function App() {
       if (fired) return;
       fired = true;
       events.forEach((evt) => window.removeEventListener(evt, onFirstInteraction));
-      // Defer gtag injection OFF this interaction's critical path. Calling
+      // Defer gtag injection well clear of this interaction's UI. Calling
       // initAnalytics() inline ran ~200ms of gtag.js parse/exec on the very tap
-      // that opens the nav drawer (the user's first interaction is often the
+      // that opens the nav drawer (the first interaction is often the
       // hamburger), freezing the main thread so the drawer lagged on open —
       // invisible to the lab because analytics only runs on the prod hostname.
-      // requestIdleCallback lets the tap's UI (drawer slide) paint first, then
-      // gtag loads in the next idle gap; the timeout caps how long it waits.
-      if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(() => initAnalytics(), { timeout: 2000 });
-      } else {
-        window.setTimeout(() => initAnalytics(), 500); // Safari < 16.4 fallback
-      }
+      //
+      // requestIdleCallback alone wasn't enough: the drawer slide runs on the
+      // compositor, so the main thread goes idle almost immediately and rIC
+      // fired gtag back into the ~300ms animation window (traced: a 59ms task at
+      // 239ms). So we first wait out the open animation with a timeout, THEN
+      // load at the next idle. ~200ms later analytics is fine for a marketing
+      // site; a frozen menu is not.
+      const loadAnalytics = () => {
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(() => initAnalytics(), { timeout: 2000 });
+        } else {
+          initAnalytics();
+        }
+      };
+      window.setTimeout(loadAnalytics, 1200);
     };
     events.forEach((evt) =>
       window.addEventListener(evt, onFirstInteraction, { once: true, passive: true }),
