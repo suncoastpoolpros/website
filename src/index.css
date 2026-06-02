@@ -415,9 +415,12 @@
   filter: saturate(1.3) contrast(1.08) hue-rotate(-4deg);
 }
 .hero-bg-snellisle-mobile {
+  /* Portrait crop of the sunset waterfront photo, sized to the phone (no
+     cover-cropped/wasted pixels). Own filename so the shared waterfront-mobile
+     image (homepage / interludes) is untouched. */
   background-image: image-set(
-    url('/waterfront-pool-st-petersburg-mobile.webp') type('image/webp'),
-    url('/waterfront-pool-st-petersburg-mobile.jpg') type('image/jpeg')
+    url('/snell-isle-mobile-sunset.webp') type('image/webp'),
+    url('/snell-isle-mobile-sunset.jpg') type('image/jpeg')
   );
   filter: saturate(1.3) contrast(1.08) hue-rotate(-4deg);
   -webkit-mask-image: linear-gradient(to bottom, black 72%, transparent 96%);

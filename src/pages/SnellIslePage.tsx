@@ -198,7 +198,7 @@ export const SnellIslePage = () => {
     canonicalPath: '/snell-isle-fl/',
     ogImage: '/waterfront-pool-st-petersburg.jpg',
     heroPreload: {
-      mobile: '/waterfront-pool-st-petersburg-mobile.webp',
+      mobile: '/snell-isle-mobile-sunset.webp',
       desktop: '/waterfront-pool-st-petersburg.webp',
       wide: '/waterfront-pool-st-petersburg-1920.webp',
     },
