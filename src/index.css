@@ -217,9 +217,12 @@
   filter: saturate(1.3) brightness(0.8) contrast(1.1) hue-rotate(-4deg);
 }
 .hero-bg-belleair-mobile {
+  /* Portrait crop sized to the phone (no wasted/cover-cropped pixels).
+     Versioned filename (-v2) so the immutable image cache busts — the old
+     landscape name is still used by the interlude band below. */
   background-image: image-set(
-    url('/belleair-beach-hero-mobile.webp') type('image/webp'),
-    url('/belleair-beach-hero-mobile.jpg') type('image/jpeg')
+    url('/belleair-beach-hero-mobile-v2.webp') type('image/webp'),
+    url('/belleair-beach-hero-mobile-v2.jpg') type('image/jpeg')
   );
   filter: saturate(1.3) brightness(0.8) contrast(1.1) hue-rotate(-4deg);
   -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 92%);
