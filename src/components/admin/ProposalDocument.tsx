@@ -6,8 +6,15 @@
  *
  * Keep the layout visually in step with the HTML preview in ProposalBuilder.
  */
-import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, Image, Link, StyleSheet } from '@react-pdf/renderer';
 import { type ProposalData, formatPrice } from '@/lib/adminApi';
+import {
+  PROPOSAL_TERMS,
+  TERMS_FOOTNOTE,
+  SERVICE_AGREEMENT_URL,
+  SERVICE_AGREEMENT_DISPLAY,
+} from './proposalTerms';
+import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE } from './proposalBenefits';
 
 const NAVY = '#0a1628';
 const BLUE_DARK = '#0f4d80';
@@ -47,6 +54,20 @@ const styles = StyleSheet.create({
   rowValue: { flex: 1, color: INK },
   hr: { borderBottomWidth: 1, borderBottomColor: LINE, marginVertical: 4 },
   scope: { lineHeight: 1.5, color: INK },
+  includedBox: {
+    marginBottom: 20,
+    backgroundColor: '#eef6fb',
+    borderWidth: 1,
+    borderColor: '#cfe3f2',
+    borderRadius: 6,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+  },
+  includedHeading: { fontSize: 12, fontFamily: 'Helvetica-Bold', color: BLUE_DARK, marginBottom: 8 },
+  includedItem: { flexDirection: 'row', marginBottom: 4 },
+  includedCheck: { color: '#1d7a33', fontFamily: 'Helvetica-Bold', width: 14 },
+  includedItemText: { color: INK, flex: 1, fontFamily: 'Helvetica-Bold' },
+  includedNote: { marginTop: 6, fontSize: 9, color: MUTED, fontStyle: 'italic' },
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   photo: {
     width: 244,
@@ -81,6 +102,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   acceptText: { color: '#1d7a33', lineHeight: 1.5 },
+  addonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: LINE,
+  },
+  addonLabel: { color: INK, flex: 1, paddingRight: 12 },
+  addonPrice: { color: INK, fontFamily: 'Helvetica-Bold' },
+  termsSection: { marginTop: 22, paddingTop: 12, borderTopWidth: 1, borderTopColor: LINE },
+  termsHeading: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: INK, marginBottom: 1 },
+  termsText: { fontSize: 7.5, color: MUTED, lineHeight: 1.4, marginBottom: 6 },
+  termsFootnote: { fontSize: 7, color: MUTED, fontStyle: 'italic', marginTop: 2 },
+  termsLink: { color: BLUE_DARK, textDecoration: 'underline' },
   footer: {
     position: 'absolute',
     bottom: 22,
@@ -128,6 +163,7 @@ export const ProposalDocument = ({
   const { customer, pool, proposal } = data;
   const hasPoolBasics = pool.gallons || dimensionsLine(pool) || pool.shape || pool.sanitization;
   const hasEquipment = pool.pump || pool.filter || pool.heater || pool.automation || pool.equipmentNotes;
+  const addOns = proposal.addOns.filter((a) => a.label.trim() || a.price.trim());
 
   return (
     <Document title="Suncoast Pool Pros — Proposal" author="Suncoast Pool Pros">
@@ -155,6 +191,19 @@ export const ProposalDocument = ({
             <Row label="Email" value={customer.email} />
             <Row label="Phone" value={customer.phone} />
           </View>
+
+          {proposal.includeBenefits ? (
+            <View style={styles.includedBox}>
+              <Text style={styles.includedHeading}>{BENEFITS_HEADING}</Text>
+              {INCLUDED_BENEFITS.map((b, i) => (
+                <View key={i} style={styles.includedItem}>
+                  <Text style={styles.includedCheck}>•</Text>
+                  <Text style={styles.includedItemText}>{b}</Text>
+                </View>
+              ))}
+              <Text style={styles.includedNote}>{BENEFITS_NOTE}</Text>
+            </View>
+          ) : null}
 
           {hasPoolBasics ? (
             <View style={styles.section}>
@@ -205,12 +254,43 @@ export const ProposalDocument = ({
             </View>
           ) : null}
 
+          {addOns.length ? (
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Additional Services</Text>
+              {addOns.map((a, i) => (
+                <View key={i} style={styles.addonRow}>
+                  <Text style={styles.addonLabel}>{a.label.trim() || '—'}</Text>
+                  <Text style={styles.addonPrice}>{formatPrice(a.price)}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+
           <View style={styles.acceptBox}>
             <Text style={styles.acceptText}>
               To accept this proposal, simply reply &quot;APPROVED&quot; to the email it was attached
               to, and we&apos;ll get you on the schedule.
             </Text>
           </View>
+
+          {proposal.includeTerms ? (
+            <View style={styles.termsSection}>
+              <Text style={styles.sectionLabel}>Terms &amp; Conditions</Text>
+              {PROPOSAL_TERMS.map((t, i) => (
+                <View key={i} wrap={false}>
+                  <Text style={styles.termsHeading}>{t.heading}</Text>
+                  <Text style={styles.termsText}>{t.text}</Text>
+                </View>
+              ))}
+              <Text style={styles.termsFootnote}>
+                {TERMS_FOOTNOTE}{' '}
+                <Link src={SERVICE_AGREEMENT_URL} style={styles.termsLink}>
+                  {SERVICE_AGREEMENT_DISPLAY}
+                </Link>
+                .
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.footer} fixed>

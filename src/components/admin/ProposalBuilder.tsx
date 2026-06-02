@@ -4,6 +4,12 @@ import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components
 import { useProposalDraft } from '@/lib/useProposalDraft';
 import { sendProposal, logout, formatPrice, type ProposalData } from '@/lib/adminApi';
 import { SCOPE_TEMPLATES } from './scopeTemplates';
+import { ADDON_PRESETS } from './addonPresets';
+import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE } from './proposalBenefits';
+
+// Plain input (no floating label) for the add-on rows.
+const addonInput =
+  'h-12 w-full rounded-xl border border-stone-300 bg-stone-100 px-4 text-stone-900 placeholder-stone-400 focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50';
 
 type SendStatus =
   | { kind: 'idle' }
@@ -71,7 +77,7 @@ const downscaleImage = (file: File, maxDim = 1400, quality = 0.72): Promise<stri
   });
 
 export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
-  const { data, update, clearDraft } = useProposalDraft();
+  const { data, setData, update, clearDraft } = useProposalDraft();
   const [status, setStatus] = useState<SendStatus>({ kind: 'idle' });
   // Photos live in component state only (not the localStorage draft) — base64
   // images would quickly exceed the storage quota. They're optional and baked
@@ -98,6 +104,26 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
     const current = data.proposal.scope.trim();
     update('proposal', 'scope', current ? `${current}\n\n${tpl.text}` : tpl.text);
   };
+
+  // --- Additional-services (add-on) line items ---
+  const addAddOn = (label = '', price = '') =>
+    setData((p) => ({
+      ...p,
+      proposal: { ...p.proposal, addOns: [...p.proposal.addOns, { label, price }] },
+    }));
+  const updateAddOn = (idx: number, field: 'label' | 'price', value: string) =>
+    setData((p) => ({
+      ...p,
+      proposal: {
+        ...p.proposal,
+        addOns: p.proposal.addOns.map((a, i) => (i === idx ? { ...a, [field]: value } : a)),
+      },
+    }));
+  const removeAddOn = (idx: number) =>
+    setData((p) => ({
+      ...p,
+      proposal: { ...p.proposal, addOns: p.proposal.addOns.filter((_, i) => i !== idx) },
+    }));
 
   const canSend = useMemo(
     () => data.customer.name.trim() !== '' && EMAIL_RE.test(data.customer.email.trim()),
@@ -364,6 +390,83 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
                 <input id="pr-price" className={fieldClass} placeholder=" "
                   value={data.proposal.price} onChange={(e) => update('proposal', 'price', e.target.value)} />
               </FieldShell>
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+                <input
+                  type="checkbox"
+                  checked={data.proposal.includeBenefits}
+                  onChange={(e) => update('proposal', 'includeBenefits', e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-brand-blue"
+                />
+                <span className="text-sm text-gray-200">
+                  Highlight &ldquo;what&rsquo;s included&rdquo; — chemicals, filter &amp; salt-cell cleans{' '}
+                  <span className="text-gray-400">(recommended for recurring service; turn off for one-time jobs)</span>
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+                <input
+                  type="checkbox"
+                  checked={data.proposal.includeTerms}
+                  onChange={(e) => update('proposal', 'includeTerms', e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-brand-blue"
+                />
+                <span className="text-sm text-gray-200">
+                  Include standard terms &amp; conditions in the PDF{' '}
+                  <span className="text-gray-400">(recommended — makes an &ldquo;APPROVED&rdquo; reply a real acceptance)</span>
+                </span>
+              </label>
+            </Section>
+
+            <Section title="Additional Services (optional)">
+              <p className="-mt-1 text-sm text-gray-400">
+                À-la-carte extras, listed separately on the proposal. Quick-add a common one, then set its price.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {ADDON_PRESETS.map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => addAddOn(preset.label, preset.defaultPrice ?? '')}
+                    className="rounded-full border border-white/15 px-3 py-1.5 text-sm text-gray-200 transition-colors hover:border-brand-blue-light hover:text-white"
+                  >
+                    + {preset.label}
+                  </button>
+                ))}
+              </div>
+              {data.proposal.addOns.length > 0 && (
+                <div className="space-y-2">
+                  {data.proposal.addOns.map((a, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input
+                        className={addonInput}
+                        placeholder="Service"
+                        value={a.label}
+                        onChange={(e) => updateAddOn(i, 'label', e.target.value)}
+                      />
+                      <input
+                        className={`${addonInput} w-32 shrink-0`}
+                        placeholder="Price"
+                        value={a.price}
+                        onChange={(e) => updateAddOn(i, 'price', e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeAddOn(i)}
+                        aria-label="Remove service"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 text-gray-400 hover:bg-white/5 hover:text-white"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => addAddOn()}
+                className="text-sm font-semibold text-brand-blue-light hover:text-white"
+              >
+                + Custom line
+              </button>
             </Section>
           </div>
 
@@ -447,6 +550,21 @@ const ProposalPreview = ({
           <PreviewRow label="Phone" value={customer.phone} />
         </PreviewBlock>
 
+        {proposal.includeBenefits && (
+          <div className="rounded-lg border border-[#cfe3f2] bg-[#eef6fb] px-4 py-3">
+            <div className="mb-2 text-sm font-bold text-brand-blue-dark">{BENEFITS_HEADING}</div>
+            <ul className="space-y-1">
+              {INCLUDED_BENEFITS.map((b, i) => (
+                <li key={i} className="flex gap-2 text-[13px] font-semibold text-stone-800">
+                  <span className="text-green-600">✓</span>
+                  {b}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-[11px] italic text-stone-500">{BENEFITS_NOTE}</p>
+          </div>
+        )}
+
         {(pool.gallons || dims || pool.shape || pool.sanitization) && (
           <PreviewBlock label="Pool — Size & Volume">
             <PreviewRow label="Volume" value={pool.gallons ? `${pool.gallons} gallons` : ''} />
@@ -494,9 +612,29 @@ const ProposalPreview = ({
           </div>
         )}
 
+        {proposal.addOns.some((a) => a.label.trim() || a.price.trim()) && (
+          <PreviewBlock label="Additional Services">
+            {proposal.addOns
+              .filter((a) => a.label.trim() || a.price.trim())
+              .map((a, i) => (
+                <div key={i} className="flex justify-between gap-3">
+                  <span className="text-stone-700">{a.label.trim() || '—'}</span>
+                  <span className="font-medium text-stone-800">{formatPrice(a.price)}</span>
+                </div>
+              ))}
+          </PreviewBlock>
+        )}
+
         <div className="rounded-lg border border-[#bfe7c6] bg-[#eefaf0] px-4 py-3 text-[13px] leading-relaxed text-[#1d7a33]">
           To accept, simply reply <strong>&quot;APPROVED&quot;</strong> to the email this is attached to.
         </div>
+
+        {proposal.includeTerms && (
+          <p className="text-[11px] leading-relaxed text-stone-400">
+            Standard terms &amp; conditions are included on the attached PDF, with a link to your full
+            service agreement.
+          </p>
+        )}
       </div>
     </div>
   );

@@ -38,7 +38,13 @@ type Pool = {
   automation?: string;
   equipmentNotes?: string;
 };
-type Proposal = { scope?: string; price?: string };
+type Proposal = {
+  scope?: string;
+  price?: string;
+  addOns?: Array<{ label?: string; price?: string }>;
+  includeTerms?: boolean;
+  includeBenefits?: boolean;
+};
 
 type SendProposalPayload = {
   customer?: Customer;
@@ -138,7 +144,18 @@ const BIZ = {
   logo: 'https://suncoastpoolpros.com/email-logo.png',
   address: '1701 Central Ave, Unit 279 · St. Petersburg, FL 33713',
   hours: 'Mon–Sat, 8 AM–6 PM',
+  serviceAgreementHref: 'https://suncoastpoolpros.com/service-agreement',
+  serviceAgreementDisplay: 'suncoastpoolpros.com/service-agreement',
 };
+
+// "What's included" highlight — mirrors src/components/admin/proposalBenefits.ts.
+const BENEFITS_HEADING = 'Included With Your Service';
+const INCLUDED_BENEFITS = [
+  'All standard chemicals & salt — at no extra charge',
+  'Filter cleanings included',
+  'Salt cell cleaning & system maintenance included',
+];
+const BENEFITS_NOTE = "It's all covered in your flat rate — no surprise fees.";
 
 // Prefix a bare number with "$" (425 → $425, 185/mo → $185/mo) while leaving
 // values that already start with a symbol/word untouched ($425, "Call for price").
@@ -156,6 +173,8 @@ const composeProposalEmail = (
   const greetingName = name ? name.split(/\s+/)[0] : 'there';
   const price = formatPrice(safe(String(p.proposal?.price ?? '').trim(), 40));
   const scope = safe(String(p.proposal?.scope ?? '').trim(), FIELD_MAX);
+  const includeTerms = p.proposal?.includeTerms !== false;
+  const includeBenefits = p.proposal?.includeBenefits !== false;
 
   const text = [
     `Hi ${greetingName},`,
@@ -163,10 +182,15 @@ const composeProposalEmail = (
     `Thank you for the opportunity to earn your business. Your proposal from`,
     `Suncoast Pool Pros is attached as a PDF.`,
     ``,
+    ...(includeBenefits
+      ? [`${BENEFITS_HEADING}:`, ...INCLUDED_BENEFITS.map((b) => `  - ${b}`), BENEFITS_NOTE, ``]
+      : []),
     scope ? `Scope of work: ${scope}` : '',
     price ? `Total: ${price}` : '',
     ``,
     `To accept, simply reply "APPROVED" to this email and we'll get you scheduled.`,
+    includeTerms ? `Our standard service terms are included in the attached PDF.` : '',
+    includeTerms ? `Read our full service agreement: ${BIZ.serviceAgreementHref}` : '',
     ``,
     `Questions? Just reply to this message.`,
     ``,
@@ -198,6 +222,16 @@ const composeProposalEmail = (
           <p style="margin:0 0 14px;">Hi ${escapeHtml(greetingName)},</p>
           <p style="margin:0 0 18px;color:#374151;">Thank you for the opportunity to earn your business. Your full proposal is attached to this email as a PDF.</p>
 
+          ${includeBenefits ? `
+          <!-- What's included highlight -->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+            <tr><td style="padding:16px 20px;background:#eef6fb;border:1px solid #cfe3f2;border-radius:12px;">
+              <div style="font-size:15px;font-weight:700;color:#0f4d80;margin-bottom:8px;">${BENEFITS_HEADING}</div>
+              ${INCLUDED_BENEFITS.map((b) => `<div style="font-size:14px;color:#1f2937;font-weight:600;margin:5px 0;"><span style="color:#1d7a33;">&#10003;</span>&nbsp;&nbsp;${escapeHtml(b)}</div>`).join('')}
+              <div style="font-size:12px;color:#6b7280;font-style:italic;margin-top:8px;">${escapeHtml(BENEFITS_NOTE)}</div>
+            </td></tr>
+          </table>` : ''}
+
           <!-- Attachment chip -->
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
             <tr><td style="padding:12px 16px;background:#f3f6fb;border:1px solid #dce7f2;border-radius:10px;font-size:14px;color:#0f4d80;">
@@ -228,7 +262,8 @@ const composeProposalEmail = (
             </td></tr>
           </table>
 
-          <p style="margin:18px 0 0;color:#6b7280;font-size:13px;">Questions about anything? Simply reply to this message.</p>
+          ${includeTerms ? `<p style="margin:14px 0 0;color:#9ca3af;font-size:12px;">Our standard service terms are included in the attached PDF. You can read our full service agreement at <a href="${BIZ.serviceAgreementHref}" style="color:#0f4d80;text-decoration:underline;">${BIZ.serviceAgreementDisplay}</a>.</p>` : ''}
+          <p style="margin:14px 0 0;color:#6b7280;font-size:13px;">Questions about anything? Simply reply to this message.</p>
         </td></tr>
         <!-- Footer -->
         <tr><td style="padding:22px 32px;background:#f9fafb;border-top:1px solid #eef0f3;">

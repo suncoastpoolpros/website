@@ -31,8 +31,16 @@ export type ProposalData = {
   proposal: {
     scope: string;
     price: string;
+    /** Optional à-la-carte services listed separately (not summed into price). */
+    addOns: AddOn[];
+    /** Append the condensed standard terms to the PDF. */
+    includeTerms: boolean;
+    /** Show the "what's included" all-inclusive highlight (recurring service). */
+    includeBenefits: boolean;
   };
 };
+
+export type AddOn = { label: string; price: string };
 
 // Prefix a bare number with "$" (425 → $425, 185/mo → $185/mo) while leaving
 // values that already start with a symbol/word untouched ($425, "Call for price").
@@ -58,7 +66,7 @@ export const emptyProposal = (): ProposalData => ({
     automation: '',
     equipmentNotes: '',
   },
-  proposal: { scope: '', price: '' },
+  proposal: { scope: '', price: '', addOns: [], includeTerms: true, includeBenefits: true },
 });
 
 /** True when a valid admin session cookie is present. */

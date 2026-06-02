@@ -159,7 +159,7 @@ const SECTIONS: Section[] = [
             items: [
               {
                 lead: 'Recurring Weekly Service:',
-                text: 'Service is billed monthly in advance unless otherwise agreed. Invoices not paid within 5 days of the due date may incur a $35 late fee. Accounts more than 15 days past due may be subject to service suspension until the balance is cleared.',
+                text: 'Service is billed monthly in advance unless otherwise agreed. Invoices not paid within 10 days of the due date may incur a $25 late fee. Accounts more than 15 days past due may be subject to service suspension until the balance is cleared.',
               },
               {
                 lead: 'One-Time & Specialty Service:',
