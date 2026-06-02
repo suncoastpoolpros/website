@@ -89,7 +89,14 @@ const HeroSection = () => {
               Weekly pool service in St. Pete Beach, FL.
             </h1>
 
-            <p className="text-shadow-city-body text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
+            {/* Mobile: tighter line — keeps the salt-air/sand/sun hook +
+                weekly + photo report. Full copy with the Gulf Blvd–Pass-a-Grille
+                range and inspected-equipment detail stays on desktop (md+) for
+                richer local SEO. */}
+            <p className="text-shadow-city-body md:hidden text-[15px] text-gray-200 max-w-[34rem] leading-[1.6] mb-7">
+              <span className="text-white">Barrier-island pools take a beating from salt air, sand, and sun</span> — our weekly service answers it with balanced water and a photo report after every visit.
+            </p>
+            <p className="text-shadow-city-body hidden md:block text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
               From <span className="text-white">Gulf Blvd to Pass-a-Grille</span>, barrier-island
               pools take a beating from salt air, blowing sand, and full afternoon sun. We run a
               weekly service built for exactly that — balanced water, inspected equipment, and a
