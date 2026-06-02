@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { Send, LoaderCircle, CheckCircle, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ImagePlus, X } from 'lucide-react';
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
 import { useProposalDraft } from '@/lib/useProposalDraft';
-import { sendProposal, logout, type ProposalData } from '@/lib/adminApi';
+import { sendProposal, logout, formatPrice, type ProposalData } from '@/lib/adminApi';
+import { SCOPE_TEMPLATES } from './scopeTemplates';
 
 type SendStatus =
   | { kind: 'idle' }
@@ -87,6 +88,16 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
   };
 
   const removePhoto = (idx: number) => setPhotos((prev) => prev.filter((_, i) => i !== idx));
+
+  // Drop a pre-written service description into the scope field. Appends (with a
+  // blank line) when scope already has text, so templates can be combined and
+  // nothing the admin typed gets clobbered.
+  const insertScopeTemplate = (label: string) => {
+    const tpl = SCOPE_TEMPLATES.find((t) => t.label === label);
+    if (!tpl) return;
+    const current = data.proposal.scope.trim();
+    update('proposal', 'scope', current ? `${current}\n\n${tpl.text}` : tpl.text);
+  };
 
   const canSend = useMemo(
     () => data.customer.name.trim() !== '' && EMAIL_RE.test(data.customer.email.trim()),
@@ -327,8 +338,26 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
             </Section>
 
             <Section title="Proposal">
+              <FieldShell id="pr-template" label="Insert a service template" floated>
+                <select
+                  id="pr-template"
+                  className={selectClass}
+                  value=""
+                  onChange={(e) => {
+                    if (e.target.value) insertScopeTemplate(e.target.value);
+                    e.currentTarget.selectedIndex = 0; // reset so the same one can be re-picked
+                  }}
+                >
+                  <option value="">Choose a service to add details…</option>
+                  {SCOPE_TEMPLATES.map((t) => (
+                    <option key={t.label} value={t.label}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </FieldShell>
               <FieldShell id="pr-scope" label="Scope of work" multiline>
-                <textarea id="pr-scope" rows={5} className={textareaClass} placeholder=" "
+                <textarea id="pr-scope" rows={8} className={textareaClass} placeholder=" "
                   value={data.proposal.scope} onChange={(e) => update('proposal', 'scope', e.target.value)} />
               </FieldShell>
               <FieldShell id="pr-price" label="Total price (e.g. $2,400 or $185/mo)">
@@ -461,7 +490,7 @@ const ProposalPreview = ({
         {proposal.price.trim() && (
           <div className="flex items-center justify-between rounded-lg border border-[#d6e6f3] bg-[#f1f6fb] px-4 py-3">
             <span className="text-stone-500">Total</span>
-            <span className="text-lg font-bold text-brand-blue-dark">{proposal.price.trim()}</span>
+            <span className="text-lg font-bold text-brand-blue-dark">{formatPrice(proposal.price)}</span>
           </div>
         )}
 

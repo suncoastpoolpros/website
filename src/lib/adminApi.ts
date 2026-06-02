@@ -34,6 +34,15 @@ export type ProposalData = {
   };
 };
 
+// Prefix a bare number with "$" (425 → $425, 185/mo → $185/mo) while leaving
+// values that already start with a symbol/word untouched ($425, "Call for price").
+// Mirrors formatPrice in functions/api/admin/send-proposal.ts.
+export const formatPrice = (raw: string): string => {
+  const s = raw.trim();
+  if (!s) return '';
+  return /^[0-9]/.test(s) ? `$${s}` : s;
+};
+
 export const emptyProposal = (): ProposalData => ({
   customer: { name: '', address: '', email: '', phone: '' },
   pool: {

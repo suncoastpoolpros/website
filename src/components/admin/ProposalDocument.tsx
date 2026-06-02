@@ -7,7 +7,7 @@
  * Keep the layout visually in step with the HTML preview in ProposalBuilder.
  */
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
-import { type ProposalData } from '@/lib/adminApi';
+import { type ProposalData, formatPrice } from '@/lib/adminApi';
 
 const NAVY = '#0a1628';
 const BLUE_DARK = '#0f4d80';
@@ -200,7 +200,7 @@ export const ProposalDocument = ({
               <Text style={styles.sectionLabel}>Investment</Text>
               <View style={styles.priceBox}>
                 <Text style={styles.priceLabel}>Total</Text>
-                <Text style={styles.priceValue}>{proposal.price.trim()}</Text>
+                <Text style={styles.priceValue}>{formatPrice(proposal.price)}</Text>
               </View>
             </View>
           ) : null}

@@ -74,15 +74,18 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
     }
 
     const apiKey = env.RESEND_API_KEY;
-    const from = env.PROPOSAL_FROM_EMAIL || env.CONTACT_FROM_EMAIL;
+    const fromEmail = env.PROPOSAL_FROM_EMAIL || env.CONTACT_FROM_EMAIL;
     const replyTo = env.PROPOSAL_REPLY_TO || env.CONTACT_TO_EMAIL;
     const bcc = env.CONTACT_TO_EMAIL || env.PROPOSAL_REPLY_TO;
-    if (!apiKey || !from) {
-      const missing = [!apiKey && 'RESEND_API_KEY', !from && 'PROPOSAL_FROM_EMAIL/CONTACT_FROM_EMAIL']
+    if (!apiKey || !fromEmail) {
+      const missing = [!apiKey && 'RESEND_API_KEY', !fromEmail && 'PROPOSAL_FROM_EMAIL/CONTACT_FROM_EMAIL']
         .filter(Boolean)
         .join(', ');
       return json({ ok: false, error: 'email_config_missing', detail: missing }, 500);
     }
+    // Show the business name in the inbox ("Suncoast Pool Pros") instead of the
+    // bare noreply@ address. Resend accepts "Display Name <email@domain>".
+    const from = fromEmail.includes('<') ? fromEmail : `${BIZ.name} <${fromEmail}>`;
 
     const { html, text } = composeProposalEmail(payload, env);
     const attachments =
@@ -124,13 +127,34 @@ export const onRequest = (): Response => json({ ok: false, error: 'method_not_al
 
 // ----- email body -------------------------------------------------------
 
+// Business NAP — kept in sync with src/lib/contact.ts (functions can't import
+// from the client src tree, so these are duplicated here intentionally).
+const BIZ = {
+  name: 'Suncoast Pool Pros',
+  phoneDisplay: '(727) 295-3621',
+  phoneHref: 'tel:+17272953621',
+  websiteDisplay: 'suncoastpoolpros.com',
+  websiteHref: 'https://www.suncoastpoolpros.com',
+  logo: 'https://suncoastpoolpros.com/email-logo.png',
+  address: '1701 Central Ave, Unit 279 · St. Petersburg, FL 33713',
+  hours: 'Mon–Sat, 8 AM–6 PM',
+};
+
+// Prefix a bare number with "$" (425 → $425, 185/mo → $185/mo) while leaving
+// values that already start with a symbol/word untouched ($425, "Call for price").
+const formatPrice = (raw: string): string => {
+  const s = raw.trim();
+  if (!s) return '';
+  return /^[0-9]/.test(s) ? `$${s}` : s;
+};
+
 const composeProposalEmail = (
   p: SendProposalPayload,
   _env: AdminEnv,
 ): { html: string; text: string } => {
   const name = safe(String(p.customer?.name ?? '').trim(), 120);
   const greetingName = name ? name.split(/\s+/)[0] : 'there';
-  const price = safe(String(p.proposal?.price ?? '').trim(), 40);
+  const price = formatPrice(safe(String(p.proposal?.price ?? '').trim(), 40));
   const scope = safe(String(p.proposal?.scope ?? '').trim(), FIELD_MAX);
 
   const text = [
@@ -139,38 +163,87 @@ const composeProposalEmail = (
     `Thank you for the opportunity to earn your business. Your proposal from`,
     `Suncoast Pool Pros is attached as a PDF.`,
     ``,
-    scope ? `Scope: ${scope}` : '',
+    scope ? `Scope of work: ${scope}` : '',
     price ? `Total: ${price}` : '',
     ``,
     `To accept, simply reply "APPROVED" to this email and we'll get you scheduled.`,
     ``,
     `Questions? Just reply to this message.`,
     ``,
-    `— Suncoast Pool Pros`,
+    `Suncoast Pool Pros`,
+    `${BIZ.phoneDisplay} · ${BIZ.websiteDisplay}`,
   ]
     .filter((line) => line !== '')
     .join('\n');
 
   const html = `
 <!doctype html>
-<html><body style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;background:#f6f8fc;padding:24px 0;margin:0;">
-  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;">
-    <div style="background:#0a1628;color:#fff;padding:22px 24px;">
-      <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;">Suncoast Pool Pros</div>
-      <div style="font-size:19px;font-weight:600;margin-top:4px;">Your Pool Service Proposal</div>
-    </div>
-    <div style="padding:24px;color:#111827;font-size:15px;line-height:1.6;">
-      <p style="margin:0 0 14px;">Hi ${escapeHtml(greetingName)},</p>
-      <p style="margin:0 0 14px;">Thank you for the opportunity to earn your business. Your full proposal from Suncoast Pool Pros is attached to this email as a PDF.</p>
-      ${scope ? `<p style="margin:0 0 14px;color:#374151;"><span style="color:#6b7280;">Scope:</span> ${escapeHtml(scope).replace(/\n/g, '<br>')}</p>` : ''}
-      ${price ? `<div style="margin:18px 0;padding:14px 18px;background:#f1f6fb;border:1px solid #d6e6f3;border-radius:10px;font-size:16px;"><span style="color:#6b7280;">Total:</span> <strong style="color:#0f4d80;">${escapeHtml(price)}</strong></div>` : ''}
-      <div style="margin:20px 0;padding:16px 18px;background:#eefaf0;border:1px solid #bfe7c6;border-radius:10px;">
-        <strong style="color:#1d7a33;">To accept:</strong> just reply <strong>"APPROVED"</strong> to this email and we'll get you on the schedule.
-      </div>
-      <p style="margin:14px 0 0;color:#6b7280;font-size:13px;">Questions about anything? Simply reply to this message.</p>
-    </div>
-    <div style="padding:14px 24px;border-top:1px solid #f1f3f4;color:#9ca3af;font-size:12px;">Suncoast Pool Pros &middot; St. Petersburg, FL</div>
-  </div>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#eef2f7;">
+  <!-- Hidden inbox-preview line -->
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#eef2f7;">Your pool service proposal from Suncoast Pool Pros — PDF attached. Reply APPROVED to accept.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f7;padding:28px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e3e8ef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+        <!-- Header -->
+        <tr><td style="background:#0a1628;padding:26px 32px;">
+          <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#8ea2c0;">Suncoast Pool Pros</div>
+          <div style="font-size:22px;font-weight:700;color:#ffffff;margin-top:6px;">Your Pool Service Proposal</div>
+        </td></tr>
+        <!-- Brand accent bar -->
+        <tr><td style="height:4px;background:#1669AE;line-height:4px;font-size:0;">&nbsp;</td></tr>
+        <!-- Body -->
+        <tr><td style="padding:28px 32px;color:#111827;font-size:15px;line-height:1.6;">
+          <p style="margin:0 0 14px;">Hi ${escapeHtml(greetingName)},</p>
+          <p style="margin:0 0 18px;color:#374151;">Thank you for the opportunity to earn your business. Your full proposal is attached to this email as a PDF.</p>
+
+          <!-- Attachment chip -->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+            <tr><td style="padding:12px 16px;background:#f3f6fb;border:1px solid #dce7f2;border-radius:10px;font-size:14px;color:#0f4d80;">
+              <span style="font-size:16px;">📎</span>&nbsp;&nbsp;<strong>Your proposal is attached</strong> as a PDF
+            </td></tr>
+          </table>
+
+          ${scope ? `
+          <div style="margin:0 0 18px;">
+            <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa4b2;font-weight:700;margin-bottom:6px;">Scope of Work</div>
+            <div style="font-size:15px;color:#374151;line-height:1.6;">${escapeHtml(scope).replace(/\n/g, '<br>')}</div>
+          </div>` : ''}
+
+          ${price ? `
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+            <tr><td style="padding:16px 20px;background:#f1f6fb;border:1px solid #d6e6f3;border-radius:12px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+                <td style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Total</td>
+                <td align="right" style="font-size:24px;font-weight:800;color:#0f4d80;">${escapeHtml(price)}</td>
+              </tr></table>
+            </td></tr>
+          </table>` : ''}
+
+          <!-- Accept callout -->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 6px;">
+            <tr><td style="padding:16px 20px;background:#eefaf0;border:1px solid #bfe7c6;border-radius:12px;font-size:15px;color:#176a2c;line-height:1.55;">
+              <strong style="color:#1d7a33;">To accept:</strong> just reply <strong>&ldquo;APPROVED&rdquo;</strong> to this email and we&rsquo;ll get you on the schedule.
+            </td></tr>
+          </table>
+
+          <p style="margin:18px 0 0;color:#6b7280;font-size:13px;">Questions about anything? Simply reply to this message.</p>
+        </td></tr>
+        <!-- Footer -->
+        <tr><td style="padding:22px 32px;background:#f9fafb;border-top:1px solid #eef0f3;">
+          <img src="${BIZ.logo}" alt="Suncoast Pool Pros" width="118" height="84" style="display:block;border:0;outline:none;width:118px;height:auto;margin-bottom:12px;">
+          <div style="font-size:13px;line-height:1.7;color:#374151;">
+            <a href="${BIZ.phoneHref}" style="color:#0f4d80;text-decoration:none;font-weight:600;">${BIZ.phoneDisplay}</a>
+            &nbsp;&middot;&nbsp;
+            <a href="${BIZ.websiteHref}" style="color:#0f4d80;text-decoration:none;font-weight:600;">${BIZ.websiteDisplay}</a><br>
+            <span style="color:#6b7280;">${BIZ.address}</span><br>
+            <span style="color:#9ca3af;">${BIZ.hours}</span>
+          </div>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
 </body></html>`.trim();
 
   return { html, text };
