@@ -111,7 +111,7 @@ export const Hero = () => {
 
               {/* Visual headline (price differentiator) — a div, not h1, so the SEO H1 below carries the keyword weight */}
               <div className="font-display font-bold text-white tracking-tight mb-7 text-3xl sm:text-4xl md:text-[2.7rem] leading-[1.15]">
-                <span className="text-shadow-hero-headline block text-white md:text-brand-orange font-bold md:font-black text-5xl sm:text-6xl md:text-[4.5rem] leading-[0.95] tracking-tight">
+                <span className="text-shadow-hero-headline block text-white md:text-brand-orange font-black text-5xl sm:text-6xl md:text-[4.5rem] leading-[0.95] tracking-tight">
                   One Flat Rate
                 </span>
                 <span className="text-shadow-hero-sub block mt-5 sm:whitespace-nowrap text-white font-normal tracking-tight text-2xl sm:text-3xl md:text-[2.25rem] leading-[1.1]">
@@ -124,7 +124,14 @@ export const Hero = () => {
                 St. Petersburg's expert pool cleaning company.
               </h1>
 
-              <p className="text-shadow-hero-body text-[15px] text-gray-100 font-normal max-w-[27rem] leading-[1.6] mb-8 sm:mb-9">
+              {/* Mobile: one tight benefit line so the hero stays airy over the
+                  bright photo (the headline + "No Monthly Chemical Cost" already
+                  carry the flat-price hook). The full value prop shows md+ below. */}
+              <p className="text-shadow-hero-body md:hidden text-[15px] text-gray-100 max-w-[24rem] leading-[1.6] mb-8">
+                <span className="text-white">Weekly cleaning, full chemical balancing</span>, and a written report after every visit.
+              </p>
+
+              <p className="text-shadow-hero-body hidden md:block text-[15px] text-gray-100 font-normal max-w-[27rem] leading-[1.6] mb-8 sm:mb-9">
                 <span className="text-white">Weekly pool cleaning, full chemical balancing, GPS-verified visits</span>, and a written report after every clean. <span className="text-white">One flat monthly price</span> — no chemical surprises, no contracts, no green water.
               </p>
 
