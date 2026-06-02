@@ -66,7 +66,7 @@ const HeroSection = () => {
             transition={{ duration: 0.9, ease: 'easeOut' }}
             className="lg:col-span-7"
           >
-            <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8">
+            <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-5 md:mb-8">
               <MapPin className="w-3.5 h-3.5 text-brand-blue-light" />
               <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
                 Snell Isle · St. Petersburg Waterfront
@@ -74,21 +74,27 @@ const HeroSection = () => {
             </Glass>
 
             {/* Visual headline — a div, so the SEO h1 below carries keyword weight */}
-            <div className="font-display font-bold md:font-black text-white tracking-tight mb-6 leading-[1.08]">
-              <span className="block text-4xl sm:text-5xl md:text-[3.4rem] leading-[1.04]">
-                Estate-Grade.
+            <div className="font-display font-black text-white tracking-tight mb-4 md:mb-6 leading-[1.08]">
+              <span className="block text-[2rem] sm:text-5xl md:text-[3.4rem] leading-[1.04]">
+                Pristine Water.
               </span>
-              <span className="block text-4xl sm:text-5xl md:text-[3.4rem] leading-[1.04]">
-                Every Week.
+              <span className="block text-[2rem] sm:text-5xl md:text-[3.4rem] leading-[1.04]">
+                Every Single Week.
               </span>
             </div>
 
             {/* SEO H1 — local keyword for this neighborhood page */}
-            <h1 className="text-shadow-city-h1 font-display font-normal text-white/90 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 tracking-tight">
+            <h1 className="text-shadow-city-h1 font-display font-normal text-white/90 text-xl md:text-[1.25rem] leading-snug mb-3 md:mb-5 tracking-tight">
               Weekly pool service in Snell Isle, St. Petersburg, FL.
             </h1>
 
-            <p className="text-shadow-city-body text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
+            {/* Mobile: tighter line, still keyword-complete (Snell Isle + finish-
+                safe chemistry + photo report). Full local copy with the landmark
+                names stays on desktop (md+) for richer local SEO. */}
+            <p className="text-shadow-city-body md:hidden text-[15px] text-gray-200 max-w-[34rem] leading-[1.6] mb-5">
+              <span className="text-white">Finish-safe chemistry, thorough equipment care, and a photo report after every visit</span> — built for Snell Isle's larger custom pools.
+            </p>
+            <p className="text-shadow-city-body hidden md:block text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
               <span className="text-white">Larger custom pools, premium finishes, and a mature tree canopy</span> —
               Snell Isle pools ask more of a service than a standard backyard does. We deliver
               finish-safe chemistry, thorough debris and equipment care, and a photo report after
