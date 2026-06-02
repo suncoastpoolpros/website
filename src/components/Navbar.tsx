@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { SmartLink as Link } from '@/components/SmartLink';
 import { useScrollLock } from '@/lib/useScrollLock';
-import { useOverlayTransition } from '@/lib/useOverlayTransition';
 import {
   X,
   Phone,
@@ -42,8 +41,13 @@ export const Navbar = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
   const { pathname } = useLocation();
   const [areasExpanded, setAreasExpanded] = useState(false);
-  // Mount/visible timing for the CSS-driven drawer slide (see useOverlayTransition).
-  const drawer = useOverlayTransition(isOpen);
+  // The drawer is mounted ONCE, right after hydration (not on tap), then kept
+  // in the DOM off-screen. Opening is then just an `is-open` class toggle — no
+  // React mount and no animation-frame wait on tap, so it slides immediately
+  // (the residual open-delay was the on-tap mount). `hydrated` gates the portal
+  // so nothing renders during SSR/first hydration commit.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -225,21 +229,24 @@ export const Navbar = () => {
         mobile CTA (z-90) bleeds through. Hoisting the drawer to the top level
         lets its z-[110] work as written. */}
       {/* Drawer is portaled to <body> so it sits above the page's stacking
-          contexts (the z-[110] works as written). The slide is now a CSS
-          transform transition (.overlay-* in index.css), driven by
-          useOverlayTransition — it runs on the compositor thread, so the panel
-          glides even while React mounts its contents (no main-thread tween), and
-          mounting is plain divs with no animation-library cost on open. Guarded
-          for SSR: drawer.mounted is false until the client opens it, so nothing
-          ships in the prerendered HTML. */}
-      {typeof document !== 'undefined' && drawer.mounted && createPortal(
-          <div className="nav-drawer md:hidden fixed inset-0 z-[110]">
+          contexts (the z-[110] works as written). It mounts ONCE after hydration
+          and stays in the DOM: `is-open` toggles a composited CSS transform
+          (.overlay-* in index.css) so opening is instant — no React mount, no
+          frame wait — and the slide runs on the compositor thread. When closed
+          the shell is pointer-events:none + inert, so the off-screen panel can't
+          be tapped or focused. Nothing ships in the prerendered HTML (hydrated
+          flips true only after the client mounts). */}
+      {hydrated && createPortal(
+          <div
+            className={`nav-drawer md:hidden fixed inset-0 z-[110] ${isOpen ? 'is-open' : ''}`}
+            inert={!isOpen}
+          >
             {/* Backdrop. Solid scrim instead of backdrop-blur: on mobile the
                 blur's unmount re-rasterizes the page behind it (blank/repaint
                 flash on iOS). Higher opacity keeps the same dimmed look. */}
             <div
               onClick={() => setIsOpen(false)}
-              className={`overlay-scrim absolute inset-0 bg-black/75 md:backdrop-blur-[10px] md:bg-black/60 ${drawer.visible ? 'is-open' : ''}`}
+              className={`overlay-scrim absolute inset-0 bg-black/75 md:backdrop-blur-[10px] md:bg-black/60 ${isOpen ? 'is-open' : ''}`}
             />
 
             {/* Panel. overlay-panel-right slides it in from the right via a
@@ -247,7 +254,7 @@ export const Navbar = () => {
                 shadow-2xl rasterizes once and just composites as it slides.
                 (Drawer is client-only, so this never affects prerendered HTML.) */}
             <div
-              className={`overlay-panel-right absolute right-0 top-0 h-full w-[82%] max-w-sm flex flex-col bg-[#0a1628] border-l border-white/10 shadow-2xl shadow-black/60 ${drawer.visible ? 'is-open' : ''}`}
+              className={`overlay-panel-right absolute right-0 top-0 h-full w-[82%] max-w-sm flex flex-col bg-[#0a1628] border-l border-white/10 shadow-2xl shadow-black/60 ${isOpen ? 'is-open' : ''}`}
             >
               {/* Brand bloom for depth */}
               <div className="absolute top-0 right-0 w-56 h-56 bg-brand-blue/15 rounded-full blur-[100px] pointer-events-none" />

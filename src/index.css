@@ -561,6 +561,19 @@
   transform: translate3d(0, 0, 0);
 }
 
+/* The nav drawer stays mounted (opening = class toggle → instant tap response).
+   When closed it must not intercept taps, and the off-screen panel must not add
+   horizontal scroll. overflow-hidden clips the panel parked at translateX(100%);
+   pointer-events flips on only while open. (Interactivity/focus is also gated by
+   the `inert` attribute in Navbar; this covers tap pass-through visually too.) */
+.nav-drawer {
+  overflow: hidden;
+  pointer-events: none;
+}
+.nav-drawer.is-open {
+  pointer-events: auto;
+}
+
 /* Drawer Service-Areas accordion: a CSS keyframe plays once on mount (no rAF
    dance needed for a one-shot enter), replacing the old per-item Framer fade. */
 @keyframes overlayInUp {
