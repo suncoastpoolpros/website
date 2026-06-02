@@ -32,6 +32,10 @@ const ContactPage = lazy(() => import('@/pages/ContactPage').then((m) => ({ defa
 const SignupPage = lazy(() => import('@/pages/SignupPage').then((m) => ({ default: m.SignupPage })));
 const ServiceAgreementPage = lazy(() => import('@/pages/ServiceAgreementPage').then((m) => ({ default: m.ServiceAgreementPage })));
 const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage').then((m) => ({ default: m.PrivacyPolicyPage })));
+// Private admin proposal builder. Intentionally NOT in entry-server.tsx /
+// PRERENDER_ROUTES — it's a client-only app route (no SEO, no static HTML), and
+// it's Disallow-ed in robots.txt.
+const AdminPage = lazy(() => import('@/pages/AdminPage').then((m) => ({ default: m.AdminPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 // On route change, jump to top (unless navigating to an in-page #anchor) and
@@ -147,6 +151,7 @@ export default function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/service-agreement" element={<ServiceAgreementPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           {/* Catch-all 404 — must be last. */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

@@ -1,7 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /admin
 
 # /signup is kept out of search via a per-page noindex meta tag (it must stay
 # crawlable for Google to read that tag), not a Disallow rule.
+# /admin is the private proposal builder — Disallow-ed (it's client-only, never
+# prerendered, and carries a noindex meta tag too).
 
 Sitemap: https://suncoastpoolpros.com/sitemap.xml
