@@ -122,8 +122,8 @@ const HeroSection = () => {
             <p className="text-shadow-city-body text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
               Vacation rentals, Airbnbs, and snowbird homes from{' '}
               <span className="text-white">Sunset Beach to Isle of Capri</span> —
-              maintained on a structured weekly schedule with a photo report after every
-              visit. Guest-ready between bookings, protected when the house is empty.
+              weekly service with a photo report after every visit. Guest-ready
+              between bookings, protected when empty.
             </p>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
@@ -230,7 +230,7 @@ export const TreasureIslandPage = () => {
     canonicalPath: '/treasure-island-fl/',
     ogImage: '/waterfront-pool-st-petersburg.jpg',
     heroPreload: {
-      mobile: '/waterfront-pool-st-petersburg-mobile.webp',
+      mobile: '/treasure-island-mobile-sunset.webp',
       desktop: '/waterfront-pool-st-petersburg.webp',
       wide: '/waterfront-pool-st-petersburg-1920.webp',
     },

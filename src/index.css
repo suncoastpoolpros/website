@@ -239,10 +239,12 @@
   filter: saturate(1.3) contrast(1.08) hue-rotate(4deg);
 }
 .hero-bg-treasure-mobile {
-  /* Swapped to the waterfront photo (see .hero-bg-treasure-desktop note). */
+  /* Portrait crop of the sunset waterfront photo, sized to the phone (no
+     cover-cropped/wasted pixels). Own filename so it doesn't disturb the
+     shared waterfront-mobile image (homepage / Snell Isle / interludes). */
   background-image: image-set(
-    url('/waterfront-pool-st-petersburg-mobile.webp') type('image/webp'),
-    url('/waterfront-pool-st-petersburg-mobile.jpg') type('image/jpeg')
+    url('/treasure-island-mobile-sunset.webp') type('image/webp'),
+    url('/treasure-island-mobile-sunset.jpg') type('image/jpeg')
   );
   filter: saturate(1.3) contrast(1.08) hue-rotate(4deg);
   -webkit-mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
