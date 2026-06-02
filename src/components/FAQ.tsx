@@ -6,7 +6,7 @@ import { Container } from '@/components/Container';
 const faqs = [
   {
     question: "What areas does Suncoast Pool Pros service?",
-    answer: "We serve St. Petersburg, Clearwater, Seminole, Largo, Gulfport, and the surrounding Tampa Bay Area. If you're nearby, contact us to confirm availability."
+    answer: "We serve all of St. Petersburg — including waterfront neighborhoods like Snell Isle, Historic Old Northeast, Coffee Pot Bayou, Shore Acres, Venetian Isles, Bayway Isles, Broadwater, and Pinellas Point — plus Gulfport, St. Pete Beach, Treasure Island, Seminole, Largo, Belleair Beach, Clearwater, and the surrounding Tampa Bay area. If you're nearby, contact us to confirm availability."
   },
   {
     question: "What makes your pool service different?",
