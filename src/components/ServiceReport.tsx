@@ -84,7 +84,7 @@ export const ServiceReport = ({
   }, [inline]);
 
   return (
-    <div className={inline ? 'sr-root sr-root--inline' : 'sr-root'} ref={rootRef}>
+    <div data-nosnippet="" className={inline ? 'sr-root sr-root--inline' : 'sr-root'} ref={rootRef}>
       <style>{`
         .sr-root {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

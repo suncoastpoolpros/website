@@ -33,6 +33,10 @@ export const TreasureIslandHeroPhone = () => {
         y: { duration: 1, delay: 0.3, ease: 'easeOut' },
       }}
       className="lg:col-span-5 flex justify-center items-center relative"
+      // Decorative demo mockup — keep its sample report text (dates, chem
+      // readings, "Pool Service Report …") out of Google search snippets so
+      // the page's real meta description is used instead.
+      data-nosnippet=""
     >
       <div className="relative w-[300px] scale-90 origin-center">
         {/* Side buttons */}

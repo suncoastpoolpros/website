@@ -7,3 +7,7 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Original un-subsetted font files — local backups only (the subsetted woff2 in
+# public/fonts/ are what ship). Kept out of the repo so they don't deploy.
+public/fonts/_orig/

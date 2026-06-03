@@ -199,7 +199,7 @@ export const Hero = () => {
               phone is a heavy subtree (full Gmail/ServiceReport mockup), and
               sliding it up on load made the homepage load-in janky vs. Treasure,
               whose phone just appears. Only the text column animates. */}
-          <div className="hidden lg:flex lg:col-span-6 relative justify-center items-center">
+          <div className="hidden lg:flex lg:col-span-6 relative justify-center items-center" data-nosnippet="">
             <HomeHeroPhone clock={clock} gmailScrolled={gmailScrolled} setGmailScrolled={setGmailScrolled} />
           </div>
         </div>
@@ -523,7 +523,7 @@ export const HomeHeroPhoneSection = () => {
   const clock = useLiveClock();
   const [gmailScrolled, setGmailScrolled] = useState(false);
   return (
-    <section className="lg:hidden relative bg-[#07111c] pt-16 pb-12 flex justify-center overflow-hidden">
+    <section className="lg:hidden relative bg-[#07111c] pt-16 pb-12 flex justify-center overflow-hidden" data-nosnippet="">
       <div className="relative flex justify-center items-center">
         {/* interactive={false}: on mobile this is a static showcase, so the
             phone's inner Gmail body must NOT be its own scroll region (that traps
