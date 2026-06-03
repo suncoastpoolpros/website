@@ -149,15 +149,14 @@ const BIZ = {
 };
 
 // "What's included" highlight — mirrors src/components/admin/proposalBenefits.ts.
-const BENEFITS_HEADING = 'Included With Your Service';
+const BENEFITS_HEADING = 'The Suncoast Difference';
 const INCLUDED_BENEFITS = [
-  'All standard chemicals & salt — at no extra charge',
-  'Routine filter cleaning & backwashing included',
-  'Salt cell cleaning & system maintenance included',
+  'The same technician every week — never a rotating crew',
+  'A photo service report in your inbox after every visit',
+  'All standard service chemicals included',
+  'Filter cleaning, backwashing & salt-cell cleaning — all included',
 ];
 const BENEFITS_NOTE = "It's all covered in your flat rate — no surprise fees.";
-const BENEFITS_FOOTNOTE =
-  "Routine filter service covers cartridge cleaning (pulled and rinsed) and DE/sand-filter backwashing. It does not include replacement cartridges, a DE filter teardown (split-and-clean), replacement DE grids, or other parts and repairs — we'll quote those separately, and always before doing the work.";
 
 // Prefix a bare number with "$" (425 → $425, 185/mo → $185/mo) while leaving
 // values that already start with a symbol/word untouched ($425, "Call for price").
@@ -231,7 +230,6 @@ const composeProposalEmail = (
               <div style="font-size:15px;font-weight:700;color:#0f4d80;margin-bottom:8px;">${BENEFITS_HEADING}</div>
               ${INCLUDED_BENEFITS.map((b) => `<div style="font-size:14px;color:#1f2937;font-weight:600;margin:5px 0;"><span style="color:#1d7a33;">&#10003;</span>&nbsp;&nbsp;${escapeHtml(b)}</div>`).join('')}
               <div style="font-size:12px;color:#6b7280;font-style:italic;margin-top:8px;">${escapeHtml(BENEFITS_NOTE)}</div>
-              <div style="font-size:11px;color:#8a93a3;line-height:1.4;margin-top:8px;padding-top:8px;border-top:1px solid #cfe3f2;">${escapeHtml(BENEFITS_FOOTNOTE)}</div>
             </td></tr>
           </table>` : ''}
 

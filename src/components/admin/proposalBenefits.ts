@@ -8,12 +8,13 @@
  * Mirrored as plain constants in functions/api/admin/send-proposal.ts (the
  * Pages Function can't import from the client src tree) — keep them in sync.
  */
-export const BENEFITS_HEADING = 'Included With Your Service';
+export const BENEFITS_HEADING = 'The Suncoast Difference';
 
 export const INCLUDED_BENEFITS = [
-  'All standard chemicals & salt — at no extra charge',
-  'Routine filter cleaning & backwashing included',
-  'Salt cell cleaning & system maintenance included',
+  'The same technician every week — never a rotating crew',
+  'A photo service report in your inbox after every visit',
+  'All standard service chemicals included',
+  'Filter cleaning, backwashing & salt-cell cleaning — all included',
 ];
 
 export const BENEFITS_NOTE = "It's all covered in your flat rate — no surprise fees.";

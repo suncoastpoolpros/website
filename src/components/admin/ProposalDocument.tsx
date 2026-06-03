@@ -17,10 +17,9 @@ import {
   SERVICE_AGREEMENT_URL,
   SERVICE_AGREEMENT_DISPLAY,
 } from './proposalTerms';
-import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE, BENEFITS_FOOTNOTE } from './proposalBenefits';
+import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE } from './proposalBenefits';
 
 const NAVY = '#0a1628';
-const NAVY_RULE = '#1d2d47';
 const BRAND_BLUE = '#1669ae';
 const BLUE_DARK = '#0f4d80';
 const INK = '#1f2937';
@@ -39,45 +38,47 @@ const styles = StyleSheet.create({
     paddingTop: 44,
     paddingBottom: 62,
     paddingHorizontal: MARGIN_X,
-    fontSize: 10,
+    fontSize: 8.5,
     color: INK,
     fontFamily: 'Helvetica',
-    lineHeight: 1.45,
+    lineHeight: 1.3,
   },
 
-  // ----- Masthead (page 1 only) -----
+  // ----- Masthead (page 1 only) — email-style: eyebrow + large title + accent -----
   header: {
     backgroundColor: NAVY,
     borderRadius: 10,
-    paddingVertical: 22,
-    paddingHorizontal: 26,
+    paddingTop: 26,
+    paddingBottom: 24,
+    paddingHorizontal: 30,
     marginBottom: 28,
   },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  brandRow: { flexDirection: 'row', alignItems: 'center' },
-  logo: { width: 46, height: 33, marginRight: 12 },
-  brandName: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#ffffff', letterSpacing: 1.5 },
-  brandTag: { fontSize: 7, color: '#8ea2c0', letterSpacing: 1.5, marginTop: 3, textTransform: 'uppercase' },
-  metaCol: { alignItems: 'flex-end' },
+  brandCol: { flex: 1 },
+  eyebrow: { fontSize: 9, color: '#8ea2c0', letterSpacing: 2.8, textTransform: 'uppercase' },
+  headerTitle: { fontSize: 23, fontFamily: 'Helvetica-Bold', color: '#ffffff', marginTop: 9, letterSpacing: 0.3 },
+  metaCol: { alignItems: 'flex-end', paddingTop: 2 },
   metaLabel: { fontSize: 7, color: '#8ea2c0', letterSpacing: 1.5, textTransform: 'uppercase' },
   metaValue: { fontSize: 10.5, color: '#ffffff', marginTop: 3, fontFamily: 'Helvetica-Bold' },
-  headerDivider: { height: 1, backgroundColor: NAVY_RULE, marginTop: 16, marginBottom: 14 },
-  title: { fontSize: 21, fontFamily: 'Helvetica-Bold', color: '#ffffff', letterSpacing: 0.4 },
-  titleAccent: { marginTop: 9, height: 3, width: 52, backgroundColor: BRAND_BLUE, borderRadius: 2 },
+  titleAccent: { marginTop: 16, height: 3, backgroundColor: BRAND_BLUE, borderRadius: 2 },
 
   // ----- Shared section tokens -----
-  section: { marginBottom: 20 },
+  section: { marginBottom: 14 },
   sectionLabel: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontFamily: 'Helvetica-Bold',
-    letterSpacing: 1.3,
+    letterSpacing: 1.2,
     color: BLUE_DARK,
     textTransform: 'uppercase',
-    marginBottom: 9,
+    marginBottom: 6,
   },
-  row: { flexDirection: 'row', marginBottom: 5 },
-  rowLabel: { width: 118, color: MUTED },
+  row: { flexDirection: 'row', marginBottom: 2.5 },
+  rowLabel: { width: 118, color: MUTED, paddingRight: 8 },
   rowValue: { flex: 1, color: INK },
+  twoCol: { flexDirection: 'row', marginBottom: 14 },
+  colLeft: { flex: 1, paddingRight: 18 },
+  colRight: { flex: 1, paddingLeft: 18 },
+  valueLine: { color: INK, marginBottom: 2 },
 
   // ----- Included highlight -----
   includedBox: {
@@ -90,18 +91,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   includedHeading: { fontSize: 12, fontFamily: 'Helvetica-Bold', color: BLUE_DARK, marginBottom: 9 },
-  includedItem: { flexDirection: 'row', marginBottom: 5 },
-  includedCheck: { color: GREEN, fontFamily: 'Helvetica-Bold', width: 14 },
+  includedItem: { flexDirection: 'row', marginBottom: 3 },
+  includedCheck: { color: GREEN, fontFamily: 'Helvetica-Bold', width: 13 },
   includedItemText: { color: NAVY, flex: 1, fontFamily: 'Helvetica-Bold' },
-  includedNote: { marginTop: 8, fontSize: 9, color: MUTED, fontStyle: 'italic' },
+  includedNote: { marginTop: 6, fontSize: 8.5, color: MUTED, fontStyle: 'italic' },
   includedFootnote: { marginTop: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: TINT_BORDER, fontSize: 8, color: FAINT, lineHeight: 1.4 },
 
   // ----- Scope -----
-  scopeIntro: { color: INK, marginBottom: 6, lineHeight: 1.45 },
-  scopePara: { color: INK, marginBottom: 6, lineHeight: 1.45 },
-  scopeBullet: { flexDirection: 'row', marginBottom: 4, paddingLeft: 2 },
-  scopeBulletDot: { width: 12, color: BRAND_BLUE },
-  scopeBulletText: { flex: 1, color: INK, lineHeight: 1.4 },
+  scopeIntro: { color: INK, marginBottom: 4, lineHeight: 1.3 },
+  scopePara: { color: INK, marginBottom: 4, lineHeight: 1.3 },
+  scopeBullet: { flexDirection: 'row', marginBottom: 2.5, paddingLeft: 2 },
+  scopeBulletDot: { width: 11, color: BRAND_BLUE },
+  scopeBulletText: { flex: 1, color: INK, lineHeight: 1.3 },
 
   // ----- Photos -----
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap' },
@@ -152,13 +153,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     marginBottom: 22,
   },
-  acceptText: { color: GREEN, lineHeight: 1.5 },
+  acceptText: { color: GREEN, lineHeight: 1.3 },
 
   // ----- Terms -----
   termsSection: { marginTop: 4 },
-  termsItem: { marginBottom: 8 },
-  termsHeading: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: NAVY, marginBottom: 2 },
-  termsText: { fontSize: 7.8, color: '#5b6470', lineHeight: 1.45 },
+  termsItem: { marginBottom: 5 },
+  termsHeading: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: NAVY, marginBottom: 1.5 },
+  termsText: { fontSize: 7.3, color: '#5b6470', lineHeight: 1.3 },
   termsFootnote: { marginTop: 4, fontSize: 7.5, color: MUTED, fontStyle: 'italic' },
   termsLink: { color: BLUE_DARK, textDecoration: 'underline' },
 
@@ -177,12 +178,12 @@ const styles = StyleSheet.create({
   footerText: { fontSize: 8, color: FAINT },
 });
 
-const Row = ({ label, value }: { label: string; value?: string }) => {
+const Row = ({ label, value, labelWidth }: { label: string; value?: string; labelWidth?: number }) => {
   const v = (value ?? '').trim();
   if (!v) return null;
   return (
     <View style={styles.row}>
-      <Text style={styles.rowLabel}>{label}</Text>
+      <Text style={[styles.rowLabel, labelWidth ? { width: labelWidth } : null]}>{label}</Text>
       <Text style={styles.rowValue}>{v}</Text>
     </View>
   );
@@ -217,75 +218,63 @@ export const ProposalDocument = ({
         {/* Masthead — page 1 only (not `fixed`, so it doesn't repeat). */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
-            <View style={styles.brandRow}>
-              {/* Resolves against the page origin at render time (public/email-logo.png). */}
-              <Image src="/email-logo.png" style={styles.logo} />
-              <View>
-                <Text style={styles.brandName}>SUNCOAST POOL PROS</Text>
-                <Text style={styles.brandTag}>Professional Pool Care · St. Petersburg, FL</Text>
-              </View>
+            <View style={styles.brandCol}>
+              <Text style={styles.eyebrow}>Suncoast Pool Pros</Text>
+              <Text style={styles.headerTitle}>Service Proposal</Text>
             </View>
             <View style={styles.metaCol}>
               <Text style={styles.metaLabel}>Proposal Date</Text>
               <Text style={styles.metaValue}>{dateLabel}</Text>
             </View>
           </View>
-          <View style={styles.headerDivider} />
-          <Text style={styles.title}>Service Proposal</Text>
           <View style={styles.titleAccent} />
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Prepared For</Text>
-          <Row label="Name" value={customer.name} />
-          <Row label="Service Address" value={customer.address} />
-          <Row label="Email" value={customer.email} />
-          <Row label="Phone" value={customer.phone} />
-        </View>
+        {hasPoolBasics ? (
+          <View style={styles.twoCol}>
+            <View style={styles.colLeft}>
+              <Text style={styles.sectionLabel}>Prepared For</Text>
+              {customer.name.trim() ? <Text style={styles.valueLine}>{customer.name.trim()}</Text> : null}
+              {customer.address.trim() ? <Text style={styles.valueLine}>{customer.address.trim()}</Text> : null}
+              {customer.email.trim() ? <Text style={styles.valueLine}>{customer.email.trim()}</Text> : null}
+              {customer.phone.trim() ? <Text style={styles.valueLine}>{customer.phone.trim()}</Text> : null}
+            </View>
+            <View style={styles.colRight}>
+              <Text style={styles.sectionLabel}>Pool — Size & Volume</Text>
+              <Row label="Volume" value={pool.gallons ? `${pool.gallons} gallons` : ''} labelWidth={88} />
+              <Row label="Dimensions" value={dimensionsLine(pool)} labelWidth={88} />
+              <Row label="Shape" value={pool.shape} labelWidth={88} />
+              <Row label="Sanitization" value={pool.sanitization} labelWidth={88} />
+            </View>
+          </View>
+        ) : (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Prepared For</Text>
+            {customer.name.trim() ? <Text style={styles.valueLine}>{customer.name.trim()}</Text> : null}
+            {customer.address.trim() ? <Text style={styles.valueLine}>{customer.address.trim()}</Text> : null}
+            {customer.email.trim() ? <Text style={styles.valueLine}>{customer.email.trim()}</Text> : null}
+            {customer.phone.trim() ? <Text style={styles.valueLine}>{customer.phone.trim()}</Text> : null}
+          </View>
+        )}
 
-        {proposal.includeBenefits ? (
-          <View style={styles.includedBox} wrap={false} minPresenceAhead={90}>
-            <Text style={styles.includedHeading}>{BENEFITS_HEADING}</Text>
-            {INCLUDED_BENEFITS.map((b, i) => (
-              <View key={i} style={styles.includedItem}>
-                <Text style={styles.includedCheck}>•</Text>
-                <Text style={styles.includedItemText}>{b}</Text>
+        {proposal.price.trim() ? (
+          <View style={styles.section} minPresenceAhead={72}>
+            <View style={styles.priceBox}>
+              <Text style={styles.priceLabel}>Total</Text>
+              <Text style={styles.priceValue}>{formatPrice(proposal.price)}</Text>
+            </View>
+          </View>
+        ) : null}
+
+        {addOns.length ? (
+          <View style={styles.section} minPresenceAhead={72}>
+            <Text style={styles.sectionLabel}>Additional Services</Text>
+            {addOns.map((a, i) => (
+              <View key={i} style={styles.addonRow}>
+                <Text style={styles.addonLabel}>{a.label.trim() || '—'}</Text>
+                <Text style={styles.addonPrice}>{formatPrice(a.price)}</Text>
               </View>
             ))}
-            <Text style={styles.includedNote}>{BENEFITS_NOTE}</Text>
-            <Text style={styles.includedFootnote}>{BENEFITS_FOOTNOTE}</Text>
-          </View>
-        ) : null}
-
-        {hasPoolBasics ? (
-          <View style={styles.section} minPresenceAhead={72}>
-            <Text style={styles.sectionLabel}>Pool — Size & Volume</Text>
-            <Row label="Volume" value={pool.gallons ? `${pool.gallons} gallons` : ''} />
-            <Row label="Dimensions" value={dimensionsLine(pool)} />
-            <Row label="Shape" value={pool.shape} />
-            <Row label="Sanitization" value={pool.sanitization} />
-          </View>
-        ) : null}
-
-        {hasEquipment ? (
-          <View style={styles.section} minPresenceAhead={72}>
-            <Text style={styles.sectionLabel}>Equipment</Text>
-            <Row label="Pump" value={pool.pump} />
-            <Row label="Filter" value={pool.filter} />
-            <Row label="Heater" value={pool.heater} />
-            <Row label="Automation" value={pool.automation} />
-            <Row label="Notes" value={pool.equipmentNotes} />
-          </View>
-        ) : null}
-
-        {photos.length ? (
-          <View style={styles.section} minPresenceAhead={72}>
-            <Text style={styles.sectionLabel}>Photos</Text>
-            <View style={styles.photoGrid}>
-              {photos.map((src, i) => (
-                <Image key={i} src={src} style={styles.photo} />
-              ))}
-            </View>
           </View>
         ) : null}
 
@@ -312,25 +301,38 @@ export const ProposalDocument = ({
           </View>
         ) : null}
 
-        {proposal.price.trim() ? (
+        {hasEquipment ? (
           <View style={styles.section} minPresenceAhead={72}>
-            <Text style={styles.sectionLabel}>Investment</Text>
-            <View style={styles.priceBox}>
-              <Text style={styles.priceLabel}>Total</Text>
-              <Text style={styles.priceValue}>{formatPrice(proposal.price)}</Text>
+            <Text style={styles.sectionLabel}>Equipment</Text>
+            <Row label="Pump" value={pool.pump} />
+            <Row label="Filter" value={pool.filter} />
+            <Row label="Heater" value={pool.heater} />
+            <Row label="Automation" value={pool.automation} />
+            <Row label="Notes" value={pool.equipmentNotes} />
+          </View>
+        ) : null}
+
+        {photos.length ? (
+          <View style={styles.section} minPresenceAhead={72}>
+            <Text style={styles.sectionLabel}>Photos</Text>
+            <View style={styles.photoGrid}>
+              {photos.map((src, i) => (
+                <Image key={i} src={src} style={styles.photo} />
+              ))}
             </View>
           </View>
         ) : null}
 
-        {addOns.length ? (
-          <View style={styles.section} minPresenceAhead={72}>
-            <Text style={styles.sectionLabel}>Additional Services</Text>
-            {addOns.map((a, i) => (
-              <View key={i} style={styles.addonRow}>
-                <Text style={styles.addonLabel}>{a.label.trim() || '—'}</Text>
-                <Text style={styles.addonPrice}>{formatPrice(a.price)}</Text>
+        {proposal.includeBenefits ? (
+          <View style={styles.includedBox} wrap={false} minPresenceAhead={90}>
+            <Text style={styles.includedHeading}>{BENEFITS_HEADING}</Text>
+            {INCLUDED_BENEFITS.map((b, i) => (
+              <View key={i} style={styles.includedItem}>
+                <Text style={styles.includedCheck}>•</Text>
+                <Text style={styles.includedItemText}>{b}</Text>
               </View>
             ))}
+            <Text style={styles.includedNote}>{BENEFITS_NOTE}</Text>
           </View>
         ) : null}
 

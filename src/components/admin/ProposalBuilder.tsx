@@ -5,7 +5,7 @@ import { useProposalDraft } from '@/lib/useProposalDraft';
 import { sendProposal, logout, formatPrice, type ProposalData } from '@/lib/adminApi';
 import { SCOPE_TEMPLATES } from './scopeTemplates';
 import { ADDON_PRESETS } from './addonPresets';
-import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE, BENEFITS_FOOTNOTE } from './proposalBenefits';
+import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE } from './proposalBenefits';
 
 // Plain input (no floating label) for the add-on rows.
 const addonInput =
@@ -613,9 +613,6 @@ const ProposalPreview = ({
               ))}
             </ul>
             <p className="mt-2 text-[11px] italic text-stone-500">{BENEFITS_NOTE}</p>
-            <p className="mt-2 border-t border-[#cfe3f2] pt-2 text-[10px] leading-relaxed text-stone-400">
-              {BENEFITS_FOOTNOTE}
-            </p>
           </div>
         )}
 
