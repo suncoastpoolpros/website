@@ -38,10 +38,13 @@ const styles = StyleSheet.create({
     lineHeight: 1.3,
   },
 
-  // ----- Masthead (page 1 only) — email-style: eyebrow + large title + accent -----
+  // ----- Masthead (page 1 only) — email-style: eyebrow + large title, with the
+  // brand-blue accent as the card's bottom border (not a bar inside it) -----
   header: {
     backgroundColor: NAVY,
     borderRadius: 10,
+    borderBottomWidth: 3,
+    borderBottomColor: BRAND_BLUE,
     paddingTop: 26,
     paddingBottom: 24,
     // Same padding + outward bleed as the other boxes, so every box shares one
@@ -57,7 +60,6 @@ const styles = StyleSheet.create({
   metaCol: { alignItems: 'flex-end', paddingTop: 2 },
   metaLabel: { fontSize: 7, color: '#8ea2c0', letterSpacing: 1.5, textTransform: 'uppercase' },
   metaValue: { fontSize: 10.5, color: '#ffffff', marginTop: 3, fontFamily: 'Helvetica-Bold' },
-  titleAccent: { marginTop: 16, height: 3, backgroundColor: BRAND_BLUE, borderRadius: 2 },
 
   // ----- Shared section tokens -----
   section: { marginBottom: 14 },
@@ -223,7 +225,6 @@ export const ProposalDocument = ({
               <Text style={styles.metaValue}>{dateLabel}</Text>
             </View>
           </View>
-          <View style={styles.titleAccent} />
         </View>
 
         {hasPoolBasics || hasEquipment ? (

@@ -581,7 +581,7 @@ const ProposalPreview = ({
     .join(' × ');
   return (
     <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white text-stone-800 shadow-xl">
-      <div className="flex items-center justify-between bg-navy px-6 py-5 text-white">
+      <div className="flex items-center justify-between border-b-4 border-brand-blue bg-navy px-6 py-5 text-white">
         <div>
           <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400">Suncoast Pool Pros</div>
           <div className="mt-0.5 text-lg font-bold">Service Proposal</div>
