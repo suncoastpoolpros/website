@@ -283,7 +283,7 @@ export const ProposalDocument = ({
             <Text style={styles.sectionLabel}>Scope of Work</Text>
             {scopeLines.map((raw, i) => {
               const line = raw.trim();
-              if (!line) return <View key={i} style={{ height: 5 }} />;
+              if (!line) return <View key={i} style={{ height: 2 }} />;
               if (/^[•\-]/.test(line)) {
                 return (
                   <View key={i} style={styles.scopeBullet}>
@@ -324,7 +324,7 @@ export const ProposalDocument = ({
         ) : null}
 
         {proposal.includeBenefits ? (
-          <View style={styles.includedBox} wrap={false} minPresenceAhead={90}>
+          <View style={styles.includedBox} wrap={false}>
             <Text style={styles.includedHeading}>{BENEFITS_HEADING}</Text>
             {INCLUDED_BENEFITS.map((b, i) => (
               <View key={i} style={styles.includedItem}>
