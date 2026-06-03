@@ -117,11 +117,12 @@ export type SendProposalArgs = ProposalData & {
   filename: string;
 };
 
-/** POST the proposal + PDF to be emailed. Throws on failure. */
-export async function sendProposal(args: SendProposalArgs): Promise<void> {
+/** POST the proposal + PDF to be emailed. Throws on failure (or AbortError if cancelled). */
+export async function sendProposal(args: SendProposalArgs, signal?: AbortSignal): Promise<void> {
   const res = await fetch('/api/admin/send-proposal', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal,
     body: JSON.stringify({
       customer: args.customer,
       pool: args.pool,

@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Send, LoaderCircle, CheckCircle, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ImagePlus, X } from 'lucide-react';
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
 import { useProposalDraft } from '@/lib/useProposalDraft';
 import { sendProposal, logout, formatPrice, type ProposalData } from '@/lib/adminApi';
 import { SCOPE_TEMPLATES } from './scopeTemplates';
 import { ADDON_PRESETS } from './addonPresets';
-import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE } from './proposalBenefits';
+import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE, BENEFITS_FOOTNOTE } from './proposalBenefits';
 
 // Plain input (no floating label) for the add-on rows.
 const addonInput =
@@ -79,6 +79,11 @@ const downscaleImage = (file: File, maxDim = 1400, quality = 0.72): Promise<stri
 export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
   const { data, setData, update, clearDraft } = useProposalDraft();
   const [status, setStatus] = useState<SendStatus>({ kind: 'idle' });
+  // Abort controller + a cancelled flag so Cancel actually stops the send:
+  // the fetch is aborted via the signal, and the flag bails out of the
+  // pre-fetch steps (dynamic import / PDF generation) that can't be aborted.
+  const abortRef = useRef<AbortController | null>(null);
+  const cancelledRef = useRef(false);
   // Photos live in component state only (not the localStorage draft) — base64
   // images would quickly exceed the storage quota. They're optional and baked
   // straight into the generated PDF.
@@ -132,6 +137,9 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
 
   const handleSend = async () => {
     if (!canSend || status.kind === 'sending') return;
+    cancelledRef.current = false;
+    const controller = new AbortController();
+    abortRef.current = controller;
     setStatus({ kind: 'sending' });
     try {
       // Load the PDF engine + document only now, so @react-pdf is a lazy chunk
@@ -140,19 +148,34 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
         import('@react-pdf/renderer'),
         import('./ProposalDocument'),
       ]);
+      if (cancelledRef.current) return;
       const blob = await pdf(
         <ProposalDocument data={data} photos={photos} dateLabel={todayLabel()} />,
       ).toBlob();
+      if (cancelledRef.current) return;
       const pdfBase64 = await blobToBase64(blob);
-      await sendProposal({ ...data, pdfBase64, filename: filenameFor(data) });
+      if (cancelledRef.current) return;
+      await sendProposal({ ...data, pdfBase64, filename: filenameFor(data) }, controller.signal);
       setStatus({ kind: 'sent' });
     } catch (err) {
+      // A cancel (flag set, or the fetch aborted) is not an error — stay idle.
+      if (cancelledRef.current || (err instanceof DOMException && err.name === 'AbortError')) {
+        return;
+      }
       setStatus({
         kind: 'error',
         message: 'Could not send the proposal. Check the connection and try again.',
       });
       console.error('send proposal failed', err);
+    } finally {
+      abortRef.current = null;
     }
+  };
+
+  const handleCancelSend = () => {
+    cancelledRef.current = true;
+    abortRef.current?.abort();
+    setStatus({ kind: 'idle' });
   };
 
   const handleLogout = async () => {
@@ -199,6 +222,34 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
 
   return (
     <div className="min-h-dvh px-4 py-6 md:px-8 md:py-10">
+      {/* Sending overlay — a loading wheel that also locks out the form (the
+          backdrop blocks all interaction) so the proposal can't be double-sent.
+          Cancel aborts the in-flight request and returns to the builder. */}
+      {status.kind === 'sending' && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-6"
+          role="alertdialog"
+          aria-busy="true"
+          aria-label="Sending proposal"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-navy-light p-8 text-center">
+            <LoaderCircle className="mx-auto h-12 w-12 animate-spin text-brand-blue-light" />
+            <h2 className="mt-5 font-display text-lg font-bold text-white">Sending proposal…</h2>
+            <p className="mt-1 text-sm text-gray-400">
+              Generating the PDF and emailing it to{' '}
+              <span className="text-gray-200">{data.customer.email || 'the customer'}</span>.
+            </p>
+            <button
+              type="button"
+              onClick={handleCancelSend}
+              className="mt-6 rounded-xl border border-white/15 px-5 py-2.5 text-sm font-semibold text-gray-200 transition-colors hover:bg-white/5"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="mx-auto max-w-6xl">
         {/* Top bar */}
         <div className="mb-8 flex items-center justify-between">
@@ -562,6 +613,9 @@ const ProposalPreview = ({
               ))}
             </ul>
             <p className="mt-2 text-[11px] italic text-stone-500">{BENEFITS_NOTE}</p>
+            <p className="mt-2 border-t border-[#cfe3f2] pt-2 text-[10px] leading-relaxed text-stone-400">
+              {BENEFITS_FOOTNOTE}
+            </p>
           </div>
         )}
 
