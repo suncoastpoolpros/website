@@ -5,6 +5,7 @@ import {
   FlaskConical,
   Sprout,
   ShieldCheck,
+  Waves,
   Zap,
   Gauge,
   Calculator,
@@ -34,6 +35,19 @@ type Guide = {
 // crawlers reach them one hop from the breadcrumb parent (and readers get a
 // proper landing page instead of a bare URL segment).
 const GUIDES: Guide[] = [
+  {
+    to: '/pool-care/green-pool',
+    icon: Waves,
+    tag: 'Algae & Green Water',
+    title: 'Green Pool Rescue',
+    blurb:
+      'A green pool is an algae bloom that out-ran your chlorine. How to tell which algae you’ve got, and the five-step plan — balance, brush, shock, filter, clarify — that takes it back to blue.',
+    points: [
+      'Why pools go green, fast — especially in Florida',
+      'Green vs. mustard vs. black algae',
+      'The green-to-clean treatment plan',
+    ],
+  },
   {
     to: '/pool-care/nitrates',
     icon: Sprout,
