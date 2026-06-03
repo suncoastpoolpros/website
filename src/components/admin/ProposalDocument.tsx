@@ -244,7 +244,7 @@ export const ProposalDocument = ({
         </View>
 
         {proposal.includeBenefits ? (
-          <View style={styles.includedBox}>
+          <View style={styles.includedBox} wrap={false} minPresenceAhead={90}>
             <Text style={styles.includedHeading}>{BENEFITS_HEADING}</Text>
             {INCLUDED_BENEFITS.map((b, i) => (
               <View key={i} style={styles.includedItem}>
@@ -258,7 +258,7 @@ export const ProposalDocument = ({
         ) : null}
 
         {hasPoolBasics ? (
-          <View style={styles.section}>
+          <View style={styles.section} minPresenceAhead={72}>
             <Text style={styles.sectionLabel}>Pool — Size & Volume</Text>
             <Row label="Volume" value={pool.gallons ? `${pool.gallons} gallons` : ''} />
             <Row label="Dimensions" value={dimensionsLine(pool)} />
@@ -268,7 +268,7 @@ export const ProposalDocument = ({
         ) : null}
 
         {hasEquipment ? (
-          <View style={styles.section}>
+          <View style={styles.section} minPresenceAhead={72}>
             <Text style={styles.sectionLabel}>Equipment</Text>
             <Row label="Pump" value={pool.pump} />
             <Row label="Filter" value={pool.filter} />
@@ -279,7 +279,7 @@ export const ProposalDocument = ({
         ) : null}
 
         {photos.length ? (
-          <View style={styles.section}>
+          <View style={styles.section} minPresenceAhead={72}>
             <Text style={styles.sectionLabel}>Photos</Text>
             <View style={styles.photoGrid}>
               {photos.map((src, i) => (
@@ -290,7 +290,7 @@ export const ProposalDocument = ({
         ) : null}
 
         {scopeLines.length ? (
-          <View style={styles.section}>
+          <View style={styles.section} minPresenceAhead={72}>
             <Text style={styles.sectionLabel}>Scope of Work</Text>
             {scopeLines.map((raw, i) => {
               const line = raw.trim();
@@ -313,7 +313,7 @@ export const ProposalDocument = ({
         ) : null}
 
         {proposal.price.trim() ? (
-          <View style={styles.section}>
+          <View style={styles.section} minPresenceAhead={72}>
             <Text style={styles.sectionLabel}>Investment</Text>
             <View style={styles.priceBox}>
               <Text style={styles.priceLabel}>Total</Text>
@@ -323,7 +323,7 @@ export const ProposalDocument = ({
         ) : null}
 
         {addOns.length ? (
-          <View style={styles.section}>
+          <View style={styles.section} minPresenceAhead={72}>
             <Text style={styles.sectionLabel}>Additional Services</Text>
             {addOns.map((a, i) => (
               <View key={i} style={styles.addonRow}>
@@ -342,7 +342,7 @@ export const ProposalDocument = ({
         </View>
 
         {proposal.includeTerms ? (
-          <View style={styles.termsSection}>
+          <View style={styles.termsSection} minPresenceAhead={64}>
             <Text style={styles.sectionLabel}>Terms &amp; Conditions</Text>
             {PROPOSAL_TERMS.map((t, i) => (
               <View key={i} style={styles.termsItem} wrap={false}>

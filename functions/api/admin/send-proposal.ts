@@ -268,15 +268,15 @@ const composeProposalEmail = (
           ${includeTerms ? `<p style="margin:14px 0 0;color:#9ca3af;font-size:12px;">Our standard service terms are included in the attached PDF. You can read our full service agreement at <a href="${BIZ.serviceAgreementHref}" style="color:#0f4d80;text-decoration:underline;">${BIZ.serviceAgreementDisplay}</a>.</p>` : ''}
           <p style="margin:14px 0 0;color:#6b7280;font-size:13px;">Questions about anything? Simply reply to this message.</p>
         </td></tr>
-        <!-- Footer -->
-        <tr><td style="padding:22px 32px;background:#f9fafb;border-top:1px solid #eef0f3;">
-          <img src="${BIZ.logo}" alt="Suncoast Pool Pros" width="118" height="84" style="display:block;border:0;outline:none;width:118px;height:auto;margin-bottom:12px;">
-          <div style="font-size:13px;line-height:1.7;color:#374151;">
-            <a href="${BIZ.phoneHref}" style="color:#0f4d80;text-decoration:none;font-weight:600;">${BIZ.phoneDisplay}</a>
+        <!-- Footer — navy so the logo's white wordmark stays visible. -->
+        <tr><td style="padding:24px 32px;background:#0a1628;">
+          <img src="${BIZ.logo}" alt="Suncoast Pool Pros" width="118" height="84" style="display:block;border:0;outline:none;width:118px;height:auto;margin-bottom:14px;">
+          <div style="font-size:13px;line-height:1.7;color:#aab8cc;">
+            <a href="${BIZ.phoneHref}" style="color:#7fb4e0;text-decoration:none;font-weight:600;">${BIZ.phoneDisplay}</a>
             &nbsp;&middot;&nbsp;
-            <a href="${BIZ.websiteHref}" style="color:#0f4d80;text-decoration:none;font-weight:600;">${BIZ.websiteDisplay}</a><br>
-            <span style="color:#6b7280;">${BIZ.address}</span><br>
-            <span style="color:#9ca3af;">${BIZ.hours}</span>
+            <a href="${BIZ.websiteHref}" style="color:#7fb4e0;text-decoration:none;font-weight:600;">${BIZ.websiteDisplay}</a><br>
+            <span style="color:#aab8cc;">${BIZ.address}</span><br>
+            <span style="color:#7e8ea6;">${BIZ.hours}</span>
           </div>
         </td></tr>
       </table>
