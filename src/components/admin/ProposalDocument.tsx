@@ -76,8 +76,8 @@ const styles = StyleSheet.create({
   rowLabel: { width: 118, color: MUTED, paddingRight: 8 },
   rowValue: { flex: 1, color: INK },
   twoCol: { flexDirection: 'row', marginBottom: 14 },
-  colLeft: { width: '50%', paddingRight: 18 },
-  colRight: { width: '50%', paddingLeft: 18 },
+  colLeft: { width: '50%', flexShrink: 0, paddingRight: 18 },
+  colRight: { width: '50%', flexShrink: 0, paddingLeft: 18 },
   valueLine: { fontSize: 8.5, color: INK, marginBottom: 2 },
 
   // ----- Included highlight -----
@@ -317,7 +317,7 @@ export const ProposalDocument = ({
         ) : null}
 
         {proposal.price.trim() ? (
-          <View style={styles.section} minPresenceAhead={72}>
+          <View style={styles.section}>
             <View style={styles.priceBox}>
               <Text style={styles.priceLabel}>Total</Text>
               <Text style={styles.priceValue}>{formatPrice(proposal.price)}</Text>
