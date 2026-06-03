@@ -3,6 +3,7 @@ import { Send, LoaderCircle, CheckCircle, AlertCircle, Trash2, LogOut, Calculato
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
 import { useProposalDraft } from '@/lib/useProposalDraft';
 import { sendProposal, logout, formatPrice, type ProposalData } from '@/lib/adminApi';
+import { toTitleCase, formatUsPhone } from '@/lib/textFormat';
 import { SCOPE_TEMPLATES } from './scopeTemplates';
 import { ADDON_PRESETS } from './addonPresets';
 import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE } from './proposalBenefits';
@@ -278,12 +279,14 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
           <div className="space-y-8">
             <Section title="Customer">
               <FieldShell id="c-name" label="Full name">
-                <input id="c-name" className={fieldClass} placeholder=" " autoComplete="off"
-                  value={data.customer.name} onChange={(e) => update('customer', 'name', e.target.value)} />
+                <input id="c-name" className={fieldClass} placeholder=" " autoComplete="off" autoCapitalize="words"
+                  value={data.customer.name} onChange={(e) => update('customer', 'name', e.target.value)}
+                  onBlur={(e) => update('customer', 'name', toTitleCase(e.target.value))} />
               </FieldShell>
               <FieldShell id="c-addr" label="Service address">
-                <input id="c-addr" className={fieldClass} placeholder=" " autoComplete="off"
-                  value={data.customer.address} onChange={(e) => update('customer', 'address', e.target.value)} />
+                <input id="c-addr" className={fieldClass} placeholder=" " autoComplete="off" autoCapitalize="words"
+                  value={data.customer.address} onChange={(e) => update('customer', 'address', e.target.value)}
+                  onBlur={(e) => update('customer', 'address', toTitleCase(e.target.value))} />
               </FieldShell>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FieldShell id="c-email" label="Email">
@@ -292,7 +295,8 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
                 </FieldShell>
                 <FieldShell id="c-phone" label="Phone">
                   <input id="c-phone" type="tel" className={fieldClass} placeholder=" " autoComplete="off"
-                    value={data.customer.phone} onChange={(e) => update('customer', 'phone', e.target.value)} />
+                    value={data.customer.phone} onChange={(e) => update('customer', 'phone', e.target.value)}
+                    onBlur={(e) => update('customer', 'phone', formatUsPhone(e.target.value))} />
                 </FieldShell>
               </div>
             </Section>
@@ -350,20 +354,24 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
               </FieldShell>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FieldShell id="p-pump" label="Pump">
-                  <input id="p-pump" className={fieldClass} placeholder=" "
-                    value={data.pool.pump} onChange={(e) => update('pool', 'pump', e.target.value)} />
+                  <input id="p-pump" className={fieldClass} placeholder=" " autoCapitalize="words"
+                    value={data.pool.pump} onChange={(e) => update('pool', 'pump', e.target.value)}
+                    onBlur={(e) => update('pool', 'pump', toTitleCase(e.target.value))} />
                 </FieldShell>
                 <FieldShell id="p-filter" label="Filter type">
-                  <input id="p-filter" className={fieldClass} placeholder=" "
-                    value={data.pool.filter} onChange={(e) => update('pool', 'filter', e.target.value)} />
+                  <input id="p-filter" className={fieldClass} placeholder=" " autoCapitalize="words"
+                    value={data.pool.filter} onChange={(e) => update('pool', 'filter', e.target.value)}
+                    onBlur={(e) => update('pool', 'filter', toTitleCase(e.target.value))} />
                 </FieldShell>
                 <FieldShell id="p-heater" label="Heater">
-                  <input id="p-heater" className={fieldClass} placeholder=" "
-                    value={data.pool.heater} onChange={(e) => update('pool', 'heater', e.target.value)} />
+                  <input id="p-heater" className={fieldClass} placeholder=" " autoCapitalize="words"
+                    value={data.pool.heater} onChange={(e) => update('pool', 'heater', e.target.value)}
+                    onBlur={(e) => update('pool', 'heater', toTitleCase(e.target.value))} />
                 </FieldShell>
                 <FieldShell id="p-auto" label="Automation">
-                  <input id="p-auto" className={fieldClass} placeholder=" "
-                    value={data.pool.automation} onChange={(e) => update('pool', 'automation', e.target.value)} />
+                  <input id="p-auto" className={fieldClass} placeholder=" " autoCapitalize="words"
+                    value={data.pool.automation} onChange={(e) => update('pool', 'automation', e.target.value)}
+                    onBlur={(e) => update('pool', 'automation', toTitleCase(e.target.value))} />
                 </FieldShell>
               </div>
               <FieldShell id="p-eqnotes" label="Equipment notes" multiline>
@@ -478,8 +486,10 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
                       <input
                         className={addonInput}
                         placeholder="Service"
+                        autoCapitalize="words"
                         value={a.label}
                         onChange={(e) => updateAddOn(i, 'label', e.target.value)}
+                        onBlur={(e) => updateAddOn(i, 'label', toTitleCase(e.target.value))}
                       />
                       <input
                         className={`${addonInput} w-32 shrink-0`}
