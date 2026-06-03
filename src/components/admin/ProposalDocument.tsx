@@ -76,9 +76,9 @@ const styles = StyleSheet.create({
   rowLabel: { width: 118, color: MUTED, paddingRight: 8 },
   rowValue: { flex: 1, color: INK },
   twoCol: { flexDirection: 'row', marginBottom: 14 },
-  colLeft: { flex: 1, paddingRight: 18 },
-  colRight: { flex: 1, paddingLeft: 18 },
-  valueLine: { color: INK, marginBottom: 2 },
+  colLeft: { width: '50%', paddingRight: 18 },
+  colRight: { width: '50%', paddingLeft: 18 },
+  valueLine: { fontSize: 8.5, color: INK, marginBottom: 2 },
 
   // ----- Included highlight -----
   includedBox: {
@@ -98,11 +98,10 @@ const styles = StyleSheet.create({
   includedFootnote: { marginTop: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: TINT_BORDER, fontSize: 8, color: FAINT, lineHeight: 1.4 },
 
   // ----- Scope -----
-  scopeIntro: { color: INK, marginBottom: 4, lineHeight: 1.3 },
-  scopePara: { color: INK, marginBottom: 4, lineHeight: 1.3 },
-  scopeBullet: { flexDirection: 'row', marginBottom: 2.5, paddingLeft: 2 },
-  scopeBulletDot: { width: 11, color: BRAND_BLUE },
-  scopeBulletText: { flex: 1, color: INK, lineHeight: 1.3 },
+  scopeIntro: { fontSize: 8.5, color: INK, marginBottom: 5, lineHeight: 1.35 },
+  scopePara: { fontSize: 8.5, color: INK, marginBottom: 5, lineHeight: 1.35 },
+  scopeBullet: { fontSize: 8.5, color: INK, marginBottom: 3, lineHeight: 1.35 },
+  scopeBulletDot: { color: BRAND_BLUE },
 
   // ----- Photos -----
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap' },
@@ -153,7 +152,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     marginBottom: 22,
   },
-  acceptText: { color: GREEN, lineHeight: 1.3 },
+  acceptText: { fontSize: 8.5, color: GREEN, lineHeight: 1.3 },
 
   // ----- Terms -----
   termsSection: { marginTop: 4 },
@@ -299,23 +298,18 @@ export const ProposalDocument = ({
         {scopeLines.length ? (
           <View style={styles.section} minPresenceAhead={72}>
             <Text style={styles.sectionLabel}>Scope of Work</Text>
-            {scopeLines.map((raw, i) => {
-              const line = raw.trim();
-              if (!line) return <View key={i} style={{ height: 2 }} />;
-              if (/^[•\-]/.test(line)) {
-                return (
-                  <View key={i} style={styles.scopeBullet}>
-                    <Text style={styles.scopeBulletDot}>•</Text>
-                    <Text style={styles.scopeBulletText}>{line.replace(/^[•\-]\s*/, '')}</Text>
-                  </View>
-                );
-              }
-              return (
+            {scopeLines.map((line, i) =>
+              /^[•\-]/.test(line) ? (
+                <Text key={i} style={styles.scopeBullet}>
+                  <Text style={styles.scopeBulletDot}>•&nbsp;&nbsp;</Text>
+                  {line.replace(/^[•\-]\s*/, '')}
+                </Text>
+              ) : (
                 <Text key={i} style={styles.scopePara}>
                   {line}
                 </Text>
-              );
-            })}
+              ),
+            )}
           </View>
         ) : null}
 
