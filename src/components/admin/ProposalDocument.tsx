@@ -128,8 +128,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  priceLabel: { fontSize: 10, color: MUTED, letterSpacing: 1, textTransform: 'uppercase' },
-  priceValue: { fontSize: 20, fontFamily: 'Helvetica-Bold', color: BLUE_DARK },
+  priceLabel: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: MUTED, letterSpacing: 1.5, textTransform: 'uppercase', lineHeight: 1 },
+  priceValue: { fontSize: 17, fontFamily: 'Helvetica-Bold', color: BLUE_DARK, lineHeight: 1 },
 
   // ----- Add-ons -----
   addonRow: {
@@ -274,24 +274,16 @@ export const ProposalDocument = ({
           </View>
         )}
 
-        {proposal.price.trim() ? (
-          <View style={styles.section} minPresenceAhead={72}>
-            <View style={styles.priceBox}>
-              <Text style={styles.priceLabel}>Total</Text>
-              <Text style={styles.priceValue}>{formatPrice(proposal.price)}</Text>
-            </View>
-          </View>
-        ) : null}
-
-        {addOns.length ? (
-          <View style={styles.section} minPresenceAhead={72}>
-            <Text style={styles.sectionLabel}>Additional Services</Text>
-            {addOns.map((a, i) => (
-              <View key={i} style={styles.addonRow}>
-                <Text style={styles.addonLabel}>{a.label.trim() || '—'}</Text>
-                <Text style={styles.addonPrice}>{formatPrice(a.price)}</Text>
+        {proposal.includeBenefits ? (
+          <View style={styles.includedBox} wrap={false}>
+            <Text style={styles.includedHeading}>{BENEFITS_HEADING}</Text>
+            {INCLUDED_BENEFITS.map((b, i) => (
+              <View key={i} style={styles.includedItem}>
+                <Text style={styles.includedCheck}>•</Text>
+                <Text style={styles.includedItemText}>{b}</Text>
               </View>
             ))}
+            <Text style={styles.includedNote}>{BENEFITS_NOTE}</Text>
           </View>
         ) : null}
 
@@ -324,16 +316,24 @@ export const ProposalDocument = ({
           </View>
         ) : null}
 
-        {proposal.includeBenefits ? (
-          <View style={styles.includedBox} wrap={false}>
-            <Text style={styles.includedHeading}>{BENEFITS_HEADING}</Text>
-            {INCLUDED_BENEFITS.map((b, i) => (
-              <View key={i} style={styles.includedItem}>
-                <Text style={styles.includedCheck}>•</Text>
-                <Text style={styles.includedItemText}>{b}</Text>
+        {proposal.price.trim() ? (
+          <View style={styles.section} minPresenceAhead={72}>
+            <View style={styles.priceBox}>
+              <Text style={styles.priceLabel}>Total</Text>
+              <Text style={styles.priceValue}>{formatPrice(proposal.price)}</Text>
+            </View>
+          </View>
+        ) : null}
+
+        {addOns.length ? (
+          <View style={styles.section} minPresenceAhead={72}>
+            <Text style={styles.sectionLabel}>Additional Services</Text>
+            {addOns.map((a, i) => (
+              <View key={i} style={styles.addonRow}>
+                <Text style={styles.addonLabel}>{a.label.trim() || '—'}</Text>
+                <Text style={styles.addonPrice}>{formatPrice(a.price)}</Text>
               </View>
             ))}
-            <Text style={styles.includedNote}>{BENEFITS_NOTE}</Text>
           </View>
         ) : null}
 
