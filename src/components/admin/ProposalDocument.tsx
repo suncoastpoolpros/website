@@ -210,7 +210,11 @@ export const ProposalDocument = ({
   const hasPoolBasics = pool.gallons || dimensionsLine(pool) || pool.shape || pool.sanitization;
   const hasEquipment = pool.pump || pool.filter || pool.heater || pool.automation || pool.equipmentNotes;
   const addOns = proposal.addOns.filter((a) => a.label.trim() || a.price.trim());
-  const scopeLines = proposal.scope.trim() ? proposal.scope.split('\n') : [];
+  // Drop blank/whitespace-only lines so the scope renders tight regardless of
+  // how the text was spaced (blank lines between bullets were rendering as gaps).
+  const scopeLines = proposal.scope.trim()
+    ? proposal.scope.split('\n').map((l) => l.trim()).filter(Boolean)
+    : [];
 
   return (
     <Document title="Suncoast Pool Pros — Proposal" author="Suncoast Pool Pros">
@@ -230,7 +234,7 @@ export const ProposalDocument = ({
           <View style={styles.titleAccent} />
         </View>
 
-        {hasPoolBasics ? (
+        {hasPoolBasics || hasEquipment ? (
           <View style={styles.twoCol}>
             <View style={styles.colLeft}>
               <Text style={styles.sectionLabel}>Prepared For</Text>
@@ -240,11 +244,25 @@ export const ProposalDocument = ({
               {customer.phone.trim() ? <Text style={styles.valueLine}>{customer.phone.trim()}</Text> : null}
             </View>
             <View style={styles.colRight}>
-              <Text style={styles.sectionLabel}>Pool — Size & Volume</Text>
-              <Row label="Volume" value={pool.gallons ? `${pool.gallons} gallons` : ''} labelWidth={88} />
-              <Row label="Dimensions" value={dimensionsLine(pool)} labelWidth={88} />
-              <Row label="Shape" value={pool.shape} labelWidth={88} />
-              <Row label="Sanitization" value={pool.sanitization} labelWidth={88} />
+              {hasPoolBasics ? (
+                <View>
+                  <Text style={styles.sectionLabel}>Pool — Size & Volume</Text>
+                  <Row label="Volume" value={pool.gallons ? `${pool.gallons} gallons` : ''} labelWidth={88} />
+                  <Row label="Dimensions" value={dimensionsLine(pool)} labelWidth={88} />
+                  <Row label="Shape" value={pool.shape} labelWidth={88} />
+                  <Row label="Sanitization" value={pool.sanitization} labelWidth={88} />
+                </View>
+              ) : null}
+              {hasEquipment ? (
+                <View style={hasPoolBasics ? { marginTop: 10 } : undefined}>
+                  <Text style={styles.sectionLabel}>Equipment</Text>
+                  <Row label="Pump" value={pool.pump} labelWidth={88} />
+                  <Row label="Filter" value={pool.filter} labelWidth={88} />
+                  <Row label="Heater" value={pool.heater} labelWidth={88} />
+                  <Row label="Automation" value={pool.automation} labelWidth={88} />
+                  <Row label="Notes" value={pool.equipmentNotes} labelWidth={88} />
+                </View>
+              ) : null}
             </View>
           </View>
         ) : (
@@ -298,17 +316,6 @@ export const ProposalDocument = ({
                 </Text>
               );
             })}
-          </View>
-        ) : null}
-
-        {hasEquipment ? (
-          <View style={styles.section} minPresenceAhead={72}>
-            <Text style={styles.sectionLabel}>Equipment</Text>
-            <Row label="Pump" value={pool.pump} />
-            <Row label="Filter" value={pool.filter} />
-            <Row label="Heater" value={pool.heater} />
-            <Row label="Automation" value={pool.automation} />
-            <Row label="Notes" value={pool.equipmentNotes} />
           </View>
         ) : null}
 
