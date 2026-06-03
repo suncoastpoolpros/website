@@ -33,8 +33,6 @@ export type ProposalData = {
     price: string;
     /** Optional à-la-carte services listed separately (not summed into price). */
     addOns: AddOn[];
-    /** Append the condensed standard terms to the PDF. */
-    includeTerms: boolean;
     /** Show the "what's included" all-inclusive highlight (recurring service). */
     includeBenefits: boolean;
   };
@@ -66,7 +64,7 @@ export const emptyProposal = (): ProposalData => ({
     automation: '',
     equipmentNotes: '',
   },
-  proposal: { scope: '', price: '', addOns: [], includeTerms: true, includeBenefits: true },
+  proposal: { scope: '', price: '', addOns: [], includeBenefits: true },
 });
 
 /** True when a valid admin session cookie is present. */

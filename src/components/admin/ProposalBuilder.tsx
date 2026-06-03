@@ -453,18 +453,6 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
                   <span className="text-gray-400">(recommended for recurring service; turn off for one-time jobs)</span>
                 </span>
               </label>
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
-                <input
-                  type="checkbox"
-                  checked={data.proposal.includeTerms}
-                  onChange={(e) => update('proposal', 'includeTerms', e.target.checked)}
-                  className="mt-0.5 h-4 w-4 accent-brand-blue"
-                />
-                <span className="text-sm text-gray-200">
-                  Include standard terms &amp; conditions in the PDF{' '}
-                  <span className="text-gray-400">(recommended — makes an &ldquo;APPROVED&rdquo; reply a real acceptance)</span>
-                </span>
-              </label>
             </Section>
 
             <Section title="Additional Services (optional)">
@@ -679,13 +667,6 @@ const ProposalPreview = ({
         <div className="rounded-lg border border-[#bfe7c6] bg-[#eefaf0] px-4 py-3 text-[13px] leading-relaxed text-[#1d7a33]">
           To accept, simply reply <strong>&quot;APPROVED&quot;</strong> to the email this is attached to.
         </div>
-
-        {proposal.includeTerms && (
-          <p className="text-[11px] leading-relaxed text-stone-400">
-            Standard terms &amp; conditions are included on the attached PDF, with a link to your full
-            service agreement.
-          </p>
-        )}
       </div>
     </div>
   );

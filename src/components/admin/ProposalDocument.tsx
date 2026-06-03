@@ -9,14 +9,8 @@
  * shares a uniform margin and a slim footer with page numbers. Spacing is driven
  * by a small set of shared style tokens so sections read as intentional.
  */
-import { Document, Page, Text, View, Image, Link, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import { type ProposalData, formatPrice } from '@/lib/adminApi';
-import {
-  PROPOSAL_TERMS,
-  TERMS_FOOTNOTE,
-  SERVICE_AGREEMENT_URL,
-  SERVICE_AGREEMENT_DISPLAY,
-} from './proposalTerms';
 import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE } from './proposalBenefits';
 
 const NAVY = '#0a1628';
@@ -153,14 +147,6 @@ const styles = StyleSheet.create({
     marginBottom: 22,
   },
   acceptText: { fontSize: 8.5, color: GREEN, lineHeight: 1.3 },
-
-  // ----- Terms -----
-  termsSection: { marginTop: 4 },
-  termsItem: { marginBottom: 5 },
-  termsHeading: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: NAVY, marginBottom: 1.5 },
-  termsText: { fontSize: 7.3, color: '#5b6470', lineHeight: 1.3 },
-  termsFootnote: { marginTop: 4, fontSize: 7.5, color: MUTED, fontStyle: 'italic' },
-  termsLink: { color: BLUE_DARK, textDecoration: 'underline' },
 
   // ----- Footer (every page) -----
   footer: {
@@ -343,25 +329,6 @@ export const ProposalDocument = ({
             and we&apos;ll get you on the schedule.
           </Text>
         </View>
-
-        {proposal.includeTerms ? (
-          <View style={styles.termsSection} minPresenceAhead={64}>
-            <Text style={styles.sectionLabel}>Terms &amp; Conditions</Text>
-            {PROPOSAL_TERMS.map((t, i) => (
-              <View key={i} style={styles.termsItem} wrap={false}>
-                <Text style={styles.termsHeading}>{t.heading}</Text>
-                <Text style={styles.termsText}>{t.text}</Text>
-              </View>
-            ))}
-            <Text style={styles.termsFootnote}>
-              {TERMS_FOOTNOTE}{' '}
-              <Link src={SERVICE_AGREEMENT_URL} style={styles.termsLink}>
-                {SERVICE_AGREEMENT_DISPLAY}
-              </Link>
-              .
-            </Text>
-          </View>
-        ) : null}
 
         {/* Footer — repeats on every page, with page numbers. */}
         <View style={styles.footer} fixed>

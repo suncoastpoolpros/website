@@ -42,7 +42,6 @@ type Proposal = {
   scope?: string;
   price?: string;
   addOns?: Array<{ label?: string; price?: string }>;
-  includeTerms?: boolean;
   includeBenefits?: boolean;
 };
 
@@ -174,7 +173,6 @@ const composeProposalEmail = (
   const greetingName = name ? name.split(/\s+/)[0] : 'there';
   const price = formatPrice(safe(String(p.proposal?.price ?? '').trim(), 40));
   const scope = safe(String(p.proposal?.scope ?? '').trim(), FIELD_MAX);
-  const includeTerms = p.proposal?.includeTerms !== false;
   const includeBenefits = p.proposal?.includeBenefits !== false;
 
   const text = [
@@ -190,8 +188,6 @@ const composeProposalEmail = (
     price ? `Total: ${price}` : '',
     ``,
     `To accept, simply reply "APPROVED" to this email and we'll get you scheduled.`,
-    includeTerms ? `Our standard service terms are included in the attached PDF.` : '',
-    includeTerms ? `Read our full service agreement: ${BIZ.serviceAgreementHref}` : '',
     ``,
     `Questions? Just reply to this message.`,
     ``,
@@ -263,7 +259,6 @@ const composeProposalEmail = (
             </td></tr>
           </table>
 
-          ${includeTerms ? `<p style="margin:14px 0 0;color:#9ca3af;font-size:12px;">Our standard service terms are included in the attached PDF. You can read our full service agreement at <a href="${BIZ.serviceAgreementHref}" style="color:#0f4d80;text-decoration:underline;">${BIZ.serviceAgreementDisplay}</a>.</p>` : ''}
           <p style="margin:14px 0 0;color:#6b7280;font-size:13px;">Questions about anything? Simply reply to this message.</p>
         </td></tr>
         <!-- Footer — navy so the logo's white wordmark stays visible. -->
