@@ -13,6 +13,7 @@ import { CtaBand } from '@/components/CtaBand';
 import { StPeteBeachHeroPhone } from '@/components/StPeteBeachHeroPhone';
 import StPeteBeachBelowFold from '@/pages/StPeteBeachBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
+import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 const PAGE_TITLE = 'St. Pete Beach Pool Service — Salt-Tested, Always Clear';
 const PAGE_DESC =
@@ -189,6 +190,10 @@ const usePageSchema = () => {
           acceptedAnswer: { '@type': 'Answer', text: f.a },
         })),
       },
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'St. Pete Beach', path: '/st-pete-beach-fl/' },
+      ]),
     ]);
     document.head.appendChild(ld);
     return () => ld.remove();

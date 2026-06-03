@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Clock,
   Wrench,
+  Droplets,
 } from 'lucide-react';
 import { ServiceAreasMenu } from '@/components/ServiceAreasMenu';
 import { cities } from '@/lib/cities';
@@ -29,6 +30,7 @@ const MOBILE_NAV: MobileNavItem[] = [
   { label: 'How It Works', icon: Workflow, to: '/how-it-works' },
   { label: 'FAQ', icon: HelpCircle, to: '/faq' },
   { label: 'Tools', icon: Wrench, to: '/tools' },
+  { label: 'Pool Care', icon: Droplets, to: '/pool-care' },
   { label: 'Careers', icon: Briefcase, to: '/careers' },
   { label: 'Contact', icon: Mail, to: '/contact' },
 ];

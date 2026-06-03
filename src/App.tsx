@@ -24,6 +24,7 @@ const CareersPage = lazy(() => import('@/pages/CareersPage').then((m) => ({ defa
 const FaqPage = lazy(() => import('@/pages/FaqPage').then((m) => ({ default: m.FaqPage })));
 const HowItWorksPage = lazy(() => import('@/pages/HowItWorksPage').then((m) => ({ default: m.HowItWorksPage })));
 const ToolsPage = lazy(() => import('@/pages/ToolsPage').then((m) => ({ default: m.ToolsPage })));
+const PoolCarePage = lazy(() => import('@/pages/PoolCarePage').then((m) => ({ default: m.PoolCarePage })));
 const NitratesPage = lazy(() => import('@/pages/NitratesPage').then((m) => ({ default: m.NitratesPage })));
 const CyanuricAcidPage = lazy(() => import('@/pages/CyanuricAcidPage').then((m) => ({ default: m.CyanuricAcidPage })));
 const PoolVolumeCalculatorPage = lazy(() => import('@/pages/PoolVolumeCalculatorPage').then((m) => ({ default: m.PoolVolumeCalculatorPage })));
@@ -142,6 +143,7 @@ export default function App() {
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/how-it-works" element={<HowItWorksPage />} />
+          <Route path="/pool-care" element={<PoolCarePage />} />
           <Route path="/pool-care/nitrates" element={<NitratesPage />} />
           <Route path="/pool-care/cyanuric-acid" element={<CyanuricAcidPage />} />
           <Route path="/tools" element={<ToolsPage />} />

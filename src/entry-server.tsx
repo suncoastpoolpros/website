@@ -24,6 +24,7 @@ import { CareersPage } from '@/pages/CareersPage';
 import { FaqPage } from '@/pages/FaqPage';
 import { HowItWorksPage } from '@/pages/HowItWorksPage';
 import { ToolsPage } from '@/pages/ToolsPage';
+import { PoolCarePage } from '@/pages/PoolCarePage';
 import { NitratesPage } from '@/pages/NitratesPage';
 import { CyanuricAcidPage } from '@/pages/CyanuricAcidPage';
 import { PoolVolumeCalculatorPage } from '@/pages/PoolVolumeCalculatorPage';
@@ -46,6 +47,7 @@ export const PRERENDER_ROUTES = [
   '/careers',
   '/faq',
   '/how-it-works',
+  '/pool-care',
   '/pool-care/nitrates',
   '/pool-care/cyanuric-acid',
   '/tools',
@@ -67,6 +69,7 @@ const Routing = () => (
     <Route path="/careers" element={<CareersPage />} />
     <Route path="/faq" element={<FaqPage />} />
     <Route path="/how-it-works" element={<HowItWorksPage />} />
+    <Route path="/pool-care" element={<PoolCarePage />} />
     <Route path="/pool-care/nitrates" element={<NitratesPage />} />
     <Route path="/pool-care/cyanuric-acid" element={<CyanuricAcidPage />} />
     <Route path="/tools" element={<ToolsPage />} />

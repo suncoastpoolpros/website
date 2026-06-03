@@ -13,6 +13,7 @@ import { CtaBand } from '@/components/CtaBand';
 import { BelleairHeroPhone } from '@/components/BelleairHeroPhone';
 import BelleairBeachBelowFold from '@/pages/BelleairBeachBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
+import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 const PAGE_TITLE =
   'Belleair Beach Pool Service — Never a Missed Visit';
@@ -173,6 +174,10 @@ const usePageSchema = () => {
           acceptedAnswer: { '@type': 'Answer', text: f.a },
         })),
       },
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Belleair Beach', path: '/belleair-beach-fl/' },
+      ]),
     ]);
     document.head.appendChild(ld);
     return () => ld.remove();

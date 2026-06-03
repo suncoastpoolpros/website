@@ -13,6 +13,7 @@ import { CtaBand } from '@/components/CtaBand';
 import { SnellIsleHeroPhone } from '@/components/SnellIsleHeroPhone';
 import SnellIsleBelowFold from '@/pages/SnellIsleBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
+import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 const PAGE_TITLE = 'Snell Isle Pool Service — Estate-Grade, Every Week';
 const PAGE_DESC =
@@ -185,6 +186,10 @@ const usePageSchema = () => {
           acceptedAnswer: { '@type': 'Answer', text: f.a },
         })),
       },
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Snell Isle', path: '/snell-isle-fl/' },
+      ]),
     ]);
     document.head.appendChild(ld);
     return () => ld.remove();

@@ -25,6 +25,7 @@ import { Footer } from '@/components/Footer';
 import { Container } from '@/components/Container';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { usePageMeta } from '@/lib/usePageMeta';
+import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 // Why nitrates matter — light-band explainer cards. The third card carries the
 // page's core teaching point (no chemical removes nitrates — unlike phosphates).
@@ -163,7 +164,15 @@ const NitratesPageInner = () => {
   useEffect(() => {
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify([howToSchema, faqSchema]);
+    script.text = JSON.stringify([
+      howToSchema,
+      faqSchema,
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Care', path: '/pool-care/' },
+        { name: 'Pool Nitrates', path: '/pool-care/nitrates/' },
+      ]),
+    ]);
     document.head.appendChild(script);
     return () => {
       document.head.removeChild(script);

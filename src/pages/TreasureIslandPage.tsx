@@ -13,6 +13,7 @@ import { CtaBand } from '@/components/CtaBand';
 import { TreasureIslandHeroPhone } from '@/components/TreasureIslandHeroPhone';
 import TreasureIslandBelowFold from '@/pages/TreasureIslandBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
+import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 const PAGE_TITLE =
   'Treasure Island Pool Service — Always Guest-Ready';
@@ -224,6 +225,10 @@ const usePageSchema = () => {
           acceptedAnswer: { '@type': 'Answer', text: f.a },
         })),
       },
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Treasure Island', path: '/treasure-island-fl/' },
+      ]),
     ]);
     document.head.appendChild(ld);
     return () => ld.remove();

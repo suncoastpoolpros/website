@@ -23,6 +23,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { usePageMeta } from '@/lib/usePageMeta';
+import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 // ── constants ─────────────────────────────────────────────────────
 const GAL_PER_CUFT = 7.48052;
@@ -834,9 +835,21 @@ const PoolVolumeCalculatorInner = () => {
     faqScript.text = JSON.stringify(faqPageSchema);
     document.head.appendChild(faqScript);
 
+    const breadcrumbScript = document.createElement('script');
+    breadcrumbScript.type = 'application/ld+json';
+    breadcrumbScript.text = JSON.stringify(
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Tools', path: '/tools/' },
+        { name: 'Pool Volume Calculator', path: '/tools/pool-volume-calculator/' },
+      ]),
+    );
+    document.head.appendChild(breadcrumbScript);
+
     return () => {
       howToScript.remove();
       faqScript.remove();
+      breadcrumbScript.remove();
     };
   }, []);
 

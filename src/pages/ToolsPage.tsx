@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -15,6 +15,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { usePageMeta } from '@/lib/usePageMeta';
+import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 type Tool = {
   to: string;
@@ -52,6 +53,22 @@ const ToolsPageInner = () => {
       'Calculators and references for pool volume, chemistry dosing, and salt levels — built by working pool techs, free to use, no email required.',
     canonicalPath: '/tools/',
   });
+
+  // BreadcrumbList JSON-LD injected client-side — usePageMeta handles
+  // title/description/canonical in the prerendered HTML but doesn't emit
+  // JSON-LD (the documented exception, CLAUDE.md #9).
+  useEffect(() => {
+    const ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.text = JSON.stringify(
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Tools', path: '/tools/' },
+      ]),
+    );
+    document.head.appendChild(ld);
+    return () => ld.remove();
+  }, []);
 
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();

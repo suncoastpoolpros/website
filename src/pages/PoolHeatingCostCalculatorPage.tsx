@@ -14,6 +14,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { usePageMeta } from '@/lib/usePageMeta';
+import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 // ── Heating physics ───────────────────────────────────────────────
 // Energy to raise a body of water:  BTU = gallons × 8.34 lb/gal × ΔT°F
@@ -469,8 +470,21 @@ const usePageSchema = () => {
       ],
     });
     document.head.appendChild(ld);
+
+    const bc = document.createElement('script');
+    bc.type = 'application/ld+json';
+    bc.text = JSON.stringify(
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Tools', path: '/tools/' },
+        { name: 'Pool Heating Cost Calculator', path: '/tools/pool-heating-cost-calculator/' },
+      ]),
+    );
+    document.head.appendChild(bc);
+
     return () => {
       document.head.removeChild(ld);
+      document.head.removeChild(bc);
     };
   }, []);
 };

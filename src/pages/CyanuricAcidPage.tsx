@@ -25,6 +25,7 @@ import { Footer } from '@/components/Footer';
 import { Container } from '@/components/Container';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { usePageMeta } from '@/lib/usePageMeta';
+import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 // The science — what CYA actually does to chlorine (light-band cards).
 const SCIENCE_CARDS = [
@@ -157,7 +158,15 @@ const CyanuricAcidPageInner = () => {
   useEffect(() => {
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.text = JSON.stringify([articleSchema, faqSchema]);
+    script.text = JSON.stringify([
+      articleSchema,
+      faqSchema,
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Care', path: '/pool-care/' },
+        { name: 'Cyanuric Acid', path: '/pool-care/cyanuric-acid/' },
+      ]),
+    ]);
     document.head.appendChild(script);
     return () => {
       document.head.removeChild(script);
