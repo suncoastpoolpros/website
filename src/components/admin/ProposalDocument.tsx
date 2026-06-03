@@ -44,7 +44,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingTop: 26,
     paddingBottom: 24,
-    paddingHorizontal: 30,
+    // Same padding + outward bleed as the other boxes, so every box shares one
+    // left/right edge AND the header text lines up with the body copy.
+    paddingHorizontal: 18,
+    marginHorizontal: -18,
     marginBottom: 28,
   },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
@@ -119,8 +122,8 @@ const styles = StyleSheet.create({
     borderColor: TINT_BORDER,
     borderRadius: 8,
     paddingVertical: 15,
-    paddingHorizontal: 20,
-    marginHorizontal: -20,
+    paddingHorizontal: 18,
+    marginHorizontal: -18,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
