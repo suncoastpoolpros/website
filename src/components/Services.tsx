@@ -71,7 +71,7 @@ export const Services = () => {
               What You Can Expect From Our <span className="text-brand-orange">Weekly Pool Service</span>
             </h2>
             <p className="section-subtext mb-8">
-              Most St. Petersburg pools run <span className="text-white font-semibold">$140–$200 a month</span> for weekly service. For one flat rate, we handle the brushing, skimming, vacuuming, and chemical balancing — and all standard chemicals are included.
+              An average pool runs <span className="text-white font-semibold">about $150 a month</span>, but pricing varies based on trees, pool size, and many other factors. For one flat rate, we handle the brushing, skimming, vacuuming, and chemical balancing — and all standard chemicals are included.
             </p>
             <ul className="space-y-3">
               {weeklyIncludes.map((item, i) => (

@@ -18,7 +18,7 @@ const faqs = [
   },
   {
     question: "How much does pool cleaning cost in St. Petersburg, FL?",
-    answer: "Pricing depends on your pool's size, condition, and equipment. Most residential pools in St. Petersburg cost between $140–$200 per month for weekly cleaning, which includes brushing, skimming, vacuuming, and chemical balancing. That flat rate covers weekly cleaning and all standard chemicals — no surprise surcharges. Storm cleanups and major equipment repairs are billed separately at honest rates, and credit card payments include a small processing fee (ACH bank transfers are free)."
+    answer: "An average pool runs approximately $150 per month for weekly cleaning, which includes brushing, skimming, vacuuming, and chemical balancing — though pricing varies based on trees, pool size, and many other factors. That flat rate covers weekly cleaning and all standard chemicals — no surprise surcharges. Storm cleanups and major equipment repairs are billed separately at honest rates, and credit card payments include a small processing fee (ACH bank transfers are free)."
   },
   {
     question: "How often should a pool be cleaned in Florida?",

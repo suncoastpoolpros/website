@@ -254,7 +254,7 @@ const RentalFailurePillars = () => (
             no one's watching. A salt cell crusts up. A pump seal weeps. Stabilizer
             climbs out of range and chlorine stops working. By the time your next
             guest arrives — or you fly down for a long weekend — you're looking
-            at a <span className="text-white">$1,800 recovery instead of a $180 month</span>.
+            at a <span className="text-white">$1,800 recovery instead of a $150 month</span>.
           </p>
           <p className="text-gray-300 leading-relaxed text-[15px] mb-6">
             Weekly visits mean nothing drifts for more than seven days. We catch
