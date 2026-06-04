@@ -74,6 +74,19 @@ const GUIDES: Guide[] = [
       'Interactive ratio calculator',
     ],
   },
+  {
+    to: '/pool-care/variable-speed-pumps',
+    icon: Zap,
+    tag: 'Equipment & Energy',
+    title: 'Variable Speed Pumps',
+    blurb:
+      'Your pool pump is usually the biggest power draw in the house after the AC. A variable-speed pump can cut that bill by around 75% — the physics behind why, with a live savings calculator.',
+    points: [
+      'Why single-speed pumps waste money',
+      'The affinity-law math, in plain English',
+      'Interactive annual-savings calculator',
+    ],
+  },
 ];
 
 // The "why it matters" trio under the guides — frames chemistry around outcomes

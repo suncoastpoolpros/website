@@ -28,6 +28,7 @@ import { PoolCarePage } from '@/pages/PoolCarePage';
 import { NitratesPage } from '@/pages/NitratesPage';
 import { CyanuricAcidPage } from '@/pages/CyanuricAcidPage';
 import { GreenPoolPage } from '@/pages/GreenPoolPage';
+import { VariableSpeedPumpsPage } from '@/pages/VariableSpeedPumpsPage';
 import { PoolVolumeCalculatorPage } from '@/pages/PoolVolumeCalculatorPage';
 import { PoolHeatingCostCalculatorPage } from '@/pages/PoolHeatingCostCalculatorPage';
 import { ContactPage } from '@/pages/ContactPage';
@@ -52,6 +53,7 @@ export const PRERENDER_ROUTES = [
   '/pool-care/nitrates',
   '/pool-care/cyanuric-acid',
   '/pool-care/green-pool',
+  '/pool-care/variable-speed-pumps',
   '/tools',
   '/tools/pool-volume-calculator',
   '/tools/pool-heating-cost-calculator',
@@ -75,6 +77,7 @@ const Routing = () => (
     <Route path="/pool-care/nitrates" element={<NitratesPage />} />
     <Route path="/pool-care/cyanuric-acid" element={<CyanuricAcidPage />} />
     <Route path="/pool-care/green-pool" element={<GreenPoolPage />} />
+    <Route path="/pool-care/variable-speed-pumps" element={<VariableSpeedPumpsPage />} />
     <Route path="/tools" element={<ToolsPage />} />
     <Route path="/tools/pool-volume-calculator" element={<PoolVolumeCalculatorPage />} />
     <Route path="/tools/pool-heating-cost-calculator" element={<PoolHeatingCostCalculatorPage />} />
