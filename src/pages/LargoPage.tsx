@@ -35,16 +35,14 @@ const PAGE_DESC =
   'Weekly pool service in Largo, FL — flat rate, chemicals included, same tech weekly. Established-home pools kept clear, aging equipment watched, no upsells.';
 const PAGE_URL = 'https://suncoastpoolpros.com/largo-fl/';
 
-// The "Largo at a glance" hero card — the distinct hero element (no phone mockup
-// like the beach pages, no horizontal stat tiles like Seminole). A vertical
-// spec card that doubles as a trust summary. Desktop only; mobile gets a compact
-// inline strip instead (keeps the above-the-fold hero short on phones).
-const GLANCE = [
-  { icon: CalendarCheck, label: 'Same dedicated tech', sub: 'every week, set day' },
-  { icon: Wallet, label: 'One flat rate', sub: 'standard chemicals included' },
-  { icon: Gauge, label: 'Equipment checked', sub: 'every single visit' },
-  { icon: Camera, label: 'Photo report', sub: 'after every clean' },
-  { icon: ShieldCheck, label: 'Always Blue Guarantee', sub: 'we come back if it drifts' },
+// The flat-rate "promise ribbon" — Largo's distinct hero element. No phone mockup
+// (beach pages), no side spec card, no horizontal stat tiles (Seminole): a centered
+// composition anchored by a single glass bar that states what one flat rate buys.
+const PROMISE = [
+  { icon: Wallet, label: 'One flat rate' },
+  { icon: CalendarCheck, label: 'Same tech weekly' },
+  { icon: Gauge, label: 'Equipment checked' },
+  { icon: Camera, label: 'Photo report' },
 ];
 
 const HeroSection = () => {
@@ -60,148 +58,97 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-[#02060c]" />
         <div className="hero-bg-largo-desktop absolute inset-0 hidden md:block bg-cover bg-center" aria-hidden />
         <div className="hero-bg-largo-mobile absolute inset-0 md:hidden bg-cover bg-center" aria-hidden />
-        {/* Single merged readability scrim (class, not inline style — CLAUDE.md #4). */}
+        {/* Center-weighted readability scrim (class, not inline style — CLAUDE.md #4). */}
         <div className="hero-largo-scrim absolute inset-0 pointer-events-none" aria-hidden />
-        {/* Ambient brand glows — desktop only (mobile blur ban). */}
-        <div className="hidden md:block absolute top-[14%] left-[-10%] w-[40vw] h-[40vw] bg-brand-orange/[0.10] rounded-full blur-[150px] animate-float" />
-        <div className="hidden md:block absolute bottom-[-12%] right-[-8%] w-[40vw] h-[40vw] bg-brand-blue/[0.10] rounded-full blur-[150px] animate-morph" />
+        {/* Ambient brand glows — symmetric, desktop only (mobile blur ban). */}
+        <div className="hidden md:block absolute top-[10%] left-[-6%] w-[34vw] h-[34vw] bg-brand-orange/[0.10] rounded-full blur-[150px] animate-float" />
+        <div className="hidden md:block absolute bottom-[-12%] right-[-6%] w-[36vw] h-[36vw] bg-brand-blue/[0.10] rounded-full blur-[150px] animate-morph" />
         {/* Bottom seam into the next #07111c section. */}
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#07111c] via-[#07111c]/70 to-transparent pointer-events-none" />
       </div>
 
       <Container className="relative z-10 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-          <m.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="lg:col-span-7"
-          >
-            <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8">
-              <MapPin className="w-3.5 h-3.5 text-brand-orange-light" />
-              <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
-                Largo · Heart of Pinellas
-              </span>
+        <m.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="max-w-3xl mx-auto text-center flex flex-col items-center"
+        >
+          <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-7">
+            <MapPin className="w-3.5 h-3.5 text-brand-orange-light" />
+            <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
+              Largo · Heart of Pinellas
+            </span>
+          </Glass>
+
+          {/* Visual headline — a div, so the SEO h1 below carries keyword weight. */}
+          <div className="text-shadow-city-h1 font-display font-bold md:font-black text-white tracking-tight mb-5 leading-[1.03]">
+            <span className="block text-[2.9rem] sm:text-6xl md:text-[4.25rem] leading-[1.0]">
+              Straight answers.
+            </span>
+            <span className="block text-[2.9rem] sm:text-6xl md:text-[4.25rem] leading-[1.0]">
+              <span className="text-brand-orange-light">Clear water.</span>
+            </span>
+          </div>
+
+          {/* SEO H1 — local keyword for this city page. */}
+          <h1 className="text-shadow-city-h1 font-display font-normal text-white/85 text-[17px] sm:text-lg md:text-xl leading-snug mb-5 tracking-tight">
+            Weekly pool service in Largo, FL.
+          </h1>
+
+          <p className="text-shadow-city-body mx-auto max-w-xl text-[15px] sm:text-base text-gray-200 leading-[1.65] mb-8">
+            Honest, flat-rate pool care for Largo&rsquo;s established homes &mdash;{' '}
+            <span className="text-white">the same tech every week, chemicals included, and your equipment actually watched</span>.
+          </p>
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-4">
+            <a href="#quote" onClick={handleQuote} className="btn btn-blue">
+              Get a Free Quote
+            </a>
+            <Glass
+              href={`tel:${PHONE}`}
+              className="glass-mobile-blur inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px]"
+            >
+              <Phone className="w-4 h-4 text-brand-blue-light" />
+              {PHONE_DISPLAY}
             </Glass>
+          </div>
 
-            {/* Visual headline — a div, so the SEO h1 below carries keyword weight. */}
-            <div className="text-shadow-city-h1 font-display font-bold md:font-black text-white tracking-tight mb-5 leading-[1.05]">
-              <span className="block text-[2.75rem] sm:text-6xl md:text-[3.9rem] leading-[1.02]">
-                Straight answers.
-              </span>
-              <span className="block text-[2.75rem] sm:text-6xl md:text-[3.9rem] leading-[1.02]">
-                <span className="text-brand-orange-light">Clear water.</span>
-              </span>
-            </div>
+          <p className="mt-4 text-[13px] text-gray-400">
+            No contracts · Cancel anytime · No commission-driven upsells.
+          </p>
 
-            {/* SEO H1 — local keyword for this city page. */}
-            <h1 className="text-shadow-city-h1 font-display font-normal text-white/85 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 tracking-tight">
-              Weekly pool service in Largo, FL.
-            </h1>
-
-            <p className="text-shadow-city-body md:hidden text-[15px] text-gray-200 max-w-[34rem] leading-[1.6] mb-7">
-              Honest, flat-rate pool care for Largo's established homes —{' '}
-              <span className="text-white">same tech weekly, chemicals included, and your equipment actually watched</span>.
-            </p>
-            <p className="text-shadow-city-body hidden md:block text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
-              Largo's the established heart of Pinellas — older homes, and plenty of
-              pools and equipment with some age on them. We give them an honest
-              weekly service: <span className="text-white">the same dedicated tech</span>,
-              all standard chemicals in one flat rate, your equipment checked every
-              visit, and a straight answer when something needs attention.
-            </p>
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-              <a href="#quote" onClick={handleQuote} className="btn btn-blue">
-                Get a Free Quote
-              </a>
-              <Glass
-                href={`tel:${PHONE}`}
-                className="glass-mobile-blur inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px]"
-              >
-                <Phone className="w-4 h-4 text-brand-blue-light" />
-                {PHONE_DISPLAY}
-              </Glass>
-            </div>
-
-            <p className="mt-4 text-[13px] text-gray-400">
-              No contracts · Cancel anytime · No commission-driven upsells.
-            </p>
-
-            {/* Mobile-only compact trust strip (the card is desktop-only). */}
-            <div className="lg:hidden mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 text-[13px] text-gray-400">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-0.5 text-brand-orange">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <Star key={i} className="w-4 h-4 fill-current" />
-                  ))}
+          {/* Promise ribbon — the signature hero element: what one flat rate buys. */}
+          <div className="mt-9 w-full max-w-xl glass-panel rounded-2xl px-5 py-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3.5">
+              {PROMISE.map((item) => (
+                <div key={item.label} className="flex items-center justify-center gap-2">
+                  <item.icon className="w-[18px] h-[18px] text-brand-orange-light shrink-0" />
+                  <span className="text-white font-semibold text-[13px] leading-tight">
+                    {item.label}
+                  </span>
                 </div>
-                <span className="font-semibold text-white/90">5.0</span>
-                <span className="text-gray-500">on Google</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-brand-orange-light" />
-                <span>Always Blue Guarantee</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Gauge className="w-4 h-4 text-brand-orange-light" />
-                <span>Equipment checked weekly</span>
-              </div>
+              ))}
             </div>
-          </m.div>
+          </div>
 
-          {/* Right column: the "Largo at a glance" spec card. DESKTOP ONLY (lg+). */}
-          <m.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9, ease: 'easeOut', delay: 0.1 }}
-            className="hidden lg:block lg:col-span-5"
-          >
-            <div className="glass-panel rounded-2xl p-7 relative overflow-hidden">
-              <div className="absolute -top-20 -right-16 w-44 h-44 rounded-full bg-brand-orange/10 blur-3xl pointer-events-none" />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-6 pb-5 border-b border-white/10">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange-light mb-1">
-                      Largo at a glance
-                    </p>
-                    <p className="text-white font-display font-bold text-lg leading-tight">
-                      What weekly service gets you
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <div className="flex gap-0.5 text-brand-orange justify-end mb-0.5">
-                      {[0, 1, 2, 3, 4].map((i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                      ))}
-                    </div>
-                    <p className="text-[12px] text-gray-400">
-                      <span className="font-semibold text-white/90">5.0</span> on Google
-                    </p>
-                  </div>
-                </div>
-
-                <ul className="space-y-3.5">
-                  {GLANCE.map((g) => (
-                    <li key={g.label} className="flex items-center gap-3.5">
-                      <div className="w-10 h-10 rounded-lg bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center shrink-0">
-                        <g.icon className="w-5 h-5 text-brand-orange-light" />
-                      </div>
-                      <div className="leading-tight">
-                        <p className="text-white font-semibold text-[15px]">{g.label}</p>
-                        <p className="text-gray-400 text-[13px]">{g.sub}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-
-                <p className="mt-6 pt-5 border-t border-white/10 text-[13px] text-gray-400 text-center">
-                  One flat monthly rate. No contracts, cancel anytime.
-                </p>
-              </div>
-            </div>
-          </m.div>
-        </div>
+          {/* Trust line — 5.0 Google + the guarantee. */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] text-gray-400">
+            <span className="flex items-center gap-2">
+              <span className="flex gap-0.5 text-brand-orange">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
+              </span>
+              <span className="font-semibold text-white/90">5.0</span> on Google
+            </span>
+            <span className="hidden sm:inline text-gray-600">·</span>
+            <span className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-brand-orange-light" />
+              Always Blue Guarantee
+            </span>
+          </div>
+        </m.div>
       </Container>
     </div>
   );

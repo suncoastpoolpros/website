@@ -601,13 +601,13 @@
 }
 @media (min-width: 768px) {
   .hero-largo-scrim {
-    /* desktop: strong left scrim (behind the headline column) + light overall
-       darken + edge vignette. Lighter on the right so the glance card sits over
-       a visible pool rather than a black box. */
+    /* desktop: centered composition — an even darken, a soft pool of shade
+       behind the centered headline (radial, darker toward the middle), and a
+       gentle bottom fade into the next #07111c section. */
     background-image:
-      linear-gradient(to right, rgba(2,6,12,0.80) 0%, rgba(2,6,12,0.50) 38%, rgba(2,6,12,0.18) 70%, rgba(2,6,12,0.10) 100%),
-      linear-gradient(to bottom, rgba(2,6,12,0.20) 0%, rgba(4,9,15,0.26) 60%, transparent 100%),
-      radial-gradient(ellipse 85% 65% at center, transparent 58%, rgba(5,11,20,0.5) 100%);
+      linear-gradient(rgba(2,6,12,0.46), rgba(2,6,12,0.46)),
+      radial-gradient(ellipse 78% 72% at 50% 42%, rgba(2,6,12,0.46) 0%, transparent 70%),
+      linear-gradient(to bottom, transparent 60%, rgba(7,17,28,0.5) 100%);
   }
 }
 .interlude-tint-largo { background-color: #0a2540; mix-blend-mode: overlay; opacity: 0.45; }
