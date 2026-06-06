@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Plus, Minus } from 'lucide-react';
 import { Container } from '@/components/Container';
 
-const faqs = [
+// Exported so LandingPage can emit matching FAQPage JSON-LD without duplicating
+// the copy — Google requires the structured data to match the visible answers.
+export const homepageFaqs = [
   {
     question: "What areas does Suncoast Pool Pros service?",
     answer: "We serve all of St. Petersburg — including waterfront neighborhoods like Snell Isle, Historic Old Northeast, Coffee Pot Bayou, Shore Acres, Venetian Isles, Bayway Isles, Broadwater, and Pinellas Point — plus Gulfport, St. Pete Beach, Treasure Island, Seminole, Largo, Belleair Beach, Clearwater, and the surrounding Tampa Bay area. If you're nearby, contact us to confirm availability."
@@ -33,6 +35,8 @@ const faqs = [
     answer: "Yes. We service both saltwater and traditional chlorine pools. For saltwater systems, we clean salt cells, check salinity levels, and balance your water chemistry to ensure your pool stays clear and gentle on skin."
   }
 ];
+
+const faqs = homepageFaqs;
 
 export const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);

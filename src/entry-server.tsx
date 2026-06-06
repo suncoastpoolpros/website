@@ -21,6 +21,8 @@ import { TreasureIslandPage } from '@/pages/TreasureIslandPage';
 import { StPeteBeachPage } from '@/pages/StPeteBeachPage';
 import { SnellIslePage } from '@/pages/SnellIslePage';
 import { SeminolePage } from '@/pages/SeminolePage';
+import { LargoPage } from '@/pages/LargoPage';
+import { ClearwaterPage } from '@/pages/ClearwaterPage';
 import { CareersPage } from '@/pages/CareersPage';
 import { FaqPage } from '@/pages/FaqPage';
 import { HowItWorksPage } from '@/pages/HowItWorksPage';
@@ -52,6 +54,8 @@ export const PRERENDER_ROUTES = [
   '/st-pete-beach-fl',
   '/snell-isle-fl',
   '/seminole-fl',
+  '/largo-fl',
+  '/clearwater-fl',
   '/careers',
   '/faq',
   '/how-it-works',
@@ -81,6 +85,8 @@ const Routing = () => (
     <Route path="/st-pete-beach-fl" element={<StPeteBeachPage />} />
     <Route path="/snell-isle-fl" element={<SnellIslePage />} />
     <Route path="/seminole-fl" element={<SeminolePage />} />
+    <Route path="/largo-fl" element={<LargoPage />} />
+    <Route path="/clearwater-fl" element={<ClearwaterPage />} />
     <Route path="/careers" element={<CareersPage />} />
     <Route path="/faq" element={<FaqPage />} />
     <Route path="/how-it-works" element={<HowItWorksPage />} />

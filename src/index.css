@@ -567,6 +567,132 @@
   filter: saturate(1.1) brightness(0.5) contrast(1.05);
 }
 
+/* ===== LARGO city page hero + interlude =====
+   PLACEHOLDER (the shared homepage residential-pool image) until a dedicated
+   Largo photo (an established-neighborhood backyard pool) is uploaded. When it
+   is, only these url()s + the page's heroPreload need to change. Scrim is tuned
+   for the page's two-column hero (text left, glance card right): a strong left
+   wash for the headline plus a light overall darken so the right card's edge
+   reads. Slightly warmer/punchier filter than Seminole so the two inland pages
+   don't render identically. ===== */
+.hero-bg-largo-desktop {
+  background-image: image-set(
+    url('/pool-service-st-petersburg-hero.webp') type('image/webp') 1x,
+    url('/pool-service-st-petersburg-hero-1920.webp') type('image/webp') 2x,
+    url('/pool-service-st-petersburg-hero.jpg') type('image/jpeg') 1x
+  );
+  filter: saturate(1.16) contrast(1.08);
+}
+.hero-bg-largo-mobile {
+  background-image: image-set(
+    url('/pool-service-st-petersburg-hero-mobile.webp') type('image/webp'),
+    url('/pool-service-st-petersburg-hero-mobile.jpg') type('image/jpeg')
+  );
+  filter: saturate(1.16) contrast(1.08);
+  -webkit-mask-image: linear-gradient(to bottom, black 72%, transparent 98%);
+  mask-image: linear-gradient(to bottom, black 72%, transparent 98%);
+}
+.hero-largo-scrim {
+  /* mobile: overall darken + top-down darken for the stacked text + edge vignette */
+  background-image:
+    linear-gradient(rgba(2,6,12,0.48), rgba(2,6,12,0.48)),
+    linear-gradient(to bottom, rgba(2,6,12,0.34) 0%, rgba(4,9,15,0.40) 55%, rgba(7,17,28,0.30) 100%),
+    radial-gradient(ellipse 85% 65% at center, transparent 58%, rgba(5,11,20,0.5) 100%);
+}
+@media (min-width: 768px) {
+  .hero-largo-scrim {
+    /* desktop: strong left scrim (behind the headline column) + light overall
+       darken + edge vignette. Lighter on the right so the glance card sits over
+       a visible pool rather than a black box. */
+    background-image:
+      linear-gradient(to right, rgba(2,6,12,0.80) 0%, rgba(2,6,12,0.50) 38%, rgba(2,6,12,0.18) 70%, rgba(2,6,12,0.10) 100%),
+      linear-gradient(to bottom, rgba(2,6,12,0.20) 0%, rgba(4,9,15,0.26) 60%, transparent 100%),
+      radial-gradient(ellipse 85% 65% at center, transparent 58%, rgba(5,11,20,0.5) 100%);
+  }
+}
+.interlude-tint-largo { background-color: #0a2540; mix-blend-mode: overlay; opacity: 0.45; }
+.interlude-bg-largo-desktop {
+  background-image: image-set(
+    url('/pool-service-st-petersburg-hero.webp') type('image/webp') 1x,
+    url('/pool-service-st-petersburg-hero-1920.webp') type('image/webp') 2x,
+    url('/pool-service-st-petersburg-hero.jpg') type('image/jpeg') 1x
+  );
+  filter: saturate(1.1) brightness(0.5) contrast(1.06);
+}
+.interlude-bg-largo-mobile {
+  background-image: image-set(
+    url('/pool-service-st-petersburg-hero-mobile.webp') type('image/webp'),
+    url('/pool-service-st-petersburg-hero-mobile.jpg') type('image/jpeg')
+  );
+  filter: saturate(1.1) brightness(0.5) contrast(1.06);
+}
+
+/* ===== CLEARWATER city page hero + interlude =====
+   PLACEHOLDER (the shared homepage residential-pool image) until a dedicated
+   Clearwater photo is uploaded. When it is, only these url()s + the page's
+   heroPreload need to change. The page's whole theme is "clear water," so this
+   treatment is the BRIGHTEST and COOLEST of the city pages — higher brightness,
+   a touch more saturation, and a slight cool hue-rotate so the water reads
+   crisp/blue rather than the warmer inland look of Largo/Seminole. Scrim is
+   tuned for the two-column hero (text left, dual-zone card right): strong left
+   wash for the headline, lighter on the right so the card sits over visible,
+   bright water rather than a black box. ===== */
+.hero-bg-clearwater-desktop {
+  background-image: image-set(
+    url('/pool-service-st-petersburg-hero.webp') type('image/webp') 1x,
+    url('/pool-service-st-petersburg-hero-1920.webp') type('image/webp') 2x,
+    url('/pool-service-st-petersburg-hero.jpg') type('image/jpeg') 1x
+  );
+  filter: saturate(1.24) brightness(0.92) contrast(1.06) hue-rotate(4deg);
+}
+.hero-bg-clearwater-mobile {
+  background-image: image-set(
+    url('/pool-service-st-petersburg-hero-mobile.webp') type('image/webp'),
+    url('/pool-service-st-petersburg-hero-mobile.jpg') type('image/jpeg')
+  );
+  filter: saturate(1.24) brightness(0.92) contrast(1.06) hue-rotate(4deg);
+  -webkit-mask-image: linear-gradient(to bottom, black 72%, transparent 98%);
+  mask-image: linear-gradient(to bottom, black 72%, transparent 98%);
+}
+.hero-clearwater-scrim {
+  /* mobile: overall darken + top-down darken for the stacked text + edge vignette.
+     Slightly lighter wash than the inland pages so the bright "clear water"
+     treatment reads through. */
+  background-image:
+    linear-gradient(rgba(2,6,12,0.44), rgba(2,6,12,0.44)),
+    linear-gradient(to bottom, rgba(2,6,12,0.32) 0%, rgba(4,9,15,0.38) 55%, rgba(7,17,28,0.30) 100%),
+    radial-gradient(ellipse 85% 65% at center, transparent 58%, rgba(5,11,20,0.5) 100%);
+}
+@media (min-width: 768px) {
+  .hero-clearwater-scrim {
+    /* desktop: strong left scrim (behind the headline column) + light overall
+       darken + edge vignette. Lighter on the right so the dual-zone card sits
+       over a visible pool rather than a black box. */
+    background-image:
+      linear-gradient(to right, rgba(2,6,12,0.80) 0%, rgba(2,6,12,0.50) 38%, rgba(2,6,12,0.18) 70%, rgba(2,6,12,0.10) 100%),
+      linear-gradient(to bottom, rgba(2,6,12,0.18) 0%, rgba(4,9,15,0.24) 60%, transparent 100%),
+      radial-gradient(ellipse 85% 65% at center, transparent 58%, rgba(5,11,20,0.5) 100%);
+  }
+}
+/* Cooler interlude tint than the inland pages (brand blue, not the navy
+   #0a2540) — keeps the "clear water" identity going through the band. */
+.interlude-tint-clearwater { background-color: #1669AE; mix-blend-mode: overlay; opacity: 0.38; }
+.interlude-bg-clearwater-desktop {
+  background-image: image-set(
+    url('/pool-service-st-petersburg-hero.webp') type('image/webp') 1x,
+    url('/pool-service-st-petersburg-hero-1920.webp') type('image/webp') 2x,
+    url('/pool-service-st-petersburg-hero.jpg') type('image/jpeg') 1x
+  );
+  filter: saturate(1.18) brightness(0.52) contrast(1.05) hue-rotate(4deg);
+}
+.interlude-bg-clearwater-mobile {
+  background-image: image-set(
+    url('/pool-service-st-petersburg-hero-mobile.webp') type('image/webp'),
+    url('/pool-service-st-petersburg-hero-mobile.jpg') type('image/jpeg')
+  );
+  filter: saturate(1.18) brightness(0.52) contrast(1.05) hue-rotate(4deg);
+}
+
 /* Mobile motion strip — force-visible safety net. The app-level MotionConfig
    (App.tsx) sets reducedMotion on mobile so page animations don't run, but the
    below-fold uses whileInView + viewport{once:true}; opening/closing the quote

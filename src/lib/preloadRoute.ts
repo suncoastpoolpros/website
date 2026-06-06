@@ -12,6 +12,7 @@ const PRELOADERS: Record<string, () => Promise<unknown>> = {
   '/belleair-beach-fl': () => import('@/pages/BelleairBeachPage'),
   '/treasure-island-fl': () => import('@/pages/TreasureIslandPage'),
   '/seminole-fl': () => import('@/pages/SeminolePage'),
+  '/largo-fl': () => import('@/pages/LargoPage'),
   '/careers': () => import('@/pages/CareersPage'),
   '/faq': () => import('@/pages/FaqPage'),
   '/how-it-works': () => import('@/pages/HowItWorksPage'),

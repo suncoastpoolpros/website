@@ -11,6 +11,7 @@ import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
 import { seminoleFaqs } from '@/pages/seminoleFaqs';
 import { CtaBand } from '@/components/CtaBand';
 import SeminoleBelowFold from '@/pages/SeminoleBelowFold';
+import { SeminoleCoverageMap } from '@/components/SeminoleCoverageMap';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
@@ -54,11 +55,12 @@ const HeroSection = () => {
       </div>
 
       <Container className="relative z-10 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
         <m.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="max-w-3xl"
+          className="lg:col-span-7"
         >
           {/* Top row — locale badge + a light social-proof rating, side by side. */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3 mb-7">
@@ -83,10 +85,10 @@ const HeroSection = () => {
 
           {/* Visual headline — a div, so the SEO h1 below carries keyword weight. */}
           <div className="text-shadow-city-h1 font-display font-bold md:font-black text-white tracking-tight mb-5 leading-[1.05]">
-            <span className="block text-[2.75rem] sm:text-6xl md:text-[4rem] leading-[1.02]">
+            <span className="block text-[2.75rem] sm:text-6xl md:text-[4rem] lg:text-[3.5rem] xl:text-[3.9rem] leading-[1.02]">
               The pool you
             </span>
-            <span className="block text-[2.75rem] sm:text-6xl md:text-[4rem] leading-[1.02]">
+            <span className="block text-[2.75rem] sm:text-6xl md:text-[4rem] lg:text-[3.5rem] xl:text-[3.9rem] leading-[1.02]">
               actually <span className="text-brand-orange-light">live with.</span>
             </span>
           </div>
@@ -124,16 +126,14 @@ const HeroSection = () => {
             No contracts · Cancel anytime · A local, Pinellas-based crew.
           </p>
 
-          {/* Stat strip — the distinct hero closer. Uniform-height glass cards
-              with icon chips so the row reads as one designed element. */}
-          <div className="mt-9 grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-3xl">
+          {/* Trust stats — borderless icon+text so they read as facts, not
+              buttons. The call CTA is the only glass pill in the hero, so these
+              can't be mistaken for it. Anchored by a hairline above. */}
+          <div className="mt-8 pt-7 border-t border-white/10 grid grid-cols-2 gap-x-6 gap-y-5 max-w-md">
             {HERO_STATS.map((s) => (
-              <div
-                key={s.label}
-                className="glass-panel rounded-xl p-4 flex items-center gap-3 h-full transition-colors hover:bg-white/10"
-              >
+              <div key={s.label} className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center shrink-0">
-                  <s.icon className="w-5 h-5 text-brand-orange-light" />
+                  <s.icon className="w-[18px] h-[18px] text-brand-orange-light" />
                 </div>
                 <div className="leading-tight min-w-0">
                   <div className="text-white font-semibold text-sm whitespace-nowrap">{s.label}</div>
@@ -143,6 +143,13 @@ const HeroSection = () => {
             ))}
           </div>
         </m.div>
+
+        {/* Coverage map — the Seminole-only hero visual. Desktop/lg+ only; the
+            mobile hero is already content-rich and stays single-column. */}
+        <div className="hidden lg:flex lg:col-span-5 justify-center items-center relative">
+          <SeminoleCoverageMap />
+        </div>
+        </div>
       </Container>
     </div>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Hero, HomeHeroPhoneSection } from '@/components/Hero';
 import { FeatureGrid } from '@/components/FeatureGrid';
@@ -8,10 +8,41 @@ import { ServiceAreas } from '@/components/ServiceAreas';
 import { CtaBand } from '@/components/CtaBand';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 // import { Testimonials } from '@/components/Testimonials'; // Re-enable once real reviews are added
-import { FAQ } from '@/components/FAQ';
+import { FAQ, homepageFaqs } from '@/components/FAQ';
 import { QuoteForm } from '@/components/QuoteForm';
 import { Footer } from '@/components/Footer';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
+import { webSiteSchema, poolServiceSchema } from '@/lib/businessSchema';
+import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
+
+// Homepage JSON-LD. The canonical LocalBusiness entity ships statically in
+// index.html (crawlable on every page); here we add only the homepage-specific
+// nodes — WebSite, the priced Service, the homepage FAQ, and a one-level
+// breadcrumb — referencing the business by @id. Title/desc/canonical/OG are
+// handled by usePageMeta (SSR); usePageMeta doesn't do JSON-LD, so this effect
+// adds it client-side. See CLAUDE.md #9.
+const usePageSchema = () => {
+  useEffect(() => {
+    const ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.textContent = JSON.stringify([
+      webSiteSchema(),
+      poolServiceSchema(),
+      {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: homepageFaqs.map((f) => ({
+          '@type': 'Question',
+          name: f.question,
+          acceptedAnswer: { '@type': 'Answer', text: f.answer },
+        })),
+      },
+      breadcrumbSchema([{ name: 'Home', path: '/' }]),
+    ]);
+    document.head.appendChild(ld);
+    return () => ld.remove();
+  }, []);
+};
 
 export const LandingPage = () => {
   usePageMeta({
@@ -41,6 +72,7 @@ export const LandingPage = () => {
       { href: FONTS.caveat700, media: '(min-width: 1024px)' },
     ],
   });
+  usePageSchema();
 
   return (
     <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
