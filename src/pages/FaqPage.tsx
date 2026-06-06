@@ -97,10 +97,12 @@ const FaqPageInner = () => {
     <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
       <div className="absolute md:fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
 
-      {/* SaaS hero glow */}
+      {/* FAQ hero — calm, balanced twin-blue glow with a faint warm center */}
+      <div className="absolute top-0 inset-x-0 h-[460px] bg-gradient-to-b from-brand-blue/[0.08] to-transparent pointer-events-none" />
       <div className="absolute top-0 inset-x-0 h-[460px] pointer-events-none overflow-hidden">
-        <div className="absolute left-1/2 -translate-x-1/2 -top-32 w-[820px] h-[520px] rounded-full bg-brand-blue/20 blur-[120px]" />
-        <div className="absolute left-1/2 -translate-x-1/4 -top-20 w-[420px] h-[420px] rounded-full bg-brand-orange/10 blur-[110px]" />
+        <div className="absolute left-[14%] -top-28 w-[480px] h-[460px] rounded-full bg-brand-blue/15 blur-[130px]" />
+        <div className="absolute right-[14%] -top-28 w-[480px] h-[460px] rounded-full bg-brand-blue/15 blur-[130px]" />
+        <div className="absolute left-1/2 -translate-x-1/2 -top-8 w-[320px] h-[320px] rounded-full bg-brand-orange/[0.07] blur-[120px]" />
       </div>
 
       <div className="relative z-10">

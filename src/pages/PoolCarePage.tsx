@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
-  FlaskConical,
+  BookOpen,
   Sprout,
   ShieldCheck,
   Droplets,
@@ -22,6 +22,7 @@ import {
 import { QuoteSheetProvider, useQuoteSheet } from '@/components/QuoteSheet';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { Container } from '@/components/Container';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { usePageMeta } from '@/lib/usePageMeta';
 import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
@@ -145,8 +146,38 @@ const GUIDES: Guide[] = [
   },
 ];
 
-// The "why it matters" trio under the guides — frames chemistry around outcomes
-// owners actually care about, not jargon.
+// The guide that headlines the page as the "Most read" spotlight. Pulled out of
+// the category grid below so it isn't shown twice.
+const FEATURED_SLUG = '/pool-care/green-pool';
+
+// Guides are grouped into a small library taxonomy so the hub reads like a
+// structured index, not a flat tile wall. Slugs reference GUIDES (single source
+// of truth — also drives the ItemList schema). The featured guide is excluded.
+const CATEGORY_GROUPS: { label: string; slugs: string[] }[] = [
+  {
+    label: 'Common pool problems',
+    slugs: ['/pool-care/cloudy-pool-water', '/pool-care/pool-smells-like-chlorine'],
+  },
+  {
+    label: 'Water chemistry',
+    slugs: ['/pool-care/nitrates', '/pool-care/cyanuric-acid'],
+  },
+  {
+    label: 'Equipment, cost & choices',
+    slugs: [
+      '/pool-care/variable-speed-pumps',
+      '/pool-care/salt-water-vs-chlorine',
+      '/pool-care/pool-service-vs-diy',
+    ],
+  },
+];
+
+const bySlug = (slug: string) => GUIDES.find((g) => g.to === slug)!;
+const featured = bySlug(FEATURED_SLUG);
+
+// The "why it matters" trio — framed around outcomes owners care about, not
+// jargon. Rendered on the light band that the guide pages use, to tie the hub to
+// its guides (and break from the all-dark utility look of /tools).
 const WHY = [
   {
     icon: Zap,
@@ -165,13 +196,56 @@ const WHY = [
   },
 ];
 
+// Compact guide card used inside the category grids.
+const GuideCard: React.FC<{ g: Guide; i: number }> = ({ g, i }) => (
+  <m.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ delay: i * 0.06 }}
+    className="h-full"
+  >
+    <Link
+      to={g.to}
+      className="group relative flex flex-col h-full rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:p-7 overflow-hidden hover:bg-white/[0.05] hover:border-white/20 transition-colors"
+    >
+      {/* corner bloom on hover */}
+      <div className="absolute -top-20 -right-20 w-44 h-44 rounded-full bg-brand-orange/10 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      <div className="relative flex items-center gap-3 mb-4">
+        <span className="w-12 h-12 rounded-xl bg-brand-orange/15 flex items-center justify-center shrink-0">
+          <g.icon className="w-6 h-6 text-brand-orange" />
+        </span>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-blue-light">
+          {g.tag}
+        </span>
+      </div>
+      <h3 className="relative text-white font-display font-bold text-xl sm:text-2xl mb-2.5">
+        {g.title}
+      </h3>
+      <p className="relative text-gray-400 text-[15px] leading-relaxed mb-5">{g.blurb}</p>
+      <ul className="relative space-y-2 mb-6">
+        {g.points.map((p) => (
+          <li key={p} className="flex items-start gap-2.5 text-[14px] text-gray-300">
+            <Check className="w-4 h-4 text-brand-blue-light shrink-0 mt-0.5" />
+            <span>{p}</span>
+          </li>
+        ))}
+      </ul>
+      <span className="relative inline-flex items-center gap-1.5 text-brand-orange font-semibold text-sm mt-auto group-hover:gap-2.5 transition-all">
+        Read the guide
+        <ArrowRight className="w-4 h-4" />
+      </span>
+    </Link>
+  </m.div>
+);
+
 const PoolCarePageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
 
   usePageMeta({
     title: 'Pool Care Guides — Water Chemistry, Explained',
     description:
-      'Plain-English pool water chemistry guides from working St. Petersburg pool techs — nitrates, cyanuric acid and chlorine, and the numbers that keep your pool clear. Free to read.',
+      'Plain-English pool care guides from St. Petersburg techs — green and cloudy water, the chlorine smell, water chemistry, and DIY vs. a pro. Free to read.',
     canonicalPath: '/pool-care/',
   });
 
@@ -210,119 +284,157 @@ const PoolCarePageInner = () => {
   return (
     <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
       <div className="absolute md:fixed inset-0 bg-mesh opacity-50 pointer-events-none" />
-      <div className="absolute top-0 inset-x-0 h-[460px] pointer-events-none overflow-hidden">
-        <div className="absolute left-1/2 -translate-x-1/2 -top-28 w-[760px] h-[500px] rounded-full bg-brand-blue/20 blur-[140px]" />
-        <div className="absolute left-1/2 -translate-x-1/4 -top-16 w-[440px] h-[440px] rounded-full bg-brand-orange/10 blur-[120px]" />
+
+      {/* Pool Care hero — cool, deep-water glow (distinct from the orange-led Tools hero) */}
+      <div className="absolute top-0 inset-x-0 h-[480px] bg-gradient-to-b from-brand-blue/[0.10] to-transparent pointer-events-none" />
+      <div className="absolute top-0 inset-x-0 h-[480px] pointer-events-none overflow-hidden">
+        <div className="absolute left-1/2 -translate-x-1/2 -top-32 w-[900px] h-[520px] rounded-full bg-brand-blue/20 blur-[150px]" />
+        <div className="absolute left-[18%] top-8 w-[360px] h-[360px] rounded-full bg-brand-blue/15 blur-[130px]" />
+        <div className="absolute right-[16%] -top-10 w-[320px] h-[320px] rounded-full bg-brand-orange/[0.08] blur-[120px]" />
       </div>
 
       <div className="relative z-10">
         <Navbar />
 
-        {/* Hero */}
+        {/* Hero — framed as a library, not a single utility page */}
         <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-[10px] px-3.5 py-1.5">
-            <FlaskConical className="w-3.5 h-3.5 text-brand-orange" />
-            <span className="text-gray-300 font-semibold tracking-wide text-xs">
-              Pool Water Chemistry
-            </span>
+            <BookOpen className="w-3.5 h-3.5 text-brand-orange" />
+            <span className="text-gray-300 font-semibold tracking-wide text-xs">The Pool Care Library</span>
           </div>
           <h1 className="font-display font-bold text-white text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.05] tracking-tight mb-5">
             Pool care, <span className="text-brand-orange">explained</span>
           </h1>
           <p className="text-lg text-gray-400 leading-relaxed max-w-xl mx-auto">
-            Straight-talking guides to the chemistry behind a clear pool — written by the techs who
-            balance water across St. Petersburg every week. No jargon, no fluff, free to read.
+            Straight-talking guides to everything that keeps a pool clear — green water, cloudy water,
+            the chemistry, the equipment — written by the techs who balance pools across St.
+            Petersburg every week.
           </p>
-        </section>
-
-        {/* Guides grid */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <h2 className="sr-only">Pool care guides</h2>
-          <div className="grid gap-5 md:grid-cols-2">
-            {GUIDES.map((g, i) => (
-              <m.div
-                key={g.to}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-              >
-                <Link
-                  to={g.to}
-                  className="group relative flex flex-col h-full rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:p-7 overflow-hidden hover:bg-white/[0.05] hover:border-white/20 transition-colors"
-                >
-                  {/* corner bloom on hover */}
-                  <div className="absolute -top-20 -right-20 w-44 h-44 rounded-full bg-brand-orange/10 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                  <div className="relative flex items-center gap-3 mb-4">
-                    <span className="w-12 h-12 rounded-xl bg-brand-orange/15 flex items-center justify-center shrink-0">
-                      <g.icon className="w-6 h-6 text-brand-orange" />
-                    </span>
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-blue-light">
-                      {g.tag}
-                    </span>
-                  </div>
-                  <h3 className="relative text-white font-display font-bold text-xl sm:text-2xl mb-2.5">
-                    {g.title}
-                  </h3>
-                  <p className="relative text-gray-400 text-[15px] leading-relaxed mb-5">
-                    {g.blurb}
-                  </p>
-                  <ul className="relative space-y-2 mb-6">
-                    {g.points.map((p) => (
-                      <li key={p} className="flex items-start gap-2.5 text-[14px] text-gray-300">
-                        <Check className="w-4 h-4 text-brand-blue-light shrink-0 mt-0.5" />
-                        <span>{p}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <span className="relative inline-flex items-center gap-1.5 text-brand-orange font-semibold text-sm mt-auto group-hover:gap-2.5 transition-all">
-                    Read the guide
-                    <ArrowRight className="w-4 h-4" />
-                  </span>
-                </Link>
-              </m.div>
-            ))}
-
-            {/* "More guides" placeholder — spans full width below the two cards */}
-            <div className="md:col-span-2 flex flex-col items-center justify-center text-center rounded-2xl border border-dashed border-white/10 bg-white/[0.01] p-6 min-h-[120px]">
-              <p className="text-gray-400 font-semibold mb-1">More guides coming soon</p>
-              <p className="text-gray-600 text-sm">
-                Phosphates, total alkalinity, stains and scale, and more.
-              </p>
-            </div>
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-gray-500">
+            <span className="text-gray-300 font-semibold">{GUIDES.length} in-depth guides</span>
+            <span className="text-gray-700">•</span>
+            <span>Written by working techs</span>
+            <span className="text-gray-700">•</span>
+            <span>Free to read</span>
           </div>
         </section>
 
-        {/* Why chemistry matters */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="text-center mb-10">
-            <h2 className="section-heading text-white">Why the numbers matter</h2>
-            <p className="section-subtext mt-3 max-w-xl mx-auto">
-              Get the chemistry right and everything else gets easier.
+        {/* Featured "Most read" spotlight — wide editorial card */}
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
+          <div className="flex items-center gap-3 mb-5">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange shrink-0">
+              Most read
+            </span>
+            <span className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+          </div>
+          <m.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <Link
+              to={featured.to}
+              className="group relative grid sm:grid-cols-[1.05fr_1.45fr] rounded-3xl border border-white/10 bg-white/[0.03] overflow-hidden hover:border-white/20 transition-colors"
+            >
+              {/* visual panel */}
+              <div className="relative min-h-[180px] p-8 flex flex-col justify-between bg-gradient-to-br from-brand-blue/25 via-brand-blue/10 to-brand-orange/15 overflow-hidden">
+                <div className="absolute -bottom-16 -left-10 w-52 h-52 rounded-full bg-brand-orange/15 blur-3xl pointer-events-none" />
+                <span className="relative w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center">
+                  <featured.icon className="w-7 h-7 text-white" />
+                </span>
+                <span className="relative text-[11px] font-semibold uppercase tracking-[0.16em] text-white/80 mt-6">
+                  {featured.tag}
+                </span>
+              </div>
+              {/* content */}
+              <div className="relative p-7 sm:p-8 flex flex-col">
+                <h2 className="text-white font-display font-bold text-2xl sm:text-3xl mb-3">
+                  {featured.title}
+                </h2>
+                <p className="text-gray-400 text-[15px] leading-relaxed mb-5">{featured.blurb}</p>
+                <ul className="space-y-2 mb-6">
+                  {featured.points.map((p) => (
+                    <li key={p} className="flex items-start gap-2.5 text-[14px] text-gray-300">
+                      <Check className="w-4 h-4 text-brand-blue-light shrink-0 mt-0.5" />
+                      <span>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+                <span className="inline-flex items-center gap-1.5 text-brand-orange font-semibold text-sm mt-auto group-hover:gap-2.5 transition-all">
+                  Read the guide
+                  <ArrowRight className="w-4 h-4" />
+                </span>
+              </div>
+            </Link>
+          </m.div>
+        </section>
+
+        {/* Browse all — guides grouped into a small library taxonomy */}
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+          {CATEGORY_GROUPS.map((group) => (
+            <div key={group.label} className="mb-12 last:mb-0">
+              <div className="flex items-center gap-3 mb-5">
+                <h2 className="font-display font-bold text-white text-xl sm:text-2xl shrink-0">
+                  {group.label}
+                </h2>
+                <span className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+              </div>
+              <div className="grid gap-5 md:grid-cols-2">
+                {group.slugs.map((slug, i) => (
+                  <GuideCard key={slug} g={bySlug(slug)} i={i} />
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {/* "More guides" teaser */}
+          <div className="mt-10 flex flex-col items-center justify-center text-center rounded-2xl border border-dashed border-white/10 bg-white/[0.01] p-6 min-h-[120px]">
+            <p className="text-gray-400 font-semibold mb-1">More guides coming soon</p>
+            <p className="text-gray-600 text-sm">
+              Phosphates, total alkalinity, stains and scale, and more.
             </p>
           </div>
-          <div className="grid gap-5 sm:grid-cols-3">
-            {WHY.map((w, i) => (
-              <m.div
-                key={w.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-6"
-              >
-                <span className="w-11 h-11 rounded-xl bg-brand-blue/15 flex items-center justify-center mb-4">
-                  <w.icon className="w-[22px] h-[22px] text-brand-blue-light" />
-                </span>
-                <h3 className="text-white font-semibold text-lg mb-2">{w.title}</h3>
-                <p className="text-gray-400 text-[15px] leading-relaxed">{w.text}</p>
-              </m.div>
-            ))}
-          </div>
+        </section>
+
+        {/* Why chemistry matters — on the guides' signature light band */}
+        <section className="py-16 sm:py-20 mt-8 bg-gradient-to-b from-[#e4e9f0] to-[#d6dde7] relative overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[50%] bg-brand-blue/[0.05] rounded-full blur-[140px] pointer-events-none" />
+          <Container className="relative z-10">
+            <div className="text-center mb-12 max-w-2xl mx-auto">
+              <span className="text-brand-blue font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+                Why It Matters
+              </span>
+              <h2 className="font-display font-bold text-[#0a1628] text-3xl sm:text-4xl leading-tight mb-3">
+                Why the numbers matter
+              </h2>
+              <p className="text-slate-600 leading-relaxed">
+                Get the chemistry right and everything else gets easier — clearer water, fewer
+                problems, gear that lasts.
+              </p>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-3 max-w-5xl mx-auto">
+              {WHY.map((w, i) => (
+                <m.div
+                  key={w.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  className="rounded-2xl bg-white border border-black/5 shadow-sm shadow-black/5 p-6"
+                >
+                  <span className="w-11 h-11 rounded-xl bg-brand-blue/10 flex items-center justify-center mb-4">
+                    <w.icon className="w-[22px] h-[22px] text-brand-blue" />
+                  </span>
+                  <h3 className="text-[#0a1628] font-display font-bold text-lg mb-2">{w.title}</h3>
+                  <p className="text-slate-600 text-[15px] leading-relaxed">{w.text}</p>
+                </m.div>
+              ))}
+            </div>
+          </Container>
         </section>
 
         {/* Cross-link to the calculators (complementary to the chemistry guides) */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-16">
           <Link
             to="/tools"
             className="group flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 hover:bg-white/[0.05] hover:border-white/20 transition-colors"
@@ -331,9 +443,7 @@ const PoolCarePageInner = () => {
               <Calculator className="w-6 h-6 text-brand-orange" />
             </span>
             <div className="flex-1">
-              <h2 className="text-white font-display font-bold text-lg mb-1">
-                Free pool calculators
-              </h2>
+              <h2 className="text-white font-display font-bold text-lg mb-1">Free pool calculators</h2>
               <p className="text-gray-400 text-[15px] leading-relaxed">
                 Work out your pool volume and heating costs — the numbers you need before you dose a
                 single chemical.

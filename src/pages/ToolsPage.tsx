@@ -78,9 +78,11 @@ const ToolsPageInner = () => {
   return (
     <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
       <div className="absolute md:fixed inset-0 bg-mesh opacity-50 pointer-events-none" />
+      {/* Tools hero — warm, orange-led glow weighted to the right */}
+      <div className="absolute top-0 inset-x-0 h-[460px] bg-gradient-to-b from-brand-orange/[0.06] to-transparent pointer-events-none" />
       <div className="absolute top-0 inset-x-0 h-[460px] pointer-events-none overflow-hidden">
-        <div className="absolute left-1/2 -translate-x-1/2 -top-28 w-[760px] h-[500px] rounded-full bg-brand-blue/20 blur-[140px]" />
-        <div className="absolute left-1/2 -translate-x-1/4 -top-16 w-[440px] h-[440px] rounded-full bg-brand-orange/10 blur-[120px]" />
+        <div className="absolute right-[6%] -top-24 w-[620px] h-[480px] rounded-full bg-brand-orange/20 blur-[140px]" />
+        <div className="absolute left-[2%] -top-16 w-[420px] h-[420px] rounded-full bg-brand-blue/15 blur-[120px]" />
       </div>
 
       <div className="relative z-10">
