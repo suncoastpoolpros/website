@@ -79,7 +79,10 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
     }
 
     const apiKey = env.RESEND_API_KEY;
-    const fromEmail = env.PROPOSAL_FROM_EMAIL || env.CONTACT_FROM_EMAIL;
+    // Proposals send from service@ (a monitored inbox) rather than the no-reply
+    // contact address, so a customer who replies outside the "APPROVED" flow
+    // still reaches a real mailbox. Overridable via PROPOSAL_FROM_EMAIL.
+    const fromEmail = env.PROPOSAL_FROM_EMAIL || 'service@suncoastpoolpros.com';
     const replyTo = env.PROPOSAL_REPLY_TO || env.CONTACT_TO_EMAIL;
     const bcc = env.CONTACT_TO_EMAIL || env.PROPOSAL_REPLY_TO;
     if (!apiKey || !fromEmail) {
