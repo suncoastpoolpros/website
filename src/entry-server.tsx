@@ -27,6 +27,9 @@ import { HowItWorksPage } from '@/pages/HowItWorksPage';
 import { ToolsPage } from '@/pages/ToolsPage';
 import { PoolCarePage } from '@/pages/PoolCarePage';
 import { NitratesPage } from '@/pages/NitratesPage';
+import { CloudyPoolWaterPage } from '@/pages/CloudyPoolWaterPage';
+import { PoolSmellPage } from '@/pages/PoolSmellPage';
+import { PoolServiceVsDiyPage } from '@/pages/PoolServiceVsDiyPage';
 import { CyanuricAcidPage } from '@/pages/CyanuricAcidPage';
 import { GreenPoolPage } from '@/pages/GreenPoolPage';
 import { VariableSpeedPumpsPage } from '@/pages/VariableSpeedPumpsPage';
@@ -54,6 +57,9 @@ export const PRERENDER_ROUTES = [
   '/how-it-works',
   '/pool-care',
   '/pool-care/nitrates',
+  '/pool-care/cloudy-pool-water',
+  '/pool-care/pool-smells-like-chlorine',
+  '/pool-care/pool-service-vs-diy',
   '/pool-care/cyanuric-acid',
   '/pool-care/green-pool',
   '/pool-care/variable-speed-pumps',
@@ -80,6 +86,9 @@ const Routing = () => (
     <Route path="/how-it-works" element={<HowItWorksPage />} />
     <Route path="/pool-care" element={<PoolCarePage />} />
     <Route path="/pool-care/nitrates" element={<NitratesPage />} />
+    <Route path="/pool-care/cloudy-pool-water" element={<CloudyPoolWaterPage />} />
+    <Route path="/pool-care/pool-smells-like-chlorine" element={<PoolSmellPage />} />
+    <Route path="/pool-care/pool-service-vs-diy" element={<PoolServiceVsDiyPage />} />
     <Route path="/pool-care/cyanuric-acid" element={<CyanuricAcidPage />} />
     <Route path="/pool-care/green-pool" element={<GreenPoolPage />} />
     <Route path="/pool-care/variable-speed-pumps" element={<VariableSpeedPumpsPage />} />

@@ -5,6 +5,9 @@ import {
   FlaskConical,
   Sprout,
   ShieldCheck,
+  Droplets,
+  Wind,
+  Scale,
   Waves,
   Sparkles,
   Zap,
@@ -47,6 +50,45 @@ const GUIDES: Guide[] = [
       'Why pools go green, fast — especially in Florida',
       'Green vs. mustard vs. black algae',
       'The green-to-clean treatment plan',
+    ],
+  },
+  {
+    to: '/pool-care/cloudy-pool-water',
+    icon: Droplets,
+    tag: 'Cloudy & Hazy Water',
+    title: 'Cloudy Pool Water',
+    blurb:
+      'Cloudy water comes down to five causes — filtration, balance, sanitizer, particles too fine to filter, or sheer overload. How to tell which one you’ve got, the fix in order, and whether to reach for a clarifier or a flocculant.',
+    points: [
+      'Why it’s cloudy even when “the chemicals are fine”',
+      'The five real causes, fastest to rule out first',
+      'Clarifier vs. flocculant — which to use',
+    ],
+  },
+  {
+    to: '/pool-care/pool-smells-like-chlorine',
+    icon: Wind,
+    tag: 'Smell & Irritation',
+    title: 'Pool Smells Like Chlorine',
+    blurb:
+      'The strong “chlorine” smell is the one thing in pool care almost everyone gets backwards. It isn’t too much chlorine — it’s chloramines, a sign you have too little. What you’re really smelling, and how to clear it for good.',
+    points: [
+      'Why the smell means too little chlorine, not too much',
+      'What turns chlorine into smelly chloramines',
+      'The breakpoint shock that actually clears it',
+    ],
+  },
+  {
+    to: '/pool-care/pool-service-vs-diy',
+    icon: Scale,
+    tag: 'DIY vs. Pro',
+    title: 'Pool Service vs. DIY',
+    blurb:
+      'Doing your own pool is doable — so the real question is what it costs you in time, gear, and the odd green-pool weekend. The honest math both ways, with real Florida numbers and where DIY actually trips people up.',
+    points: [
+      'What DIY really costs once you add it all up',
+      'Is a pool service worth it? The honest answer',
+      'The hidden cost a test kit can’t catch',
     ],
   },
   {
