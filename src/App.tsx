@@ -20,6 +20,7 @@ const BelleairBeachPage = lazy(() => import('@/pages/BelleairBeachPage').then((m
 const TreasureIslandPage = lazy(() => import('@/pages/TreasureIslandPage').then((m) => ({ default: m.TreasureIslandPage })));
 const StPeteBeachPage = lazy(() => import('@/pages/StPeteBeachPage').then((m) => ({ default: m.StPeteBeachPage })));
 const SnellIslePage = lazy(() => import('@/pages/SnellIslePage').then((m) => ({ default: m.SnellIslePage })));
+const SeminolePage = lazy(() => import('@/pages/SeminolePage').then((m) => ({ default: m.SeminolePage })));
 const CareersPage = lazy(() => import('@/pages/CareersPage').then((m) => ({ default: m.CareersPage })));
 const FaqPage = lazy(() => import('@/pages/FaqPage').then((m) => ({ default: m.FaqPage })));
 const HowItWorksPage = lazy(() => import('@/pages/HowItWorksPage').then((m) => ({ default: m.HowItWorksPage })));
@@ -143,6 +144,7 @@ export default function App() {
           <Route path="/treasure-island-fl" element={<TreasureIslandPage />} />
           <Route path="/st-pete-beach-fl" element={<StPeteBeachPage />} />
           <Route path="/snell-isle-fl" element={<SnellIslePage />} />
+          <Route path="/seminole-fl" element={<SeminolePage />} />
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/how-it-works" element={<HowItWorksPage />} />
