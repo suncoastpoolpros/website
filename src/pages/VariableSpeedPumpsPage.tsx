@@ -14,6 +14,8 @@ import {
   Calculator,
   ArrowRight,
   Plus,
+  Star,
+  BookOpen,
   MessageSquare,
   Phone,
 } from 'lucide-react';
@@ -73,45 +75,46 @@ const BENEFIT_CARDS = [
   },
 ];
 
-// Real pumps we install — a value, popular, and premium pick across the two
-// brands we trust most (Pentair + Hayward). Savings are worked at $0.15/kWh
-// using the ~75% affinity-law reduction; prices are approximate street cost
-// (pump only, before install) and move with the market.
-const PUMPS = [
-  {
-    tier: 'Value pick',
-    name: 'Pentair SuperFlo VS',
-    thp: '1.5 THP',
-    bestFor:
-      'Small-to-mid pools and simple setups. Compact, quiet, and a near drop-in upgrade from the everyday SuperFlo single-speed.',
-    price: '$850–$950',
-    savings: '$625',
-    scenario: 'vs a 1.5 HP single-speed run 8 hrs/day',
-    featured: false,
-  },
-  {
-    tier: 'Most popular',
-    name: 'Hayward TriStar VS',
-    thp: '2.7 THP',
-    bestFor:
-      'The workhorse for standard-to-large residential pools. Eight programmable speeds and a genuinely quiet, efficient motor.',
-    price: '$1,100–$1,300',
-    savings: '$945',
-    scenario: 'vs a 2 HP single-speed run 10 hrs/day',
-    featured: true,
-  },
-  {
-    tier: 'Premium',
-    name: 'Pentair IntelliFlo3 VSF',
-    thp: '3.0 THP',
-    bestFor:
-      'Large pools, water features, heaters, or pool-and-spa combos. Variable-flow tech holds a set flow rate automatically, no matter the filter.',
-    price: '$1,300–$1,600',
-    savings: '$1,110',
-    scenario: 'vs a 2.5 HP single-speed run 10 hrs/day',
-    featured: false,
-  },
+// A reference sample of real pool pumps for the comparison table — variable-
+// speed models plus the common single-speeds people are usually replacing.
+// `hp` is the size key into KW_BY_HP: a single-speed's own HP, or the
+// comparable single-speed a VSP would replace (used to estimate running cost).
+// `pick` flags the few we'd steer a neighbor toward. Not exhaustive, not an
+// endorsement — the conversion goal is weekly pool service, not pump sales.
+type PumpRow = {
+  brand: string;
+  model: string;
+  type: 'Variable' | 'Single';
+  size: string;
+  hp: number;
+  bestFor: string;
+  pick?: boolean;
+};
+
+const PUMP_LIST: PumpRow[] = [
+  // Variable-speed
+  { brand: 'Pentair', model: 'SuperFlo VS', type: 'Variable', size: '1.5 THP', hp: 1.5, bestFor: 'Small-to-mid pools, easy drop-in', pick: true },
+  { brand: 'Hayward', model: 'MaxFlo VS', type: 'Variable', size: '1.65 THP', hp: 1.5, bestFor: 'Small-to-mid pools, value' },
+  { brand: 'Hayward', model: 'Super Pump VS', type: 'Variable', size: '1.65 THP', hp: 1.5, bestFor: 'Drop-in for a Super Pump' },
+  { brand: 'Jandy', model: 'VS FloPro', type: 'Variable', size: '1.65 THP', hp: 1.5, bestFor: 'Compact and budget-friendly' },
+  { brand: 'Hayward', model: 'TriStar VS', type: 'Variable', size: '2.7 THP', hp: 2.5, bestFor: 'Standard-to-large pools', pick: true },
+  { brand: 'Jandy', model: 'VS PlusHP', type: 'Variable', size: '2.7 THP', hp: 2.5, bestFor: 'High-head plumbing, spa jets' },
+  { brand: 'Waterway', model: 'Power Defender 270', type: 'Variable', size: '2.7 THP', hp: 2.5, bestFor: 'Full-size, value pick' },
+  { brand: 'Pentair', model: 'IntelliFlo3 VSF', type: 'Variable', size: '3.0 THP', hp: 3, bestFor: 'Large pools, features, pool + spa', pick: true },
+  // Single-speed — for reference / to find what you've probably got now
+  { brand: 'Hayward', model: 'Super Pump', type: 'Single', size: '1 HP', hp: 1, bestFor: 'Common older pump' },
+  { brand: 'Hayward', model: 'Super Pump', type: 'Single', size: '1.5 HP', hp: 1.5, bestFor: 'Very common older pump' },
+  { brand: 'Pentair', model: 'SuperFlo', type: 'Single', size: '1.5 HP', hp: 1.5, bestFor: 'Very common older pump' },
+  { brand: 'Hayward', model: 'Super II', type: 'Single', size: '2 HP', hp: 2, bestFor: 'High-flow older pump' },
+  { brand: 'Pentair', model: 'WhisperFlo', type: 'Single', size: '2 HP', hp: 2, bestFor: 'Larger older pump' },
 ];
+
+const PUMP_FILTERS = [
+  { id: 'variable', label: 'Variable-speed' },
+  { id: 'single', label: 'Single-speed' },
+  { id: 'all', label: 'All' },
+] as const;
+type PumpFilter = (typeof PUMP_FILTERS)[number]['id'];
 
 // Page-specific FAQ — drives the accordion and the FAQPage JSON-LD.
 const VSP_FAQ = [
@@ -163,7 +166,7 @@ const articleSchema = {
 
 // Typical single-speed motor draw (kW) by nameplate HP — used by the calculator.
 const HP_OPTIONS = [1, 1.5, 2, 2.5];
-const KW_BY_HP: Record<number, number> = { 1: 1.5, 1.5: 1.9, 2: 2.3, 2.5: 2.7 };
+const KW_BY_HP: Record<number, number> = { 0.75: 1.1, 1: 1.5, 1.5: 1.9, 2: 2.3, 2.5: 2.7, 3: 3.0 };
 
 // A variable-speed pump uses ~75% less energy for the same daily turnover —
 // the figure the affinity laws predict (energy ∝ speed²; half speed → a quarter
@@ -192,10 +195,24 @@ const VariableSpeedPumpsPageInner = () => {
   const vspAnnual = singleAnnual * (1 - VSP_SAVINGS_FRACTION);
   const annualSavings = singleAnnual - vspAnnual;
 
+  // Comparison table — filter + per-pump running cost, driven by the same rate
+  // and run-hours the calculator above uses, so the whole page stays in sync.
+  const [pumpFilter, setPumpFilter] = useState<PumpFilter>('variable');
+  const visiblePumps = PUMP_LIST.filter((p) =>
+    pumpFilter === 'all' ? true : pumpFilter === 'variable' ? p.type === 'Variable' : p.type === 'Single',
+  );
+  const pumpCost = (p: PumpRow) => {
+    const skw = KW_BY_HP[p.hp] ?? 1.9;
+    // VSP gets the same turnover for ~25% of a comparable single-speed's energy.
+    const annual = skw * hours * (p.type === 'Variable' ? 1 - VSP_SAVINGS_FRACTION : 1) * 365 * rate;
+    const save = p.type === 'Variable' ? skw * hours * VSP_SAVINGS_FRACTION * 365 * rate : null;
+    return { annual, save };
+  };
+
   usePageMeta({
-    title: 'Variable Speed Pool Pumps: How Much They Save',
+    title: 'Variable Speed Pool Pumps, St. Petersburg FL | Save 70–80%',
     description:
-      'How much does a variable-speed pool pump save? Often 70–80% off your pump’s electric bill. The physics behind why, the added benefits, and a live calculator to estimate your own annual savings.',
+      'A variable-speed pool pump cuts pump electricity 70–80% — often $600–$1,000/yr on St. Petersburg pools. See what you’d save with our free calculator.',
     canonicalPath: '/pool-care/variable-speed-pumps/',
   });
 
@@ -486,79 +503,143 @@ const VariableSpeedPumpsPageInner = () => {
           </Container>
         </section>
 
-        {/* ── 3. Pumps we install — real models, worked savings ────── */}
+        {/* ── 3. Compare the pumps — filterable reference table ────── */}
         <section className="py-16 sm:py-20 bg-white/[0.015] border-y border-white/[0.06]">
           <Container>
-            <div className="text-center mb-12 max-w-2xl mx-auto">
+            <div className="text-center mb-10 max-w-2xl mx-auto">
               <span className="text-brand-orange font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-                Pumps We Install
+                Compare The Pumps
               </span>
               <h2 className="font-display font-bold text-white text-3xl sm:text-4xl leading-tight mb-3">
-                Three pumps we’d actually put on your pad
+                How the popular pumps stack up
               </h2>
               <p className="text-gray-400 leading-relaxed">
-                We supply, install, and program every one of these — then keep it dialed in on weekly
-                service. Here’s where each one fits, and what it tends to save.
+                Running costs use the rate and run-time you set in the calculator above. Switch to{' '}
+                <span className="text-white">single-speed</span> to find what you’ve probably got now —
+                then see the gap. <span className="text-brand-orange-light">★</span> marks our picks.
               </p>
             </div>
 
-            <div className="grid gap-5 lg:grid-cols-3 max-w-5xl mx-auto">
-              {PUMPS.map((pump, i) => (
-                <m.div
-                  key={pump.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.08 }}
-                  className={`relative flex flex-col rounded-2xl border p-6 ${
-                    pump.featured
-                      ? 'border-brand-orange/50 bg-brand-orange/[0.06]'
-                      : 'border-white/10 bg-white/[0.03]'
-                  }`}
-                >
-                  {pump.featured && (
-                    <span className="absolute -top-3 left-6 rounded-full bg-brand-orange px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white">
-                      Most popular
-                    </span>
-                  )}
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span
-                      className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${
-                        pump.featured ? 'text-brand-orange-light' : 'text-brand-blue-light'
-                      }`}
-                    >
-                      {pump.tier}
-                    </span>
-                    <span className="text-gray-400 text-xs font-semibold tabular-nums">
-                      {pump.thp}
-                    </span>
-                  </div>
-                  <h3 className="text-white font-display font-bold text-xl mb-2">{pump.name}</h3>
-                  <p className="text-gray-400 text-[14px] leading-relaxed mb-6">{pump.bestFor}</p>
-
-                  <div className="mt-auto">
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="font-display font-bold text-white text-3xl tabular-nums">
-                        ≈&nbsp;{pump.savings}
-                      </span>
-                      <span className="text-gray-400 text-sm">/ yr saved</span>
-                    </div>
-                    <p className="text-gray-500 text-xs mb-4">{pump.scenario}</p>
-                    <div className="flex items-center justify-between border-t border-white/10 pt-4 text-sm">
-                      <span className="text-gray-400">Approx. price</span>
-                      <span className="text-white font-semibold tabular-nums">{pump.price}</span>
-                    </div>
-                  </div>
-                </m.div>
-              ))}
+            <div className="max-w-5xl mx-auto mb-5 flex flex-wrap items-center justify-between gap-3">
+              <div className="inline-flex rounded-xl border border-white/10 bg-white/[0.02] p-1">
+                {PUMP_FILTERS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setPumpFilter(f.id)}
+                    aria-pressed={pumpFilter === f.id}
+                    className={`px-3 sm:px-3.5 py-1.5 rounded-lg text-[13px] sm:text-sm font-semibold transition-colors ${
+                      pumpFilter === f.id
+                        ? 'bg-brand-orange text-white'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+              <span className="text-gray-500 text-xs tabular-nums">
+                at ${rate.toFixed(2)}/kWh · {hours} hrs/day
+              </span>
             </div>
 
-            <p className="max-w-3xl mx-auto mt-6 text-center text-gray-500 text-xs leading-relaxed">
-              Savings shown at $0.15/kWh for the scenario noted, using the ~75% reduction the affinity
-              laws above predict. All three are ENERGY STAR certified. Prices are approximate street
-              cost (pump only, before install) and move with the market — we’ll quote your exact pump
-              and install.
-            </p>
+            <div className="max-w-5xl mx-auto overflow-hidden rounded-3xl border border-white/10">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-white/[0.05] text-gray-300 text-[11px] sm:text-xs uppercase tracking-wider">
+                    <th className="py-3.5 px-4 sm:px-6 font-semibold">Pump</th>
+                    <th className="py-3.5 px-2 sm:px-4 font-semibold">Size</th>
+                    <th className="py-3.5 px-2 sm:px-4 font-semibold">Est. cost/yr</th>
+                    <th className="py-3.5 px-4 sm:px-6 font-semibold">Save vs 1-speed</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.07]">
+                  {visiblePumps.map((p) => {
+                    const { annual, save } = pumpCost(p);
+                    return (
+                      <tr
+                        key={`${p.brand}-${p.model}-${p.size}`}
+                        className="bg-white/[0.015] hover:bg-white/[0.04] transition-colors align-top"
+                      >
+                        <td className="py-3.5 px-4 sm:px-6">
+                          <span className="flex items-center gap-1.5">
+                            {p.pick && (
+                              <Star className="w-3.5 h-3.5 text-brand-orange fill-brand-orange shrink-0" />
+                            )}
+                            <span className="text-white font-semibold text-[14px] sm:text-[15px] leading-tight">
+                              {p.brand} {p.model}
+                            </span>
+                          </span>
+                          <span className="block text-gray-500 text-xs mt-0.5">{p.bestFor}</span>
+                        </td>
+                        <td className="py-3.5 px-2 sm:px-4 align-middle">
+                          <span className="block text-gray-200 text-sm font-semibold tabular-nums leading-tight">
+                            {p.size}
+                          </span>
+                          <span
+                            className={`block text-[10px] uppercase tracking-wider ${
+                              p.type === 'Variable' ? 'text-brand-blue-light' : 'text-gray-500'
+                            }`}
+                          >
+                            {p.type === 'Variable' ? 'Variable · ENERGY STAR' : 'Single-speed'}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-2 sm:px-4 align-middle text-white font-semibold tabular-nums">
+                          {usd(annual)}
+                        </td>
+                        <td className="py-3.5 px-4 sm:px-6 align-middle tabular-nums">
+                          {save !== null ? (
+                            <span className="text-brand-orange-light font-semibold">{usd(save)}</span>
+                          ) : (
+                            <span className="text-gray-600">— baseline</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* The authoritative bit — how to read a pump spec and what's real */}
+            <div className="max-w-5xl mx-auto mt-8 rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-7">
+              <div className="flex items-center gap-2.5 mb-4">
+                <BookOpen className="w-[18px] h-[18px] text-brand-orange shrink-0" />
+                <h3 className="text-white font-display font-bold text-lg">How to actually compare pool pumps</h3>
+              </div>
+              <ul className="grid gap-3 sm:grid-cols-2 text-[14px] text-gray-300 leading-relaxed">
+                <li>
+                  <span className="text-white font-semibold">THP, not HP.</span> Since the DOE’s July
+                  2021 rule, pumps are rated by <span className="text-white">total horsepower</span> on a
+                  standardized test — the old “HP” number was mostly marketing. Match THP to your pool,
+                  not a bigger-is-better hunch.
+                </li>
+                <li>
+                  <span className="text-white font-semibold">WEF is the efficiency score.</span> The
+                  Weighted Energy Factor (higher is better) is the standardized DOE/ENERGY STAR number
+                  for how efficiently a pump moves water — the one spec worth comparing head-to-head.
+                </li>
+                <li>
+                  <span className="text-white font-semibold">Flow &amp; watts are curves, not one
+                  number.</span> GPM and wattage change with the speed you run and your plumbing’s
+                  resistance — a 2.7 THP pump might pull ~2,000 W wide-open but only ~150 W loafing on
+                  low. That low range is where the savings live.
+                </li>
+                <li>
+                  <span className="text-white font-semibold">Look for the ENERGY STAR label.</span> Every
+                  variable-speed pump above is ENERGY STAR certified — which is also what unlocks most
+                  Florida utility rebates.
+                </li>
+              </ul>
+              <p className="mt-5 pt-4 border-t border-white/10 text-gray-500 text-xs leading-relaxed">
+                Specs from manufacturer data sheets (Pentair, Hayward, Jandy, Waterway) and the ENERGY
+                STAR certified pool-pump database; efficiency rules per the U.S. Department of Energy
+                Dedicated-Purpose Pool Pump standard (effective July 2021). “Est. cost/yr” and “Save vs
+                1-speed” are modeled from the calculator above (≈75% less energy for the same turnover)
+                — a realistic estimate, not a meter reading. A reference sample, not the whole market,
+                and not an endorsement of any one model.
+              </p>
+            </div>
           </Container>
         </section>
 
@@ -688,18 +769,18 @@ const VariableSpeedPumpsPageInner = () => {
           </Container>
         </section>
 
-        {/* Closing CTA — direct install offer */}
+        {/* Closing CTA — pivot from pump topic to weekly pool service */}
         <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-4">
           <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 text-center border border-white/10 bg-gradient-to-br from-brand-blue/15 via-white/[0.03] to-brand-orange/10">
             <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-brand-blue/10 blur-3xl pointer-events-none" />
             <div className="relative">
               <h2 className="font-display font-bold text-white text-2xl sm:text-3xl mb-3">
-                Ready to stop overpaying to run your pool?
+                A new pump won’t balance your water.
               </h2>
               <p className="text-gray-400 mb-7 max-w-lg mx-auto">
-                We’ll spec the right variable-speed pump for your pool, install it, and program a
-                schedule that captures the savings from day one — then keep it running right on every
-                weekly visit. Get a straight answer on which pump fits and what you’ll save.
+                The other half of a cheap, low-hassle pool is chemistry that’s right every week —
+                tested, balanced, and cleaned so the water’s always swim-ready and your equipment
+                lasts. That’s what we do across St. Petersburg and Tampa Bay, for one flat monthly rate.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <a href="#quote" onClick={handleQuoteClick} className="btn btn-orange w-full sm:w-auto">
