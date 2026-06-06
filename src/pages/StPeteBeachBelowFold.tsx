@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { m } from 'motion/react';
 import {
-  Waves,
   Sun,
   Wind,
-  Anchor,
   Camera,
   CalendarClock,
   MessageSquareText,
@@ -18,8 +16,12 @@ import {
   CheckCircle2,
   MapPin,
   ShieldCheck,
+  ArrowRight,
+  ClipboardCheck,
+  Waves,
 } from 'lucide-react';
 import { Container } from '@/components/Container';
+import { SmartLink } from '@/components/SmartLink';
 import { stPeteBeachFaqs } from '@/pages/stPeteBeachFaqs';
 
 // ── Section 1: "The barrier-island toll" ───────────────────────────
@@ -129,6 +131,106 @@ const IslandTollSection = () => (
           </m.div>
         ))}
       </div>
+
+      {/* Contextual internal link → cyanuric-acid guide. The stabilizer band is
+          the single biggest lever on a full-sun beach pool, so this is the
+          natural place to send curious owners deeper (and it passes link
+          equity to the pillar guide for SEO). */}
+      <m.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="mt-6 rounded-2xl border border-brand-orange/20 bg-brand-orange/[0.04] p-6 md:p-7 flex flex-col sm:flex-row sm:items-center gap-5"
+      >
+        <p className="text-gray-300 leading-relaxed text-[15px] flex-1">
+          Getting that stabilizer-to-chlorine band right is honestly half the
+          job out here — it's the line between water that's still sanitized at
+          sunset and water that quit by lunch. Curious how it actually works?
+          We wrote up the real science (and the county limits most services
+          never mention).
+        </p>
+        <SmartLink
+          to="/pool-care/cyanuric-acid"
+          className="group inline-flex items-center gap-2 shrink-0 text-brand-orange-light font-semibold text-[15px] hover:text-white transition-colors"
+        >
+          Read our cyanuric acid guide
+          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+        </SmartLink>
+      </m.div>
+    </Container>
+  </section>
+);
+
+// ── Section: "What actually gets done every week" ───────────────────
+// The page sells the philosophy well but never lists the concrete weekly
+// checklist owners actually want to see. This grounds the promise (and is
+// dense with the literal "pool cleaning" search terms a service page should
+// rank for). Kept truthful to a standard full-service weekly visit.
+const weeklyChecklist = [
+  'Skim the surface — leaves, blown sand, lovebugs, whatever the Gulf left behind',
+  'Brush the walls, steps, and waterline tile so nothing gets a foothold',
+  'Vacuum the floor whenever it needs it, not just when you ask',
+  'Empty the skimmer and pump baskets',
+  'Check the filter and clean or backwash it on schedule',
+  'Test and balance the full panel — chlorine, pH, alkalinity, stabilizer, salt',
+  'Walk the equipment pad for salt corrosion, leaks, and a scaling salt cell',
+  'Add your standard weekly chemicals — already in the flat rate',
+];
+
+const WeeklyVisitSection = () => (
+  <section className="py-20 md:py-28 bg-[#0a1422] relative overflow-hidden">
+    <div className="absolute top-0 right-1/4 w-[50%] h-[40%] bg-brand-blue/[0.06] rounded-full blur-[150px] pointer-events-none" />
+    <div className="absolute -bottom-24 -right-28 w-[460px] h-[460px] rounded-full bg-brand-orange/[0.05] blur-[150px] pointer-events-none" />
+    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
+    <Container className="relative z-10">
+      <m.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="max-w-2xl mb-12"
+      >
+        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+          What's In Every Weekly Visit
+        </span>
+        <h2 className="section-heading text-white leading-tight mb-4">
+          No mystery to it. Here's the actual checklist.
+        </h2>
+        <p className="section-subtext">
+          Same routine, same order, every single week — whether you're standing
+          on the deck watching or somewhere up north for the season. This is what
+          your St. Pete Beach pool cleaning covers, start to finish, before the
+          report lands in your inbox.
+        </p>
+      </m.div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+        {weeklyChecklist.map((item, i) => (
+          <m.div
+            key={item}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: (i % 2) * 0.06 }}
+            className="flex items-start gap-3 glass-panel rounded-xl p-4 md:p-5"
+          >
+            <CheckCircle2 className="w-5 h-5 text-brand-orange-light shrink-0 mt-0.5" />
+            <p className="text-gray-300 text-[15px] leading-relaxed">{item}</p>
+          </m.div>
+        ))}
+      </div>
+
+      <m.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="mt-8 flex items-center justify-center gap-3 text-center"
+      >
+        <ClipboardCheck className="w-5 h-5 text-brand-orange-light shrink-0" />
+        <p className="text-gray-400 text-[15px]">
+          Then it's all written up —
+          <span className="text-white"> numbers, what got done, and photos in your inbox, usually within the hour.</span>
+        </p>
+      </m.div>
     </Container>
   </section>
 );
@@ -520,6 +622,102 @@ const PromiseStrip = () => (
   </section>
 );
 
+// ── Section: related pool-care guides ──────────────────────────────
+// Internal-link cluster → our pillar guides. Every topic here is one the
+// barrier-island copy already raises (sun/stabilizer, salt cells, green-pool
+// recovery, equipment), so the links are genuinely relevant — which is what
+// makes them worth crawling, and what keeps a curious owner on the site.
+const relatedGuides: Array<{
+  to: string;
+  icon: typeof Sun;
+  title: string;
+  blurb: string;
+}> = [
+  {
+    to: '/pool-care/cyanuric-acid',
+    icon: Sun,
+    title: 'Cyanuric acid & your chlorine',
+    blurb:
+      "The stabilizer band that decides whether your chlorine survives the afternoon sun — and the county limits most services skip.",
+  },
+  {
+    to: '/pool-care/salt-water-vs-chlorine',
+    icon: Droplets,
+    title: 'Salt water vs. chlorine',
+    blurb:
+      "What a salt system really does near the coast, what it costs, and whether it's worth it for a beach pool.",
+  },
+  {
+    to: '/pool-care/green-pool',
+    icon: Waves,
+    title: 'How to clear a green pool',
+    blurb:
+      "Why a pool turns after a storm or a missed week, and the step-by-step that actually brings it back to blue.",
+  },
+  {
+    to: '/pool-care/variable-speed-pumps',
+    icon: Wrench,
+    title: 'Variable-speed pumps',
+    blurb:
+      "The upgrade that quietly cuts a pool's biggest energy bill — and why it matters more when salt air is wearing on your gear.",
+  },
+];
+
+const RelatedGuidesSection = () => (
+  <section className="py-20 md:py-24 bg-[#07111c] relative overflow-hidden">
+    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
+    <div className="absolute top-0 left-1/4 w-[50%] h-[40%] bg-brand-blue/[0.05] rounded-full blur-[150px] pointer-events-none" />
+    <Container className="relative z-10">
+      <m.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="max-w-2xl mb-12"
+      >
+        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+          Pool Care, Explained
+        </span>
+        <h2 className="section-heading text-white leading-tight mb-4">
+          The stuff we'd tell you at the pool anyway.
+        </h2>
+        <p className="section-subtext">
+          We put the things people ask us most into plain-English guides — no
+          jargon, no upsell. Whether you're a customer or just trying to keep your
+          own beach pool honest, dig in.
+        </p>
+      </m.div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
+        {relatedGuides.map((g, i) => (
+          <m.div
+            key={g.to}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: (i % 2) * 0.06 }}
+          >
+            <SmartLink
+              to={g.to}
+              className="group glass-panel rounded-2xl p-6 md:p-7 flex items-start gap-4 h-full hover:bg-white/10 transition-colors"
+            >
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center">
+                <g.icon className="w-5 h-5 text-brand-orange-light" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-[17px] font-display font-bold text-white mb-1.5 flex items-center gap-1.5">
+                  {g.title}
+                  <ArrowRight className="w-4 h-4 text-gray-500 transition-all group-hover:text-brand-orange-light group-hover:translate-x-0.5" />
+                </h3>
+                <p className="text-gray-400 text-[14px] leading-relaxed">{g.blurb}</p>
+              </div>
+            </SmartLink>
+          </m.div>
+        ))}
+      </div>
+    </Container>
+  </section>
+);
+
 const FaqSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   return (
@@ -586,10 +784,12 @@ const StPeteBeachBelowFold = () => (
     <IslandTollSection />
     <InterludeBand />
     <TwoModesSection />
+    <WeeklyVisitSection />
     <ProcessSection />
     <WhyUsSection />
     <PromiseStrip />
     <FaqSection />
+    <RelatedGuidesSection />
   </>
 );
 

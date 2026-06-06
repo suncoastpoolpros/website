@@ -32,17 +32,17 @@ const DIFFERENCE_CARDS = [
   {
     icon: Activity,
     title: 'Liquid chlorine is a sawtooth',
-    text: 'Every jug you pour spikes the chlorine high, then it drifts down toward zero before the next dose. The water swings from over-chlorinated right after, to under-protected by the end of the week — a constant up and down.',
+    text: 'Every jug you pour spikes the chlorine high, then it drifts down toward zero before the next dose. The water swings from over-chlorinated right after a dose to under-protected by the end of the week, a constant up and down.',
   },
   {
     icon: InfinityIcon,
     title: 'A salt cell holds the line',
-    text: 'A salt system makes a little chlorine all day as water passes through the cell. Instead of peaks and valleys, the free chlorine sits in a tight, steady band — the same level Monday morning as Friday night.',
+    text: 'A salt system makes a little chlorine all day as water passes through the cell. Instead of peaks and valleys, the free chlorine sits in a tight, steady band. It reads the same Monday morning as it does Friday night.',
   },
   {
     icon: FlaskConical,
-    title: 'It’s still chlorine — just steadier',
-    text: 'Salt water isn’t chlorine-free. The cell makes the exact same sanitizer, continuously, instead of in big slugs from a bottle. That steadiness — not some different chemical — is the whole difference you feel.',
+    title: 'It’s still chlorine, just steadier',
+    text: 'Salt water isn’t chlorine-free. The cell makes the exact same sanitizer, just continuously instead of in big slugs from a bottle. That steadiness is the whole difference you feel; the chemical itself never changes.',
   },
 ];
 
@@ -74,7 +74,7 @@ const BENEFIT_CARDS = [
 // The chloramine myth — the bullets under the blue info band.
 const SMELL_POINTS = [
   'That sharp smell means there’s too little free chlorine, not too much',
-  'It’s strongest at busy public pools — exactly where chlorine gets used up fastest',
+  'It’s strongest at busy public pools, exactly where chlorine gets used up fastest',
   'A steady salt-generated residual keeps breaking chloramines down before they build up',
   'Less chloramine also means less of the eye and lung irritation that comes with the smell',
 ];
@@ -85,46 +85,51 @@ const HOW_STEPS = [
   {
     icon: Droplets,
     title: 'Salt in the water',
-    text: 'Your pool holds a low level of dissolved salt — about a tenth as salty as the ocean, low enough that most people can’t taste it. It’s the raw material, and it doesn’t get used up.',
+    text: 'Your pool holds a low level of dissolved salt, only about a tenth as salty as the ocean, low enough that most people can’t taste it. It’s the raw material, and it doesn’t get used up.',
   },
   {
     icon: Zap,
     title: 'The cell makes chlorine',
-    text: 'As water flows through the salt cell, a small electric charge splits the salt and generates pure chlorine right there in the plumbing — fresh, on demand, every time the pump runs.',
+    text: 'As water flows through the salt cell, a small electric charge splits the salt and generates pure chlorine right there in the plumbing, fresh on demand every time the pump runs.',
   },
   {
     icon: Recycle,
     title: 'It reverts back to salt',
-    text: 'Once that chlorine has sanitized the water, it recombines back into salt — and the cycle starts over. No jugs to haul, no slug doses, just a steady stream of sanitizer.',
+    text: 'Once that chlorine has sanitized the water, it recombines back into salt, and the cycle starts over. No jugs to haul, no slug doses, just a steady stream of sanitizer.',
   },
 ];
 
 // Page-specific FAQ — drives both the on-page accordion and the FAQPage JSON-LD.
 const SALT_FAQ = [
   {
-    question: 'Is a salt water pool chlorine-free?',
+    question: 'Is salt water better than chlorine?',
     answer:
-      'No. A salt system makes chlorine continuously from the dissolved salt — it’s still a chlorine pool, just one that doses itself steadily instead of from a jug.',
+      'Both sanitize with chlorine, so it comes down to how steadily that chlorine is delivered. A salt system makes it continuously and holds a low, even level all week, which is what gives salt pools their softer feel and gentler reputation. Liquid chlorine works fine too, but the level climbs and falls between doses.',
   },
   {
-    question: 'Does salt water feel like swimming in the ocean?',
+    question: 'Do salt water pools have chlorine?',
     answer:
-      'No. A salt pool runs about a tenth of the salt concentration of seawater — most people can’t taste it. What you do notice is softer, smoother-feeling water.',
+      'Yes. A salt system makes chlorine continuously from the dissolved salt, so it’s still a chlorine pool. The only real difference is that it doses itself steadily instead of in slugs from a jug.',
   },
   {
-    question: 'Why is salt water gentler on skin and eyes?',
+    question: 'Are salt water pools better for your skin and eyes?',
     answer:
-      'Because the chlorine stays at a low, steady level instead of spiking after each dose. Those spikes — not chlorine itself — are what cause the irritation and red eyes.',
+      'Most people find them gentler. The red eyes and dry, itchy skin people blame on chlorine come from the spike right after a dose, and a salt pool holds the level low and steady instead, so the water stays easier on swimmers all week.',
   },
   {
-    question: 'What is that “chlorine smell,” really?',
+    question: 'Do salt water pools smell like chlorine?',
     answer:
-      'Chloramines — chlorine that’s already been used up and not replaced. A steady free-chlorine residual keeps breaking them down, which is why a well-run salt pool smells cleaner, not stronger.',
+      'A well-run salt pool usually smells cleaner than a neglected one. That sharp “chlorine” odor comes from chloramines, which build up when free chlorine runs low. Because a salt cell keeps a steady residual, it breaks chloramines down before they have a chance to accumulate.',
+  },
+  {
+    question: 'Are salt water pools as salty as the ocean?',
+    answer:
+      'Not close. A salt pool runs about a tenth of the salt concentration of seawater, low enough that most people can’t taste it. What you do notice is water that feels a little softer and smoother.',
   },
   {
     question: 'Do salt water pools still need chemicals?',
     answer:
-      'Yes. You still balance pH, alkalinity, and stabilizer (CYA), and the salt level needs topping up occasionally. The cell just takes over the day-to-day chlorine dosing.',
+      'Yes. You still balance pH, alkalinity, and stabilizer (CYA), and the salt level needs topping up now and then. The cell just handles the day-to-day chlorine dosing for you.',
   },
 ];
 
@@ -144,7 +149,7 @@ const SaltWaterVsChlorinePageInner = () => {
   usePageMeta({
     title: 'Salt Water vs. Chlorine: Why Steady Chlorine Wins',
     description:
-      'A salt generator makes chlorine continuously for a steady level — not the spike-and-crash of liquid chlorine. Gentler on skin and eyes, softer water, no harsh smell.',
+      'A salt generator makes chlorine continuously, so the level stays steady instead of spiking and crashing the way liquid chlorine does. Gentler on skin and eyes, softer water, no harsh smell.',
     canonicalPath: '/pool-care/salt-water-vs-chlorine/',
   });
 
@@ -187,9 +192,9 @@ const SaltWaterVsChlorinePageInner = () => {
             Salt water vs. liquid chlorine: steady wins
           </h1>
           <p className="text-lg text-gray-400 leading-relaxed max-w-xl mx-auto mb-8">
-            A salt system doesn&rsquo;t replace chlorine &mdash; it <em className="text-gray-300 not-italic font-semibold">makes</em> it,
+            A salt system doesn&rsquo;t replace chlorine. It <em className="text-gray-300 not-italic font-semibold">makes</em> it,
             continuously, so your water holds a steady level instead of spiking and crashing between
-            jugs. Here&rsquo;s what that stability changes about how your pool feels, smells, and swims.
+            jugs. That stability is what changes how your pool feels, smells, and swims.
           </p>
         </section>
 
@@ -206,7 +211,7 @@ const SaltWaterVsChlorinePageInner = () => {
               </h2>
               <p className="text-slate-600 leading-relaxed">
                 Liquid chlorine and a salt cell both sanitize with chlorine. The difference is how
-                steadily they deliver it &mdash; and that one thing changes everything downstream.
+                steadily they deliver it, and that one thing shapes almost everything else about the water.
               </p>
             </div>
 
@@ -242,8 +247,8 @@ const SaltWaterVsChlorinePageInner = () => {
                 What steady chlorine gives you
               </h2>
               <p className="text-gray-400 leading-relaxed">
-                Hold the chlorine low and steady, and the payoff shows up everywhere you touch the
-                water &mdash; not on a spreadsheet, but on your skin.
+                Hold the chlorine low and steady, and the payoff shows up everywhere you actually
+                touch the water.
               </p>
             </div>
 
@@ -289,8 +294,8 @@ const SaltWaterVsChlorinePageInner = () => {
                 </div>
                 <p className="text-gray-300 leading-relaxed mb-6 max-w-2xl">
                   The strong smell everyone associates with chlorine actually comes from{' '}
-                  <span className="text-white font-semibold">chloramines</span> &mdash; chlorine
-                  that&rsquo;s already been used up fighting contaminants. It&rsquo;s a sign of too
+                  <span className="text-white font-semibold">chloramines</span>, the spent
+                  byproduct left after chlorine fights off contaminants. It&rsquo;s a sign of too
                   little fresh chlorine, not too much.
                 </p>
                 <ul className="grid gap-3 sm:grid-cols-2">
@@ -359,7 +364,7 @@ const SaltWaterVsChlorinePageInner = () => {
                     Salt pools still need stabilizer
                   </span>
                   <span className="block text-gray-400 text-sm mt-0.5">
-                    Free chlorine to CYA is the ratio that keeps that steady chlorine working &mdash; see the guide.
+                    Free chlorine to CYA is the ratio that keeps that steady chlorine working. See the guide.
                   </span>
                 </span>
               </span>
@@ -439,11 +444,19 @@ const SaltWaterVsChlorinePageInner = () => {
               </h2>
               <p className="text-gray-400 max-w-lg mx-auto">
                 If you&rsquo;re weighing a salt system, just ask your Suncoast tech on the next visit
-                &mdash; we&rsquo;ll talk through how it&rsquo;d fit your pool, no pressure. Questions
+                and we&rsquo;ll talk through how it&rsquo;d fit your pool, no pressure. Questions
                 in the meantime? Reach us anytime at{' '}
                 <a href={PHONE_HREF} className="text-brand-orange hover:text-brand-orange-dark font-semibold whitespace-nowrap">
                   {PHONE_DISPLAY}
                 </a>
+                .
+              </p>
+              <p className="text-gray-500 text-sm max-w-lg mx-auto mt-4">
+                Running a salt pool near the coast? Salt cells scale and corrode faster in the sea
+                air &mdash; see how we keep them healthy with{' '}
+                <Link to="/st-pete-beach-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+                  pool service in St. Pete Beach
+                </Link>
                 .
               </p>
             </div>

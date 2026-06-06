@@ -563,6 +563,13 @@ const CyanuricAcidPageInner = () => {
                 </a>
                 .
               </p>
+              <p className="text-gray-500 text-sm max-w-lg mx-auto mt-4">
+                Got a full-sun pool out on the barrier island? See how we handle{' '}
+                <Link to="/st-pete-beach-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+                  pool service in St. Pete Beach
+                </Link>
+                , where stabilizer is the whole ballgame.
+              </p>
             </div>
           </div>
         </section>

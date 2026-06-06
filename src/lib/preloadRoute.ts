@@ -15,6 +15,7 @@ const PRELOADERS: Record<string, () => Promise<unknown>> = {
   '/careers': () => import('@/pages/CareersPage'),
   '/faq': () => import('@/pages/FaqPage'),
   '/how-it-works': () => import('@/pages/HowItWorksPage'),
+  '/pool-care/cyanuric-acid': () => import('@/pages/CyanuricAcidPage'),
   '/tools': () => import('@/pages/ToolsPage'),
   '/tools/pool-volume-calculator': () => import('@/pages/PoolVolumeCalculatorPage'),
   '/contact': () => import('@/pages/ContactPage'),

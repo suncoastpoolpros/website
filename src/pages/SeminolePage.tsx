@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { m } from 'motion/react';
-import { Phone, MapPin, ShieldCheck, Camera, CalendarCheck, Wallet } from 'lucide-react';
+import { Phone, MapPin, Star, Camera, CalendarCheck, Wallet } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Glass } from '@/components/Glass';
@@ -60,32 +60,46 @@ const HeroSection = () => {
           transition={{ duration: 0.8, ease: 'easeOut' }}
           className="max-w-3xl"
         >
-          <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8">
-            <MapPin className="w-3.5 h-3.5 text-brand-orange-light" />
-            <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
-              Seminole · Mid-Pinellas
-            </span>
-          </Glass>
+          {/* Top row — locale badge + a light social-proof rating, side by side. */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3 mb-7">
+            <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full">
+              <MapPin className="w-3.5 h-3.5 text-brand-orange-light" />
+              <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
+                Seminole · Mid-Pinellas
+              </span>
+            </Glass>
+            <div className="inline-flex items-center gap-2">
+              <div className="flex gap-0.5 text-brand-orange">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
+              </div>
+              <span className="text-[13px]">
+                <span className="font-semibold text-white/90">5.0</span>{' '}
+                <span className="text-gray-400">on Google</span>
+              </span>
+            </div>
+          </div>
 
           {/* Visual headline — a div, so the SEO h1 below carries keyword weight. */}
-          <div className="font-display font-bold md:font-black text-white tracking-tight mb-6 leading-[1.06]">
-            <span className="block text-4xl sm:text-5xl md:text-[3.6rem] leading-[1.04]">
+          <div className="text-shadow-city-h1 font-display font-bold md:font-black text-white tracking-tight mb-5 leading-[1.05]">
+            <span className="block text-[2.75rem] sm:text-6xl md:text-[4rem] leading-[1.02]">
               The pool you
             </span>
-            <span className="block text-4xl sm:text-5xl md:text-[3.6rem] leading-[1.04]">
+            <span className="block text-[2.75rem] sm:text-6xl md:text-[4rem] leading-[1.02]">
               actually <span className="text-brand-orange-light">live with.</span>
             </span>
           </div>
 
           {/* SEO H1 — local keyword for this city page. */}
-          <h1 className="text-shadow-city-h1 font-display font-normal text-white/90 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 tracking-tight">
+          <h1 className="text-shadow-city-h1 font-display font-normal text-white/85 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 tracking-tight">
             Weekly pool service in Seminole, FL.
           </h1>
 
           <p className="text-shadow-city-body md:hidden text-[15px] text-gray-200 max-w-[34rem] leading-[1.6] mb-7">
             For full-time Seminole homes — <span className="text-white">families and retirees who use the pool year-round</span>. Same tech weekly, flat rate, chemicals included.
           </p>
-          <p className="text-shadow-city-body hidden md:block text-[15px] sm:text-base text-gray-200 font-normal max-w-[40rem] leading-[1.65] mb-7">
+          <p className="text-shadow-city-body hidden md:block text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
             Not a beach rental, not a second home you visit twice a year — the pool
             the kids and grandkids actually swim in. From{' '}
             <span className="text-white">Bardmoor to Seminole Lake to Oakhurst</span>,
@@ -106,16 +120,23 @@ const HeroSection = () => {
             </Glass>
           </div>
 
-          {/* Stat-tile strip — the distinct hero closer. */}
-          <div className="mt-9 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl">
+          <p className="mt-4 text-[13px] text-gray-400">
+            No contracts · Cancel anytime · A local, Pinellas-based crew.
+          </p>
+
+          {/* Stat strip — the distinct hero closer. Uniform-height glass cards
+              with icon chips so the row reads as one designed element. */}
+          <div className="mt-9 grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-3xl">
             {HERO_STATS.map((s) => (
               <div
                 key={s.label}
-                className="glass-panel rounded-xl px-4 py-3.5 flex items-center gap-3"
+                className="glass-panel rounded-xl p-4 flex items-center gap-3 h-full transition-colors hover:bg-white/10"
               >
-                <s.icon className="w-5 h-5 text-brand-orange-light shrink-0" />
-                <div className="leading-tight">
-                  <div className="text-white font-semibold text-[14px]">{s.label}</div>
+                <div className="w-9 h-9 rounded-lg bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center shrink-0">
+                  <s.icon className="w-5 h-5 text-brand-orange-light" />
+                </div>
+                <div className="leading-tight min-w-0">
+                  <div className="text-white font-semibold text-sm whitespace-nowrap">{s.label}</div>
                   <div className="text-gray-400 text-[12px]">{s.sub}</div>
                 </div>
               </div>
