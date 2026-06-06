@@ -6,6 +6,7 @@ import {
   Sprout,
   ShieldCheck,
   Waves,
+  Sparkles,
   Zap,
   Gauge,
   Calculator,
@@ -85,6 +86,19 @@ const GUIDES: Guide[] = [
       'Why single-speed pumps waste money',
       'The affinity-law math, in plain English',
       'Interactive annual-savings calculator',
+    ],
+  },
+  {
+    to: '/pool-care/salt-water-vs-chlorine',
+    icon: Sparkles,
+    tag: 'Sanitizer & Water Feel',
+    title: 'Salt Water vs. Chlorine',
+    blurb:
+      'A salt system doesn’t replace chlorine — it makes it continuously, holding a steady level instead of the spike-and-crash of liquid jugs. That stability is what you actually feel in the water.',
+    points: [
+      'Why steady chlorine beats peaks and valleys',
+      'Gentler on skin, eyes, and that “chlorine” smell',
+      'How a salt cell makes its own chlorine',
     ],
   },
 ];
@@ -231,7 +245,7 @@ const PoolCarePageInner = () => {
             <div className="md:col-span-2 flex flex-col items-center justify-center text-center rounded-2xl border border-dashed border-white/10 bg-white/[0.01] p-6 min-h-[120px]">
               <p className="text-gray-400 font-semibold mb-1">More guides coming soon</p>
               <p className="text-gray-600 text-sm">
-                Phosphates, total alkalinity, salt systems, and more.
+                Phosphates, total alkalinity, stains and scale, and more.
               </p>
             </div>
           </div>

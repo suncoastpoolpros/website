@@ -29,6 +29,7 @@ const NitratesPage = lazy(() => import('@/pages/NitratesPage').then((m) => ({ de
 const CyanuricAcidPage = lazy(() => import('@/pages/CyanuricAcidPage').then((m) => ({ default: m.CyanuricAcidPage })));
 const GreenPoolPage = lazy(() => import('@/pages/GreenPoolPage').then((m) => ({ default: m.GreenPoolPage })));
 const VariableSpeedPumpsPage = lazy(() => import('@/pages/VariableSpeedPumpsPage').then((m) => ({ default: m.VariableSpeedPumpsPage })));
+const SaltWaterVsChlorinePage = lazy(() => import('@/pages/SaltWaterVsChlorinePage').then((m) => ({ default: m.SaltWaterVsChlorinePage })));
 const PoolVolumeCalculatorPage = lazy(() => import('@/pages/PoolVolumeCalculatorPage').then((m) => ({ default: m.PoolVolumeCalculatorPage })));
 const PoolHeatingCostCalculatorPage = lazy(() => import('@/pages/PoolHeatingCostCalculatorPage').then((m) => ({ default: m.PoolHeatingCostCalculatorPage })));
 const ContactPage = lazy(() => import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage })));
@@ -150,6 +151,7 @@ export default function App() {
           <Route path="/pool-care/cyanuric-acid" element={<CyanuricAcidPage />} />
           <Route path="/pool-care/green-pool" element={<GreenPoolPage />} />
           <Route path="/pool-care/variable-speed-pumps" element={<VariableSpeedPumpsPage />} />
+          <Route path="/pool-care/salt-water-vs-chlorine" element={<SaltWaterVsChlorinePage />} />
           <Route path="/tools" element={<ToolsPage />} />
           <Route path="/tools/pool-volume-calculator" element={<PoolVolumeCalculatorPage />} />
           <Route path="/tools/pool-heating-cost-calculator" element={<PoolHeatingCostCalculatorPage />} />
