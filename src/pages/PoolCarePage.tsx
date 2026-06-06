@@ -287,7 +287,7 @@ const PoolCarePageInner = () => {
 
       {/* Pool Care hero — cool, deep-water glow (distinct from the orange-led Tools hero) */}
       <div className="absolute top-0 inset-x-0 h-[480px] bg-gradient-to-b from-brand-blue/[0.10] to-transparent pointer-events-none" />
-      <div className="absolute top-0 inset-x-0 h-[480px] pointer-events-none overflow-hidden">
+      <div className="absolute top-0 inset-x-0 h-[480px] pointer-events-none overflow-hidden [mask-image:linear-gradient(to_bottom,#000_55%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,#000_55%,transparent)]">
         <div className="absolute left-1/2 -translate-x-1/2 -top-32 w-[900px] h-[520px] rounded-full bg-brand-blue/20 blur-[150px]" />
         <div className="absolute left-[18%] top-8 w-[360px] h-[360px] rounded-full bg-brand-blue/15 blur-[130px]" />
         <div className="absolute right-[16%] -top-10 w-[320px] h-[320px] rounded-full bg-brand-orange/[0.08] blur-[120px]" />

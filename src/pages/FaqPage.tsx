@@ -99,7 +99,7 @@ const FaqPageInner = () => {
 
       {/* FAQ hero — calm, balanced twin-blue glow with a faint warm center */}
       <div className="absolute top-0 inset-x-0 h-[460px] bg-gradient-to-b from-brand-blue/[0.08] to-transparent pointer-events-none" />
-      <div className="absolute top-0 inset-x-0 h-[460px] pointer-events-none overflow-hidden">
+      <div className="absolute top-0 inset-x-0 h-[460px] pointer-events-none overflow-hidden [mask-image:linear-gradient(to_bottom,#000_55%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,#000_55%,transparent)]">
         <div className="absolute left-[14%] -top-28 w-[480px] h-[460px] rounded-full bg-brand-blue/15 blur-[130px]" />
         <div className="absolute right-[14%] -top-28 w-[480px] h-[460px] rounded-full bg-brand-blue/15 blur-[130px]" />
         <div className="absolute left-1/2 -translate-x-1/2 -top-8 w-[320px] h-[320px] rounded-full bg-brand-orange/[0.07] blur-[120px]" />

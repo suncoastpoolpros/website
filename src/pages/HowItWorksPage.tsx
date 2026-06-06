@@ -146,7 +146,7 @@ const HowItWorksPageInner = () => {
 
       {/* How-it-works hero — diagonal blue→orange flow, suggesting a journey */}
       <div className="absolute top-0 inset-x-0 h-[520px] bg-gradient-to-br from-brand-blue/[0.07] via-transparent to-brand-orange/[0.05] pointer-events-none" />
-      <div className="absolute top-0 inset-x-0 h-[520px] pointer-events-none overflow-hidden">
+      <div className="absolute top-0 inset-x-0 h-[520px] pointer-events-none overflow-hidden [mask-image:linear-gradient(to_bottom,#000_55%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,#000_55%,transparent)]">
         <div className="absolute -left-12 -top-28 w-[620px] h-[520px] rounded-full bg-brand-blue/20 blur-[140px]" />
         <div className="absolute right-[4%] top-20 w-[460px] h-[460px] rounded-full bg-brand-orange/[0.12] blur-[130px]" />
       </div>
