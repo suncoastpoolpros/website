@@ -27,9 +27,9 @@ const APPLY_BODY =
   'Hi Suncoast Pool Pros team,%0D%0A%0D%0AI\'d like to apply for the Pool Service Technician role.%0D%0A%0D%0AName:%0D%0APhone:%0D%0AArea you live in:%0D%0APool / field experience:%0D%0A%0D%0A(Attach your resume if you have one — but it\'s not required.)';
 const APPLY_HREF = `mailto:${EMAIL}?subject=${encodeURIComponent(APPLY_SUBJECT)}&body=${APPLY_BODY}`;
 
-const PAGE_TITLE = 'Now Hiring: Pool Service Technicians in Tampa Bay';
+const PAGE_TITLE = 'Now Hiring: Pool Service Techs in Clearwater & Largo';
 const PAGE_DESC =
-  'Steady weekly pay, the same routes every week, paid training, and a company truck. We hire reliable techs who take pride in showing up. Apply by email.';
+  'Now hiring pool service techs in Clearwater & Largo, FL — steady weekly pay, same routes every week, paid training, and a company truck. Apply by email.';
 
 const lookFor = [
   {
@@ -123,7 +123,7 @@ const Hero = () => (
             <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange" />
           </span>
           <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
-            Now Hiring · St. Pete / Clearwater
+            Now Hiring · Clearwater & Largo
           </span>
         </Glass>
 
@@ -325,7 +325,7 @@ const OpenRole = () => (
             <h2 className="font-display font-bold text-white text-3xl md:text-4xl leading-tight">
               Pool Service Technician
             </h2>
-            <p className="text-gray-400 mt-2">Full-time · Tampa Bay / Pinellas County routes</p>
+            <p className="text-gray-400 mt-2">Full-time · Clearwater & Largo routes</p>
           </div>
           <a href={APPLY_HREF} className="btn btn-orange shrink-0">
             <Mail className="w-[18px] h-[18px]" />
@@ -421,22 +421,23 @@ export const CareersPage = () => {
       '@type': 'JobPosting',
       title: 'Pool Service Technician',
       description:
-        'Full-time pool service technician for Suncoast Pool Pros in the Tampa Bay area. Competitive weekly pay, consistent routes, paid training, and a company truck. Reliability and professionalism required; pool experience a plus.',
+        'Full-time pool service technician for Suncoast Pool Pros in Clearwater and Largo, FL. Competitive weekly pay, consistent routes, paid training, and a company truck. Reliability and professionalism required; pool experience a plus.',
       employmentType: 'FULL_TIME',
       hiringOrganization: {
         '@type': 'Organization',
         name: 'Suncoast Pool Pros',
         sameAs: 'https://suncoastpoolpros.com/',
       },
-      jobLocation: {
-        '@type': 'Place',
-        address: {
-          '@type': 'PostalAddress',
-          addressLocality: 'St. Petersburg',
-          addressRegion: 'FL',
-          addressCountry: 'US',
+      jobLocation: [
+        {
+          '@type': 'Place',
+          address: { '@type': 'PostalAddress', addressLocality: 'Clearwater', addressRegion: 'FL', addressCountry: 'US' },
         },
-      },
+        {
+          '@type': 'Place',
+          address: { '@type': 'PostalAddress', addressLocality: 'Largo', addressRegion: 'FL', addressCountry: 'US' },
+        },
+      ],
       applicantLocationRequirements: { '@type': 'AdministrativeArea', name: 'Pinellas County, FL' },
     });
     document.head.appendChild(ld);
