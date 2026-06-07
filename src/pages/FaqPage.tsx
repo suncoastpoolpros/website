@@ -57,9 +57,9 @@ const FaqPageInner = () => {
   const [openKey, setOpenKey] = useState<string | null>(null);
 
   usePageMeta({
-    title: 'Pool Service Questions, Answered | Suncoast Pool Pros',
+    title: 'Pool Service Questions, Answered — No Sales Fluff',
     description:
-      "Everything you've wondered about flat-rate weekly pool service — what's included, what isn't, how pricing works, and what happens if your water turns green. Straight answers, no sales fluff.",
+      "Straight answers on flat-rate weekly pool service — what’s included, how pricing works, and what happens if your water turns green. No sales fluff.",
     canonicalPath: '/faq/',
   });
 

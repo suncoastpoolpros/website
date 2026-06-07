@@ -17,7 +17,7 @@ import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 const PAGE_TITLE = 'St. Pete Beach Pool Service — Salt-Tested, Always Clear';
 const PAGE_DESC =
-  'Weekly pool service for St. Pete Beach, FL — Gulf Blvd to Pass-a-Grille. Built for barrier-island salt air, full sun, and heavy use: same dedicated tech, equipment checked every visit, and a photo report after every clean.';
+  'Weekly pool service for St. Pete Beach, FL — built for salt air, sun & heavy use. Same tech, equipment checked, flat rate, photo report every visit.';
 const PAGE_URL = 'https://suncoastpoolpros.com/st-pete-beach-fl/';
 
 const HeroSection = () => {

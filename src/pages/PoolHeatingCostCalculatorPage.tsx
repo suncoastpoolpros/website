@@ -93,7 +93,7 @@ const PoolHeatingCostCalculatorInner = () => {
   usePageMeta({
     title: 'Pool Heating Cost Calculator — Gas vs. Heat Pump (Florida)',
     description:
-      'Free pool heating cost calculator. Enter your pool size and target temperature to estimate the cost and time to heat with a gas heater or an electric heat pump — built by Florida pool pros.',
+      'Free pool heating cost calculator — enter pool size and target temp to compare gas heater vs. electric heat pump costs. Built by Florida pool pros.',
     canonicalPath: '/tools/pool-heating-cost-calculator/',
   });
 

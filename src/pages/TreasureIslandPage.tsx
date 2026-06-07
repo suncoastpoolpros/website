@@ -18,7 +18,7 @@ import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 const PAGE_TITLE =
   'Treasure Island Pool Service — Always Guest-Ready';
 const PAGE_DESC =
-  'Weekly pool care across Treasure Island — Sunset Beach to Isle of Capri. Whether you live here, rent it out, or come down each winter, you get the same tech, the same flat rate, and a photo report after every visit.';
+  'Weekly pool service across Treasure Island, FL — for homes, rentals & snowbirds. Same tech, same flat rate, photo report. Always guest-ready.';
 const PAGE_URL = 'https://suncoastpoolpros.com/treasure-island-fl/';
 
 const HeroSection = () => {

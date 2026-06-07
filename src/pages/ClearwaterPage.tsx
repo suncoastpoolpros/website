@@ -29,13 +29,13 @@ import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 // Beach = "Salt-Tested"). Clearwater's whole angle is the name itself — the town
 // named for clear water, held to it — so the hook leans on that wordplay:
 // "Water Worthy of the Name." 50 chars.
-const PAGE_TITLE = 'Clearwater Pool Service — Water Worthy of the Name';
+const PAGE_TITLE = 'Clearwater Pool Service — Flat-Rate, Always Clear';
 // ~157 chars. Leads with the local keyword, names the duality that defines
 // Clearwater (barrier-island beach + established mainland) with real place
 // names, then stacks the click-drivers (same tech, flat rate, chemicals in,
 // clear water).
 const PAGE_DESC =
-  'Weekly pool service in Clearwater, FL — from Clearwater Beach and Sand Key to Countryside. Same tech weekly, flat rate, chemicals included, water kept clear.';
+  'Weekly pool service in Clearwater, FL — Clearwater Beach & Sand Key to Countryside. Same tech, flat rate, chemicals included, water kept crystal clear.';
 const PAGE_URL = 'https://suncoastpoolpros.com/clearwater-fl/';
 
 // The signature hero visual: a "two sides of Clearwater, one standard" card.

@@ -151,7 +151,7 @@ const CyanuricAcidPageInner = () => {
   usePageMeta({
     title: 'Cyanuric Acid & Chlorine: The Pool Ratio Explained',
     description:
-      'How does cyanuric acid affect chlorine? CYA shields and binds your chlorine — and the free-chlorine-to-CYA ratio decides whether your pool is actually sanitized. The science, the chart, and the health-code limits.',
+      'How does cyanuric acid affect chlorine? CYA shields it from the sun but too much locks it up — and the FC:CYA ratio decides if your pool is sanitized.',
     canonicalPath: '/pool-care/cyanuric-acid/',
   });
 

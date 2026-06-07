@@ -119,9 +119,9 @@ const HowItWorksPageInner = () => {
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
   usePageMeta({
-    title: 'How Suncoast Pool Service Actually Works',
+    title: 'How Weekly Pool Service Works in St. Petersburg',
     description:
-      "From your first quote to the weekly photo report in your inbox — here's exactly what working with Suncoast Pool Pros looks like, week one through year five.",
+      "From your first quote to a weekly photo report — exactly how flat-rate pool service with Suncoast works, week one through year five. No contracts.",
     canonicalPath: '/how-it-works/',
   });
 

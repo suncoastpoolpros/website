@@ -149,7 +149,7 @@ const SaltWaterVsChlorinePageInner = () => {
   usePageMeta({
     title: 'Salt Water vs. Chlorine: Why Steady Chlorine Wins',
     description:
-      'A salt generator makes chlorine continuously, so the level stays steady instead of spiking and crashing the way liquid chlorine does. Gentler on skin and eyes, softer water, no harsh smell.',
+      'A salt system makes chlorine nonstop, holding a steady level instead of the spike-and-crash of liquid jugs — gentler on skin and eyes, no harsh smell.',
     canonicalPath: '/pool-care/salt-water-vs-chlorine/',
   });
 

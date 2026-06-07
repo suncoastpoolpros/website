@@ -32,9 +32,9 @@ const ContactPageInner = () => {
   const [error, setError] = useState<string | null>(null);
 
   usePageMeta({
-    title: 'Talk to a Real Person About Your Pool',
+    title: 'Contact Suncoast Pool Pros — Talk to a Real Person',
     description:
-      'Call, text, or message Suncoast Pool Pros for a flat-rate weekly pool service quote. We answer on the same day — usually within an hour during business hours.',
+      'Call, text, or message for a flat-rate weekly pool quote — same-day answers, usually within an hour. A real person, no pushy sales, ever.',
     canonicalPath: '/contact/',
   });
 

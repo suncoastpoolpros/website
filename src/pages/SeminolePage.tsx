@@ -17,7 +17,7 @@ import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 const PAGE_TITLE = 'Seminole Pool Service — The Pool You Actually Live With';
 const PAGE_DESC =
-  'Weekly pool service in Seminole, FL — Bardmoor, Seminole Lake, Oakhurst & Bay Pines. Built for full-time homes that actually use the pool: same dedicated tech, screen-enclosure debris handled, flat rate with chemicals included, photo report every visit.';
+  'Weekly pool service in Seminole, FL — built for full-time homes that swim. Same tech, screen-enclosure debris handled, flat rate, chemicals included.';
 const PAGE_URL = 'https://suncoastpoolpros.com/seminole-fl/';
 
 // Hero stat tiles — replaces the beach pages' inline star/trust strip with a

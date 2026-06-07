@@ -167,7 +167,7 @@ const GreenPoolPageInner = () => {
   usePageMeta({
     title: 'Green Pool? Why It Happens & How to Clear It Fast',
     description:
-      'Why your pool turned green and how to clear it fast — identify the algae, then balance, brush, shock, and filter it back to blue. Plain-English guide from working St. Petersburg pool pros.',
+      'Why your pool turned green and how to clear it fast — ID the algae, then balance, brush, shock & filter it back to blue. From working St. Pete pool pros.',
     canonicalPath: '/pool-care/green-pool/',
   });
 

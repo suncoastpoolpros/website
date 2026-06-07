@@ -48,9 +48,9 @@ const ToolsPageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
 
   usePageMeta({
-    title: 'Free Tools for Florida Pool Owners',
+    title: 'Free Pool Calculators & Tools for Florida Owners',
     description:
-      'Calculators and references for pool volume, chemistry dosing, and salt levels — built by working pool techs, free to use, no email required.',
+      'Free pool calculators for volume, chemistry dosing & salt levels — built by working pool techs. No email, no signup, just answers.',
     canonicalPath: '/tools/',
   });
 

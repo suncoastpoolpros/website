@@ -157,7 +157,7 @@ const NitratesPageInner = () => {
   usePageMeta({
     title: 'Pool Nitrates: What They Are & How to Lower Them',
     description:
-      'What are pool nitrates? Dissolved nitrogen that feeds algae and burns up your chlorine — and no chemical removes it. See the causes, signs, and how to lower them.',
+      'What are pool nitrates? Dissolved nitrogen that feeds algae and burns up chlorine — and no chemical removes it. The causes, signs & how to lower them.',
     canonicalPath: '/pool-care/nitrates/',
   });
 

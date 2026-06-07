@@ -46,9 +46,9 @@ const usePageSchema = () => {
 
 export const LandingPage = () => {
   usePageMeta({
-    title: 'Pool Cleaning St. Petersburg & Pinellas | Suncoast',
+    title: 'Pool Cleaning St. Petersburg — Flat-Rate Weekly Service',
     description:
-      'Flat-rate weekly pool cleaning in St. Petersburg and the Tampa Bay area. One price covers standard chemicals, the same tech shows up every week, and you get a photo report after every visit.',
+      'Flat-rate weekly pool cleaning across St. Petersburg & Tampa Bay — chemicals included, the same tech every week, a photo report after each visit.',
     canonicalPath: '/',
     // OG image matches the hero the page actually shows (the waterfront/Treasure
     // scene after the hero swap), not the default St-Pete image.

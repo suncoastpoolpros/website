@@ -18,7 +18,7 @@ import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 const PAGE_TITLE =
   'Belleair Beach Pool Service — Never a Missed Visit';
 const PAGE_DESC =
-  'Pool service for Belleair Beach homes that runs in the background. Same technician every week, photo report in your inbox, one flat rate.';
+  'Belleair Beach’s flat-rate weekly pool service — same tech every week, chemicals included, photo report after each visit. Never a missed week.';
 const PAGE_URL = 'https://suncoastpoolpros.com/belleair-beach-fl/';
 
 const HeroSection = () => {

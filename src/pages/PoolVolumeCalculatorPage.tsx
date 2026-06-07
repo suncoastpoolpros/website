@@ -675,7 +675,7 @@ const PoolVolumeCalculatorInner = () => {
   // See CLAUDE.md #9. JSON-LD stays in the effect below (the documented
   // exception — usePageMeta doesn't emit JSON-LD).
   usePageMeta({
-    title: 'Free Pool Volume Calculator (Gallons + Liters) | Suncoast Pool Pros',
+    title: 'Free Pool Volume Calculator — Gallons & Liters',
     description:
       'Free pool volume calculator — instantly get gallons or liters for rectangle, round, oval, kidney, freeform pools, plus spas. No email required.',
     canonicalPath: '/tools/pool-volume-calculator/',
