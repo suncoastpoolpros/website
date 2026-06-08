@@ -292,6 +292,14 @@ const FaqPageInner = () => {
                                     <ArrowRight className="w-4 h-4" />
                                   </Link>
                                 )}
+                                {faq.quoteCta && (
+                                  <div className="mt-5">
+                                    <a href="#quote" onClick={handleQuoteClick} className="btn btn-orange">
+                                      <MessageSquare className="w-[18px] h-[18px]" />
+                                      Get a Free Quote
+                                    </a>
+                                  </div>
+                                )}
                               </div>
                             </m.div>
                           )}

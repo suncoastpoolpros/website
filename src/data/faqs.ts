@@ -9,8 +9,10 @@ export type Faq = {
   question: string;
   answer: string;
   category: FaqCategory;
-  /** Optional related tool link rendered below the answer text. */
+  /** Optional related tool or guide link rendered below the answer text. */
   relatedTool?: { label: string; href: string };
+  /** When true, render a "Get a Free Quote" button (opens the global quote sheet) below the answer. */
+  quoteCta?: boolean;
 };
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
@@ -125,6 +127,41 @@ export const faqs: Faq[] = [
       "No. As long as we have safe, reliable access to your pool and equipment — an unlocked gate, a gate code, or a lockbox — you never need to be home. Most of our customers are at work or out when we service their pool. After each visit we leave behind a written report covering what was done and your water readings, so you always know exactly what happened even if you weren't there. If access ever changes, just let us know so we don't miss a visit.",
   },
 
+  {
+    category: 'Our Service',
+    question: "Why is my pool green even though I keep adding chlorine?",
+    answer:
+      "Almost always, it's your stabilizer (cyanuric acid) sitting too high — not too little chlorine. As CYA builds up it 'locks up' your chlorine, so even a normal reading on a test strip isn't actually active enough to kill algae, and the pool goes green in water that looks chemically fine. Tablet chlorine quietly raises CYA a little every week, so it creeps up over a season until your chlorine can't keep up. Adding more chlorine is a temporary patch; the real fix is getting the stabilizer-to-chlorine ratio back in line, which usually means diluting with fresh water and then holding the right balance. It's one of the most common ways a DIY or budget pool slowly goes green — the kind of slow drift nobody notices until the water does. We keep an eye on that ratio every week so it never gets that far.",
+    relatedTool: { label: 'Read our guide to clearing a green pool', href: '/pool-care/green-pool' },
+  },
+  {
+    category: 'Our Service',
+    question: 'Why is my pool water cloudy?',
+    answer:
+      "Cloudy water is almost always a circulation or chemistry problem, not actual dirt. Usually it comes down to one of a few things: a dirty or undersized filter, water that isn't moving well (a clogged basket, a valve turned the wrong way, or not enough pump hours), or chemistry that's slipped — high pH, high calcium hardness, or chlorine that's fallen behind. It can also be the first hint of an algae bloom getting going. The catch is that the right fix depends on which one it is, so reaching for clarifier usually just hides it for a day. When we take a pool on, we test and balance it, check the filter and circulation, and actually track down what's clouding it instead of masking it.",
+    relatedTool: { label: 'Read our guide to cloudy pool water', href: '/pool-care/cloudy-pool-water' },
+  },
+  {
+    category: 'Our Service',
+    question: 'Why does my pool smell like chlorine?',
+    answer:
+      "Here's the part that surprises people: a strong chlorine smell usually means your pool has too little active chlorine, not too much. That smell comes from chloramines, which form when chlorine binds up with sweat, sunscreen, and the other stuff swimmers bring in. Chloramines are basically spent chlorine — it's done sanitizing — and they're what sting your eyes and catch in the back of your throat. A pool with enough free chlorine actually has almost no smell at all. To clear it, you break the chloramines apart (usually with a shock) and then hold free chlorine where it belongs so they don't build back up. Staying ahead of that week to week is the whole point of steady balancing.",
+    relatedTool: { label: 'Read our guide on the pool-chlorine smell', href: '/pool-care/pool-smells-like-chlorine' },
+  },
+  {
+    category: 'Our Service',
+    question: 'Is it safe to swim right after my pool is serviced?',
+    answer:
+      "For routine weekly service, yes — once the chemicals we added have circulated for a bit (generally around 20–30 minutes with the pump running), the pool is ready to swim. The main exception is after a heavy shock or a green-pool treatment, where chlorine is deliberately raised well above normal; then you'll want to wait until free chlorine drifts back into the normal range, which can take anywhere from a few hours to overnight depending on the dose. If we ever do anything that needs more time than usual, we'll say so in your service report. When in doubt, a quick test of free chlorine and pH is the surest way to know it's swim-ready.",
+  },
+  {
+    category: 'Our Service',
+    question: 'How often should I drain my pool in Florida?',
+    answer:
+      "Less often than most people think, and almost never all the way. A typical Florida pool only needs a partial drain-and-refill every couple of years, and it's driven by chemistry rather than the calendar. Over time dissolved solids — and especially stabilizer (cyanuric acid) — build up to where no amount of chemicals will balance the water, and the only real fix is to swap some of it for fresh. We track those levels on every visit and tell you when a partial drain (or reverse-osmosis filtration, which wastes far less water) genuinely makes sense. Fully draining a pool here can be risky — Florida's high water table can actually push an empty pool out of the ground — so it's not something to do without a reason.",
+    relatedTool: { label: 'How stabilizer buildup forces a drain', href: '/pool-care/cyanuric-acid' },
+  },
+
   // ── Equipment & Repairs ─────────────────────────────────────────
   {
     category: 'Equipment & Repairs',
@@ -157,6 +194,27 @@ export const faqs: Faq[] = [
       "We start by reading the clues in your water. Tracking chemistry markers like stabilizer and calcium hardness alongside how much water the pool is actually losing tells us whether you're dealing with normal Florida evaporation or a genuine leak. If the numbers and the water-loss pattern point to a leak, we'll explain what we're seeing and walk you through the next steps to pin down and address it. Catching a leak early matters — beyond wasted water, a persistent leak can undermine equipment and the area around the pool.",
   },
 
+  {
+    category: 'Equipment & Repairs',
+    question: 'Are variable-speed pumps worth it?',
+    answer:
+      "For most Florida pools, yes — and not by a little. The pump is often the second-hungriest energy user in a home after the air conditioner, and an old single-speed pump runs at full blast the entire time it's on. A variable-speed pump runs slow and quiet most of the day and only ramps up when it needs to, which typically slashes pump energy use and pays back its cost within a few years on the power bill alone. They're also dramatically quieter and easier on the rest of your equipment. Efficiency rules have made single-speed pumps in most sizes hard to even buy new, so when an old pump dies, a variable-speed replacement is usually the obvious call. If yours is getting up there, we'll flag it and walk you through the numbers before anything gets replaced.",
+    relatedTool: { label: 'Read our guide to variable-speed pumps', href: '/pool-care/variable-speed-pumps' },
+  },
+  {
+    category: 'Equipment & Repairs',
+    question: 'How long does a salt cell last?',
+    answer:
+      "Most salt cells last about 3 to 7 years, and where you land comes down mostly to maintenance. The cell makes chlorine by running current through salt water, and over time calcium scales up on its plates — if that scale isn't cleaned off, the cell loses output and fails early. Letting your chemistry run out of balance (especially high pH or hardness) wears it out faster too. On salt pools we check the cell and clean off scale as part of regular service, which is the best way to get full life out of an expensive part. When a cell does finally reach the end, we'll give you a heads up before it leaves you short on chlorine.",
+    relatedTool: { label: 'Saltwater vs. chlorine, explained', href: '/pool-care/salt-water-vs-chlorine' },
+  },
+  {
+    category: 'Equipment & Repairs',
+    question: 'How long does pool equipment last?',
+    answer:
+      "As a rough guide: pumps tend to last around 8–12 years, filters 10+ years (with cartridges or grids replaced along the way), heaters about 7–12 years, and salt cells 3–7 years. Florida's heat, humidity, and salt air tend to push those toward the shorter end, and equipment that's run out of balance or never inspected gives out sooner. The upside is that most equipment warns you before it quits — new noises, weaker flow, longer heat-up times. Because we look over your equipment pad on every weekly visit, we usually spot those signs early, so you can plan a replacement on your terms instead of scrambling when something fails mid-summer.",
+  },
+
   // ── Service Areas ───────────────────────────────────────────────
   {
     category: 'Service Areas',
@@ -184,12 +242,21 @@ export const faqs: Faq[] = [
       "Yes. Spas and attached spa-pool combos are common around Tampa Bay, and we keep them clean and balanced as part of your service. Spas run hotter and have a much smaller water volume than a pool, so their chemistry can swing quickly — that means careful, consistent testing matters even more. Whether you've got a spa built into your pool or a standalone hot tub, mention it when you reach out and we'll factor it into your flat-rate quote.",
   },
 
+  {
+    category: 'Service Areas',
+    question: 'Do you specialize in beach and barrier-island pools?',
+    answer:
+      "Yes — the Gulf beach communities are a big part of our routes, and a beachfront pool has needs an inland route just isn't set up for. Salt air corrodes equipment far faster, blowing sand ends up in the water and the baskets, and relentless sun burns off chlorine quickly, so we run a slightly heavier equipment-check and chemistry routine on them. We service St. Pete Beach, Treasure Island, Belleair Beach, and the surrounding barrier islands, plus the bayfront and waterfront neighborhoods nearby. If your pool sits near the Gulf, we know the particular way it wears.",
+    relatedTool: { label: 'See our St. Pete Beach pool service', href: '/st-pete-beach-fl' },
+  },
+
   // ── Getting Started ─────────────────────────────────────────────
   {
     category: 'Getting Started',
     question: 'How do I get a quote?',
     answer:
       "There are three easy ways, and all of them get a same-day reply during business hours. The fastest is to text us a couple of photos — one of your pool and one of your equipment pad — along with your address, and we'll send back a flat-rate quote, often without needing to visit. You can also call us at (727) 295-3621 to talk it through with a real person, or fill out the short quote form on our site and we'll reach out. No pressure, no obligation, and no drawn-out sales process — just a clear flat-rate number so you know exactly what weekly service will cost.",
+    quoteCta: true,
   },
   {
     category: 'Getting Started',
@@ -214,5 +281,12 @@ export const faqs: Faq[] = [
     question: 'What are your hours?',
     answer:
       "We answer Monday through Saturday, 8:00 AM to 6:00 PM, and we're closed Sundays. Texts and quote-form submissions sent during business hours get a same-day reply. If you reach out after hours or on a Sunday, we'll get back to you first thing the next business day. For anything urgent — like a pool that's turned green before an event, or possible equipment failure — calling during business hours is the fastest way to reach us.",
+  },
+  {
+    category: 'Getting Started',
+    question: 'How do I switch from my current pool service?',
+    answer:
+      "It's about the easiest switch you'll make. Just reach out — call or text (727) 295-3621, or send the quote form — and once your flat-rate quote is set, we handle the transition so there's no gap where the pool slips. There's nothing awkward to coordinate; you let your old company know you're done, and we pick up on your new weekly day. If the pool drifted a little during the handoff, we'll bring it back to balanced and clear and keep it there. Most people switch because they're tired of skipped visits, creeping bills, or never seeing the same tech twice — the exact things this service is built to fix.",
+    quoteCta: true,
   },
 ];
