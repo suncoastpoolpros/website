@@ -101,10 +101,18 @@ function injectHead(html, meta) {
   if (meta.canonicalUrl) replacements.push(`<meta property="og:url" content="${escapeHtml(meta.canonicalUrl)}" />`);
   replacements.push(`<meta property="og:type" content="website" />`);
   replacements.push(`<meta property="og:site_name" content="Suncoast Pool Pros" />`);
-  // No og:image / twitter:image — link shares render as a plain card (title +
-  // description + site icon), no large background photo. twitter:card is the
-  // small "summary" type accordingly.
-  replacements.push(`<meta name="twitter:card" content="summary" />`);
+  // Branded 1200x630 share image → large-image link previews (iMessage, FB,
+  // LinkedIn, etc.). One sitewide image. Absolute URL + VERSIONED filename so
+  // it bypasses the immutable /*.png edge cache when it changes (bump -vN). This
+  // also fixes the orange iMessage tile: with no og:image, iOS fell back to the
+  // app icon and tinted the card from its orange sun.
+  const OG_IMAGE = 'https://suncoastpoolpros.com/og-image-v1.png';
+  replacements.push(`<meta property="og:image" content="${OG_IMAGE}" />`);
+  replacements.push(`<meta property="og:image:width" content="1200" />`);
+  replacements.push(`<meta property="og:image:height" content="630" />`);
+  replacements.push(`<meta property="og:image:alt" content="Suncoast Pool Pros — Flat-Rate Weekly Pool Service" />`);
+  replacements.push(`<meta name="twitter:card" content="summary_large_image" />`);
+  replacements.push(`<meta name="twitter:image" content="${OG_IMAGE}" />`);
   if (meta.title) replacements.push(`<meta name="twitter:title" content="${escapeHtml(meta.title)}" />`);
   if (meta.description) replacements.push(`<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`);
 
