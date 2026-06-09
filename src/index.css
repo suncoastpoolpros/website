@@ -181,6 +181,23 @@
   }
 }
 
+/* iOS Safari renders <input type="date"> with a native intrinsic width that
+   ignores `width:100%`, so the field overflows its container on iPhone (the
+   value lives in a ::-webkit-date-and-time-value pseudo with its own min-width).
+   Removing the native appearance makes it a normal block box that respects
+   w-full + border-box, so it stays inside the field. min-width:0 covers any
+   flex context. Desktop keeps the calendar picker indicator — a separate shadow
+   element this doesn't touch. (Used by the signup "start date" field.) */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+}
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  margin: 0;
+}
+
 /* Hero background images. Declared as CSS classes (not inline React style) so
    the browser doesn't re-serialize image-set() and trip hydration mismatch.
    Filter values stay tuned for the brand look. */
