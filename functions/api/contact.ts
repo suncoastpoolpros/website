@@ -260,11 +260,21 @@ const sendViaResend = async (payload: SubmissionPayload, env: Env): Promise<void
   throw lastErr;
 };
 
+// A signup-page submission is a confirmed customer onboarding (their quote is
+// already approved), NOT a new lead asking for a price — so its email shouldn't
+// read "quote request". Label by source; every other source stays a quote request.
+const submissionLabels = (p: SubmissionPayload): { subject: string; heading: string } => {
+  if (String(p.source ?? '') === 'signup-page') {
+    return { subject: 'New customer signup', heading: 'New Customer Signup' };
+  }
+  return { subject: 'New quote request', heading: 'New Quote Request' };
+};
+
 const composeSubject = (p: SubmissionPayload): string => {
   const source = String(p.source ?? 'website');
   const service = String(p.service ?? '').trim();
   const name = String(p.name ?? '').trim();
-  const parts: string[] = ['New quote request'];
+  const parts: string[] = [submissionLabels(p).subject];
   if (service) parts.push(`(${humanizeService(service)})`);
   if (name) parts.push(`— ${name}`);
   parts.push(`[${source}]`);
@@ -286,13 +296,14 @@ const composeBody = (p: SubmissionPayload): { html: string; text: string } => {
 
   const text = rows.map(([k, v]) => `${k}: ${v}`).join('\n');
 
+  const heading = submissionLabels(p).heading;
   const html = `
 <!doctype html>
 <html><body style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;background:#f6f8fc;padding:24px 0;margin:0;">
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;">
     <div style="background:#0a1628;color:#fff;padding:20px 24px;">
       <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;">Suncoast Pool Pros</div>
-      <div style="font-size:18px;font-weight:600;margin-top:4px;">New Quote Request</div>
+      <div style="font-size:18px;font-weight:600;margin-top:4px;">${heading}</div>
     </div>
     <div style="padding:24px;">
       <table style="width:100%;border-collapse:collapse;font-size:14px;">

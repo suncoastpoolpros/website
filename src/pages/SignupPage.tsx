@@ -141,8 +141,9 @@ const SignupPageInner = () => {
             </h1>
 
             <p className="text-lg text-gray-400 leading-relaxed max-w-lg mx-auto">
-              Tell us a little about your pool and we'll get your service set up — it
-              only takes a minute. One of our experts follows up to confirm the details.
+              Now that your quote's approved, this is the final step. Take a minute to
+              confirm a few details about your pool and property — accurate info helps us
+              set up your account and get your first service on the schedule.
             </p>
 
             <div className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-500">
@@ -347,7 +348,7 @@ const SignupPageInner = () => {
                       'Customers consult Suncoast Pool Pros before adding chemicals or salt',
                       'A working garden hose remains accessible during service visits',
                       'Pool equipment is operational for proper service and water balance',
-                      'Filters (cartridge, DE, or sand) are cleaned or replaced as needed',
+                      'Worn filter media — cartridges, DE grids, or sand — is replaced as needed and billed separately from the flat rate',
                       'Clear, safe access to the pool and equipment area is provided',
                       'Pets are secured during service visits',
                       'Repairs, scheduling, or other service concerns are communicated promptly',

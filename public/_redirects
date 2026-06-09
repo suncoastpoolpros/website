@@ -3,4 +3,14 @@
 # can handle deep links (e.g. /belleair-beach-fl, /tools/pool-volume-calculator).
 # The 200 (not 301/302) keeps the URL bar unchanged.
 /api/*  /api/:splat  200
+
+# Retired URLs → 301 to a live page. These must come BEFORE the /* catch-all
+# (Cloudflare matches top-down, first hit wins); otherwise the catch-all would
+# serve the homepage at 200 and the old URL would linger as a soft-404 in Search
+# Console. /getstarted was an old "get started" CTA that 404'd (GSC: Not found,
+# last crawled Apr 2026) — send it home so Google retires it cleanly. Repoint to
+# /signup or /how-it-works/ instead if that's where it should land.
+/getstarted   /  301
+/getstarted/  /  301
+
 /*      /index.html  200
