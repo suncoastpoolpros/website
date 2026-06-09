@@ -56,7 +56,7 @@ const SECTIONS: Section[] = [
             items: [
               {
                 lead: '100% All-Inclusive Chemical & Salt Management:',
-                text: 'Testing and balancing of all standard and specialty maintenance chemicals, including Liquid/Tab Chlorine, Muriatic Acid, Shock, Salt, Stabilizer, and Phosphate Removers.',
+                text: 'Testing and balancing of the standard and specialty maintenance chemicals a standard, balanced pool requires — including Liquid/Tab Chlorine, Muriatic Acid, Shock, Salt, Stabilizer, Phosphate Removers, and routine algaecide — in the normal quantities needed to keep that pool clear.',
               },
               {
                 lead: 'Full Salt System Maintenance:',
@@ -108,6 +108,10 @@ const SECTIONS: Section[] = [
               {
                 lead: 'Equipment Failure:',
                 text: 'Imbalances caused by malfunctioning customer equipment (broken pumps or old/expired filters) are not covered until the equipment is repaired/replaced.',
+              },
+              {
+                lead: 'Severe Algae & Heavy Treatment:',
+                text: 'The flat rate covers algaecide, shock, and chlorine in the routine quantities a standard, balanced pool requires. Severe, recurring, or chemical-resistant algae blooms — including black, mustard, or green algae, and blooms driven by heat, heavy rainfall, high bather load, shade, debris, water features, or circulation limitations — can require specialty algaecides, copper- or polymer-based treatments, metal sequestrants, clarifiers, or chlorine in quantities well beyond routine maintenance. Any treatment beyond routine levels is billed separately at current market rates, quoted per treatment and approved by the Customer before work proceeds.',
               },
               {
                 lead: 'Exclusive Control:',
