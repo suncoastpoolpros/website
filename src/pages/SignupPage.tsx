@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { m, useScroll, useTransform } from 'motion/react';
 import { UserPlus, Send, CheckCircle, Phone, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
@@ -28,6 +28,18 @@ const SignupPageInner = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [firstName, setFirstName] = useState('');
+  const successRef = useRef<HTMLDivElement | null>(null);
+
+  // On successful submit the success card replaces the form in place — but the
+  // customer is usually scrolled down at the submit button, so the confirmation
+  // appears off-screen above them. Scroll it into view. rAF lets the card lay
+  // out first; scroll-mt on the card clears the fixed navbar.
+  useEffect(() => {
+    if (!submitted) return;
+    requestAnimationFrame(() => {
+      successRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [submitted]);
 
   // Parallax: the blue glow lags behind the page as you scroll down (desktop
   // only). The scroll transform runs every frame, so on mobile — where it caused
@@ -173,10 +185,11 @@ const SignupPageInner = () => {
           />
           {submitted ? (
             <m.div
+              ref={successRef}
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.4, ease: 'easeOut' }}
-              className="glass-panel p-10 sm:p-14 text-center rounded-3xl"
+              className="glass-panel p-10 sm:p-14 text-center rounded-3xl scroll-mt-28"
             >
               <m.div
                 initial={{ scale: 0 }}
