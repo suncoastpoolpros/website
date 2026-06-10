@@ -43,6 +43,24 @@ const SECTIONS: Section[] = [
             type: 'p',
             text: 'Electronic submission of our onboarding form constitutes electronic acceptance of this Service Agreement.',
           },
+          { type: 'subheading', text: 'Who this Agreement applies to:' },
+          {
+            type: 'list',
+            items: [
+              {
+                lead: 'Direct Enrollment:',
+                text: 'This Agreement applies to customers who enroll directly with Suncoast Pool Pros — by submitting our onboarding form, approving an estimate, or providing written or electronic acceptance.',
+              },
+              {
+                lead: 'Acquired or Transferred Accounts:',
+                text: 'Accounts we take over from another service provider are not automatically bound by this Agreement. Until the customer affirmatively accepts it, the account is serviced on a month-to-month transitional basis, and the flat-rate chemical inclusions and "Always Blue" guarantee in this Agreement do not apply.',
+              },
+              {
+                lead: 'Condition of Transferred Pools:',
+                text: 'Because a transferred pool\'s prior care and condition are outside our knowledge and control, an acquired pool may require an initial assessment and, if needed, a one-time recovery or balancing service, quoted and approved before work proceeds. The flat-rate and guarantee terms take effect once the customer accepts this Agreement and the pool is confirmed to be in standard, balanced condition.',
+              },
+            ],
+          },
         ],
       },
       {
