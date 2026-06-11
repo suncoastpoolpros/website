@@ -16,6 +16,7 @@ import {
   Phone,
   MessageSquare,
   ArrowRight,
+  ArrowDownToLine,
   Check,
   type LucideIcon,
 } from 'lucide-react';
@@ -144,6 +145,19 @@ const GUIDES: Guide[] = [
       'How a salt cell makes its own chlorine',
     ],
   },
+  {
+    to: '/pool-care/how-to-drain-a-pool',
+    icon: ArrowDownToLine,
+    tag: 'Draining & Water Level',
+    title: 'How to Drain a Pool',
+    blurb:
+      'Lowering your pool with a garden hose is just a gravity siphon — once you shut the skimmer valves and pull only off the main drain. How to set it up, how low is safe, and where the water can legally go.',
+    points: [
+      'The pump-off, main-drain-only valve setup',
+      'Priming and starting a garden-hose siphon',
+      'How low to go without floating the pool',
+    ],
+  },
 ];
 
 // The guide that headlines the page as the "Most read" spotlight. Pulled out of
@@ -169,6 +183,10 @@ const CATEGORY_GROUPS: { label: string; slugs: string[] }[] = [
       '/pool-care/salt-water-vs-chlorine',
       '/pool-care/pool-service-vs-diy',
     ],
+  },
+  {
+    label: 'Maintenance & draining',
+    slugs: ['/pool-care/how-to-drain-a-pool'],
   },
 ];
 
