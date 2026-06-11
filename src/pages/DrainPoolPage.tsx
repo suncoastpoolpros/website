@@ -175,7 +175,7 @@ const faqSchema = {
 // Pump OFF, both skimmer valves CLOSED (amber, handle across the pipe), main
 // drain OPEN (blue, handle inline) so the siphon draws only off the bottom.
 const ValveDiagram = () => (
-  <figure className="rounded-2xl border border-white/10 bg-[#0b1b2e] p-4 sm:p-6">
+  <figure className="h-full flex flex-col justify-center rounded-2xl border border-white/10 bg-[#0b1b2e] p-5 sm:p-7">
     <svg viewBox="0 0 620 300" className="w-full h-auto" role="img"
       aria-label="Equipment pad suction valves: pump off, both skimmer valves closed, main drain valve open.">
       {/* pump box */}
@@ -236,7 +236,7 @@ const ValveDiagram = () => (
 
 // ── Diagram 2: garden-hose gravity siphon ─────────────────────────────────
 const SiphonDiagram = () => (
-  <figure className="rounded-2xl border border-white/10 bg-[#0b1b2e] p-4 sm:p-6">
+  <figure className="h-full flex flex-col justify-center rounded-2xl border border-white/10 bg-[#0b1b2e] p-5 sm:p-7">
     <svg viewBox="0 0 620 300" className="w-full h-auto" role="img"
       aria-label="Garden hose siphon: intake at the deep end, hose over the edge, discharge end sitting lower than the pool's water level.">
       {/* pool shell (cross-section, deep end on the right) */}
@@ -343,7 +343,7 @@ const DrainPoolPageInner = () => {
         </section>
 
         {/* ── Safety first — partial drain, not a full one ─────────────── */}
-        <section className="pb-6">
+        <section className="pb-10">
           <Container>
             <div className="max-w-4xl mx-auto rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-500/[0.12] via-amber-500/[0.04] to-transparent p-7 sm:p-9 relative overflow-hidden">
               <div className="absolute -top-16 -right-12 w-56 h-56 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
@@ -414,8 +414,8 @@ const DrainPoolPageInner = () => {
         {/* ── How a siphon works — diagram + explainer ──────────────────── */}
         <section className="py-16 sm:py-20">
           <Container>
-            <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center max-w-5xl mx-auto">
-              <div>
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch max-w-5xl mx-auto">
+              <div className="flex flex-col justify-center">
                 <span className="text-brand-orange font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
                   The Idea
                 </span>
@@ -423,14 +423,14 @@ const DrainPoolPageInner = () => {
                   A garden hose siphon is just gravity
                 </h2>
                 <p className="text-gray-400 leading-relaxed mb-4">
-                  Fill a hose completely with water, keep one end underwater in the pool, and run the other end to a
-                  spot <span className="text-white">lower than the pool&rsquo;s surface</span>. Gravity pulls the lower
-                  column of water down, and that drags the rest of the pool along behind it &mdash; no pump, no power.
+                  Fill a hose completely with water, keep one end submerged in the pool, and run the other end to a spot{' '}
+                  <span className="text-white">lower than the water surface</span>. Gravity pulls that lower column down
+                  and drags the whole pool along behind it &mdash; no pump, no power.
                 </p>
                 <p className="text-gray-400 leading-relaxed">
-                  The catch: it only works if the open end can sit below the water line. The greater that drop, the
-                  faster it flows. If your yard is dead flat with nowhere lower to send it, a siphon won&rsquo;t pull and
-                  you&rsquo;ll need a submersible pump instead.
+                  The only catch: the open end has to sit below the water line, and the bigger that drop, the faster it
+                  flows. If your yard is dead flat with nowhere lower to send it, you&rsquo;ll need a submersible pump
+                  instead.
                 </p>
               </div>
               <SiphonDiagram />
@@ -439,10 +439,10 @@ const DrainPoolPageInner = () => {
         </section>
 
         {/* ── The valve setup — diagram + explainer (the core ask) ──────── */}
-        <section className="pb-16 sm:pb-20">
+        <section className="py-16 sm:py-20">
           <Container>
-            <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center max-w-5xl mx-auto">
-              <div className="lg:order-2">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch max-w-5xl mx-auto">
+              <div className="lg:order-2 flex flex-col justify-center">
                 <span className="text-brand-orange font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
                   At The Equipment Pad
                 </span>
@@ -450,23 +450,19 @@ const DrainPoolPageInner = () => {
                   Pump off, skimmers closed, main drain open
                 </h2>
                 <p className="text-gray-400 leading-relaxed mb-4">
-                  Most pools pull water from two places: the <span className="text-white">skimmers</span> at the
-                  waterline and the <span className="text-white">main drain</span> on the deep-end floor. To take the
-                  level <span className="text-white">below the skimmer</span>, you have to draw from the bottom &mdash;
-                  so close the skimmer valve(s) and open the main drain all the way.
-                </p>
-                <p className="text-gray-400 leading-relaxed mb-4">
-                  This does two things: it lets the water drop past the skimmer mouth (which otherwise starts sucking
-                  air and breaks the siphon), and it keeps the pump from running dry. Always{' '}
-                  <span className="text-white">turn the pump off before you move any valve</span> &mdash; running it
-                  against a closed line or with no water will wreck it.
+                  Pools pull water from two places: the <span className="text-white">skimmers</span> at the waterline and
+                  the <span className="text-white">main drain</span> on the deep-end floor. To take the level{' '}
+                  <span className="text-white">below the skimmer</span>, you have to draw from the bottom &mdash; so close
+                  the skimmer valves and open the main drain all the way.
                 </p>
                 <p className="text-gray-400 leading-relaxed">
-                  With the pump off and only the main drain open, you can either drop a hose straight into the deep end,
-                  or run a siphon off the main-drain line right at the pad if it sits below the water line.
+                  That keeps the water dropping past the skimmer (which would otherwise suck air and break the siphon)
+                  and stops the pump from running dry. Always{' '}
+                  <span className="text-white">shut the pump off before you move any valve</span> &mdash; running it
+                  against a closed line will wreck it.
                 </p>
               </div>
-              <div className="lg:order-1">
+              <div className="lg:order-1 h-full">
                 <ValveDiagram />
               </div>
             </div>
@@ -576,7 +572,7 @@ const DrainPoolPageInner = () => {
         </section>
 
         {/* ── FAQ ───────────────────────────────────────────────────────── */}
-        <section className="pb-16 sm:pb-20">
+        <section className="py-16 sm:py-20">
           <Container>
             <div className="max-w-2xl mx-auto">
               <div className="text-center mb-10">
@@ -637,7 +633,7 @@ const DrainPoolPageInner = () => {
         </section>
 
         {/* ── Closing CTA ───────────────────────────────────────────────── */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-24">
           <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 text-center border border-white/10 bg-gradient-to-br from-brand-blue/15 via-white/[0.03] to-brand-orange/10">
             <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-brand-blue/10 blur-3xl pointer-events-none" />
             <div className="relative">
