@@ -384,83 +384,78 @@ const CoverageSection = () => {
           </p>
         </m.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-14 gap-y-10">
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <div className="flex items-baseline gap-2.5 pb-3 border-b-2 border-brand-blue/40">
-              <Waves className="w-5 h-5 text-brand-blue self-center" />
-              <h3 className="text-[#0a1628] font-display font-bold text-lg">
-                The Beach &amp; Islands
-              </h3>
-              <span className="ml-auto text-[12px] text-slate-500">
-                {BEACH_AREAS.length} areas
-              </span>
+        {/* Service manifest: one ruled row per zone (label left, areas flowing
+            right), ZIPs as the closing row in display type. A single balanced
+            structure — no side-by-side columns to fall out of height balance
+            when one zone has fewer areas. */}
+        <m.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="border-y border-black/[0.08] divide-y divide-black/[0.08]"
+        >
+          {[
+            { icon: Waves, accent: 'text-brand-blue', label: 'The Beach & Islands', areas: BEACH_AREAS },
+            { icon: Home, accent: 'text-brand-orange', label: 'The Mainland', areas: MAINLAND_AREAS },
+          ].map((zone) => (
+            <div
+              key={zone.label}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-3 py-6 lg:py-7"
+            >
+              <div className="lg:col-span-4 flex items-center gap-2.5">
+                <zone.icon className={`w-[18px] h-[18px] shrink-0 ${zone.accent}`} />
+                <h3 className="text-[#0a1628] font-display font-bold text-base">{zone.label}</h3>
+                <span className="text-[12px] text-slate-400">{zone.areas.length} areas</span>
+              </div>
+              {/* Each "name ·" is one unbreakable unit followed by a real
+                  space — the space is the wrap point, so lines never start
+                  with a stray dot and never overflow on mobile. */}
+              <p className="lg:col-span-8 text-slate-700 text-[15px] leading-relaxed lg:pt-0.5">
+                {zone.areas.map((n, i) => (
+                  <React.Fragment key={n}>
+                    <span className="whitespace-nowrap">
+                      {n}
+                      {i < zone.areas.length - 1 && (
+                        <span className="text-slate-300 ml-2.5 mr-1.5" aria-hidden>
+                          ·
+                        </span>
+                      )}
+                    </span>{' '}
+                  </React.Fragment>
+                ))}
+              </p>
             </div>
-            <ul>
-              {BEACH_AREAS.map((n) => (
-                <li
-                  key={n}
-                  className="flex items-center gap-2.5 py-3 border-b border-black/[0.06] text-[15px] text-slate-700"
-                >
-                  <MapPin className="w-4 h-4 text-brand-blue shrink-0" />
-                  {n}
-                </li>
-              ))}
-            </ul>
-          </m.div>
+          ))}
 
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.08 }}
-          >
-            <div className="flex items-baseline gap-2.5 pb-3 border-b-2 border-brand-orange/50">
-              <Home className="w-5 h-5 text-brand-orange self-center" />
-              <h3 className="text-[#0a1628] font-display font-bold text-lg">The Mainland</h3>
-              <span className="ml-auto text-[12px] text-slate-500">
-                {MAINLAND_AREAS.length} areas
-              </span>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-3 py-6 lg:py-7">
+            <div className="lg:col-span-4 flex items-center gap-2.5">
+              <MapPin className="w-[18px] h-[18px] shrink-0 text-brand-blue" />
+              <h3 className="text-[#0a1628] font-display font-bold text-base">ZIP codes</h3>
+              <span className="text-[12px] text-slate-400">{ZIPS.length} covered</span>
             </div>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 sm:gap-x-8">
-              {MAINLAND_AREAS.map((n) => (
-                <li
-                  key={n}
-                  className="flex items-center gap-2.5 py-3 border-b border-black/[0.06] text-[15px] text-slate-700"
-                >
-                  <MapPin className="w-4 h-4 text-brand-orange shrink-0" />
-                  {n}
-                </li>
+            <p className="lg:col-span-8 font-display font-bold text-lg md:text-xl tracking-wide leading-relaxed">
+              {ZIPS.map((z, i) => (
+                <React.Fragment key={z}>
+                  <span className="text-[#0a1628] whitespace-nowrap">
+                    {z}
+                    {i < ZIPS.length - 1 && (
+                      <span className="text-slate-300 ml-2.5 mr-1.5" aria-hidden>
+                        ·
+                      </span>
+                    )}
+                  </span>{' '}
+                </React.Fragment>
               ))}
-            </ul>
-          </m.div>
-        </div>
+            </p>
+          </div>
+        </m.div>
 
         <m.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-12 pt-8 border-t border-black/[0.06]"
         >
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 mb-3">
-            Clearwater ZIP codes we cover
-          </p>
-          <p className="font-display font-bold text-xl md:text-2xl tracking-wide">
-            {ZIPS.map((z, i) => (
-              <React.Fragment key={z}>
-                {i > 0 && (
-                  <span className="text-slate-400 mx-2.5" aria-hidden>
-                    ·
-                  </span>
-                )}
-                <span className="text-[#0a1628]">{z}</span>
-              </React.Fragment>
-            ))}
-          </p>
-          <p className="text-slate-500 text-[13px] leading-relaxed mt-4 max-w-2xl">
+          <p className="text-slate-500 text-[13px] leading-relaxed mt-6 max-w-2xl">
             Don't see your neighborhood? It's not a full list — if you've got a pool
             in Clearwater, on the island or the mainland, we almost certainly
             already cover your street. Just ask.
