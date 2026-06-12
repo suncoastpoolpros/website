@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { m } from 'motion/react';
-import { Phone, MapPin, Star, Waves, Home, Droplets, ArrowRight } from 'lucide-react';
+import { Phone, MapPin, Star, Waves, Home, ArrowRight } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Glass } from '@/components/Glass';
@@ -96,10 +96,7 @@ const HeroSection = () => {
                 Clearwater deserves
               </span>
               <span className="block text-[2.75rem] sm:text-6xl md:text-[3.9rem] leading-[1.02]">
-                {/* Wavy underline = the waterline, drawn under the promise. */}
-                <span className="text-brand-orange-light underline decoration-wavy decoration-brand-orange/40 decoration-[0.045em] underline-offset-[0.18em]">
-                  clear water.
-                </span>
+                <span className="text-brand-orange-light">clear water.</span>
               </span>
             </div>
 
@@ -124,7 +121,7 @@ const HeroSection = () => {
               {/* Orange = the site's action color (navbar, CtaBand). A specific
                   label ("flat-rate") outpulls a generic "free quote". */}
               <a href="#quote" onClick={handleQuote} className="btn btn-orange">
-                Get My Flat-Rate Quote
+                Get a Flat-Rate Quote
               </a>
               <Glass
                 href={`tel:${PHONE}`}
@@ -186,10 +183,10 @@ const HeroSection = () => {
               <div className="bg-[#060d18]/80 border-b border-white/10 px-7 py-5 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange-light mb-1">
-                    Your Flat Rate, Fast
+                    Flat-Rate Weekly Service
                   </p>
                   <p className="text-white font-display font-bold text-lg leading-tight">
-                    Which Clearwater is yours?
+                    Where's your pool?
                   </p>
                 </div>
                 <div className="text-right shrink-0">
@@ -205,48 +202,35 @@ const HeroSection = () => {
               </div>
 
               <div className="p-5 space-y-3">
-                {ZONES.map((z) => {
-                  const hover =
-                    z.accent === 'blue'
-                      ? 'hover:bg-brand-blue/10 hover:border-brand-blue/40'
-                      : 'hover:bg-brand-orange/10 hover:border-brand-orange/40';
-                  const tile =
-                    z.accent === 'blue'
-                      ? 'bg-brand-blue/10 border-brand-blue/25 text-brand-blue-light'
-                      : 'bg-brand-orange/10 border-brand-orange/20 text-brand-orange-light';
-                  const arrow =
-                    z.accent === 'blue'
-                      ? 'group-hover:text-brand-blue-light'
-                      : 'group-hover:text-brand-orange-light';
-                  return (
-                    <button
-                      key={z.kicker}
-                      type="button"
-                      onClick={() => open()}
-                      className={`group w-full text-left rounded-xl border border-white/10 bg-white/[0.03] p-3.5 flex items-start gap-3 transition-colors cursor-pointer ${hover}`}
-                    >
-                      <div
-                        className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${tile}`}
-                      >
-                        <z.icon className="w-[18px] h-[18px]" />
-                      </div>
-                      <div className="leading-tight pt-0.5 min-w-0">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400 mb-1">
-                          {z.kicker}
-                        </p>
-                        <p className="text-white font-semibold text-[13.5px] mb-1">{z.places}</p>
-                        <p className="text-gray-400 text-[12.5px]">{z.note}</p>
-                      </div>
-                      <ArrowRight
-                        className={`ml-auto self-center w-4 h-4 shrink-0 text-gray-500 transition-all group-hover:translate-x-0.5 ${arrow}`}
+                {/* Monochrome surfaces; the only color is the zone icon. The
+                    candy-tinted tiles/hovers read juvenile — restraint sells. */}
+                {ZONES.map((z) => (
+                  <button
+                    key={z.kicker}
+                    type="button"
+                    onClick={() => open()}
+                    className="group w-full text-left rounded-xl border border-white/10 bg-white/[0.03] p-3.5 flex items-start gap-3 transition-colors cursor-pointer hover:bg-white/[0.06] hover:border-white/25"
+                  >
+                    <div className="w-9 h-9 rounded-lg border border-white/10 bg-white/[0.04] flex items-center justify-center shrink-0">
+                      <z.icon
+                        className={`w-[18px] h-[18px] ${
+                          z.accent === 'blue' ? 'text-brand-blue-light' : 'text-brand-orange-light'
+                        }`}
                       />
-                    </button>
-                  );
-                })}
+                    </div>
+                    <div className="leading-tight pt-0.5 min-w-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400 mb-1">
+                        {z.kicker}
+                      </p>
+                      <p className="text-white font-semibold text-[13.5px] mb-1">{z.places}</p>
+                      <p className="text-gray-400 text-[12.5px]">{z.note}</p>
+                    </div>
+                    <ArrowRight className="ml-auto self-center w-4 h-4 shrink-0 text-gray-500 transition-all group-hover:translate-x-0.5 group-hover:text-white" />
+                  </button>
+                ))}
 
-                <div className="pt-2 pb-1 flex items-center justify-center gap-2 text-center">
-                  <Droplets className="w-4 h-4 text-brand-orange-light shrink-0" />
-                  <p className="text-[13px] text-gray-300">
+                <div className="pt-2 pb-1 text-center">
+                  <p className="text-[13px] text-gray-400">
                     Either way — same tech weekly, chemicals included, one flat rate.
                   </p>
                 </div>

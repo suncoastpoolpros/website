@@ -193,7 +193,7 @@ const TwoWorldsSection = () => (
         <div className="relative grid grid-cols-1 lg:grid-cols-2">
           {/* The dividing line — the Intracoastal itself. */}
           <span className="hidden lg:block absolute inset-y-8 left-1/2 w-px bg-white/10" aria-hidden />
-          <span className="hidden lg:inline-flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 items-center rounded-full bg-brand-blue px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white whitespace-nowrap shadow-lg shadow-brand-blue/30">
+          <span className="hidden lg:inline-flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 items-center rounded-full bg-[#0a1628] border border-white/20 px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-300 whitespace-nowrap">
             The Intracoastal
           </span>
           <ZoneColumn
@@ -215,8 +215,7 @@ const TwoWorldsSection = () => (
             />
           </div>
         </div>
-        <div className="border-t border-white/[0.07] bg-white/[0.02] px-6 py-4 flex items-center justify-center gap-2.5 text-center">
-          <Droplets className="w-4 h-4 text-brand-orange-light shrink-0" />
+        <div className="border-t border-white/[0.07] bg-white/[0.02] px-6 py-4 text-center">
           <span className="text-gray-300 text-[14px]">
             Two very different pools.{' '}
             <span className="text-white font-semibold">One clear-water standard.</span>
@@ -243,11 +242,7 @@ const InterludeBand = () => (
         transition={{ duration: 1, ease: 'easeOut' }}
         className="flex flex-col items-center"
       >
-        <div className="flex items-center gap-3 mb-6" aria-hidden>
-          <span className="h-px w-12 bg-white/30" />
-          <Droplets className="w-4 h-4 text-white/70" />
-          <span className="h-px w-12 bg-white/30" />
-        </div>
+        <span className="h-px w-16 bg-white/35 mb-6" aria-hidden />
         <p className="text-shadow-interlude font-display italic text-white/90 text-2xl sm:text-3xl md:text-[2.25rem] leading-snug text-center max-w-2xl tracking-tight">
           The town is named for clear water. We just keep the promise.
         </p>
@@ -512,7 +507,9 @@ const ProcessSection = () => (
             transition={{ delay: i * 0.1 }}
             className="relative md:pr-6"
           >
-            <span className="relative z-10 w-10 h-10 rounded-full bg-brand-orange text-white font-display font-bold text-[15px] flex items-center justify-center shadow-lg shadow-brand-orange/30 mb-5">
+            {/* Outlined stop, not a filled glowing disc — solid bg so the
+                route line doesn't show through it. */}
+            <span className="relative z-10 w-10 h-10 rounded-full bg-[#0a1422] border border-brand-orange/50 text-brand-orange-light font-display font-bold text-[15px] flex items-center justify-center mb-5">
               {i + 1}
             </span>
             <h3 className="text-xl font-display font-bold text-white mb-2">{s.title}</h3>
