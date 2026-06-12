@@ -24,10 +24,32 @@ import { clearwaterFaqs } from '@/pages/clearwaterFaqs';
 // ── Clearwater's design identity ─────────────────────────────────────────────
 // Same dark navy palette as the rest of the site, but its own LAYOUT language —
 // no other city page shares these structures: one panel split by "The
-// Intracoastal" divider (instead of two separate columns), a numbered 01–06
-// checklist ledger (instead of icon grids), directory-style ruled coverage
-// lists (instead of chip clouds), a numbered route line for the steps (instead
-// of step cards), and a single divided FAQ card (instead of stacked cards).
+// Intracoastal" divider, a numbered 01–06 checklist ledger, directory-style
+// ruled coverage lists, a numbered route line for the steps, and a single
+// divided FAQ card. Two page-wide finishing systems tie it together:
+// every kicker leads with a short orange rule, and every major panel carries
+// an "edge light" — a faint top hairline glint — so the cards read lit, not
+// flat.
+
+// Kicker with the page's signature leading rule. `center` flanks the text with
+// rules on both sides (used by the centered FAQ header).
+const Kicker = ({ children, center = false }: { children: React.ReactNode; center?: boolean }) => (
+  <span className={`flex items-center gap-3 mb-4 ${center ? 'justify-center' : ''}`}>
+    <span className="h-px w-10 bg-brand-orange/70 shrink-0" aria-hidden />
+    <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs">
+      {children}
+    </span>
+    {center && <span className="h-px w-10 bg-brand-orange/70 shrink-0" aria-hidden />}
+  </span>
+);
+
+// Faint top hairline glint for major panels (parent must be relative).
+const EdgeLight = () => (
+  <span
+    aria-hidden
+    className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent"
+  />
+);
 
 // ── Section 1: two worlds, one standard ─────────────────────────────────────
 // Clearwater's signature angle: it's two towns sharing a name. A barrier-island
@@ -149,10 +171,8 @@ const TwoWorldsSection = () => (
         viewport={{ once: true }}
         className="max-w-2xl mb-12"
       >
-        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-          Two Towns, One Name
-        </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
+        <Kicker>Two Towns, One Name</Kicker>
+        <h2 className="section-heading text-balance text-white leading-tight mb-4">
           A beach pool and a mainland pool aren't the same job.
         </h2>
         <p className="section-subtext">
@@ -167,8 +187,9 @@ const TwoWorldsSection = () => (
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="glass-panel rounded-3xl overflow-hidden"
+        className="glass-panel rounded-3xl overflow-hidden relative"
       >
+        <EdgeLight />
         <div className="relative grid grid-cols-1 lg:grid-cols-2">
           {/* The dividing line — the Intracoastal itself. */}
           <span className="hidden lg:block absolute inset-y-8 left-1/2 w-px bg-white/10" aria-hidden />
@@ -214,16 +235,23 @@ const InterludeBand = () => (
     <div className="interlude-tint-clearwater absolute inset-0 pointer-events-none" />
     <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07111c] to-transparent pointer-events-none" />
     <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0a1422] to-transparent pointer-events-none" />
-    <div className="relative h-full flex items-center justify-center">
-      <m.p
+    <div className="relative h-full flex flex-col items-center justify-center px-6">
+      <m.div
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-15%' }}
         transition={{ duration: 1, ease: 'easeOut' }}
-        className="text-shadow-interlude font-display italic text-white/90 text-2xl sm:text-3xl md:text-[2.25rem] leading-snug text-center px-6 max-w-2xl tracking-tight"
+        className="flex flex-col items-center"
       >
-        The town is named for clear water. We just keep the promise.
-      </m.p>
+        <div className="flex items-center gap-3 mb-6" aria-hidden>
+          <span className="h-px w-12 bg-white/30" />
+          <Droplets className="w-4 h-4 text-white/70" />
+          <span className="h-px w-12 bg-white/30" />
+        </div>
+        <p className="text-shadow-interlude font-display italic text-white/90 text-2xl sm:text-3xl md:text-[2.25rem] leading-snug text-center max-w-2xl tracking-tight">
+          The town is named for clear water. We just keep the promise.
+        </p>
+      </m.div>
     </div>
   </section>
 );
@@ -251,10 +279,8 @@ const StandardSection = () => (
           viewport={{ once: true }}
           className="lg:col-span-5"
         >
-          <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-            The Clearwater Standard
-          </span>
-          <h2 className="section-heading text-white leading-tight mb-4">
+          <Kicker>The Clearwater Standard</Kicker>
+          <h2 className="section-heading text-balance text-white leading-tight mb-4">
             "Clear" isn't a vibe. It's a checklist.
           </h2>
           <p className="section-subtext mb-6">
@@ -277,8 +303,9 @@ const StandardSection = () => (
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.08 }}
-          className="lg:col-span-7 rounded-3xl bg-[#060d18] border border-white/10 p-7 md:p-9 shadow-2xl shadow-black/40"
+          className="lg:col-span-7 rounded-3xl bg-[#060d18] border border-white/10 p-7 md:p-9 shadow-2xl shadow-black/40 relative overflow-hidden"
         >
+          <EdgeLight />
           <div className="flex items-center justify-between gap-4 pb-5 mb-6 border-b border-white/10">
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-orange-light">
               The weekly checklist
@@ -321,7 +348,7 @@ const MAINLAND_AREAS = [
 const ZIPS = ['33755', '33756', '33759', '33761', '33763', '33764', '33765', '33767'];
 
 const CoverageSection = () => (
-  <section className="py-20 md:py-24 bg-[#0e1c2e] relative overflow-hidden">
+  <section className="py-20 md:py-28 bg-[#0e1c2e] relative overflow-hidden">
     <div className="absolute top-0 left-1/4 w-[55%] h-[45%] bg-brand-blue/[0.05] rounded-full blur-[150px] pointer-events-none" />
     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
     <Container className="relative z-10">
@@ -331,10 +358,8 @@ const CoverageSection = () => (
         viewport={{ once: true }}
         className="max-w-2xl mb-12"
       >
-        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-          Across All of Clearwater
-        </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
+        <Kicker>Across All of Clearwater</Kicker>
+        <h2 className="section-heading text-balance text-white leading-tight mb-4">
           From the sand to the suburbs, on a set day.
         </h2>
         <p className="section-subtext">
@@ -351,9 +376,12 @@ const CoverageSection = () => (
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <div className="flex items-center gap-2.5 pb-3 border-b-2 border-brand-blue/50">
-            <Waves className="w-5 h-5 text-brand-blue-light" />
+          <div className="flex items-baseline gap-2.5 pb-3 border-b-2 border-brand-blue/50">
+            <Waves className="w-5 h-5 text-brand-blue-light self-center" />
             <h3 className="text-white font-display font-bold text-lg">The Beach &amp; Islands</h3>
+            <span className="ml-auto text-[12px] text-gray-500">
+              {BEACH_AREAS.length} areas
+            </span>
           </div>
           <ul>
             {BEACH_AREAS.map((n) => (
@@ -374,9 +402,12 @@ const CoverageSection = () => (
           viewport={{ once: true }}
           transition={{ delay: 0.08 }}
         >
-          <div className="flex items-center gap-2.5 pb-3 border-b-2 border-brand-orange/50">
-            <Home className="w-5 h-5 text-brand-orange-light" />
+          <div className="flex items-baseline gap-2.5 pb-3 border-b-2 border-brand-orange/50">
+            <Home className="w-5 h-5 text-brand-orange-light self-center" />
             <h3 className="text-white font-display font-bold text-lg">The Mainland</h3>
+            <span className="ml-auto text-[12px] text-gray-500">
+              {MAINLAND_AREAS.length} areas
+            </span>
           </div>
           <ul className="grid grid-cols-1 sm:grid-cols-2 sm:gap-x-8">
             {MAINLAND_AREAS.map((n) => (
@@ -396,13 +427,22 @@ const CoverageSection = () => (
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="mt-12"
+        className="mt-12 pt-8 border-t border-white/[0.07]"
       >
         <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
           Clearwater ZIP codes we cover
         </p>
-        <p className="font-display font-bold text-white text-xl md:text-2xl tracking-wide">
-          {ZIPS.join(' · ')}
+        <p className="font-display font-bold text-xl md:text-2xl tracking-wide">
+          {ZIPS.map((z, i) => (
+            <React.Fragment key={z}>
+              {i > 0 && (
+                <span className="text-gray-600 mx-2.5" aria-hidden>
+                  ·
+                </span>
+              )}
+              <span className="text-white">{z}</span>
+            </React.Fragment>
+          ))}
         </p>
         <p className="text-gray-500 text-[13px] leading-relaxed mt-4 max-w-2xl">
           Don't see your neighborhood? It's not a full list — if you've got a pool
@@ -435,7 +475,7 @@ const steps = [
 ];
 
 const ProcessSection = () => (
-  <section className="py-20 md:py-24 bg-[#0a1422] relative overflow-hidden">
+  <section className="py-20 md:py-28 bg-[#0a1422] relative overflow-hidden">
     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[45%] bg-brand-blue/[0.06] rounded-full blur-[160px] pointer-events-none" />
     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
     <Container className="relative z-10">
@@ -445,10 +485,8 @@ const ProcessSection = () => (
         viewport={{ once: true }}
         className="max-w-2xl mb-12"
       >
-        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-          Getting Started
-        </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
+        <Kicker>Getting Started</Kicker>
+        <h2 className="section-heading text-balance text-white leading-tight mb-4">
           Three steps, then it runs itself.
         </h2>
         <p className="section-subtext">
@@ -459,8 +497,12 @@ const ProcessSection = () => (
       </m.div>
 
       <div className="relative grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
-        {/* The route line connecting the three stops (desktop). */}
-        <span className="hidden md:block absolute top-5 left-[8%] right-[8%] h-px bg-white/10" aria-hidden />
+        {/* The route line connecting the three stops (desktop) — orange at the
+            stops, fading between them. */}
+        <span
+          className="hidden md:block absolute top-5 left-[8%] right-[8%] h-px bg-gradient-to-r from-brand-orange/50 via-white/10 to-brand-orange/50"
+          aria-hidden
+        />
         {steps.map((s, i) => (
           <m.div
             key={s.title}
@@ -468,12 +510,12 @@ const ProcessSection = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.1 }}
-            className="relative"
+            className="relative md:pr-6"
           >
             <span className="relative z-10 w-10 h-10 rounded-full bg-brand-orange text-white font-display font-bold text-[15px] flex items-center justify-center shadow-lg shadow-brand-orange/30 mb-5">
               {i + 1}
             </span>
-            <h3 className="text-lg font-display font-bold text-white mb-2">{s.title}</h3>
+            <h3 className="text-xl font-display font-bold text-white mb-2">{s.title}</h3>
             <p className="text-gray-400 leading-relaxed text-[15px]">{s.body}</p>
           </m.div>
         ))}
@@ -539,7 +581,7 @@ const relatedGuides: Array<{
 ];
 
 const RelatedGuidesSection = () => (
-  <section className="py-20 md:py-24 bg-[#0e1c2e] relative overflow-hidden">
+  <section className="py-20 md:py-28 bg-[#0e1c2e] relative overflow-hidden">
     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
     <div className="absolute top-0 right-1/4 w-[50%] h-[40%] bg-brand-blue/[0.05] rounded-full blur-[150px] pointer-events-none" />
     <Container className="relative z-10">
@@ -549,10 +591,8 @@ const RelatedGuidesSection = () => (
         viewport={{ once: true }}
         className="max-w-2xl mb-12"
       >
-        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-          Pool Care, Explained
-        </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
+        <Kicker>Pool Care, Explained</Kicker>
+        <h2 className="section-heading text-balance text-white leading-tight mb-4">
           Straight answers, even if you never hire us.
         </h2>
         <p className="section-subtext">
@@ -572,7 +612,7 @@ const RelatedGuidesSection = () => (
           >
             <SmartLink
               to={g.to}
-              className="group glass-panel rounded-2xl p-6 md:p-7 flex items-start gap-4 h-full hover:bg-white/10 transition-colors"
+              className="group glass-panel rounded-2xl p-6 md:p-7 flex items-start gap-4 h-full hover:bg-white/10 hover:border-brand-blue/30 transition-colors"
             >
               <div className="shrink-0 w-11 h-11 rounded-xl bg-brand-blue/10 border border-brand-blue/25 flex items-center justify-center">
                 <g.icon className="w-5 h-5 text-brand-blue-light" />
@@ -596,7 +636,7 @@ const RelatedGuidesSection = () => (
 const FaqSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   return (
-    <section className="py-20 md:py-24 bg-[#07111c] relative">
+    <section className="py-20 md:py-28 bg-[#07111c] relative">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <m.div
           initial={{ opacity: 0, y: 20 }}
@@ -604,13 +644,12 @@ const FaqSection = () => {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-            Clearwater Pool Service
-          </span>
+          <Kicker center>Clearwater Pool Service</Kicker>
           <h2 className="section-heading text-white">Questions, answered.</h2>
         </m.div>
 
-        <div className="glass-panel rounded-3xl divide-y divide-white/[0.07] overflow-hidden">
+        <div className="glass-panel rounded-3xl divide-y divide-white/[0.07] overflow-hidden relative">
+          <EdgeLight />
           {clearwaterFaqs.map((faq, index) => {
             const isOpen = openIndex === index;
             const panelId = `clearwater-faq-panel-${index}`;
@@ -625,7 +664,15 @@ const FaqSection = () => {
                   aria-expanded={isOpen}
                   aria-controls={panelId}
                 >
-                  <span className="text-white font-semibold text-[16px]">{faq.q}</span>
+                  <span className="flex items-start gap-4 min-w-0">
+                    <span
+                      className="font-display font-bold text-gray-600 text-[13px] w-7 shrink-0 pt-1"
+                      aria-hidden
+                    >
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="text-white font-semibold text-[16px]">{faq.q}</span>
+                  </span>
                   {isOpen ? (
                     <Minus className="w-5 h-5 shrink-0 text-brand-orange-light" />
                   ) : (
@@ -637,7 +684,7 @@ const FaqSection = () => {
                     id={panelId}
                     role="region"
                     aria-labelledby={buttonId}
-                    className="px-6 md:px-7 pb-6 text-gray-400 leading-relaxed"
+                    className="pl-[68px] md:pl-[72px] pr-6 md:pr-7 pb-6 text-gray-400 leading-relaxed"
                   >
                     {faq.a}
                   </div>

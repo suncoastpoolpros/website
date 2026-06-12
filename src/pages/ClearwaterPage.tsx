@@ -165,8 +165,13 @@ const HeroSection = () => {
             className="hidden lg:block lg:col-span-5"
           >
             {/* Glass card with a solid header band (proposal/email-card
-                structure, kept on the site's dark palette). */}
-            <div className="glass-panel rounded-2xl overflow-hidden">
+                structure, kept on the site's dark palette). The top hairline
+                glint matches the EdgeLight on the below-fold panels. */}
+            <div className="glass-panel rounded-2xl overflow-hidden relative">
+              <span
+                aria-hidden
+                className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent"
+              />
               <div className="bg-[#060d18]/80 border-b border-white/10 px-7 py-5 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange-light mb-1">
