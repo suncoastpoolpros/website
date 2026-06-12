@@ -174,13 +174,10 @@ const HeroSection = () => {
             {/* Conversion chooser, not an info card: visitors self-segment by
                 picking their side of the Intracoastal, and either pick opens
                 the quote sheet. The zone rows double as above-the-fold
-                local-SEO (real neighborhoods in both zones). */}
-            <div className="glass-panel rounded-2xl overflow-hidden relative">
-              <span
-                aria-hidden
-                className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent"
-              />
-              <div className="bg-[#060d18]/80 border-b border-white/10 px-7 py-5 flex items-center justify-between gap-4">
+                local-SEO (real neighborhoods in both zones). White body under
+                a navy header — the proposal/email-card DNA. */}
+            <div className="rounded-2xl overflow-hidden bg-white shadow-2xl shadow-black/50">
+              <div className="bg-[#0a1628] px-7 py-5 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange-light mb-1">
                     Flat-Rate Weekly Service
@@ -209,28 +206,28 @@ const HeroSection = () => {
                     key={z.kicker}
                     type="button"
                     onClick={() => open()}
-                    className="group w-full text-left rounded-xl border border-white/10 bg-white/[0.03] p-3.5 flex items-start gap-3 transition-colors cursor-pointer hover:bg-white/[0.06] hover:border-white/25"
+                    className="group w-full text-left rounded-xl border border-black/10 bg-black/[0.02] p-3.5 flex items-start gap-3 transition-colors cursor-pointer hover:bg-black/[0.04] hover:border-black/25"
                   >
-                    <div className="w-9 h-9 rounded-lg border border-white/10 bg-white/[0.04] flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-lg border border-black/10 bg-white flex items-center justify-center shrink-0">
                       <z.icon
                         className={`w-[18px] h-[18px] ${
-                          z.accent === 'blue' ? 'text-brand-blue-light' : 'text-brand-orange-light'
+                          z.accent === 'blue' ? 'text-brand-blue' : 'text-brand-orange'
                         }`}
                       />
                     </div>
                     <div className="leading-tight pt-0.5 min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400 mb-1">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 mb-1">
                         {z.kicker}
                       </p>
-                      <p className="text-white font-semibold text-[13.5px] mb-1">{z.places}</p>
-                      <p className="text-gray-400 text-[12.5px]">{z.note}</p>
+                      <p className="text-[#0a1628] font-semibold text-[13.5px] mb-1">{z.places}</p>
+                      <p className="text-slate-600 text-[12.5px]">{z.note}</p>
                     </div>
-                    <ArrowRight className="ml-auto self-center w-4 h-4 shrink-0 text-gray-500 transition-all group-hover:translate-x-0.5 group-hover:text-white" />
+                    <ArrowRight className="ml-auto self-center w-4 h-4 shrink-0 text-slate-400 transition-all group-hover:translate-x-0.5 group-hover:text-[#0a1628]" />
                   </button>
                 ))}
 
                 <div className="pt-2 pb-1 text-center">
-                  <p className="text-[13px] text-gray-400">
+                  <p className="text-[13px] text-slate-500">
                     Either way — same tech weekly, chemicals included, one flat rate.
                   </p>
                 </div>
