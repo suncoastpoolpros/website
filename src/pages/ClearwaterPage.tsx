@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { m } from 'motion/react';
-import { Phone, MapPin, Star, Waves, Home, Droplets } from 'lucide-react';
+import { Phone, MapPin, Star, Waves, Home, Droplets, ArrowRight } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Glass } from '@/components/Glass';
@@ -96,7 +96,10 @@ const HeroSection = () => {
                 Clearwater deserves
               </span>
               <span className="block text-[2.75rem] sm:text-6xl md:text-[3.9rem] leading-[1.02]">
-                <span className="text-brand-orange-light">clear water.</span>
+                {/* Wavy underline = the waterline, drawn under the promise. */}
+                <span className="text-brand-orange-light underline decoration-wavy decoration-brand-orange/40 decoration-[0.045em] underline-offset-[0.18em]">
+                  clear water.
+                </span>
               </span>
             </div>
 
@@ -118,8 +121,10 @@ const HeroSection = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-              <a href="#quote" onClick={handleQuote} className="btn btn-blue">
-                Get a Free Quote
+              {/* Orange = the site's action color (navbar, CtaBand). A specific
+                  label ("flat-rate") outpulls a generic "free quote". */}
+              <a href="#quote" onClick={handleQuote} className="btn btn-orange">
+                Get My Flat-Rate Quote
               </a>
               <Glass
                 href={`tel:${PHONE}`}
@@ -130,21 +135,26 @@ const HeroSection = () => {
               </Glass>
             </div>
 
-            <p className="mt-4 text-[13px] text-gray-400">
-              No contracts · Cancel anytime · Beach &amp; mainland, one flat rate.
-            </p>
-
-            {/* Mobile-only compact trust strip (the dual-zone card is desktop-only). */}
-            <div className="lg:hidden mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 text-[13px] text-gray-400">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-0.5 text-brand-orange">
+            {/* Proof + risk reversal, directly under the CTA where it sways
+                the click. */}
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-gray-400">
+              <span className="flex items-center gap-1.5">
+                <span className="flex gap-0.5 text-brand-orange">
                   {[0, 1, 2, 3, 4].map((i) => (
-                    <Star key={i} className="w-4 h-4 fill-current" />
+                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
                   ))}
-                </div>
+                </span>
                 <span className="font-semibold text-white/90">5.0</span>
                 <span className="text-gray-500">on Google</span>
-              </div>
+              </span>
+              <span className="text-gray-600" aria-hidden>
+                ·
+              </span>
+              <span>No contracts · Cancel anytime · One flat rate</span>
+            </div>
+
+            {/* Mobile-only compact zone strip (the chooser card is desktop-only). */}
+            <div className="lg:hidden mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 text-[13px] text-gray-400">
               <div className="flex items-center gap-2">
                 <Waves className="w-4 h-4 text-brand-orange-light" />
                 <span>Beach &amp; islands</span>
@@ -156,7 +166,7 @@ const HeroSection = () => {
             </div>
           </m.div>
 
-          {/* Right column: the "two sides of Clearwater, one standard" card.
+          {/* Right column: the "which Clearwater are you in?" quote chooser.
               DESKTOP ONLY (lg+). */}
           <m.div
             initial={{ opacity: 0, x: 30 }}
@@ -164,9 +174,10 @@ const HeroSection = () => {
             transition={{ duration: 0.9, ease: 'easeOut', delay: 0.1 }}
             className="hidden lg:block lg:col-span-5"
           >
-            {/* Glass card with a solid header band (proposal/email-card
-                structure, kept on the site's dark palette). The top hairline
-                glint matches the EdgeLight on the below-fold panels. */}
+            {/* Conversion chooser, not an info card: visitors self-segment by
+                picking their side of the Intracoastal, and either pick opens
+                the quote sheet. The zone rows double as above-the-fold
+                local-SEO (real neighborhoods in both zones). */}
             <div className="glass-panel rounded-2xl overflow-hidden relative">
               <span
                 aria-hidden
@@ -175,10 +186,10 @@ const HeroSection = () => {
               <div className="bg-[#060d18]/80 border-b border-white/10 px-7 py-5 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange-light mb-1">
-                    Two Clearwaters
+                    Your Flat Rate, Fast
                   </p>
                   <p className="text-white font-display font-bold text-lg leading-tight">
-                    One clarity standard
+                    Which Clearwater is yours?
                   </p>
                 </div>
                 <div className="text-right shrink-0">
@@ -193,39 +204,50 @@ const HeroSection = () => {
                 </div>
               </div>
 
-              <div className="p-7">
-                {/* The two zones, joined by a vertical "one standard" spine. */}
-                <div className="relative space-y-4">
-                  <span
-                    className="absolute left-[19px] top-10 bottom-10 w-px bg-gradient-to-b from-brand-blue/40 via-white/15 to-brand-orange/40"
-                    aria-hidden
-                  />
-                  {ZONES.map((z) => (
-                    <div key={z.kicker} className="relative flex items-start gap-3.5">
+              <div className="p-5 space-y-3">
+                {ZONES.map((z) => {
+                  const hover =
+                    z.accent === 'blue'
+                      ? 'hover:bg-brand-blue/10 hover:border-brand-blue/40'
+                      : 'hover:bg-brand-orange/10 hover:border-brand-orange/40';
+                  const tile =
+                    z.accent === 'blue'
+                      ? 'bg-brand-blue/10 border-brand-blue/25 text-brand-blue-light'
+                      : 'bg-brand-orange/10 border-brand-orange/20 text-brand-orange-light';
+                  const arrow =
+                    z.accent === 'blue'
+                      ? 'group-hover:text-brand-blue-light'
+                      : 'group-hover:text-brand-orange-light';
+                  return (
+                    <button
+                      key={z.kicker}
+                      type="button"
+                      onClick={() => open()}
+                      className={`group w-full text-left rounded-xl border border-white/10 bg-white/[0.03] p-3.5 flex items-start gap-3 transition-colors cursor-pointer ${hover}`}
+                    >
                       <div
-                        className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 relative z-10 ${
-                          z.accent === 'blue'
-                            ? 'bg-brand-blue/10 border-brand-blue/25 text-brand-blue-light'
-                            : 'bg-brand-orange/10 border-brand-orange/20 text-brand-orange-light'
-                        }`}
+                        className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${tile}`}
                       >
-                        <z.icon className="w-5 h-5" />
+                        <z.icon className="w-[18px] h-[18px]" />
                       </div>
-                      <div className="leading-tight pt-0.5">
+                      <div className="leading-tight pt-0.5 min-w-0">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400 mb-1">
                           {z.kicker}
                         </p>
-                        <p className="text-white font-semibold text-[14px] mb-1">{z.places}</p>
-                        <p className="text-gray-400 text-[13px]">{z.note}</p>
+                        <p className="text-white font-semibold text-[13.5px] mb-1">{z.places}</p>
+                        <p className="text-gray-400 text-[12.5px]">{z.note}</p>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                      <ArrowRight
+                        className={`ml-auto self-center w-4 h-4 shrink-0 text-gray-500 transition-all group-hover:translate-x-0.5 ${arrow}`}
+                      />
+                    </button>
+                  );
+                })}
 
-                <div className="mt-6 pt-5 border-t border-white/10 flex items-center justify-center gap-2 text-center">
+                <div className="pt-2 pb-1 flex items-center justify-center gap-2 text-center">
                   <Droplets className="w-4 h-4 text-brand-orange-light shrink-0" />
                   <p className="text-[13px] text-gray-300">
-                    Same clear water, whichever Clearwater you live in.
+                    Either way — same tech weekly, chemicals included, one flat rate.
                   </p>
                 </div>
               </div>
