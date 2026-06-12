@@ -287,10 +287,13 @@ const NOT_NICKELED = [
   'Long-term contracts',
 ];
 
+// LIGHT band — the same daylight break the homepage's "How It Works" section
+// gives the landing page, but with Seminole's own content: the flat-rate
+// in/out checklist reads like a paper quote on white, which is the whole
+// point of "the price we quote is the price you pay."
 const ValueSection = () => (
-  <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-b from-[#0a1422] via-[#0c1828] to-[#0e1c2e]">
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[45%] bg-brand-orange/[0.06] rounded-full blur-[160px] pointer-events-none" />
-    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
+  <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-b from-[#e4e9f0] to-[#dce3ec]">
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[50%] bg-brand-blue/[0.05] rounded-full blur-[140px] pointer-events-none" />
     <Container className="relative z-10">
       <m.div
         initial={{ opacity: 0, y: 20 }}
@@ -298,13 +301,13 @@ const ValueSection = () => (
         viewport={{ once: true }}
         className="max-w-2xl mb-12"
       >
-        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+        <span className="text-brand-blue font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
           One Flat Rate
         </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
+        <h2 className="section-heading text-[#0a1628] leading-tight mb-4">
           The price we quote is the price you pay.
         </h2>
-        <p className="section-subtext">
+        <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
           Seminole has no shortage of pool companies — and plenty of them let the
           monthly bill creep with chemical add-ons you can't verify. We don't. Here's
           exactly what's in your flat rate, and what you'll never see tacked on.
@@ -312,44 +315,44 @@ const ValueSection = () => (
       </m.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* What's included */}
+        {/* What's included — white "paper quote" card */}
         <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="rounded-2xl border border-brand-orange/20 bg-brand-orange/[0.05] p-7 md:p-8"
+          className="rounded-2xl bg-white border border-black/5 shadow-sm shadow-black/5 p-7 md:p-8"
         >
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-11 h-11 rounded-xl bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center shrink-0">
-              <Wallet className="w-5 h-5 text-brand-orange-light" />
+            <div className="w-11 h-11 rounded-xl bg-brand-orange/10 flex items-center justify-center shrink-0">
+              <Wallet className="w-5 h-5 text-brand-orange" />
             </div>
-            <h3 className="text-xl font-display font-bold text-white leading-tight">
+            <h3 className="text-xl font-display font-bold text-[#0a1628] leading-tight">
               In your flat rate
             </h3>
           </div>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-5">
             {INCLUDED.map((item) => (
-              <li key={item} className="flex items-start gap-2.5 text-[14px] text-gray-200">
-                <Check className="w-4 h-4 text-brand-orange-light shrink-0 mt-0.5" />
+              <li key={item} className="flex items-start gap-2.5 text-[14px] text-slate-700">
+                <Check className="w-4 h-4 text-brand-orange shrink-0 mt-0.5" />
                 {item}
               </li>
             ))}
           </ul>
         </m.div>
 
-        {/* What you'll never see */}
+        {/* What you'll never see — navy card, the visual "no" to the white "yes" */}
         <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.08 }}
-          className="rounded-2xl border border-white/[0.08] bg-black/[0.18] p-7 md:p-8"
+          className="rounded-2xl bg-[#0a1628] p-7 md:p-8 shadow-xl shadow-[#0a1628]/20"
         >
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
               <X className="w-5 h-5 text-gray-400" />
             </div>
-            <h3 className="text-xl font-display font-bold text-gray-300 leading-tight">
+            <h3 className="text-xl font-display font-bold text-gray-200 leading-tight">
               What you'll never see
             </h3>
           </div>
@@ -361,7 +364,7 @@ const ValueSection = () => (
               </li>
             ))}
           </ul>
-          <p className="text-gray-500 text-[13px] mt-6 leading-relaxed border-t border-white/5 pt-5">
+          <p className="text-gray-500 text-[13px] mt-6 leading-relaxed border-t border-white/10 pt-5">
             Bigger work — a pump, a heater, a green-pool recovery — is always quoted
             and approved before we start. No surprises, ever.
           </p>
@@ -390,9 +393,11 @@ const steps = [
   },
 ];
 
+// Continues the light passage started by ValueSection, then the page returns
+// to dark at the FAQ — the same dark → light → dark arc as the homepage,
+// rendered with Seminole's icon timeline instead of the homepage medallions.
 const ProcessTimeline = () => (
-  <section className="py-20 md:py-24 bg-[#0e1c2e] relative overflow-hidden">
-    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
+  <section className="py-20 md:py-24 bg-[#dce3ec] border-t border-black/[0.06] relative overflow-hidden">
     <Container>
       <m.div
         initial={{ opacity: 0, y: 20 }}
@@ -400,13 +405,13 @@ const ProcessTimeline = () => (
         viewport={{ once: true }}
         className="max-w-2xl mb-14"
       >
-        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+        <span className="text-brand-blue font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
           How It Runs
         </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
+        <h2 className="section-heading text-[#0a1628] leading-tight mb-4">
           You don't manage it. We do.
         </h2>
-        <p className="section-subtext">
+        <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
           The whole point of weekly service is that it disappears into the
           background. Three steps, then you stop thinking about your pool.
         </p>
@@ -414,7 +419,7 @@ const ProcessTimeline = () => (
 
       <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
         {/* Connecting line — desktop only */}
-        <div className="hidden md:block absolute top-7 left-[16%] right-[16%] h-px bg-gradient-to-r from-brand-orange/30 via-brand-orange/30 to-brand-orange/30" />
+        <div className="hidden md:block absolute top-7 left-[16%] right-[16%] h-px bg-gradient-to-r from-brand-orange/0 via-brand-orange/40 to-brand-orange/0" />
         {steps.map((s, i) => (
           <m.div
             key={s.title}
@@ -424,14 +429,14 @@ const ProcessTimeline = () => (
             transition={{ delay: i * 0.1 }}
             className="relative text-center md:px-2"
           >
-            <div className="relative z-10 mx-auto w-14 h-14 rounded-full bg-[#0e1c2e] border-2 border-brand-orange/40 flex items-center justify-center mb-5">
-              <s.icon className="w-6 h-6 text-brand-orange-light" />
+            <div className="relative z-10 mx-auto w-14 h-14 rounded-full bg-white border-2 border-brand-orange/40 shadow-sm flex items-center justify-center mb-5">
+              <s.icon className="w-6 h-6 text-brand-orange" />
               <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-brand-orange text-white text-xs font-bold flex items-center justify-center">
                 {i + 1}
               </span>
             </div>
-            <h3 className="text-lg font-display font-bold text-white mb-2">{s.title}</h3>
-            <p className="text-gray-400 leading-relaxed text-[14px] max-w-xs mx-auto">{s.body}</p>
+            <h3 className="text-lg font-display font-bold text-[#0a1628] mb-2">{s.title}</h3>
+            <p className="text-slate-600 leading-relaxed text-[14px] max-w-xs mx-auto">{s.body}</p>
           </m.div>
         ))}
       </div>
@@ -440,16 +445,16 @@ const ProcessTimeline = () => (
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-300"
+        className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-slate-700"
       >
         <span className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-brand-orange-light" /> Always Blue Guarantee
+          <ShieldCheck className="w-4 h-4 text-brand-orange" /> Always Blue Guarantee
         </span>
         <span className="flex items-center gap-2">
-          <Camera className="w-4 h-4 text-brand-orange-light" /> Photo report every visit
+          <Camera className="w-4 h-4 text-brand-orange" /> Photo report every visit
         </span>
         <span className="flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-brand-orange-light" /> GPS-verified service
+          <MapPin className="w-4 h-4 text-brand-orange" /> GPS-verified service
         </span>
       </m.div>
     </Container>
