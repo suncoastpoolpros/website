@@ -21,22 +21,20 @@ import { Container } from '@/components/Container';
 import { SmartLink } from '@/components/SmartLink';
 import { clearwaterFaqs } from '@/pages/clearwaterFaqs';
 
-// ── Clearwater's design identity: the page that breaks into daylight ────────
-// Every other city page runs wall-to-wall dark navy + glass panels. Clearwater
-// — the town literally named for clear water — is the one city page whose
-// below-the-fold goes LIGHT: the #e4e9f0/white "clear" palette the guide pages
-// and the nav mega-menu already use, navy #0a1628 headings, white cards with
-// hairline rules instead of glass. Same brand tokens (brand-blue, brand-orange,
-// same display font, same Navbar/CtaBand/Footer), deliberately different page.
-// The dark photo hero stays (it carries the LCP budget) and the page returns
-// to dark at the CtaBand, so the arc reads: night photo → daylight → close.
+// ── Clearwater's design identity ─────────────────────────────────────────────
+// Same dark navy palette as the rest of the site, but its own LAYOUT language —
+// no other city page shares these structures: one panel split by "The
+// Intracoastal" divider (instead of two separate columns), a numbered 01–06
+// checklist ledger (instead of icon grids), directory-style ruled coverage
+// lists (instead of chip clouds), a numbered route line for the steps (instead
+// of step cards), and a single divided FAQ card (instead of stacked cards).
 
 // ── Section 1: two worlds, one standard ─────────────────────────────────────
 // Clearwater's signature angle: it's two towns sharing a name. A barrier-island
 // beach world and a big established mainland — genuinely different pools with
-// genuinely different problems. Rendered as ONE white card split down the
-// middle by a hairline labeled "The Intracoastal" — the literal line that
-// splits the city — beach column on the Gulf side, mainland on the other.
+// genuinely different problems. Rendered as ONE panel split down the middle by
+// a hairline labeled "The Intracoastal" — the literal line that splits the
+// city — beach column on the Gulf side, mainland on the other.
 const beachPoints = [
   {
     icon: Sun,
@@ -106,30 +104,32 @@ const ZoneColumn = ({
   side: 'left' | 'right';
 }) => {
   const tile =
-    accent === 'blue' ? 'bg-brand-blue/10 text-brand-blue' : 'bg-brand-orange/10 text-brand-orange';
-  const mark = accent === 'blue' ? 'text-brand-blue' : 'text-brand-orange';
+    accent === 'blue'
+      ? 'bg-brand-blue/10 border-brand-blue/25 text-brand-blue-light'
+      : 'bg-brand-orange/10 border-brand-orange/20 text-brand-orange-light';
+  const mark = accent === 'blue' ? 'text-brand-blue-light' : 'text-brand-orange-light';
   // Extra padding on the divider side (lg only) so column text never runs
   // under the absolutely-positioned "The Intracoastal" pill on the center rule.
   const clear = side === 'left' ? 'lg:pr-20' : 'lg:pl-20';
   return (
     <div className={`p-7 md:p-9 ${clear}`}>
       <div className="flex items-center gap-3.5 mb-3">
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${tile}`}>
+        <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 ${tile}`}>
           <BadgeIcon className="w-5 h-5" />
         </div>
         <div className="leading-tight">
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{badge}</p>
-          <p className="text-[#0a1628] font-display font-bold text-xl">{title}</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-gray-400">{badge}</p>
+          <p className="text-white font-display font-bold text-xl">{title}</p>
         </div>
       </div>
-      <ul className="divide-y divide-black/[0.06]">
+      <ul className="divide-y divide-white/[0.07]">
         {points.map((p) => (
           <li key={p.title} className="py-4 last:pb-0">
-            <h3 className="flex items-center gap-2 text-[#0a1628] font-semibold text-[15px] mb-1 leading-snug">
+            <h3 className="flex items-center gap-2 text-white font-semibold text-[15px] mb-1 leading-snug">
               <p.icon className={`w-4 h-4 shrink-0 ${mark}`} />
               {p.title}
             </h3>
-            <p className="text-slate-600 text-[14px] leading-relaxed">{p.body}</p>
+            <p className="text-gray-400 text-[14px] leading-relaxed">{p.body}</p>
           </li>
         ))}
       </ul>
@@ -138,7 +138,10 @@ const ZoneColumn = ({
 };
 
 const TwoWorldsSection = () => (
-  <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-b from-[#e4e9f0] to-[#eef2f7]">
+  <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-b from-[#07111c] via-[#0a141f] to-[#07111c]">
+    <div className="absolute top-0 left-1/4 w-[50%] h-[42%] bg-brand-blue/[0.07] rounded-full blur-[150px] pointer-events-none" />
+    <div className="absolute -bottom-24 -right-28 w-[460px] h-[460px] rounded-full bg-brand-orange/[0.05] blur-[150px] pointer-events-none" />
+    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
     <Container className="relative z-10">
       <m.div
         initial={{ opacity: 0, y: 20 }}
@@ -146,13 +149,13 @@ const TwoWorldsSection = () => (
         viewport={{ once: true }}
         className="max-w-2xl mb-12"
       >
-        <span className="text-brand-blue font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
           Two Towns, One Name
         </span>
-        <h2 className="section-heading text-[#0a1628] leading-tight mb-4">
+        <h2 className="section-heading text-white leading-tight mb-4">
           A beach pool and a mainland pool aren't the same job.
         </h2>
-        <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+        <p className="section-subtext">
           Clearwater is split right down the Intracoastal — the barrier-island
           beach world on one side, the big established mainland on the other. Each
           has its own challenges, and we built our weekly service to handle both,
@@ -164,12 +167,12 @@ const TwoWorldsSection = () => (
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="rounded-3xl bg-white border border-black/5 shadow-xl shadow-black/[0.07] overflow-hidden"
+        className="glass-panel rounded-3xl overflow-hidden"
       >
         <div className="relative grid grid-cols-1 lg:grid-cols-2">
           {/* The dividing line — the Intracoastal itself. */}
-          <span className="hidden lg:block absolute inset-y-8 left-1/2 w-px bg-black/[0.08]" aria-hidden />
-          <span className="hidden lg:inline-flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 items-center rounded-full bg-[#0a1628] px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white whitespace-nowrap">
+          <span className="hidden lg:block absolute inset-y-8 left-1/2 w-px bg-white/10" aria-hidden />
+          <span className="hidden lg:inline-flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 items-center rounded-full bg-brand-blue px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white whitespace-nowrap shadow-lg shadow-brand-blue/30">
             The Intracoastal
           </span>
           <ZoneColumn
@@ -180,7 +183,7 @@ const TwoWorldsSection = () => (
             accent="blue"
             side="left"
           />
-          <div className="border-t border-black/[0.06] lg:border-t-0">
+          <div className="border-t border-white/[0.07] lg:border-t-0">
             <ZoneColumn
               badge="The Mainland"
               badgeIcon={Home}
@@ -191,11 +194,11 @@ const TwoWorldsSection = () => (
             />
           </div>
         </div>
-        <div className="border-t border-black/[0.06] bg-[#f6f8fb] px-6 py-4 flex items-center justify-center gap-2.5 text-center">
-          <Droplets className="w-4 h-4 text-brand-orange shrink-0" />
-          <span className="text-slate-600 text-[14px]">
+        <div className="border-t border-white/[0.07] bg-white/[0.02] px-6 py-4 flex items-center justify-center gap-2.5 text-center">
+          <Droplets className="w-4 h-4 text-brand-orange-light shrink-0" />
+          <span className="text-gray-300 text-[14px]">
             Two very different pools.{' '}
-            <span className="text-[#0a1628] font-semibold">One clear-water standard.</span>
+            <span className="text-white font-semibold">One clear-water standard.</span>
           </span>
         </div>
       </m.div>
@@ -204,15 +207,13 @@ const TwoWorldsSection = () => (
 );
 
 // ── Interlude band ──────────────────────────────────────────────────────────
-// Same photo + quote, but the edges now dissolve into the LIGHT bands around
-// it — sea-mist instead of night fade.
 const InterludeBand = () => (
   <section className="relative h-[40vh] min-h-[340px] md:h-[46vh] md:min-h-[420px] overflow-hidden">
     <div className="interlude-bg-clearwater-desktop absolute inset-0 hidden md:block bg-cover bg-center" />
     <div className="interlude-bg-clearwater-mobile absolute inset-0 md:hidden bg-cover bg-center" />
     <div className="interlude-tint-clearwater absolute inset-0 pointer-events-none" />
-    <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#eef2f7] to-transparent pointer-events-none" />
-    <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#eef2f7] to-transparent pointer-events-none" />
+    <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07111c] to-transparent pointer-events-none" />
+    <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0a1422] to-transparent pointer-events-none" />
     <div className="relative h-full flex items-center justify-center">
       <m.p
         initial={{ opacity: 0, y: 12 }}
@@ -228,9 +229,8 @@ const InterludeBand = () => (
 );
 
 // ── Section 2: the Clearwater clarity standard ──────────────────────────────
-// The one NAVY moment in the daylight half: the weekly checklist as a numbered
-// 01–06 ledger on a dark card — the same navy-card-on-light DNA as our
-// proposals and emails. Statement left, ledger right.
+// The weekly checklist as a numbered 01–06 ledger on a deep-navy card — the
+// same navy-card DNA as our proposals and emails. Statement left, ledger right.
 const standardItems = [
   { label: 'Full water test & balance', sub: 'chlorine, pH, alkalinity, stabilizer, salt' },
   { label: 'All standard chemicals', sub: 'included in your flat rate — no add-ons' },
@@ -241,7 +241,8 @@ const standardItems = [
 ];
 
 const StandardSection = () => (
-  <section className="py-20 md:py-28 relative overflow-hidden bg-[#eef2f7]">
+  <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-b from-[#0a1422] via-[#0c1828] to-[#0e1c2e]">
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[45%] bg-brand-blue/[0.07] rounded-full blur-[160px] pointer-events-none" />
     <Container className="relative z-10">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
         <m.div
@@ -250,31 +251,33 @@ const StandardSection = () => (
           viewport={{ once: true }}
           className="lg:col-span-5"
         >
-          <span className="text-brand-blue font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+          <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
             The Clearwater Standard
           </span>
-          <h2 className="section-heading text-[#0a1628] leading-tight mb-4">
+          <h2 className="section-heading text-white leading-tight mb-4">
             "Clear" isn't a vibe. It's a checklist.
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-6">
+          <p className="section-subtext mb-6">
             Every weekly visit hits the same standard, beach or mainland. No
             skipped steps on a busy week, no "looks fine" without a real test —
             the same thorough service every single time, all on one flat rate.
           </p>
-          <div className="inline-flex items-center gap-2.5 rounded-xl bg-white border border-black/5 shadow-sm shadow-black/5 px-4 py-3">
-            <Droplets className="w-5 h-5 text-brand-orange shrink-0" />
-            <span className="text-slate-700 text-[14px]">
+          <div className="inline-flex items-center gap-2.5 rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3">
+            <Droplets className="w-5 h-5 text-brand-orange-light shrink-0" />
+            <span className="text-gray-300 text-[14px]">
               Water you'd be happy to see your own name on.
             </span>
           </div>
         </m.div>
 
+        {/* Darker-than-the-band panel + hairline border so the ledger reads as
+            its own card without going light. */}
         <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.08 }}
-          className="lg:col-span-7 rounded-3xl bg-[#0a1628] p-7 md:p-9 shadow-2xl shadow-[#0a1628]/25"
+          className="lg:col-span-7 rounded-3xl bg-[#060d18] border border-white/10 p-7 md:p-9 shadow-2xl shadow-black/40"
         >
           <div className="flex items-center justify-between gap-4 pb-5 mb-6 border-b border-white/10">
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-orange-light">
@@ -318,7 +321,9 @@ const MAINLAND_AREAS = [
 const ZIPS = ['33755', '33756', '33759', '33761', '33763', '33764', '33765', '33767'];
 
 const CoverageSection = () => (
-  <section className="py-20 md:py-24 bg-white relative overflow-hidden">
+  <section className="py-20 md:py-24 bg-[#0e1c2e] relative overflow-hidden">
+    <div className="absolute top-0 left-1/4 w-[55%] h-[45%] bg-brand-blue/[0.05] rounded-full blur-[150px] pointer-events-none" />
+    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
     <Container className="relative z-10">
       <m.div
         initial={{ opacity: 0, y: 20 }}
@@ -326,16 +331,16 @@ const CoverageSection = () => (
         viewport={{ once: true }}
         className="max-w-2xl mb-12"
       >
-        <span className="text-brand-blue font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
           Across All of Clearwater
         </span>
-        <h2 className="section-heading text-[#0a1628] leading-tight mb-4">
+        <h2 className="section-heading text-white leading-tight mb-4">
           From the sand to the suburbs, on a set day.
         </h2>
-        <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+        <p className="section-subtext">
           We run weekly routes across both sides of Clearwater — over the
           Memorial Causeway to the island and through the mainland neighborhoods.
-          You get a <span className="text-[#0a1628] font-semibold">fixed service day</span>, not a
+          You get a <span className="text-white">fixed service day</span>, not a
           vague "sometime this week."
         </p>
       </m.div>
@@ -346,17 +351,17 @@ const CoverageSection = () => (
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <div className="flex items-center gap-2.5 pb-3 border-b-2 border-brand-blue/30">
-            <Waves className="w-5 h-5 text-brand-blue" />
-            <h3 className="text-[#0a1628] font-display font-bold text-lg">The Beach &amp; Islands</h3>
+          <div className="flex items-center gap-2.5 pb-3 border-b-2 border-brand-blue/50">
+            <Waves className="w-5 h-5 text-brand-blue-light" />
+            <h3 className="text-white font-display font-bold text-lg">The Beach &amp; Islands</h3>
           </div>
           <ul>
             {BEACH_AREAS.map((n) => (
               <li
                 key={n}
-                className="flex items-center gap-2.5 py-3 border-b border-black/[0.06] text-[15px] text-slate-700"
+                className="flex items-center gap-2.5 py-3 border-b border-white/[0.07] text-[15px] text-gray-300"
               >
-                <MapPin className="w-4 h-4 text-brand-blue shrink-0" />
+                <MapPin className="w-4 h-4 text-brand-blue-light shrink-0" />
                 {n}
               </li>
             ))}
@@ -369,17 +374,17 @@ const CoverageSection = () => (
           viewport={{ once: true }}
           transition={{ delay: 0.08 }}
         >
-          <div className="flex items-center gap-2.5 pb-3 border-b-2 border-brand-orange/40">
-            <Home className="w-5 h-5 text-brand-orange" />
-            <h3 className="text-[#0a1628] font-display font-bold text-lg">The Mainland</h3>
+          <div className="flex items-center gap-2.5 pb-3 border-b-2 border-brand-orange/50">
+            <Home className="w-5 h-5 text-brand-orange-light" />
+            <h3 className="text-white font-display font-bold text-lg">The Mainland</h3>
           </div>
           <ul className="grid grid-cols-1 sm:grid-cols-2 sm:gap-x-8">
             {MAINLAND_AREAS.map((n) => (
               <li
                 key={n}
-                className="flex items-center gap-2.5 py-3 border-b border-black/[0.06] text-[15px] text-slate-700"
+                className="flex items-center gap-2.5 py-3 border-b border-white/[0.07] text-[15px] text-gray-300"
               >
-                <MapPin className="w-4 h-4 text-brand-orange shrink-0" />
+                <MapPin className="w-4 h-4 text-brand-orange-light shrink-0" />
                 {n}
               </li>
             ))}
@@ -393,13 +398,13 @@ const CoverageSection = () => (
         viewport={{ once: true }}
         className="mt-12"
       >
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 mb-3">
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
           Clearwater ZIP codes we cover
         </p>
-        <p className="font-display font-bold text-[#0a1628] text-xl md:text-2xl tracking-wide">
+        <p className="font-display font-bold text-white text-xl md:text-2xl tracking-wide">
           {ZIPS.join(' · ')}
         </p>
-        <p className="text-slate-500 text-[13px] leading-relaxed mt-4 max-w-2xl">
+        <p className="text-gray-500 text-[13px] leading-relaxed mt-4 max-w-2xl">
           Don't see your neighborhood? It's not a full list — if you've got a pool
           in Clearwater, on the island or the mainland, we almost certainly
           already cover your street. Just ask.
@@ -410,8 +415,7 @@ const CoverageSection = () => (
 );
 
 // ── Section 4: getting started ──────────────────────────────────────────────
-// Three numbered stops on a horizontal route line — no cards, just the light
-// page's open layout.
+// Three numbered stops on a horizontal route line — open layout, no step cards.
 const steps = [
   {
     title: 'Tell us about your pool',
@@ -431,7 +435,9 @@ const steps = [
 ];
 
 const ProcessSection = () => (
-  <section className="py-20 md:py-24 bg-[#eef2f7] relative overflow-hidden">
+  <section className="py-20 md:py-24 bg-[#0a1422] relative overflow-hidden">
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[45%] bg-brand-blue/[0.06] rounded-full blur-[160px] pointer-events-none" />
+    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
     <Container className="relative z-10">
       <m.div
         initial={{ opacity: 0, y: 20 }}
@@ -439,13 +445,13 @@ const ProcessSection = () => (
         viewport={{ once: true }}
         className="max-w-2xl mb-12"
       >
-        <span className="text-brand-blue font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
           Getting Started
         </span>
-        <h2 className="section-heading text-[#0a1628] leading-tight mb-4">
+        <h2 className="section-heading text-white leading-tight mb-4">
           Three steps, then it runs itself.
         </h2>
-        <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+        <p className="section-subtext">
           New to Clearwater, fed up with your current service, or just inherited a
           pool you'd rather not babysit? Getting started takes about one phone
           call.
@@ -454,7 +460,7 @@ const ProcessSection = () => (
 
       <div className="relative grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
         {/* The route line connecting the three stops (desktop). */}
-        <span className="hidden md:block absolute top-5 left-[8%] right-[8%] h-px bg-black/10" aria-hidden />
+        <span className="hidden md:block absolute top-5 left-[8%] right-[8%] h-px bg-white/10" aria-hidden />
         {steps.map((s, i) => (
           <m.div
             key={s.title}
@@ -467,8 +473,8 @@ const ProcessSection = () => (
             <span className="relative z-10 w-10 h-10 rounded-full bg-brand-orange text-white font-display font-bold text-[15px] flex items-center justify-center shadow-lg shadow-brand-orange/30 mb-5">
               {i + 1}
             </span>
-            <h3 className="text-lg font-display font-bold text-[#0a1628] mb-2">{s.title}</h3>
-            <p className="text-slate-600 leading-relaxed text-[15px]">{s.body}</p>
+            <h3 className="text-lg font-display font-bold text-white mb-2">{s.title}</h3>
+            <p className="text-gray-400 leading-relaxed text-[15px]">{s.body}</p>
           </m.div>
         ))}
       </div>
@@ -477,16 +483,16 @@ const ProcessSection = () => (
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="mt-14 pt-8 border-t border-black/[0.06] flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-slate-700"
+        className="mt-14 pt-8 border-t border-white/[0.07] flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-300"
       >
         <span className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-brand-orange" /> Always Blue Guarantee
+          <ShieldCheck className="w-4 h-4 text-brand-orange-light" /> Always Blue Guarantee
         </span>
         <span className="flex items-center gap-2">
-          <Camera className="w-4 h-4 text-brand-orange" /> Photo report every visit
+          <Camera className="w-4 h-4 text-brand-orange-light" /> Photo report every visit
         </span>
         <span className="flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-brand-orange" /> GPS-verified service
+          <MapPin className="w-4 h-4 text-brand-orange-light" /> GPS-verified service
         </span>
       </m.div>
     </Container>
@@ -533,7 +539,9 @@ const relatedGuides: Array<{
 ];
 
 const RelatedGuidesSection = () => (
-  <section className="py-20 md:py-24 bg-white relative overflow-hidden">
+  <section className="py-20 md:py-24 bg-[#0e1c2e] relative overflow-hidden">
+    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
+    <div className="absolute top-0 right-1/4 w-[50%] h-[40%] bg-brand-blue/[0.05] rounded-full blur-[150px] pointer-events-none" />
     <Container className="relative z-10">
       <m.div
         initial={{ opacity: 0, y: 20 }}
@@ -541,13 +549,13 @@ const RelatedGuidesSection = () => (
         viewport={{ once: true }}
         className="max-w-2xl mb-12"
       >
-        <span className="text-brand-blue font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
           Pool Care, Explained
         </span>
-        <h2 className="section-heading text-[#0a1628] leading-tight mb-4">
+        <h2 className="section-heading text-white leading-tight mb-4">
           Straight answers, even if you never hire us.
         </h2>
-        <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+        <p className="section-subtext">
           We put the questions Clearwater homeowners ask us most into plain-English
           guides — no jargon, no upsell. Dig in.
         </p>
@@ -564,17 +572,17 @@ const RelatedGuidesSection = () => (
           >
             <SmartLink
               to={g.to}
-              className="group rounded-2xl bg-white border border-black/[0.07] shadow-sm shadow-black/5 p-6 md:p-7 flex items-start gap-4 h-full transition-all hover:shadow-md hover:border-brand-blue/30 hover:-translate-y-0.5"
+              className="group glass-panel rounded-2xl p-6 md:p-7 flex items-start gap-4 h-full hover:bg-white/10 transition-colors"
             >
-              <div className="shrink-0 w-11 h-11 rounded-xl bg-brand-blue/10 flex items-center justify-center">
-                <g.icon className="w-5 h-5 text-brand-blue" />
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-brand-blue/10 border border-brand-blue/25 flex items-center justify-center">
+                <g.icon className="w-5 h-5 text-brand-blue-light" />
               </div>
               <div className="flex-1">
-                <h3 className="text-[17px] font-display font-bold text-[#0a1628] mb-1.5 flex items-center gap-1.5">
+                <h3 className="text-[17px] font-display font-bold text-white mb-1.5 flex items-center gap-1.5">
                   {g.title}
-                  <ArrowRight className="w-4 h-4 text-slate-400 transition-all group-hover:text-brand-orange group-hover:translate-x-0.5" />
+                  <ArrowRight className="w-4 h-4 text-gray-500 transition-all group-hover:text-brand-orange-light group-hover:translate-x-0.5" />
                 </h3>
-                <p className="text-slate-600 text-[14px] leading-relaxed">{g.blurb}</p>
+                <p className="text-gray-400 text-[14px] leading-relaxed">{g.blurb}</p>
               </div>
             </SmartLink>
           </m.div>
@@ -588,7 +596,7 @@ const RelatedGuidesSection = () => (
 const FaqSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   return (
-    <section className="py-20 md:py-24 bg-[#eef2f7] relative">
+    <section className="py-20 md:py-24 bg-[#07111c] relative">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <m.div
           initial={{ opacity: 0, y: 20 }}
@@ -596,13 +604,13 @@ const FaqSection = () => {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <span className="text-brand-blue font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+          <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
             Clearwater Pool Service
           </span>
-          <h2 className="section-heading text-[#0a1628]">Questions, answered.</h2>
+          <h2 className="section-heading text-white">Questions, answered.</h2>
         </m.div>
 
-        <div className="rounded-3xl bg-white border border-black/5 shadow-xl shadow-black/[0.06] divide-y divide-black/[0.06] overflow-hidden">
+        <div className="glass-panel rounded-3xl divide-y divide-white/[0.07] overflow-hidden">
           {clearwaterFaqs.map((faq, index) => {
             const isOpen = openIndex === index;
             const panelId = `clearwater-faq-panel-${index}`;
@@ -613,15 +621,15 @@ const FaqSection = () => {
                   type="button"
                   id={buttonId}
                   onClick={() => setOpenIndex(isOpen ? null : index)}
-                  className="w-full px-6 md:px-7 py-5 flex items-center justify-between text-left gap-4 transition-colors hover:bg-black/[0.02]"
+                  className="w-full px-6 md:px-7 py-5 flex items-center justify-between text-left gap-4 transition-colors hover:bg-white/[0.04]"
                   aria-expanded={isOpen}
                   aria-controls={panelId}
                 >
-                  <span className="text-[#0a1628] font-semibold text-[16px]">{faq.q}</span>
+                  <span className="text-white font-semibold text-[16px]">{faq.q}</span>
                   {isOpen ? (
-                    <Minus className="w-5 h-5 shrink-0 text-brand-orange" />
+                    <Minus className="w-5 h-5 shrink-0 text-brand-orange-light" />
                   ) : (
-                    <Plus className="w-5 h-5 shrink-0 text-slate-400" />
+                    <Plus className="w-5 h-5 shrink-0 text-gray-400" />
                   )}
                 </button>
                 {isOpen && (
@@ -629,7 +637,7 @@ const FaqSection = () => {
                     id={panelId}
                     role="region"
                     aria-labelledby={buttonId}
-                    className="px-6 md:px-7 pb-6 text-slate-600 leading-relaxed"
+                    className="px-6 md:px-7 pb-6 text-gray-400 leading-relaxed"
                   >
                     {faq.a}
                   </div>

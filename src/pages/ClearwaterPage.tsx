@@ -70,9 +70,8 @@ const HeroSection = () => {
             mix here than the inland pages, to read "clear water". */}
         <div className="hidden md:block absolute top-[10%] left-[-8%] w-[42vw] h-[42vw] bg-brand-blue/[0.12] rounded-full blur-[150px] animate-float" />
         <div className="hidden md:block absolute bottom-[-12%] right-[-8%] w-[38vw] h-[38vw] bg-cyan-400/[0.07] rounded-full blur-[150px] animate-morph" />
-        {/* Bottom seam into the LIGHT below-fold — the photo dissolves into
-            daylight (#e4e9f0, the first band's top color) instead of night. */}
-        <div className="absolute inset-x-0 bottom-0 h-24 md:h-36 bg-gradient-to-t from-[#e4e9f0] via-[#e4e9f0]/60 to-transparent pointer-events-none" />
+        {/* Bottom seam into the next #07111c section. */}
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#07111c] via-[#07111c]/70 to-transparent pointer-events-none" />
       </div>
 
       <Container className="relative z-10 w-full">
@@ -131,10 +130,7 @@ const HeroSection = () => {
               </Glass>
             </div>
 
-            {/* Chip, not bare text — this line can land on the photo OR the
-                light bottom haze depending on viewport height, and needs to
-                stay readable on both. */}
-            <p className="mt-4 inline-flex items-center rounded-full bg-[#0a1628]/40 px-3.5 py-1.5 text-[13px] text-gray-200">
+            <p className="mt-4 text-[13px] text-gray-400">
               No contracts · Cancel anytime · Beach &amp; mainland, one flat rate.
             </p>
 
@@ -168,10 +164,10 @@ const HeroSection = () => {
             transition={{ duration: 0.9, ease: 'easeOut', delay: 0.1 }}
             className="hidden lg:block lg:col-span-5"
           >
-            {/* White card with a navy header — the proposal/email-card DNA,
-                and the first hint that this page goes light below the fold. */}
-            <div className="rounded-2xl overflow-hidden bg-white shadow-2xl shadow-black/50">
-              <div className="bg-[#0a1628] px-7 py-5 flex items-center justify-between gap-4">
+            {/* Glass card with a solid header band (proposal/email-card
+                structure, kept on the site's dark palette). */}
+            <div className="glass-panel rounded-2xl overflow-hidden">
+              <div className="bg-[#060d18]/80 border-b border-white/10 px-7 py-5 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange-light mb-1">
                     Two Clearwaters
@@ -196,34 +192,34 @@ const HeroSection = () => {
                 {/* The two zones, joined by a vertical "one standard" spine. */}
                 <div className="relative space-y-4">
                   <span
-                    className="absolute left-[19px] top-10 bottom-10 w-px bg-gradient-to-b from-brand-blue/40 via-black/10 to-brand-orange/40"
+                    className="absolute left-[19px] top-10 bottom-10 w-px bg-gradient-to-b from-brand-blue/40 via-white/15 to-brand-orange/40"
                     aria-hidden
                   />
                   {ZONES.map((z) => (
                     <div key={z.kicker} className="relative flex items-start gap-3.5">
                       <div
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 relative z-10 ${
+                        className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 relative z-10 ${
                           z.accent === 'blue'
-                            ? 'bg-brand-blue/10 text-brand-blue'
-                            : 'bg-brand-orange/10 text-brand-orange'
+                            ? 'bg-brand-blue/10 border-brand-blue/25 text-brand-blue-light'
+                            : 'bg-brand-orange/10 border-brand-orange/20 text-brand-orange-light'
                         }`}
                       >
                         <z.icon className="w-5 h-5" />
                       </div>
                       <div className="leading-tight pt-0.5">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 mb-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400 mb-1">
                           {z.kicker}
                         </p>
-                        <p className="text-[#0a1628] font-semibold text-[14px] mb-1">{z.places}</p>
-                        <p className="text-slate-600 text-[13px]">{z.note}</p>
+                        <p className="text-white font-semibold text-[14px] mb-1">{z.places}</p>
+                        <p className="text-gray-400 text-[13px]">{z.note}</p>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-6 pt-5 border-t border-black/[0.06] flex items-center justify-center gap-2 text-center">
-                  <Droplets className="w-4 h-4 text-brand-orange shrink-0" />
-                  <p className="text-[13px] text-slate-600">
+                <div className="mt-6 pt-5 border-t border-white/10 flex items-center justify-center gap-2 text-center">
+                  <Droplets className="w-4 h-4 text-brand-orange-light shrink-0" />
+                  <p className="text-[13px] text-gray-300">
                     Same clear water, whichever Clearwater you live in.
                   </p>
                 </div>
