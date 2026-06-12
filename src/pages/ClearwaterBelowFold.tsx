@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Container } from '@/components/Container';
 import { SmartLink } from '@/components/SmartLink';
+import { useQuoteSheet } from '@/components/QuoteSheet';
 import { clearwaterFaqs } from '@/pages/clearwaterFaqs';
 
 // ── Clearwater's design identity ─────────────────────────────────────────────
@@ -32,16 +33,27 @@ import { clearwaterFaqs } from '@/pages/clearwaterFaqs';
 // flat.
 
 // Kicker with the page's signature leading rule. `center` flanks the text with
-// rules on both sides (used by the centered FAQ header).
-const Kicker = ({ children, center = false }: { children: React.ReactNode; center?: boolean }) => (
-  <span className={`flex items-center gap-3 mb-4 ${center ? 'justify-center' : ''}`}>
-    <span className="h-px w-10 bg-brand-orange/70 shrink-0" aria-hidden />
-    <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs">
-      {children}
+// rules on both sides (used by the centered FAQ header); `light` switches to
+// the blue-on-light treatment the homepage and guide pages use on light bands.
+const Kicker = ({
+  children,
+  center = false,
+  light = false,
+}: {
+  children: React.ReactNode;
+  center?: boolean;
+  light?: boolean;
+}) => {
+  const rule = light ? 'bg-brand-blue/60' : 'bg-brand-orange/70';
+  const text = light ? 'text-brand-blue' : 'text-brand-orange-light';
+  return (
+    <span className={`flex items-center gap-3 mb-4 ${center ? 'justify-center' : ''}`}>
+      <span className={`h-px w-10 shrink-0 ${rule}`} aria-hidden />
+      <span className={`font-bold tracking-[0.2em] uppercase text-xs ${text}`}>{children}</span>
+      {center && <span className={`h-px w-10 shrink-0 ${rule}`} aria-hidden />}
     </span>
-    {center && <span className="h-px w-10 bg-brand-orange/70 shrink-0" aria-hidden />}
-  </span>
-);
+  );
+};
 
 // Faint top hairline glint for major panels (parent must be relative).
 const EdgeLight = () => (
@@ -233,7 +245,9 @@ const InterludeBand = () => (
     <div className="interlude-bg-clearwater-mobile absolute inset-0 md:hidden bg-cover bg-center" />
     <div className="interlude-tint-clearwater absolute inset-0 pointer-events-none" />
     <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07111c] to-transparent pointer-events-none" />
-    <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0a1422] to-transparent pointer-events-none" />
+    {/* Bottom dissolves into the LIGHT band that follows — sea mist, the
+        same dark → light handoff the homepage makes before its light section. */}
+    <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#e4e9f0] to-transparent pointer-events-none" />
     <div className="relative h-full flex flex-col items-center justify-center px-6">
       <m.div
         initial={{ opacity: 0, y: 12 }}
@@ -263,9 +277,12 @@ const standardItems = [
   { label: 'Always Blue Guarantee', sub: 'drifts under our care, we come back free' },
 ];
 
+// LIGHT band — the homepage's daylight break, carrying Clearwater's signature
+// content: the navy 01–06 ledger reads like our proposal card sitting on the
+// light page, the same navy-on-light pairing as the hero's chooser card.
 const StandardSection = () => (
-  <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-b from-[#0a1422] via-[#0c1828] to-[#0e1c2e]">
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[45%] bg-brand-blue/[0.07] rounded-full blur-[160px] pointer-events-none" />
+  <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-b from-[#e4e9f0] to-[#d6dde7]">
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[50%] bg-brand-blue/[0.05] rounded-full blur-[140px] pointer-events-none" />
     <Container className="relative z-10">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
         <m.div
@@ -274,31 +291,30 @@ const StandardSection = () => (
           viewport={{ once: true }}
           className="lg:col-span-5"
         >
-          <Kicker>The Clearwater Standard</Kicker>
-          <h2 className="section-heading text-balance text-white leading-tight mb-4">
+          <Kicker light>The Clearwater Standard</Kicker>
+          <h2 className="section-heading text-balance text-[#0a1628] leading-tight mb-4">
             "Clear" isn't a vibe. It's a checklist.
           </h2>
-          <p className="section-subtext mb-6">
+          <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-6">
             Every weekly visit hits the same standard, beach or mainland. No
             skipped steps on a busy week, no "looks fine" without a real test —
             the same thorough service every single time, all on one flat rate.
           </p>
-          <div className="inline-flex items-center gap-2.5 rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3">
-            <Droplets className="w-5 h-5 text-brand-orange-light shrink-0" />
-            <span className="text-gray-300 text-[14px]">
+          <div className="inline-flex items-center gap-2.5 rounded-xl bg-white border border-black/5 shadow-sm shadow-black/5 px-4 py-3">
+            <Droplets className="w-5 h-5 text-brand-orange shrink-0" />
+            <span className="text-slate-700 text-[14px]">
               Water you'd be happy to see your own name on.
             </span>
           </div>
         </m.div>
 
-        {/* Darker-than-the-band panel + hairline border so the ledger reads as
-            its own card without going light. */}
+        {/* The proposal-navy ledger card, now sitting on the light band. */}
         <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.08 }}
-          className="lg:col-span-7 rounded-3xl bg-[#060d18] border border-white/10 p-7 md:p-9 shadow-2xl shadow-black/40 relative overflow-hidden"
+          className="lg:col-span-7 rounded-3xl bg-[#0a1628] p-7 md:p-9 shadow-2xl shadow-[#0a1628]/25 relative overflow-hidden"
         >
           <EdgeLight />
           <div className="flex items-center justify-between gap-4 pb-5 mb-6 border-b border-white/10">
@@ -342,112 +358,133 @@ const MAINLAND_AREAS = [
 ];
 const ZIPS = ['33755', '33756', '33759', '33761', '33763', '33764', '33765', '33767'];
 
-const CoverageSection = () => (
-  <section className="py-20 md:py-28 bg-[#0e1c2e] relative overflow-hidden">
-    <div className="absolute top-0 left-1/4 w-[55%] h-[45%] bg-brand-blue/[0.05] rounded-full blur-[150px] pointer-events-none" />
-    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
-    <Container className="relative z-10">
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="max-w-2xl mb-12"
-      >
-        <Kicker>Across All of Clearwater</Kicker>
-        <h2 className="section-heading text-balance text-white leading-tight mb-4">
-          From the sand to the suburbs, on a set day.
-        </h2>
-        <p className="section-subtext">
-          We run weekly routes across both sides of Clearwater — over the
-          Memorial Causeway to the island and through the mainland neighborhoods.
-          You get a <span className="text-white">fixed service day</span>, not a
-          vague "sometime this week."
-        </p>
-      </m.div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-14 gap-y-10">
+// Continues the light passage: the ruled directory reads like a printed index
+// on white, and the passage closes with the homepage's CTA payoff before the
+// page returns to dark.
+const CoverageSection = () => {
+  const { open: openQuoteSheet } = useQuoteSheet();
+  return (
+    <section className="py-20 md:py-28 bg-white border-t border-black/[0.06] relative overflow-hidden">
+      <Container className="relative z-10">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          className="max-w-2xl mb-12"
         >
-          <div className="flex items-baseline gap-2.5 pb-3 border-b-2 border-brand-blue/50">
-            <Waves className="w-5 h-5 text-brand-blue-light self-center" />
-            <h3 className="text-white font-display font-bold text-lg">The Beach &amp; Islands</h3>
-            <span className="ml-auto text-[12px] text-gray-500">
-              {BEACH_AREAS.length} areas
-            </span>
-          </div>
-          <ul>
-            {BEACH_AREAS.map((n) => (
-              <li
-                key={n}
-                className="flex items-center gap-2.5 py-3 border-b border-white/[0.07] text-[15px] text-gray-300"
-              >
-                <MapPin className="w-4 h-4 text-brand-blue-light shrink-0" />
-                {n}
-              </li>
-            ))}
-          </ul>
+          <Kicker light>Across All of Clearwater</Kicker>
+          <h2 className="section-heading text-balance text-[#0a1628] leading-tight mb-4">
+            From the sand to the suburbs, on a set day.
+          </h2>
+          <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+            We run weekly routes across both sides of Clearwater — over the
+            Memorial Causeway to the island and through the mainland neighborhoods.
+            You get a <span className="text-[#0a1628] font-semibold">fixed service day</span>, not a
+            vague "sometime this week."
+          </p>
         </m.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-14 gap-y-10">
+          <m.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex items-baseline gap-2.5 pb-3 border-b-2 border-brand-blue/40">
+              <Waves className="w-5 h-5 text-brand-blue self-center" />
+              <h3 className="text-[#0a1628] font-display font-bold text-lg">
+                The Beach &amp; Islands
+              </h3>
+              <span className="ml-auto text-[12px] text-slate-500">
+                {BEACH_AREAS.length} areas
+              </span>
+            </div>
+            <ul>
+              {BEACH_AREAS.map((n) => (
+                <li
+                  key={n}
+                  className="flex items-center gap-2.5 py-3 border-b border-black/[0.06] text-[15px] text-slate-700"
+                >
+                  <MapPin className="w-4 h-4 text-brand-blue shrink-0" />
+                  {n}
+                </li>
+              ))}
+            </ul>
+          </m.div>
+
+          <m.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.08 }}
+          >
+            <div className="flex items-baseline gap-2.5 pb-3 border-b-2 border-brand-orange/50">
+              <Home className="w-5 h-5 text-brand-orange self-center" />
+              <h3 className="text-[#0a1628] font-display font-bold text-lg">The Mainland</h3>
+              <span className="ml-auto text-[12px] text-slate-500">
+                {MAINLAND_AREAS.length} areas
+              </span>
+            </div>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 sm:gap-x-8">
+              {MAINLAND_AREAS.map((n) => (
+                <li
+                  key={n}
+                  className="flex items-center gap-2.5 py-3 border-b border-black/[0.06] text-[15px] text-slate-700"
+                >
+                  <MapPin className="w-4 h-4 text-brand-orange shrink-0" />
+                  {n}
+                </li>
+              ))}
+            </ul>
+          </m.div>
+        </div>
 
         <m.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.08 }}
+          className="mt-12 pt-8 border-t border-black/[0.06]"
         >
-          <div className="flex items-baseline gap-2.5 pb-3 border-b-2 border-brand-orange/50">
-            <Home className="w-5 h-5 text-brand-orange-light self-center" />
-            <h3 className="text-white font-display font-bold text-lg">The Mainland</h3>
-            <span className="ml-auto text-[12px] text-gray-500">
-              {MAINLAND_AREAS.length} areas
-            </span>
-          </div>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 sm:gap-x-8">
-            {MAINLAND_AREAS.map((n) => (
-              <li
-                key={n}
-                className="flex items-center gap-2.5 py-3 border-b border-white/[0.07] text-[15px] text-gray-300"
-              >
-                <MapPin className="w-4 h-4 text-brand-orange-light shrink-0" />
-                {n}
-              </li>
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 mb-3">
+            Clearwater ZIP codes we cover
+          </p>
+          <p className="font-display font-bold text-xl md:text-2xl tracking-wide">
+            {ZIPS.map((z, i) => (
+              <React.Fragment key={z}>
+                {i > 0 && (
+                  <span className="text-slate-400 mx-2.5" aria-hidden>
+                    ·
+                  </span>
+                )}
+                <span className="text-[#0a1628]">{z}</span>
+              </React.Fragment>
             ))}
-          </ul>
+          </p>
+          <p className="text-slate-500 text-[13px] leading-relaxed mt-4 max-w-2xl">
+            Don't see your neighborhood? It's not a full list — if you've got a pool
+            in Clearwater, on the island or the mainland, we almost certainly
+            already cover your street. Just ask.
+          </p>
         </m.div>
-      </div>
 
-      <m.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="mt-12 pt-8 border-t border-white/[0.07]"
-      >
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500 mb-3">
-          Clearwater ZIP codes we cover
-        </p>
-        <p className="font-display font-bold text-xl md:text-2xl tracking-wide">
-          {ZIPS.map((z, i) => (
-            <React.Fragment key={z}>
-              {i > 0 && (
-                <span className="text-gray-600 mx-2.5" aria-hidden>
-                  ·
-                </span>
-              )}
-              <span className="text-white">{z}</span>
-            </React.Fragment>
-          ))}
-        </p>
-        <p className="text-gray-500 text-[13px] leading-relaxed mt-4 max-w-2xl">
-          Don't see your neighborhood? It's not a full list — if you've got a pool
-          in Clearwater, on the island or the mainland, we almost certainly
-          already cover your street. Just ask.
-        </p>
-      </m.div>
-    </Container>
-  </section>
-);
+        {/* CTA payoff closing the light passage — the homepage's move. */}
+        <m.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-14 flex flex-col items-center gap-3"
+        >
+          <button type="button" onClick={openQuoteSheet} className="btn btn-orange">
+            Get a Flat-Rate Quote
+          </button>
+          <p className="text-slate-500 text-sm">
+            Same-day response · No contracts · Beach &amp; mainland, one rate
+          </p>
+        </m.div>
+      </Container>
+    </section>
+  );
+};
 
 // ── Section 4: getting started ──────────────────────────────────────────────
 // Three numbered stops on a horizontal route line — open layout, no step cards.
