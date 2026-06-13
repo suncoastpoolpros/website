@@ -384,7 +384,7 @@ const PoolSmellPageInner = () => {
 
             {/* Cross-link: dosing the shock to breakpoint needs the pool's gallons. */}
             <Link
-              to="/tools/pool-volume-calculator"
+              to="/tools/pool-volume-calculator/"
               className="mt-6 mx-auto max-w-4xl flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20 transition-colors p-5 group"
             >
               <span className="flex items-center gap-4 min-w-0">
@@ -424,7 +424,7 @@ const PoolSmellPageInner = () => {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Link
-                  to="/pool-care/cyanuric-acid"
+                  to="/pool-care/cyanuric-acid/"
                   className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.05] hover:border-white/20 transition-colors p-5"
                 >
                   <span className="w-11 h-11 rounded-xl bg-brand-orange/15 flex items-center justify-center shrink-0">
@@ -443,7 +443,7 @@ const PoolSmellPageInner = () => {
                 </Link>
 
                 <Link
-                  to="/pool-care/cloudy-pool-water"
+                  to="/pool-care/cloudy-pool-water/"
                   className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.05] hover:border-white/20 transition-colors p-5"
                 >
                   <span className="w-11 h-11 rounded-xl bg-brand-orange/15 flex items-center justify-center shrink-0">
@@ -475,7 +475,7 @@ const PoolSmellPageInner = () => {
                 </h2>
                 <p className="text-gray-400">
                   The questions homeowners ask most about a smelly pool.{' '}
-                  <a href="/faq" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+                  <a href="/faq/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
                     See all FAQs &rarr;
                   </a>
                 </p>

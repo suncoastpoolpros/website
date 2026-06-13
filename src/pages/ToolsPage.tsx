@@ -27,7 +27,7 @@ type Tool = {
 
 const TOOLS: Tool[] = [
   {
-    to: '/tools/pool-volume-calculator',
+    to: '/tools/pool-volume-calculator/',
     icon: Calculator,
     title: 'Pool Volume Calculator',
     description:
@@ -35,7 +35,7 @@ const TOOLS: Tool[] = [
     available: true,
   },
   {
-    to: '/tools/pool-heating-cost-calculator',
+    to: '/tools/pool-heating-cost-calculator/',
     icon: Flame,
     title: 'Pool Heating Cost Calculator',
     description:

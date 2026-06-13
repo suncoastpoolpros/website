@@ -412,7 +412,7 @@ const CyanuricAcidPageInner = () => {
                 <p className="text-gray-300 leading-relaxed max-w-2xl">
                   The only real fix is dilution &mdash; partly draining and refilling to bring CYA back into range.
                   It comes down the same way nitrates do.{' '}
-                  <Link to="/pool-care/nitrates" className="text-amber-300 hover:text-amber-200 font-semibold whitespace-nowrap">
+                  <Link to="/pool-care/nitrates/" className="text-amber-300 hover:text-amber-200 font-semibold whitespace-nowrap">
                     See our nitrates guide &rarr;
                   </Link>
                 </p>
@@ -475,7 +475,7 @@ const CyanuricAcidPageInner = () => {
                 </h2>
                 <p className="text-gray-400">
                   The questions homeowners ask most about stabilizer.{' '}
-                  <a href="/faq" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+                  <a href="/faq/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
                     See all FAQs &rarr;
                   </a>
                 </p>
@@ -525,7 +525,7 @@ const CyanuricAcidPageInner = () => {
 
               {/* Cross-link to the volume calculator for dilution math. */}
               <Link
-                to="/tools/pool-volume-calculator"
+                to="/tools/pool-volume-calculator/"
                 className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20 transition-colors p-5 group"
               >
                 <span className="flex items-center gap-4 min-w-0">

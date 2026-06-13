@@ -335,7 +335,7 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
                 </FieldShell>
               </div>
               <a
-                href="/tools/pool-volume-calculator"
+                href="/tools/pool-volume-calculator/"
                 className="inline-flex items-center gap-2 text-sm font-semibold text-brand-blue-light hover:text-white"
               >
                 <Calculator className="h-4 w-4" /> Open the volume calculator (your draft is saved)

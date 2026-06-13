@@ -80,7 +80,7 @@ export const FAQ = () => {
 
         <div className="text-center mt-10">
           <Link
-            to="/faq"
+            to="/faq/"
             className="inline-flex items-center gap-2 text-sm font-semibold text-brand-orange hover:text-brand-orange-dark transition-colors"
           >
             See all questions

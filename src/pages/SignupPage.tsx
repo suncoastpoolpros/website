@@ -507,7 +507,7 @@ const SignupPageInner = () => {
                     <span className="text-sm leading-relaxed">
                       I have read and agree to the{' '}
                       <a
-                        href="/service-agreement"
+                        href="/service-agreement/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-brand-blue-light hover:text-white font-semibold underline underline-offset-2"
@@ -532,7 +532,7 @@ const SignupPageInner = () => {
                     <span className="text-sm leading-relaxed">
                       I have read and agree to the{' '}
                       <a
-                        href="/privacy-policy"
+                        href="/privacy-policy/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-brand-blue-light hover:text-white font-semibold underline underline-offset-2"

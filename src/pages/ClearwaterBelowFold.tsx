@@ -580,28 +580,28 @@ const relatedGuides: Array<{
   blurb: string;
 }> = [
   {
-    to: '/pool-care/salt-water-vs-chlorine',
+    to: '/pool-care/salt-water-vs-chlorine/',
     icon: Droplets,
     title: 'Salt water vs. chlorine',
     blurb:
       "Thinking about a salt system for your beach pool — or wondering if yours is worth keeping? The honest comparison, costs and all.",
   },
   {
-    to: '/pool-care/cyanuric-acid',
+    to: '/pool-care/cyanuric-acid/',
     icon: Sun,
     title: 'Cyanuric acid & your chlorine',
     blurb:
       "The stabilizer that climbs in full Gulf sun until your chlorine quits working — and how to keep it in line.",
   },
   {
-    to: '/pool-care/variable-speed-pumps',
+    to: '/pool-care/variable-speed-pumps/',
     icon: Gauge,
     title: 'Variable-speed pumps',
     blurb:
       "If the old single-speed pump on your mainland pad is fading, here's why the replacement pays for itself — plus the Florida rebate.",
   },
   {
-    to: '/pool-care/green-pool',
+    to: '/pool-care/green-pool/',
     icon: Waves,
     title: 'How to clear a green pool',
     blurb:

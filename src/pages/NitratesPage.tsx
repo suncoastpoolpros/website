@@ -362,7 +362,7 @@ const NitratesPageInner = () => {
 
             {/* Cross-link: the drain calculation needs the pool's gallons. */}
             <Link
-              to="/tools/pool-volume-calculator"
+              to="/tools/pool-volume-calculator/"
               className="mt-6 mx-auto max-w-4xl flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20 transition-colors p-5 group"
             >
               <span className="flex items-center gap-4 min-w-0">
@@ -393,7 +393,7 @@ const NitratesPageInner = () => {
                 </h2>
                 <p className="text-gray-400">
                   The questions homeowners ask most about high nitrates.{' '}
-                  <a href="/faq" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+                  <a href="/faq/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
                     See all FAQs &rarr;
                   </a>
                 </p>

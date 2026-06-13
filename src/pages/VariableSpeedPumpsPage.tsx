@@ -482,7 +482,7 @@ const VariableSpeedPumpsPageInner = () => {
 
             {/* Cross-link to the heating cost calculator (same energy theme). */}
             <Link
-              to="/tools/pool-heating-cost-calculator"
+              to="/tools/pool-heating-cost-calculator/"
               className="max-w-5xl mx-auto mt-6 flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20 transition-colors p-5 group"
             >
               <span className="flex items-center gap-4 min-w-0">
@@ -697,7 +697,7 @@ const VariableSpeedPumpsPageInner = () => {
                 </h2>
                 <p className="text-gray-400">
                   The questions homeowners ask most before they upgrade.{' '}
-                  <a href="/faq" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+                  <a href="/faq/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
                     See all FAQs &rarr;
                   </a>
                 </p>
@@ -747,7 +747,7 @@ const VariableSpeedPumpsPageInner = () => {
 
               {/* Back to the pool-care hub for the rest of the guides. */}
               <Link
-                to="/pool-care"
+                to="/pool-care/"
                 className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20 transition-colors p-5 group"
               >
                 <span className="flex items-center gap-4 min-w-0">

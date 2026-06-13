@@ -212,7 +212,7 @@ const PoolHeatingCostCalculatorInner = () => {
                 <p className="text-xs text-gray-500 mt-1.5">
                   Not sure?{' '}
                   <a
-                    href="/tools/pool-volume-calculator"
+                    href="/tools/pool-volume-calculator/"
                     className="text-brand-blue-light hover:text-white underline underline-offset-2"
                   >
                     Use our pool volume calculator

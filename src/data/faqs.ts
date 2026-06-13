@@ -30,7 +30,7 @@ export const faqs: Faq[] = [
     question: 'How much does pool cleaning cost in St. Petersburg, FL?',
     answer:
       "An average pool runs approximately $150 per month for weekly service, though your exact price varies based on trees, pool size, and many other factors — like your pool's surface, equipment, and how much debris it deals with. That's a true flat rate — it covers brushing, skimming, vacuuming, emptying baskets, testing and balancing your water, and all the standard chemicals, with no per-visit chemical surcharges. The only things billed separately are major equipment repairs, replacement parts, and major storm recovery — and we always quote those before doing any work. Want an exact number? Text us a couple of photos of your pool and equipment pad and we'll send a flat-rate quote the same day.",
-    relatedTool: { label: "Estimate your pool's volume", href: '/tools/pool-volume-calculator' },
+    relatedTool: { label: "Estimate your pool's volume", href: '/tools/pool-volume-calculator/' },
   },
   {
     category: 'Pricing & Billing',
@@ -88,7 +88,7 @@ export const faqs: Faq[] = [
     question: 'How does stabilizer (CYA) affect my chlorine?',
     answer:
       "Cyanuric acid — CYA, or stabilizer — is sunscreen for your chlorine. Florida sun burns off unprotected chlorine fast, so a little CYA is essential to make it last. But it's a balancing act: the more CYA in your water, the more chlorine you need to get the same sanitizing power, because high stabilizer effectively \"locks up\" your chlorine. That's why a pool can read normal chlorine on a cheap test strip and still turn green — the chlorine is there but isn't active. The fix isn't just dumping in more chlorine; it's keeping CYA in the right range relative to your chlorine, and the only real way to bring CYA down is to dilute with fresh water. Because CYA creeps up over time — most stabilized chlorine tablets add a little every week — we track the ratio on every visit and adjust before it becomes a problem. It's one of the most common reasons a DIY or budget-serviced pool slowly goes green.",
-    relatedTool: { label: "Calculate your pool's gallons (needed for accurate dosing)", href: '/tools/pool-volume-calculator' },
+    relatedTool: { label: "Calculate your pool's gallons (needed for accurate dosing)", href: '/tools/pool-volume-calculator/' },
   },
   {
     category: 'Our Service',
@@ -132,21 +132,21 @@ export const faqs: Faq[] = [
     question: "Why is my pool green even though I keep adding chlorine?",
     answer:
       "Almost always, it's your stabilizer (cyanuric acid) sitting too high — not too little chlorine. As CYA builds up it 'locks up' your chlorine, so even a normal reading on a test strip isn't actually active enough to kill algae, and the pool goes green in water that looks chemically fine. Tablet chlorine quietly raises CYA a little every week, so it creeps up over a season until your chlorine can't keep up. Adding more chlorine is a temporary patch; the real fix is getting the stabilizer-to-chlorine ratio back in line, which usually means diluting with fresh water and then holding the right balance. It's one of the most common ways a DIY or budget pool slowly goes green — the kind of slow drift nobody notices until the water does. We keep an eye on that ratio every week so it never gets that far.",
-    relatedTool: { label: 'Read our guide to clearing a green pool', href: '/pool-care/green-pool' },
+    relatedTool: { label: 'Read our guide to clearing a green pool', href: '/pool-care/green-pool/' },
   },
   {
     category: 'Our Service',
     question: 'Why is my pool water cloudy?',
     answer:
       "Cloudy water is almost always a circulation or chemistry problem, not actual dirt. Usually it comes down to one of a few things: a dirty or undersized filter, water that isn't moving well (a clogged basket, a valve turned the wrong way, or not enough pump hours), or chemistry that's slipped — high pH, high calcium hardness, or chlorine that's fallen behind. It can also be the first hint of an algae bloom getting going. The catch is that the right fix depends on which one it is, so reaching for clarifier usually just hides it for a day. When we take a pool on, we test and balance it, check the filter and circulation, and actually track down what's clouding it instead of masking it.",
-    relatedTool: { label: 'Read our guide to cloudy pool water', href: '/pool-care/cloudy-pool-water' },
+    relatedTool: { label: 'Read our guide to cloudy pool water', href: '/pool-care/cloudy-pool-water/' },
   },
   {
     category: 'Our Service',
     question: 'Why does my pool smell like chlorine?',
     answer:
       "Here's the part that surprises people: a strong chlorine smell usually means your pool has too little active chlorine, not too much. That smell comes from chloramines, which form when chlorine binds up with sweat, sunscreen, and the other stuff swimmers bring in. Chloramines are basically spent chlorine — it's done sanitizing — and they're what sting your eyes and catch in the back of your throat. A pool with enough free chlorine actually has almost no smell at all. To clear it, you break the chloramines apart (usually with a shock) and then hold free chlorine where it belongs so they don't build back up. Staying ahead of that week to week is the whole point of steady balancing.",
-    relatedTool: { label: 'Read our guide on the pool-chlorine smell', href: '/pool-care/pool-smells-like-chlorine' },
+    relatedTool: { label: 'Read our guide on the pool-chlorine smell', href: '/pool-care/pool-smells-like-chlorine/' },
   },
   {
     category: 'Our Service',
@@ -159,7 +159,7 @@ export const faqs: Faq[] = [
     question: 'How often should I drain my pool in Florida?',
     answer:
       "Less often than most people think, and almost never all the way. A typical Florida pool only needs a partial drain-and-refill every couple of years, and it's driven by chemistry rather than the calendar. Over time dissolved solids — and especially stabilizer (cyanuric acid) — build up to where no amount of chemicals will balance the water, and the only real fix is to swap some of it for fresh. We track those levels on every visit and tell you when a partial drain (or reverse-osmosis filtration, which wastes far less water) genuinely makes sense. Fully draining a pool here can be risky — Florida's high water table can actually push an empty pool out of the ground — so it's not something to do without a reason.",
-    relatedTool: { label: 'How stabilizer buildup forces a drain', href: '/pool-care/cyanuric-acid' },
+    relatedTool: { label: 'How stabilizer buildup forces a drain', href: '/pool-care/cyanuric-acid/' },
   },
 
   // ── Equipment & Repairs ─────────────────────────────────────────
@@ -199,14 +199,14 @@ export const faqs: Faq[] = [
     question: 'Are variable-speed pumps worth it?',
     answer:
       "For most Florida pools, yes — and not by a little. The pump is often the second-hungriest energy user in a home after the air conditioner, and an old single-speed pump runs at full blast the entire time it's on. A variable-speed pump runs slow and quiet most of the day and only ramps up when it needs to, which typically slashes pump energy use and pays back its cost within a few years on the power bill alone. They're also dramatically quieter and easier on the rest of your equipment. Efficiency rules have made single-speed pumps in most sizes hard to even buy new, so when an old pump dies, a variable-speed replacement is usually the obvious call. If yours is getting up there, we'll flag it and walk you through the numbers before anything gets replaced.",
-    relatedTool: { label: 'Read our guide to variable-speed pumps', href: '/pool-care/variable-speed-pumps' },
+    relatedTool: { label: 'Read our guide to variable-speed pumps', href: '/pool-care/variable-speed-pumps/' },
   },
   {
     category: 'Equipment & Repairs',
     question: 'How long does a salt cell last?',
     answer:
       "Most salt cells last about 3 to 7 years, and where you land comes down mostly to maintenance. The cell makes chlorine by running current through salt water, and over time calcium scales up on its plates — if that scale isn't cleaned off, the cell loses output and fails early. Letting your chemistry run out of balance (especially high pH or hardness) wears it out faster too. On salt pools we check the cell and clean off scale as part of regular service, which is the best way to get full life out of an expensive part. When a cell does finally reach the end, we'll give you a heads up before it leaves you short on chlorine.",
-    relatedTool: { label: 'Saltwater vs. chlorine, explained', href: '/pool-care/salt-water-vs-chlorine' },
+    relatedTool: { label: 'Saltwater vs. chlorine, explained', href: '/pool-care/salt-water-vs-chlorine/' },
   },
   {
     category: 'Equipment & Repairs',
@@ -247,7 +247,7 @@ export const faqs: Faq[] = [
     question: 'Do you specialize in beach and barrier-island pools?',
     answer:
       "Yes — the Gulf beach communities are a big part of our routes, and a beachfront pool has needs an inland route just isn't set up for. Salt air corrodes equipment far faster, blowing sand ends up in the water and the baskets, and relentless sun burns off chlorine quickly, so we run a slightly heavier equipment-check and chemistry routine on them. We service St. Pete Beach, Treasure Island, Belleair Beach, and the surrounding barrier islands, plus the bayfront and waterfront neighborhoods nearby. If your pool sits near the Gulf, we know the particular way it wears.",
-    relatedTool: { label: 'See our St. Pete Beach pool service', href: '/st-pete-beach-fl' },
+    relatedTool: { label: 'See our St. Pete Beach pool service', href: '/st-pete-beach-fl/' },
   },
 
   // ── Getting Started ─────────────────────────────────────────────

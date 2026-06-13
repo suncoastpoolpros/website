@@ -405,28 +405,28 @@ const relatedGuides: Array<{
   blurb: string;
 }> = [
   {
-    to: '/pool-care/variable-speed-pumps',
+    to: '/pool-care/variable-speed-pumps/',
     icon: Gauge,
     title: 'Variable-speed pumps',
     blurb:
       "If your old single-speed pump is on its way out, here's why the replacement pays for itself — and the Florida rebate worth knowing about.",
   },
   {
-    to: '/pool-care/pool-service-vs-diy',
+    to: '/pool-care/pool-service-vs-diy/',
     icon: Scale,
     title: 'Pool service vs. DIY',
     blurb:
       "The honest math on doing it yourself versus handing it off — chemicals, time, and the cost of one mistake.",
   },
   {
-    to: '/pool-care/cyanuric-acid',
+    to: '/pool-care/cyanuric-acid/',
     icon: Sun,
     title: 'Cyanuric acid & your chlorine',
     blurb:
       "The stabilizer level that quietly climbs in inland pools until your chlorine stops working — and how to keep it in line.",
   },
   {
-    to: '/pool-care/green-pool',
+    to: '/pool-care/green-pool/',
     icon: Waves,
     title: 'How to clear a green pool',
     blurb:

@@ -111,25 +111,25 @@ const COMPARE = [
 // list quietly shows how much there is to it, and spreads link equity to the guides.
 const MANAGING = [
   {
-    to: '/pool-care/cloudy-pool-water',
+    to: '/pool-care/cloudy-pool-water/',
     icon: Droplets,
     title: 'Cloudy water',
     text: 'Diagnosing whether it’s filtration, balance, or chlorine — and clearing it.',
   },
   {
-    to: '/pool-care/green-pool',
+    to: '/pool-care/green-pool/',
     icon: Sprout,
     title: 'A green pool',
     text: 'Identifying the algae and running the balance-brush-shock-filter fix.',
   },
   {
-    to: '/pool-care/pool-smells-like-chlorine',
+    to: '/pool-care/pool-smells-like-chlorine/',
     icon: Wind,
     title: 'That chlorine smell',
     text: 'Knowing it means too little chlorine, and shocking past breakpoint.',
   },
   {
-    to: '/pool-care/cyanuric-acid',
+    to: '/pool-care/cyanuric-acid/',
     icon: Gauge,
     title: 'Stabilizer balance',
     text: 'Keeping CYA in range so your chlorine actually works in the Florida sun.',
@@ -455,7 +455,7 @@ const PoolServiceVsDiyPageInner = () => {
                 </h2>
                 <p className="text-gray-400">
                   The questions homeowners ask most when they&rsquo;re weighing it up.{' '}
-                  <a href="/faq" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+                  <a href="/faq/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
                     See all FAQs &rarr;
                   </a>
                 </p>

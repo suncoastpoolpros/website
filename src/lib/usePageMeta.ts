@@ -11,7 +11,7 @@ const IS_SERVER = typeof window === 'undefined';
 type PageMeta = {
   title: string;
   description: string;
-  /** Path-only (e.g. "/treasure-island-fl") or omit for homepage. */
+  /** Path-only (e.g. "/treasure-island-fl/") or omit for homepage. */
   canonicalPath?: string;
   /** Deprecated/ignored: link shares no longer emit og:image (no preview photo).
    *  Kept so existing callers compile; the value is not used. */

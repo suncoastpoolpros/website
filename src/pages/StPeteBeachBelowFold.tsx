@@ -150,7 +150,7 @@ const IslandTollSection = () => (
           never mention).
         </p>
         <SmartLink
-          to="/pool-care/cyanuric-acid"
+          to="/pool-care/cyanuric-acid/"
           className="group inline-flex items-center gap-2 shrink-0 text-brand-orange-light font-semibold text-[15px] hover:text-white transition-colors"
         >
           Read our cyanuric acid guide
@@ -634,28 +634,28 @@ const relatedGuides: Array<{
   blurb: string;
 }> = [
   {
-    to: '/pool-care/cyanuric-acid',
+    to: '/pool-care/cyanuric-acid/',
     icon: Sun,
     title: 'Cyanuric acid & your chlorine',
     blurb:
       "The stabilizer band that decides whether your chlorine survives the afternoon sun — and the county limits most services skip.",
   },
   {
-    to: '/pool-care/salt-water-vs-chlorine',
+    to: '/pool-care/salt-water-vs-chlorine/',
     icon: Droplets,
     title: 'Salt water vs. chlorine',
     blurb:
       "What a salt system really does near the coast, what it costs, and whether it's worth it for a beach pool.",
   },
   {
-    to: '/pool-care/green-pool',
+    to: '/pool-care/green-pool/',
     icon: Waves,
     title: 'How to clear a green pool',
     blurb:
       "Why a pool turns after a storm or a missed week, and the step-by-step that actually brings it back to blue.",
   },
   {
-    to: '/pool-care/variable-speed-pumps',
+    to: '/pool-care/variable-speed-pumps/',
     icon: Wrench,
     title: 'Variable-speed pumps',
     blurb:

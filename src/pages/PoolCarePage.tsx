@@ -42,7 +42,7 @@ type Guide = {
 // proper landing page instead of a bare URL segment).
 const GUIDES: Guide[] = [
   {
-    to: '/pool-care/green-pool',
+    to: '/pool-care/green-pool/',
     icon: Waves,
     tag: 'Algae & Green Water',
     title: 'Green Pool Rescue',
@@ -55,7 +55,7 @@ const GUIDES: Guide[] = [
     ],
   },
   {
-    to: '/pool-care/cloudy-pool-water',
+    to: '/pool-care/cloudy-pool-water/',
     icon: Droplets,
     tag: 'Cloudy & Hazy Water',
     title: 'Cloudy Pool Water',
@@ -68,7 +68,7 @@ const GUIDES: Guide[] = [
     ],
   },
   {
-    to: '/pool-care/pool-smells-like-chlorine',
+    to: '/pool-care/pool-smells-like-chlorine/',
     icon: Wind,
     tag: 'Smell & Irritation',
     title: 'Pool Smells Like Chlorine',
@@ -81,7 +81,7 @@ const GUIDES: Guide[] = [
     ],
   },
   {
-    to: '/pool-care/pool-service-vs-diy',
+    to: '/pool-care/pool-service-vs-diy/',
     icon: Scale,
     tag: 'DIY vs. Pro',
     title: 'Pool Service vs. DIY',
@@ -94,7 +94,7 @@ const GUIDES: Guide[] = [
     ],
   },
   {
-    to: '/pool-care/nitrates',
+    to: '/pool-care/nitrates/',
     icon: Sprout,
     tag: 'Water Chemistry',
     title: 'Pool Nitrates',
@@ -107,7 +107,7 @@ const GUIDES: Guide[] = [
     ],
   },
   {
-    to: '/pool-care/cyanuric-acid',
+    to: '/pool-care/cyanuric-acid/',
     icon: ShieldCheck,
     tag: 'Water Chemistry',
     title: 'Cyanuric Acid & Chlorine',
@@ -120,7 +120,7 @@ const GUIDES: Guide[] = [
     ],
   },
   {
-    to: '/pool-care/variable-speed-pumps',
+    to: '/pool-care/variable-speed-pumps/',
     icon: Zap,
     tag: 'Equipment & Energy',
     title: 'Variable Speed Pumps',
@@ -133,7 +133,7 @@ const GUIDES: Guide[] = [
     ],
   },
   {
-    to: '/pool-care/salt-water-vs-chlorine',
+    to: '/pool-care/salt-water-vs-chlorine/',
     icon: Sparkles,
     tag: 'Sanitizer & Water Feel',
     title: 'Salt Water vs. Chlorine',
@@ -146,7 +146,7 @@ const GUIDES: Guide[] = [
     ],
   },
   {
-    to: '/pool-care/how-to-drain-a-pool',
+    to: '/pool-care/how-to-drain-a-pool/',
     icon: ArrowDownToLine,
     tag: 'Draining & Water Level',
     title: 'How to Drain a Pool',
@@ -162,7 +162,7 @@ const GUIDES: Guide[] = [
 
 // The guide that headlines the page as the "Most read" spotlight. Pulled out of
 // the category grid below so it isn't shown twice.
-const FEATURED_SLUG = '/pool-care/green-pool';
+const FEATURED_SLUG = '/pool-care/green-pool/';
 
 // Guides are grouped into a small library taxonomy so the hub reads like a
 // structured index, not a flat tile wall. Slugs reference GUIDES (single source
@@ -170,23 +170,23 @@ const FEATURED_SLUG = '/pool-care/green-pool';
 const CATEGORY_GROUPS: { label: string; slugs: string[] }[] = [
   {
     label: 'Common pool problems',
-    slugs: ['/pool-care/cloudy-pool-water', '/pool-care/pool-smells-like-chlorine'],
+    slugs: ['/pool-care/cloudy-pool-water/', '/pool-care/pool-smells-like-chlorine/'],
   },
   {
     label: 'Water chemistry',
-    slugs: ['/pool-care/nitrates', '/pool-care/cyanuric-acid'],
+    slugs: ['/pool-care/nitrates/', '/pool-care/cyanuric-acid/'],
   },
   {
     label: 'Equipment, cost & choices',
     slugs: [
-      '/pool-care/variable-speed-pumps',
-      '/pool-care/salt-water-vs-chlorine',
-      '/pool-care/pool-service-vs-diy',
+      '/pool-care/variable-speed-pumps/',
+      '/pool-care/salt-water-vs-chlorine/',
+      '/pool-care/pool-service-vs-diy/',
     ],
   },
   {
     label: 'Maintenance & draining',
-    slugs: ['/pool-care/how-to-drain-a-pool'],
+    slugs: ['/pool-care/how-to-drain-a-pool/'],
   },
 ];
 
@@ -454,7 +454,7 @@ const PoolCarePageInner = () => {
         {/* Cross-link to the calculators (complementary to the chemistry guides) */}
         <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-16">
           <Link
-            to="/tools"
+            to="/tools/"
             className="group flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 hover:bg-white/[0.05] hover:border-white/20 transition-colors"
           >
             <span className="w-12 h-12 rounded-xl bg-brand-orange/15 flex items-center justify-center shrink-0">

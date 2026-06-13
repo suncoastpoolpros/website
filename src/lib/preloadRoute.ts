@@ -27,7 +27,10 @@ const PRELOADERS: Record<string, () => Promise<unknown>> = {
 
 const preloaded = new Set<string>();
 
-export const preloadRoute = (path: string) => {
+export const preloadRoute = (rawPath: string) => {
+  // Links use the canonical trailing-slash form (matches sitemap/canonicals);
+  // the PRELOADERS map is keyed slash-less, so normalize before lookup.
+  const path = rawPath.length > 1 && rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath;
   if (preloaded.has(path)) return;
   const loader = PRELOADERS[path];
   if (!loader) return;

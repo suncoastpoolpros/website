@@ -27,12 +27,12 @@ import { PHONE_DISPLAY, PHONE_HREF, HOURS_SHORT } from '@/lib/contact';
 type MobileNavItem = { label: string; icon: React.ComponentType<{ className?: string }>; to?: string; href?: string };
 // "Service Areas" is rendered separately as an expandable accordion (see below).
 const MOBILE_NAV: MobileNavItem[] = [
-  { label: 'How It Works', icon: Workflow, to: '/how-it-works' },
-  { label: 'FAQ', icon: HelpCircle, to: '/faq' },
-  { label: 'Tools', icon: Wrench, to: '/tools' },
-  { label: 'Pool Care', icon: Droplets, to: '/pool-care' },
-  { label: 'Careers', icon: Briefcase, to: '/careers' },
-  { label: 'Contact', icon: Mail, to: '/contact' },
+  { label: 'How It Works', icon: Workflow, to: '/how-it-works/' },
+  { label: 'FAQ', icon: HelpCircle, to: '/faq/' },
+  { label: 'Tools', icon: Wrench, to: '/tools/' },
+  { label: 'Pool Care', icon: Droplets, to: '/pool-care/' },
+  { label: 'Careers', icon: Briefcase, to: '/careers/' },
+  { label: 'Contact', icon: Mail, to: '/contact/' },
 ];
 
 export const Navbar = () => {
@@ -158,25 +158,25 @@ export const Navbar = () => {
             </div>
 
             <Link
-              to="/how-it-works"
+              to="/how-it-works/"
               className="text-gray-300 hover:text-white px-3 py-2 text-sm font-semibold transition-colors"
             >
               How It Works
             </Link>
             <Link
-              to="/faq"
+              to="/faq/"
               className="text-gray-300 hover:text-white px-3 py-2 text-sm font-semibold transition-colors"
             >
               FAQ
             </Link>
             <Link
-              to="/tools"
+              to="/tools/"
               className="text-gray-300 hover:text-white px-3 py-2 text-sm font-semibold transition-colors"
             >
               Tools
             </Link>
             <Link
-              to="/careers"
+              to="/careers/"
               className="text-gray-300 hover:text-white px-3 py-2 text-sm font-semibold transition-colors"
             >
               Careers

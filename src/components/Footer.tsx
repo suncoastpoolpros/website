@@ -19,17 +19,17 @@ const footerCities = cities.slice(0, 7);
 
 // `route: true` → client-side <Link>; otherwise an in-page/home anchor.
 const exploreLinks = [
-  { label: 'How It Works', href: '/how-it-works', route: true },
-  { label: 'FAQ', href: '/faq', route: true },
-  { label: 'Tools', href: '/tools', route: true },
-  { label: 'Pool Care', href: '/pool-care', route: true },
-  { label: 'Careers', href: '/careers', route: true },
-  { label: 'Contact', href: '/contact', route: true },
+  { label: 'How It Works', href: '/how-it-works/', route: true },
+  { label: 'FAQ', href: '/faq/', route: true },
+  { label: 'Tools', href: '/tools/', route: true },
+  { label: 'Pool Care', href: '/pool-care/', route: true },
+  { label: 'Careers', href: '/careers/', route: true },
+  { label: 'Contact', href: '/contact/', route: true },
 ];
 
 const legalLinks = [
-  { label: 'Service Agreement', to: '/service-agreement' },
-  { label: 'Privacy Policy', to: '/privacy-policy' },
+  { label: 'Service Agreement', to: '/service-agreement/' },
+  { label: 'Privacy Policy', to: '/privacy-policy/' },
 ];
 
 const socialLinks = [
