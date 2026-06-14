@@ -528,7 +528,7 @@ const FaqSection = () => {
             return (
               <div
                 key={index}
-                className="glass-panel rounded-2xl overflow-hidden transition-colors hover:bg-white/10"
+                className={`faq-item glass-panel rounded-2xl overflow-hidden transition-colors hover:bg-white/10 ${isOpen ? 'is-open' : ''}`}
               >
                 <button
                   type="button"
@@ -545,16 +545,18 @@ const FaqSection = () => {
                     <Plus className="w-5 h-5 shrink-0 text-gray-400" />
                   )}
                 </button>
-                {isOpen && (
-                  <div
-                    id={panelId}
-                    role="region"
-                    aria-labelledby={buttonId}
-                    className="px-6 pb-6 text-gray-400 leading-relaxed border-t border-white/5 pt-4"
-                  >
-                    {faq.a}
+                <div className="faq-answer">
+                  <div className="faq-answer-inner">
+                    <div
+                      id={panelId}
+                      role="region"
+                      aria-labelledby={buttonId}
+                      className="px-6 pb-6 text-gray-400 leading-relaxed border-t border-white/5 pt-4"
+                    >
+                      {faq.a}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             );
           })}

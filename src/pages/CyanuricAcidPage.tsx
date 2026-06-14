@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { m, AnimatePresence } from 'motion/react';
+import { m } from 'motion/react';
 import {
   FlaskConical,
   Sun,
@@ -485,7 +485,7 @@ const CyanuricAcidPageInner = () => {
                 {CYA_FAQ.map((faq) => {
                   const isOpen = openFaq === faq.question;
                   return (
-                    <div key={faq.question}>
+                    <div key={faq.question} className={`faq-item ${isOpen ? 'is-open' : ''}`}>
                       <button
                         type="button"
                         onClick={() => setOpenFaq(isOpen ? null : faq.question)}
@@ -503,21 +503,13 @@ const CyanuricAcidPageInner = () => {
                           <Plus className="w-5 h-5" />
                         </span>
                       </button>
-                      <AnimatePresence initial={false}>
-                        {isOpen && (
-                          <m.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25, ease: 'easeInOut' }}
-                            className="overflow-hidden"
-                          >
-                            <p className="px-5 sm:px-6 pb-5 -mt-1 text-gray-400 leading-relaxed text-[15px]">
-                              {faq.answer}
-                            </p>
-                          </m.div>
-                        )}
-                      </AnimatePresence>
+                      <div className="faq-answer">
+                        <div className="faq-answer-inner">
+                          <p className="px-5 sm:px-6 pb-5 -mt-1 text-gray-400 leading-relaxed text-[15px]">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}

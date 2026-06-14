@@ -684,7 +684,7 @@ const FaqSection = () => {
             const panelId = `clearwater-faq-panel-${index}`;
             const buttonId = `clearwater-faq-button-${index}`;
             return (
-              <div key={index}>
+              <div key={index} className={`faq-item ${isOpen ? 'is-open' : ''}`}>
                 <button
                   type="button"
                   id={buttonId}
@@ -708,16 +708,18 @@ const FaqSection = () => {
                     <Plus className="w-5 h-5 shrink-0 text-gray-400" />
                   )}
                 </button>
-                {isOpen && (
-                  <div
-                    id={panelId}
-                    role="region"
-                    aria-labelledby={buttonId}
-                    className="pl-[68px] md:pl-[72px] pr-6 md:pr-7 pb-6 text-gray-400 leading-relaxed"
-                  >
-                    {faq.a}
+                <div className="faq-answer">
+                  <div className="faq-answer-inner">
+                    <div
+                      id={panelId}
+                      role="region"
+                      aria-labelledby={buttonId}
+                      className="pl-[68px] md:pl-[72px] pr-6 md:pr-7 pb-6 text-gray-400 leading-relaxed"
+                    >
+                      {faq.a}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             );
           })}

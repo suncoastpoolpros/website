@@ -54,7 +54,7 @@ export const FAQ = () => {
           {faqs.map((faq, index) => (
             <div 
               key={index}
-              className="glass-panel rounded-2xl overflow-hidden transition-colors hover:bg-white/10"
+              className={`faq-item glass-panel rounded-2xl overflow-hidden transition-colors hover:bg-white/10 ${openIndex === index ? 'is-open' : ''}`}
             >
               <button
                 type="button"
@@ -69,11 +69,13 @@ export const FAQ = () => {
                   <Plus className="w-5 h-5 text-gray-400" />
                 )}
               </button>
-              {openIndex === index && (
-                <div className="px-5 sm:px-6 pb-5 sm:pb-6 text-[14px] sm:text-[15px] text-gray-400 leading-relaxed border-t border-white/5 pt-4">
-                  {faq.answer}
+              <div className="faq-answer">
+                <div className="faq-answer-inner">
+                  <div className="px-5 sm:px-6 pb-5 sm:pb-6 text-[14px] sm:text-[15px] text-gray-400 leading-relaxed border-t border-white/5 pt-4">
+                    {faq.answer}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           ))}
         </div>
