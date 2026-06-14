@@ -809,6 +809,28 @@ input[type="date"]::-webkit-date-and-time-value {
   animation: overlayInUp 0.2s ease-out;
 }
 
+/* FAQ page accordion. Answers are ALWAYS in the DOM (not conditionally mounted)
+   so all 40 Q&As land in the prerendered HTML — crawlable/indexable instead of
+   appearing only after a click. Collapse/expand is a pure-CSS grid-rows trick
+   (0fr -> 1fr) toggled by the `.is-open` class, which runs on the compositor-
+   friendly CSS path rather than a Framer height tween (see CLAUDE.md #12) and
+   doesn't trip the `.force-static-motion` opacity override on mobile. */
+.faq-answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s ease;
+}
+.faq-answer > .faq-answer-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+.faq-item.is-open .faq-answer {
+  grid-template-rows: 1fr;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq-answer { transition: none; }
+}
+
 /* Kill backdrop-filter entirely on mobile. backdrop-blur forces iOS Safari to
    re-rasterize everything behind the element — and when blurred elements
    mount/unmount or toggle (nav drawer, quote sheet, sticky CTA, the

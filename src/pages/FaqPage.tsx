@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { m, AnimatePresence } from 'motion/react';
 import {
   Search,
   X,
@@ -15,7 +14,7 @@ import {
   ArrowRight,
   type LucideIcon,
 } from 'lucide-react';
-import { faqs, FAQ_CATEGORIES, type FaqCategory } from '@/data/faqs';
+import { faqs, FAQ_CATEGORIES, type Faq, type FaqCategory } from '@/data/faqs';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { usePageMeta } from '@/lib/usePageMeta';
 import { useQuoteSheet } from '@/components/QuoteSheet';
@@ -74,19 +73,26 @@ const FaqPageInner = () => {
     };
   }, []);
 
-  const filtered = useMemo(() => {
+  // A FAQ is *shown* when it matches the search query (across every category) or,
+  // with no query, belongs to the active category tab. Every FAQ is still
+  // rendered into the DOM (see the list below) — this only toggles visibility,
+  // so all 40 answers stay in the prerendered HTML for crawlers.
+  const isShown = (f: Faq) => {
     const q = query.trim().toLowerCase();
-    // When searching, look across every category; otherwise honor the active tab.
-    return faqs.filter((f) => {
-      if (q) {
-        return (
-          f.question.toLowerCase().includes(q) ||
-          f.answer.toLowerCase().includes(q)
-        );
-      }
-      return f.category === filter;
-    });
-  }, [query, filter]);
+    if (q) {
+      return (
+        f.question.toLowerCase().includes(q) ||
+        f.answer.toLowerCase().includes(q)
+      );
+    }
+    return f.category === filter;
+  };
+  const shownCount = useMemo(
+    () => faqs.filter(isShown).length,
+    // isShown is a pure function of query + filter
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [query, filter],
+  );
 
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -214,101 +220,100 @@ const FaqPageInner = () => {
                   {query.trim() ? 'Search results' : filter}
                 </h2>
                 <span className="text-xs uppercase tracking-[0.12em] text-gray-500 tabular-nums shrink-0">
-                  {filtered.length} {filtered.length === 1 ? 'question' : 'questions'}
+                  {shownCount} {shownCount === 1 ? 'question' : 'questions'}
                 </span>
               </div>
 
-              {filtered.length === 0 ? (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.02] text-center py-16 px-6">
-                  <p className="text-gray-300 text-lg mb-2">No questions match “{query}”.</p>
-                  <p className="text-gray-500 text-sm">
-                    Try a different search, or{' '}
-                    <a href={PHONE_HREF} className="text-brand-orange hover:text-brand-orange-dark font-semibold">
-                      call us at {PHONE_DISPLAY}
-                    </a>
-                    .
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  {filtered.map((faq) => {
-                    const isOpen = openKey === faq.question;
-                    return (
-                      <div
-                        key={faq.question}
-                        className={`group border-b border-white/[0.08] transition-colors ${
-                          isOpen ? '' : 'hover:bg-white/[0.02]'
-                        }`}
+              {/* Every Q&A is rendered into the DOM (answers collapsed via the
+                  CSS `.faq-answer` grid, not conditionally mounted) so all 40
+                  answers ship in the prerendered HTML for crawlers. Category and
+                  search just toggle each item's visibility with `hidden`. */}
+              <div>
+                {faqs.map((faq) => {
+                  const isOpen = openKey === faq.question;
+                  const shown = isShown(faq);
+                  return (
+                    <div
+                      key={faq.question}
+                      className={`faq-item group border-b border-white/[0.08] transition-colors ${
+                        isOpen ? 'is-open' : 'hover:bg-white/[0.02]'
+                      } ${shown ? '' : 'hidden'}`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setOpenKey(isOpen ? null : faq.question)}
+                        aria-expanded={isOpen}
+                        className="w-full py-5 px-1 flex items-start justify-between gap-5 text-left"
                       >
-                        <button
-                          type="button"
-                          onClick={() => setOpenKey(isOpen ? null : faq.question)}
-                          aria-expanded={isOpen}
-                          className="w-full py-5 px-1 flex items-start justify-between gap-5 text-left"
+                        <span
+                          className={`min-w-0 break-words font-display font-normal text-[16px] sm:text-[17px] leading-snug transition-colors ${
+                            isOpen ? 'text-brand-orange' : 'text-gray-100 group-hover:text-white'
+                          }`}
                         >
+                          {faq.question}
+                        </span>
+                        <span
+                          className={`relative w-6 h-6 mt-0.5 shrink-0 flex items-center justify-center transition-colors duration-200 ${
+                            isOpen ? 'text-brand-orange' : 'text-gray-500 group-hover:text-white'
+                          }`}
+                        >
+                          {/* Horizontal line (always) + vertical line that collapses when open = +/× morph */}
+                          <span className="absolute w-4 h-[2px] rounded-full bg-current" />
                           <span
-                            className={`min-w-0 break-words font-display font-normal text-[16px] sm:text-[17px] leading-snug transition-colors ${
-                              isOpen ? 'text-brand-orange' : 'text-gray-100 group-hover:text-white'
+                            className={`absolute w-[2px] h-4 rounded-full bg-current transition-transform duration-300 ${
+                              isOpen ? 'rotate-90 scale-y-0' : 'rotate-0 scale-y-100'
                             }`}
-                          >
-                            {faq.question}
-                          </span>
-                          <span
-                            className={`relative w-6 h-6 mt-0.5 shrink-0 flex items-center justify-center transition-colors duration-200 ${
-                              isOpen ? 'text-brand-orange' : 'text-gray-500 group-hover:text-white'
-                            }`}
-                          >
-                            {/* Horizontal line (always) + vertical line that collapses when open = +/× morph */}
-                            <span className="absolute w-4 h-[2px] rounded-full bg-current" />
-                            <span
-                              className={`absolute w-[2px] h-4 rounded-full bg-current transition-transform duration-300 ${
-                                isOpen ? 'rotate-90 scale-y-0' : 'rotate-0 scale-y-100'
-                              }`}
-                            />
-                          </span>
-                        </button>
-                        <AnimatePresence initial={false}>
-                          {isOpen && (
-                            <m.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.28, ease: 'easeInOut' }}
-                              className="overflow-hidden"
-                            >
-                              <div className="pb-6 px-1 pr-10 -mt-1 max-w-3xl">
-                                {query.trim() && (
-                                  <p className="text-[11px] uppercase tracking-[0.15em] text-brand-blue-light font-semibold mb-2">
-                                    {faq.category}
-                                  </p>
-                                )}
-                                <p className="text-gray-300 leading-[1.75] text-[15px]">{faq.answer}</p>
-                                {faq.relatedTool && (
-                                  <Link
-                                    to={faq.relatedTool.href}
-                                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-orange hover:text-brand-orange-dark transition-colors"
-                                  >
-                                    {faq.relatedTool.label}
-                                    <ArrowRight className="w-4 h-4" />
-                                  </Link>
-                                )}
-                                {faq.quoteCta && (
-                                  <div className="mt-5">
-                                    <a href="#quote" onClick={handleQuoteClick} className="btn btn-orange">
-                                      <MessageSquare className="w-[18px] h-[18px]" />
-                                      Get a Free Quote
-                                    </a>
-                                  </div>
-                                )}
+                          />
+                        </span>
+                      </button>
+                      <div className="faq-answer">
+                        <div className="faq-answer-inner">
+                          <div className="pb-6 px-1 pr-10 -mt-1 max-w-3xl">
+                            {query.trim() && (
+                              <p className="text-[11px] uppercase tracking-[0.15em] text-brand-blue-light font-semibold mb-2">
+                                {faq.category}
+                              </p>
+                            )}
+                            <p className="text-gray-300 leading-[1.75] text-[15px]">{faq.answer}</p>
+                            {faq.relatedTool && (
+                              <Link
+                                to={faq.relatedTool.href}
+                                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-orange hover:text-brand-orange-dark transition-colors"
+                              >
+                                {faq.relatedTool.label}
+                                <ArrowRight className="w-4 h-4" />
+                              </Link>
+                            )}
+                            {faq.quoteCta && (
+                              <div className="mt-5">
+                                <a href="#quote" onClick={handleQuoteClick} className="btn btn-orange">
+                                  <MessageSquare className="w-[18px] h-[18px]" />
+                                  Get a Free Quote
+                                </a>
                               </div>
-                            </m.div>
-                          )}
-                        </AnimatePresence>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                    </div>
+                  );
+                })}
+
+                {/* Empty state — only when a live search matches nothing. (SSR
+                    always shows the active category, so this never prerenders.) */}
+                {query.trim() && shownCount === 0 && (
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.02] text-center py-16 px-6">
+                    <p className="text-gray-300 text-lg mb-2">No questions match “{query}”.</p>
+                    <p className="text-gray-500 text-sm">
+                      Try a different search, or{' '}
+                      <a href={PHONE_HREF} className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+                        call us at {PHONE_DISPLAY}
+                      </a>
+                      .
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
