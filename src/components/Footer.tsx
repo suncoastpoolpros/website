@@ -14,8 +14,14 @@ import {
   HOURS_SHORT,
 } from '@/lib/contact';
 
-// Top cities for the footer column; full list lives in the Service Areas menu.
-const footerCities = cities.slice(0, 7);
+// Footer "Service Areas" links. Every city with a dedicated page (`city.to`) MUST
+// appear here so it has an internal link and isn't orphaned in the sitemap — the
+// full Service Areas menu in the navbar is client-only (not prerendered), so this
+// footer is the city pages' only crawlable internal link. St. Petersburg & Gulfport
+// are shown as context labels (no dedicated page yet).
+const footerCities = cities.filter(
+  (c) => c.to || c.slug === 'st-petersburg' || c.slug === 'gulfport',
+);
 
 // `route: true` → client-side <Link>; otherwise an in-page/home anchor.
 const exploreLinks = [
