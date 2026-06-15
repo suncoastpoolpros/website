@@ -1,6 +1,6 @@
 import React from 'react';
 import { SmartLink as Link } from '@/components/SmartLink';
-import { Instagram, Facebook, Twitter, Phone, Mail, MapPin } from 'lucide-react';
+import { Facebook, Phone, Mail, MapPin } from 'lucide-react';
 import { Container } from '@/components/Container';
 import { cities } from '@/lib/cities';
 import {
@@ -33,9 +33,7 @@ const legalLinks = [
 ];
 
 const socialLinks = [
-  { label: 'Instagram', href: '#', Icon: Instagram },
   { label: 'Facebook', href: 'https://www.facebook.com/suncoastpoolpros', Icon: Facebook },
-  { label: 'Twitter', href: '#', Icon: Twitter },
 ];
 
 const colHeading = 'text-white font-semibold mb-4 uppercase tracking-wider text-xs';

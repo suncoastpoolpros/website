@@ -2,13 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { PHONE_DISPLAY, PHONE_HREF, EMAIL, EMAIL_HREF } from '@/lib/contact';
 
 // Renders an <a href="mailto:..."> only on the client. During SSR it emits a
-// matching empty placeholder so React hydration sees the same DOM Cloudflare's
-// email-obfuscation rewriter produced server-side. After mount we swap in the
-// real mailto link.
+// non-link <span> placeholder (NOT an empty <a href="#">, which crawlers flag as
+// a "link with no anchor text") so React hydration sees a stable element and
+// Cloudflare's email-obfuscation rewriter has no mailto to mangle server-side.
+// After mount we swap in the real mailto link.
 const ClientOnlyEmailLink = ({ href, label }: { href: string; label: string }) => {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
-  if (!mounted) return <a href="#"> </a>;
+  if (!mounted) return <span> </span>;
   return <a href={href}>{label}</a>;
 };
 
