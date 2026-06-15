@@ -159,7 +159,7 @@ export const Services = () => {
             </span>
           </h2>
           <p className="section-subtext">
-            Residential and commercial pool service across St. Petersburg, Clearwater, Seminole, Largo, and the greater Tampa Bay area.
+            Residential and commercial pool service and maintenance across St. Petersburg, Clearwater, Seminole, Largo, and the greater Tampa Bay area.
           </p>
         </div>
 
