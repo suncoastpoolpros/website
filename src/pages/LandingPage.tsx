@@ -46,7 +46,7 @@ const usePageSchema = () => {
 
 export const LandingPage = () => {
   usePageMeta({
-    title: 'Pool Cleaning St. Petersburg — Flat-Rate Weekly Service',
+    title: 'Pool Service St. Petersburg, FL — Flat-Rate Weekly Cleaning',
     description:
       'Flat-rate weekly pool cleaning across St. Petersburg & Tampa Bay — chemicals included, the same tech every week, a photo report after each visit.',
     canonicalPath: '/',
