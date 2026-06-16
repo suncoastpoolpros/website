@@ -164,6 +164,15 @@
     background-color: #07111c;
   }
 
+  /* Kill scroll-chaining: no rubber-band/pull-to-refresh on the page, and an
+     overlay's inner scroll (nav drawer, quote sheet) won't bleed into the body
+     when it hits its end. Applies app-wide. */
+  html,
+  body,
+  #root {
+    overscroll-behavior: none;
+  }
+
   /* Hide scrollbars site-wide while keeping scroll behavior intact.
      Targets the page itself and every scrollable descendant. */
   html,
