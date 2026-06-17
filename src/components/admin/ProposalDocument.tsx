@@ -299,17 +299,6 @@ export const ProposalDocument = ({
           </View>
         ) : null}
 
-        {photos.length ? (
-          <View style={styles.section} minPresenceAhead={72}>
-            <Text style={styles.sectionLabel}>Photos</Text>
-            <View style={styles.photoGrid}>
-              {photos.map((src, i) => (
-                <Image key={i} src={src} style={styles.photo} />
-              ))}
-            </View>
-          </View>
-        ) : null}
-
         {proposal.price.trim() ? (
           <View style={styles.section}>
             <View style={styles.priceBox}>
@@ -337,6 +326,18 @@ export const ProposalDocument = ({
             and we&apos;ll get you on the schedule.
           </Text>
         </View>
+
+        {/* Photos — forced onto their own page (after the accept callout) via `break`. */}
+        {photos.length ? (
+          <View style={styles.section} break>
+            <Text style={styles.sectionLabel}>Photos</Text>
+            <View style={styles.photoGrid}>
+              {photos.map((src, i) => (
+                <Image key={i} src={src} style={styles.photo} />
+              ))}
+            </View>
+          </View>
+        ) : null}
 
         {/* Footer — repeats on every page, with page numbers. */}
         <View style={styles.footer} fixed>

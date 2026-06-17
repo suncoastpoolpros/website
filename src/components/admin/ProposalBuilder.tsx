@@ -633,21 +633,6 @@ const ProposalPreview = ({
           </PreviewBlock>
         )}
 
-        {photos.length > 0 && (
-          <PreviewBlock label="Photos">
-            <div className="flex flex-wrap gap-2">
-              {photos.map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt={`Photo ${i + 1}`}
-                  className="h-20 w-28 rounded border border-stone-200 object-cover"
-                />
-              ))}
-            </div>
-          </PreviewBlock>
-        )}
-
         {proposal.scope.trim() && (
           <PreviewBlock label="Scope of Work">
             <p className="whitespace-pre-line leading-relaxed text-stone-700">{proposal.scope.trim()}</p>
@@ -677,6 +662,28 @@ const ProposalPreview = ({
         <div className="rounded-lg border border-[#bfe7c6] bg-[#eefaf0] px-4 py-3 text-[13px] leading-relaxed text-[#1d7a33]">
           To accept, simply reply <strong>&quot;APPROVED&quot;</strong> to the email this is attached to.
         </div>
+
+        {photos.length > 0 && (
+          <>
+            <div className="flex items-center gap-3 pt-1 text-[10px] font-bold uppercase tracking-wide text-stone-400">
+              <span className="h-px flex-1 bg-stone-200" />
+              Page 2
+              <span className="h-px flex-1 bg-stone-200" />
+            </div>
+            <PreviewBlock label="Photos">
+              <div className="flex flex-wrap gap-2">
+                {photos.map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt={`Photo ${i + 1}`}
+                    className="h-20 w-28 rounded border border-stone-200 object-cover"
+                  />
+                ))}
+              </div>
+            </PreviewBlock>
+          </>
+        )}
       </div>
     </div>
   );
