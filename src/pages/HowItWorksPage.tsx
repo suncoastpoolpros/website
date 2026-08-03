@@ -22,7 +22,6 @@ import { Footer } from '@/components/Footer';
 import { Container } from '@/components/Container';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { usePageMeta } from '@/lib/usePageMeta';
-import { faqs } from '@/data/faqs';
 
 // Onboarding steps — also the source for the HowTo JSON-LD below.
 const ONBOARDING_STEPS = [
@@ -89,16 +88,31 @@ const CARE_CARDS = [
   },
 ];
 
-// Quick FAQ — pulled by question text so answers stay in sync with faqs.ts.
-const QUICK_FAQ_QUESTIONS = [
-  'Do I need to be home for service?',
-  'Do you require a long-term contract?',
-  'Will I have the same technician each week?',
-  'How quickly can you start service?',
+// Quick FAQ — condensed, page-specific summaries, deliberately NOT the full
+// answers from faqs.ts. Repeating those verbatim made this page ~43% duplicate
+// with /faq/ in crawl terms; the "See all FAQs" link covers the long versions.
+const QUICK_FAQ = [
+  {
+    question: 'Do I need to be home for service?',
+    answer:
+      "No — most customers aren't. Give us gate access and every visit runs on schedule, with a written report waiting so you can see exactly what was done.",
+  },
+  {
+    question: 'Do you require a long-term contract?',
+    answer:
+      "No. It's month-to-month with no cancellation penalty — pause for a season or stop anytime with a heads-up.",
+  },
+  {
+    question: 'Will I have the same technician each week?',
+    answer:
+      'Yes. One consistent tech is assigned to your pool, which is how small problems get caught before they turn into big ones.',
+  },
+  {
+    question: 'How quickly can you start service?',
+    answer:
+      'Often within days of confirming your quote, since our routes are concentrated around Pinellas. Call or text your address for an exact start date.',
+  },
 ];
-const QUICK_FAQ = QUICK_FAQ_QUESTIONS
-  .map((q) => faqs.find((f) => f.question === q))
-  .filter((f): f is NonNullable<typeof f> => Boolean(f));
 
 const howToSchema = {
   '@context': 'https://schema.org',

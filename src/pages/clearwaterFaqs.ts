@@ -10,7 +10,7 @@
 export const clearwaterFaqs = [
   {
     q: 'Do you cover both Clearwater Beach and the mainland?',
-    a: "Both, every week. Clearwater is really two towns sharing a name, and we run routes through both. Out on the barrier island we cover Clearwater Beach, Sand Key, and Island Estates; on the mainland we're through Countryside, Morningside, Del Oro, Skycrest, Harbor Oaks, and Sunset Point. Beach pool or mainland pool, it goes on a set weekly day. Don't see your street? Call us — if it's a pool in Clearwater, we almost certainly already drive past it.",
+    a: "Both, every week. Clearwater is really two towns sharing a name, and we run routes through both. Out on the barrier island we cover Clearwater Beach, Sand Key, and Island Estates; on the mainland we're through Countryside, Morningside, Del Oro, Skycrest, Harbor Oaks, and Sunset Point. Beach pool or mainland pool, you get the same fixed weekly day. And that's not an exhaustive list — our routes thread the whole city, so if your street isn't one we named, ask anyway.",
   },
   {
     q: 'My pool is a salt system right on the beach — is that a problem?',
@@ -25,23 +25,23 @@ export const clearwaterFaqs = [
     a: "Every week. The established Clearwater neighborhoods — Countryside, Del Oro, Morningside — are full of screened cages under mature oaks and live oaks, which means leaf litter, pollen in spring, and the fine debris that slips through a torn screen. We skim it, empty the baskets, brush, and keep your filter from clogging up — and if we spot a screen tear or a drainage issue letting extra debris in, we tell you. Screened, shaded backyard pools are our everyday.",
   },
   {
-    q: "I'm not happy with my current pool service — is switching a hassle?",
-    a: "It's about the easiest thing you'll do all month. Tell us you're switching and we handle it from there — no awkward overlap, no gap where the pool slips. If it's drifted under the old service, we get it back to balanced and clear, then keep it that way on your weekly visit. Most Clearwater switchers are up and running on our route within a week of the first call.",
+    q: "Can you take over from the pool company I'm using now?",
+    a: "Yes — and you barely lift a finger. Say the word and we schedule your first visit, usually inside a week, picking up right where the old company left off. If the water's been allowed to slide, we'll tell you honestly what it needs to come back before we start, then fold it into the normal weekly rhythm. A surprising amount of our Clearwater business is exactly this: pools that were technically 'serviced' but never actually clear.",
   },
   {
-    q: 'What does it cost, and will my bill change month to month?',
-    a: "One flat monthly rate, with your standard weekly chemicals already in it — no per-visit chemical charges, no 'high-demand' summer surcharges, no contract. The exact number depends on your pool's size and setup (a screened mainland pool and an exposed beach pool aren't the same job), so the honest answer is we'll quote you a real price after a quick look. Anything beyond normal weekly care — a repair, a part, a green-pool recovery — is always quoted and approved before we start.",
+    q: 'How does the flat monthly rate work?',
+    a: "Your price is set once, when we quote your specific pool — and then it holds. It doesn't climb in July when the sun is working hardest, and standard weekly chemicals never show up as separate line items. We do look before we quote, because an exposed beach pool and a screened mainland pool are genuinely different workloads and we'd rather give you a real number than a teaser. The only things billed separately are things outside weekly care — a repair, a part, a full green-pool recovery — and you approve each one before we start.",
   },
   {
-    q: 'Will it be the same technician every week?',
-    a: "Yes. One background-checked tech is assigned to your pool and stays your tech. They learn your equipment, your gate code, your salt cell or your screen enclosure, and the quirks of your specific setup — which is exactly what keeps service reliable. You're not re-explaining your property to a new face every month, whether you're on the island or the mainland.",
+    q: 'Who actually shows up each week — is it the same person?',
+    a: "The same person, permanently — not \"usually.\" The tech who services your pool this week services it next week, and they're background-checked before they ever open a gate. Over a month or two they build a mental file on your setup: how your salt cell trends, which corner collects debris, what your filter pressure reads when everything's healthy. That accumulated knowledge is half of what you're paying for; a rotating crew starts from zero every visit.",
   },
   {
     q: 'What is the Always Blue Guarantee?',
-    a: "It's our promise that as long as you're on weekly service, your water stays clear and balanced — not just the day we visit, but all week long. Clearwater earned its name from clear water, and we hold your pool to it: if it ever drifts out of balance under our regular care, we come back and make it right at no extra charge. To stand behind that we keep exclusive control of your chemistry, so we just ask that you don't add your own chemicals between visits — that's the most common way a balanced pool gets thrown off. A few things sit outside it because they're beyond normal weekly care, like extreme loss from a leak or a fill hose left running. Everything within normal weekly service is covered, period.",
+    a: "The short version: on weekly service, clear balanced water isn't a goal, it's the deal — seven days a week, not just the afternoon we visit. This is the town that's literally named for clear water; we figure your pool should live up to that. So if the water drifts under our regular care, the return trip to fix it costs you nothing. Two honest conditions come with it. First, chemistry stays our job alone — adding your own chemicals between visits is the single fastest way to knock a balanced pool sideways, so the guarantee depends on us being the only ones dosing. Second, it covers normal weekly care, not plumbing failures or accidents — a leak draining the pool, a fill hose left running overnight. Inside normal weekly service, it's covered, full stop.",
   },
   {
-    q: 'My pool has gone green or I let it slip — can you still take it on?',
-    a: "Absolutely, and no judgment — life happens, and a closed-up rental or a pool left over a hot Clearwater summer goes green fast. We'll look at it, quote the recovery up front so there are no surprises, and bring it back to clear. From there your weekly service keeps it blue for one flat rate. Taking over neglected and green pools across Clearwater is a regular part of what we do.",
+    q: "I've let the pool go — will you still take it?",
+    a: "Bring it to us green — a decent share of the Clearwater pools we service today arrived exactly that way. One unattended Gulf-summer month is all it takes, especially for a rental sitting empty between guests. The recovery gets its own up-front quote before any work starts, so you know the full cost walking in; once the water's back, regular weekly service takes over and the flat rate keeps it there. No lectures, either.",
   },
 ];

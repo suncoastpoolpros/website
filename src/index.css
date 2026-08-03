@@ -719,6 +719,53 @@ input[type="date"]::-webkit-date-and-time-value {
   filter: saturate(1.18) brightness(0.52) contrast(1.05) hue-rotate(4deg);
 }
 
+/* ===== Clearwater page — light-theme redesign (2026) =========================
+   A full light-theme reimagining of the Clearwater city page. The hero keeps a
+   bright, sunny "clear water" photo so the shared transparent navbar's white
+   text stays legible over a darker top scrim, then the whole page below runs
+   light (airy white + pale-aqua bands). Multi-layer gradients live here as
+   classes — Tailwind v4 won't reliably emit a multi-gradient arbitrary value,
+   and inline-style colors trip SSR hydration (CLAUDE.md #4). Image reuses the
+   shared placeholder photo (same file the old dark hero used) but with a
+   brighter, cooler treatment so it reads "clear water," not the old dark look. */
+.cw-hero-photo {
+  background-image: image-set(
+    url('/pool-service-st-petersburg-hero.webp') type('image/webp') 1x,
+    url('/pool-service-st-petersburg-hero-1920.webp') type('image/webp') 2x,
+    url('/pool-service-st-petersburg-hero.jpg') type('image/jpeg') 1x
+  );
+  filter: saturate(1.2) brightness(1.04) contrast(1.04) hue-rotate(2deg);
+}
+.cw-hero-photo-mobile {
+  background-image: image-set(
+    url('/pool-service-st-petersburg-hero-mobile.webp') type('image/webp'),
+    url('/pool-service-st-petersburg-hero-mobile.jpg') type('image/jpeg')
+  );
+  filter: saturate(1.2) brightness(1.04) contrast(1.04) hue-rotate(2deg);
+}
+/* Readability scrim. Mobile: stacked text needs an even darken down the upper
+   two-thirds, then a fade to the first light band (#eef4fa) so the photo melts
+   into the page. Darkest at the very top so the navbar's white text reads. */
+.cw-hero-scrim {
+  background-image: linear-gradient(
+    to bottom,
+    rgba(3, 12, 24, 0.64) 0%,
+    rgba(3, 12, 24, 0.52) 42%,
+    rgba(3, 12, 24, 0.56) 74%,
+    rgba(10, 22, 40, 0.86) 92%,
+    #0a1628 100%
+  );
+}
+@media (min-width: 768px) {
+  /* Desktop: oversized type sits left — darken the left and the very top (nav),
+     keep the right bright over the water, then fade into the navy band below. */
+  .cw-hero-scrim {
+    background-image:
+      linear-gradient(to right, rgba(3, 12, 24, 0.72) 0%, rgba(3, 12, 24, 0.4) 42%, rgba(3, 12, 24, 0.08) 66%, transparent 84%),
+      linear-gradient(to bottom, rgba(3, 12, 24, 0.36) 0%, transparent 26%, transparent 62%, rgba(10, 22, 40, 0.82) 92%, #0a1628 100%);
+  }
+}
+
 /* Mobile motion strip — force-visible safety net. The app-level MotionConfig
    (App.tsx) sets reducedMotion on mobile so page animations don't run, but the
    below-fold uses whileInView + viewport{once:true}; opening/closing the quote

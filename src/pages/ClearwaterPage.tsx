@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 import { m } from 'motion/react';
-import { Phone, MapPin, Star, Waves, Home, ArrowRight } from 'lucide-react';
+import { Phone, Star, ArrowRight } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Glass } from '@/components/Glass';
 import { Container } from '@/components/Container';
 import { useQuoteSheet } from '@/components/QuoteSheet';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
@@ -28,29 +27,6 @@ const PAGE_DESC =
   'Weekly pool service in Clearwater, FL — Clearwater Beach & Sand Key to Countryside. Same tech, flat rate, chemicals included, water kept crystal clear.';
 const PAGE_URL = 'https://suncoastpoolpros.com/clearwater-fl/';
 
-// The signature hero visual: a "two sides of Clearwater, one standard" card.
-// Clearwater is uniquely two towns sharing a name — a barrier-island beach world
-// and a big established mainland — so the hero element makes that the story
-// (NOT Largo's vertical spec list, NOT Seminole's pin map). Doubles as
-// above-the-fold local-SEO: it names real neighborhoods in both zones. Desktop
-// only; mobile gets a compact inline strip so the hero stays short on phones.
-const ZONES = [
-  {
-    icon: Waves,
-    accent: 'blue',
-    kicker: 'The Beach & Islands',
-    places: 'Clearwater Beach · Sand Key · Island Estates',
-    note: 'Salt systems, full Gulf sun & blowing sand — handled.',
-  },
-  {
-    icon: Home,
-    accent: 'orange',
-    kicker: 'The Mainland',
-    places: 'Countryside · Morningside · Del Oro · Skycrest',
-    note: 'Screened cages and big-oak debris — handled.',
-  },
-] as const;
-
 const HeroSection = () => {
   const { open } = useQuoteSheet();
   const handleQuote = (e: React.MouseEvent) => {
@@ -59,186 +35,117 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="relative min-h-dvh flex items-center overflow-hidden pt-24 pb-16">
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[#02060c]" />
-        <div className="hero-bg-clearwater-desktop absolute inset-0 hidden md:block bg-cover bg-center" aria-hidden />
-        <div className="hero-bg-clearwater-mobile absolute inset-0 md:hidden bg-cover bg-center" aria-hidden />
-        {/* Single merged readability scrim (class, not inline style — CLAUDE.md #4). */}
-        <div className="hero-clearwater-scrim absolute inset-0 pointer-events-none" aria-hidden />
-        {/* Ambient brand glows — desktop only (mobile blur ban). Cooler/cyan-led
-            mix here than the inland pages, to read "clear water". */}
-        <div className="hidden md:block absolute top-[10%] left-[-8%] w-[42vw] h-[42vw] bg-brand-blue/[0.12] rounded-full blur-[150px] animate-float" />
-        <div className="hidden md:block absolute bottom-[-12%] right-[-8%] w-[38vw] h-[38vw] bg-cyan-400/[0.07] rounded-full blur-[150px] animate-morph" />
-        {/* Bottom seam into the next #07111c section. */}
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#07111c] via-[#07111c]/70 to-transparent pointer-events-none" />
+    <section className="relative min-h-dvh flex items-center overflow-hidden pt-28 pb-20 md:pb-28">
+      {/* Bright "clear water" photo, scrim darkening the left + top for the
+          oversized type and the transparent navbar, fading into the navy band
+          below. Base navy shows only behind any photo gaps. */}
+      <div className="absolute inset-0 z-0 bg-[#0a1628]">
+        <div className="cw-hero-photo absolute inset-0 hidden md:block bg-cover bg-center" aria-hidden />
+        <div className="cw-hero-photo-mobile absolute inset-0 md:hidden bg-cover bg-center" aria-hidden />
+        <div className="cw-hero-scrim absolute inset-0 pointer-events-none" aria-hidden />
       </div>
 
       <Container className="relative z-10 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-          <m.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="lg:col-span-7"
-          >
-            <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8">
-              <MapPin className="w-3.5 h-3.5 text-brand-orange-light" />
-              <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
-                Clearwater · Beach &amp; Mainland
-              </span>
-            </Glass>
+        <m.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="max-w-3xl"
+        >
+          {/* Bold eyebrow — a hard orange bar, not a soft pill. */}
+          <span className="flex items-center gap-3 mb-6">
+            <span className="w-8 h-[3px] bg-brand-orange" aria-hidden />
+            <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-white">
+              Clearwater, FL — Beach &amp; Mainland
+            </span>
+          </span>
 
-            {/* Visual headline — a div, so the SEO h1 below carries keyword
-                weight. The town's name made into the promise. */}
-            <div className="text-shadow-city-h1 font-display font-bold md:font-black text-white tracking-tight mb-5 leading-[1.05]">
-              <span className="block text-[2.75rem] sm:text-6xl md:text-[3.9rem] leading-[1.02]">
-                Clearwater deserves
-              </span>
-              <span className="block text-[2.75rem] sm:text-6xl md:text-[3.9rem] leading-[1.02]">
-                <span className="text-brand-orange-light">clear water.</span>
-              </span>
-            </div>
+          {/* Oversized headline — a div, so the SEO h1 below carries keyword
+              weight. The town's name made into the promise. */}
+          <div className="text-shadow-city-h1 font-display font-black text-white tracking-[-0.02em] leading-[0.95] mb-6">
+            <span className="block text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[5.25rem]">
+              Clearwater deserves
+            </span>
+            <span className="block text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[5.25rem] text-brand-orange">
+              clear water.
+            </span>
+          </div>
 
-            {/* SEO H1 — local keyword for this city page. */}
-            <h1 className="text-shadow-city-h1 font-display font-normal text-white/85 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 tracking-tight">
-              Weekly pool service in Clearwater, FL.
-            </h1>
+          {/* SEO H1 — local keyword for this city page. */}
+          <h1 className="text-shadow-city-h1 font-display font-normal text-white/90 text-lg md:text-xl leading-snug mb-5 tracking-tight">
+            Weekly pool service in Clearwater, FL.
+          </h1>
 
-            <p className="text-shadow-city-body md:hidden text-[15px] text-gray-200 max-w-[34rem] leading-[1.6] mb-7">
-              From the beach to the mainland —{' '}
-              <span className="text-white">same tech weekly, chemicals included, and water kept genuinely clear</span>, on one flat rate.
-            </p>
-            <p className="text-shadow-city-body hidden md:block text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
-              Clearwater is really two towns sharing a name — the barrier-island
-              beach world and the big established mainland. We keep both kinds of
-              pool clear: <span className="text-white">the same dedicated tech every week</span>,
-              all standard chemicals in one flat rate, your equipment checked every
-              visit, and a photo report when we leave.
-            </p>
+          <p className="text-shadow-city-body md:hidden text-[15px] text-white/85 max-w-[34rem] leading-[1.6] mb-8">
+            From the beach to the mainland —{' '}
+            <span className="text-white font-medium">
+              same tech weekly, chemicals included, and water kept genuinely clear
+            </span>
+            , on one flat rate.
+          </p>
+          <p className="text-shadow-city-body hidden md:block text-base text-white/85 max-w-[36rem] leading-[1.65] mb-8">
+            Clearwater is really two towns sharing a name — the barrier-island beach world and the big
+            established mainland. We keep both kinds of pool clear:{' '}
+            <span className="text-white font-medium">the same dedicated tech every week</span>, all
+            standard chemicals in one flat rate, your equipment checked every visit, and a photo
+            report when we leave.
+          </p>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-              {/* Orange = the site's action color (navbar, CtaBand). A specific
-                  label ("flat-rate") outpulls a generic "free quote". */}
-              <a href="#quote" onClick={handleQuote} className="btn btn-orange">
-                Get a Flat-Rate Quote
-              </a>
-              <Glass
-                href={`tel:${PHONE}`}
-                className="glass-mobile-blur inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px]"
-              >
-                <Phone className="w-4 h-4 text-brand-blue-light" />
-                {PHONE_DISPLAY}
-              </Glass>
-            </div>
-
-            {/* Proof + risk reversal, directly under the CTA where it sways
-                the click. */}
-            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-gray-400">
-              <span className="flex items-center gap-1.5">
-                <span className="flex gap-0.5 text-brand-orange">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                  ))}
-                </span>
-                <span className="font-semibold text-white/90">5.0</span>
-                <span className="text-gray-500">on Google</span>
-              </span>
-              <span className="text-gray-600" aria-hidden>
-                ·
-              </span>
-              <span>No contracts · Cancel anytime · One flat rate</span>
-            </div>
-
-            {/* Mobile-only compact zone strip (the chooser card is desktop-only). */}
-            <div className="lg:hidden mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 text-[13px] text-gray-400">
-              <div className="flex items-center gap-2">
-                <Waves className="w-4 h-4 text-brand-orange-light" />
-                <span>Beach &amp; islands</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Home className="w-4 h-4 text-brand-orange-light" />
-                <span>Mainland neighborhoods</span>
-              </div>
-            </div>
-          </m.div>
-
-          {/* Right column: the "which Clearwater are you in?" quote chooser.
-              DESKTOP ONLY (lg+). */}
-          <m.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9, ease: 'easeOut', delay: 0.1 }}
-            className="hidden lg:block lg:col-span-5"
-          >
-            {/* Conversion chooser, not an info card: visitors self-segment by
-                picking their side of the Intracoastal, and either pick opens
-                the quote sheet. The zone rows double as above-the-fold
-                local-SEO (real neighborhoods in both zones). White body under
-                a navy header — the proposal/email-card DNA. */}
-            <div className="rounded-2xl overflow-hidden bg-white shadow-2xl shadow-black/50">
-              <div className="bg-[#0a1628] px-7 py-5 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange-light mb-1">
-                    Flat-Rate Weekly Service
-                  </p>
-                  <p className="text-white font-display font-bold text-lg leading-tight">
-                    Where's your pool?
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <div className="flex gap-0.5 text-brand-orange justify-end mb-0.5">
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-[12px] text-gray-400">
-                    <span className="font-semibold text-white">5.0</span> on Google
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-5 space-y-3">
-                {/* Monochrome surfaces; the only color is the zone icon. The
-                    candy-tinted tiles/hovers read juvenile — restraint sells. */}
-                {ZONES.map((z) => (
-                  <button
-                    key={z.kicker}
-                    type="button"
-                    onClick={() => open()}
-                    className="group w-full text-left rounded-xl border border-black/10 bg-black/[0.02] p-3.5 flex items-start gap-3 transition-colors cursor-pointer hover:bg-black/[0.04] hover:border-black/25"
-                  >
-                    <div className="w-9 h-9 rounded-lg border border-black/10 bg-white flex items-center justify-center shrink-0">
-                      <z.icon
-                        className={`w-[18px] h-[18px] ${
-                          z.accent === 'blue' ? 'text-brand-blue' : 'text-brand-orange'
-                        }`}
-                      />
-                    </div>
-                    <div className="leading-tight pt-0.5 min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 mb-1">
-                        {z.kicker}
-                      </p>
-                      <p className="text-[#0a1628] font-semibold text-[13.5px] mb-1">{z.places}</p>
-                      <p className="text-slate-600 text-[12.5px]">{z.note}</p>
-                    </div>
-                    <ArrowRight className="ml-auto self-center w-4 h-4 shrink-0 text-slate-400 transition-all group-hover:translate-x-0.5 group-hover:text-[#0a1628]" />
-                  </button>
-                ))}
-
-                <div className="pt-2 pb-1 text-center">
-                  <p className="text-[13px] text-slate-500">
-                    Either way — same tech weekly, chemicals included, one flat rate.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </m.div>
-        </div>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            {/* Orange = the site's action color. A specific label ("flat-rate")
+                outpulls a generic "free quote." */}
+            <a
+              href="#quote"
+              onClick={handleQuote}
+              className="btn btn-orange text-base px-7 py-3.5 font-bold shadow-xl shadow-black/30"
+            >
+              Get a Flat-Rate Quote
+              <ArrowRight className="w-5 h-5" />
+            </a>
+            {/* Solid white pill — high-contrast over the photo, no blur (mobile blur ban). */}
+            <a
+              href={`tel:${PHONE}`}
+              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-lg bg-white text-[#0a1628] hover:bg-white/90 font-bold text-base transition-colors"
+            >
+              <Phone className="w-5 h-5 text-brand-blue" />
+              {PHONE_DISPLAY}
+            </a>
+          </div>
+        </m.div>
       </Container>
-    </div>
+    </section>
   );
 };
+
+// Bold trust marquee — a full-width navy band right under the hero. High-contrast
+// uppercase proof tokens separated by orange diamonds; doubles as the dark-to-
+// content handoff. Wraps (not scrolls) so it never overflows on mobile.
+const TRUST_TOKENS = ['One flat rate', 'No contracts', 'Chemicals included', 'Same tech weekly'];
+const TrustMarquee = () => (
+  <div className="bg-[#0a1628] border-b border-white/10">
+    <Container className="py-4 md:py-5">
+      <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 md:gap-x-8">
+        <span className="flex items-center gap-2 text-white font-bold uppercase tracking-[0.14em] text-[12px] md:text-[13px]">
+          <span className="flex gap-0.5 text-brand-orange">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <Star key={i} className="w-3.5 h-3.5 fill-current" />
+            ))}
+          </span>
+          5.0 on Google
+        </span>
+        {TRUST_TOKENS.map((t) => (
+          <span
+            key={t}
+            className="flex items-center gap-5 md:gap-8 text-white font-bold uppercase tracking-[0.14em] text-[12px] md:text-[13px]"
+          >
+            <span className="w-1.5 h-1.5 rotate-45 bg-brand-orange shrink-0" aria-hidden />
+            {t}
+          </span>
+        ))}
+      </div>
+    </Container>
+  </div>
+);
 
 // JSON-LD (LocalBusiness + FAQPage + Breadcrumb) injected client-side. Title,
 // description, canonical, and OG come from usePageMeta (SSR'd into the
@@ -294,7 +201,7 @@ export const ClearwaterPage = () => {
     canonicalPath: '/clearwater-fl/',
     ogImage: '/pool-service-st-petersburg-hero.jpg',
     // Placeholder photo (shared residential-pool hero) until a dedicated
-    // Clearwater image is uploaded — only the hero-bg-clearwater-* url()s in
+    // Clearwater image is uploaded — only the cw-hero-photo* url()s in
     // index.css and these heroPreload paths need to change when it is.
     heroPreload: {
       mobile: '/pool-service-st-petersburg-hero-mobile.webp',
@@ -315,15 +222,13 @@ export const ClearwaterPage = () => {
   usePageSchema();
 
   return (
-    <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
-      <div className="absolute md:fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
-      <div className="relative z-10">
-        <Navbar />
-        <HeroSection />
-        <ClearwaterBelowFold />
-        <CtaBand />
-        <Footer />
-      </div>
+    <div className="force-static-motion min-h-screen bg-white relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
+      <Navbar />
+      <HeroSection />
+      <TrustMarquee />
+      <ClearwaterBelowFold />
+      <CtaBand />
+      <Footer />
       <StickyMobileCta />
     </div>
   );
