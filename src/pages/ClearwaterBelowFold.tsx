@@ -372,8 +372,9 @@ const MAINLAND_AREAS = [
   'Coachman',
   'Sunset Point',
   'Eastwood',
+  'Feather Sound',
 ];
-const ZIPS = ['33755', '33756', '33759', '33761', '33763', '33764', '33765', '33767'];
+const ZIPS = ['33755', '33756', '33759', '33761', '33762', '33763', '33764', '33765', '33767'];
 
 const ZoneGroup = ({
   icon: Icon,
@@ -484,7 +485,16 @@ const CoverageSection = () => {
         >
           Treat this list as a sampling, not a boundary line. The routes above criss-cross the whole
           city, island and mainland alike — if your pool has a Clearwater address, chances are a
-          truck already passes your street. Call and we'll confirm.
+          truck already passes your street. Call and we'll confirm. And the routes don't stop at the
+          city line: the same trucks run{' '}
+          <SmartLink to="/largo-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+            pool service in Largo
+          </SmartLink>{' '}
+          just south of us and{' '}
+          <SmartLink to="/belleair-beach-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+            Belleair Beach
+          </SmartLink>{' '}
+          down the sand from Sand Key.
         </m.p>
 
         <m.div
@@ -708,7 +718,7 @@ const FaqSection = () => {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <Overline index="08" center>
+          <Overline index="06" center>
             Clearwater Pool Service
           </Overline>
           <h2 className={cn('section-heading', NAVY)}>Questions, answered.</h2>

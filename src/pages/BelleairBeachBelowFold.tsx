@@ -17,6 +17,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import { Container } from '@/components/Container';
+import { SmartLink } from '@/components/SmartLink';
 import { belleairBeachFaqs } from '@/pages/belleairBeachFaqs';
 
 // Coastal pain → our answer. Maintenance-first framing, no hard price lead.
@@ -550,6 +551,25 @@ const FaqSection = () => {
             );
           })}
         </div>
+
+        {/* Nearby-areas cross-links — the same routes continue up and across the
+            water, so point neighbors at their own city pages. */}
+        <m.p
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-10 text-center text-gray-500 text-[13px] leading-relaxed"
+        >
+          Just up or across the water? The same trucks run{' '}
+          <SmartLink to="/clearwater-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+            pool service in Clearwater
+          </SmartLink>{' '}
+          — including Sand Key, one bridge north — and{' '}
+          <SmartLink to="/largo-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+            Largo
+          </SmartLink>{' '}
+          across the Intracoastal.
+        </m.p>
       </div>
     </section>
   );

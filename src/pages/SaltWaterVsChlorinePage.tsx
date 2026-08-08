@@ -448,8 +448,12 @@ const SaltWaterVsChlorinePageInner = () => {
                 air &mdash; see how we keep them healthy with{' '}
                 <Link to="/st-pete-beach-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
                   pool service in St. Pete Beach
+                </Link>{' '}
+                and{' '}
+                <Link to="/clearwater-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+                  pool service in Clearwater
                 </Link>
-                .
+                , where nearly every pool out on Sand Key runs salt.
               </p>
             </div>
           </div>

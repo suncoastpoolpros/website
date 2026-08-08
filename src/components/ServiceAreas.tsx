@@ -1,22 +1,8 @@
 import React from 'react';
 import { MapPin } from 'lucide-react';
 import { Container } from '@/components/Container';
-
-const cities = [
-  'St. Petersburg',
-  'Gulfport',
-  'St. Pete Beach',
-  'Treasure Island',
-  'Seminole',
-  'Largo',
-  'Belleair Beach',
-  'Clearwater',
-  'Safety Harbor',
-  'Dunedin',
-  'Palm Harbor',
-  'Davis Island',
-  'South Tampa',
-];
+import { SmartLink } from '@/components/SmartLink';
+import { cities } from '@/lib/cities';
 
 export const ServiceAreas = () => {
   return (
@@ -40,18 +26,29 @@ export const ServiceAreas = () => {
             </p>
           </div>
 
-          {/* RIGHT — city chips flowing freely, no box */}
+          {/* RIGHT — city chips flowing freely, no box. Cities with their own
+              page link to it (the homepage's only in-content city links — an
+              internal-link signal, styled to stay quiet, not compete as CTAs);
+              the rest remain plain labels. */}
           <div className="flex flex-wrap gap-2.5 lg:justify-end">
-            {cities.map((city) => (
-              // Non-interactive coverage labels — informational, not CTAs.
-              // (There are plenty of CTAs elsewhere on the page.)
-              <span
-                key={city}
-                className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/10 px-4 py-2 text-sm font-semibold text-gray-200"
-              >
-                {city}
-              </span>
-            ))}
+            {cities.map((city) =>
+              city.to ? (
+                <SmartLink
+                  key={city.slug}
+                  to={city.to}
+                  className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/10 px-4 py-2 text-sm font-semibold text-gray-200 transition-colors hover:border-white/25 hover:text-white"
+                >
+                  {city.name}
+                </SmartLink>
+              ) : (
+                <span
+                  key={city.slug}
+                  className="inline-flex items-center rounded-full bg-white/[0.04] border border-white/10 px-4 py-2 text-sm font-semibold text-gray-200"
+                >
+                  {city.name}
+                </span>
+              ),
+            )}
           </div>
         </div>
       </Container>

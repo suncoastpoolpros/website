@@ -10,7 +10,7 @@
 export const clearwaterFaqs = [
   {
     q: 'Do you cover both Clearwater Beach and the mainland?',
-    a: "Both, every week. Clearwater is really two towns sharing a name, and we run routes through both. Out on the barrier island we cover Clearwater Beach, Sand Key, and Island Estates; on the mainland we're through Countryside, Morningside, Del Oro, Skycrest, Harbor Oaks, and Sunset Point. Beach pool or mainland pool, you get the same fixed weekly day. And that's not an exhaustive list — our routes thread the whole city, so if your street isn't one we named, ask anyway.",
+    a: "Both, every week. Clearwater is really two towns sharing a name, and we run routes through both. Out on the barrier island we cover Clearwater Beach, Sand Key, and Island Estates; on the mainland we're through Countryside, Morningside, Del Oro, Skycrest, Harbor Oaks, Sunset Point, and Feather Sound out by the bay. Beach pool or mainland pool, you get the same fixed weekly day. And that's not an exhaustive list — our routes thread the whole city, so if your street isn't one we named, ask anyway.",
   },
   {
     q: 'My pool is a salt system right on the beach — is that a problem?',

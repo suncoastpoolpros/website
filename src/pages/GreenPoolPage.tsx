@@ -532,6 +532,14 @@ const GreenPoolPageInner = () => {
                   {PHONE_DISPLAY}
                 </a>
               </div>
+              <p className="text-gray-500 text-sm max-w-lg mx-auto mt-6">
+                Did the pool go green while the house sat empty? A lot of the rescues we run start
+                exactly that way &mdash; see how{' '}
+                <Link to="/clearwater-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+                  weekly pool service in Clearwater
+                </Link>{' '}
+                keeps vacation rentals guest-ready between check-ins.
+              </p>
             </div>
           </div>
         </section>

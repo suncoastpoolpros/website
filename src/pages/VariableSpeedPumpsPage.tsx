@@ -784,6 +784,13 @@ const VariableSpeedPumpsPageInner = () => {
                   {PHONE_DISPLAY}
                 </a>
               </div>
+              <p className="text-gray-500 text-sm max-w-lg mx-auto mt-6">
+                Still running a single-speed pump on an older pad? See how we handle{' '}
+                <Link to="/clearwater-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+                  pool service in Clearwater
+                </Link>
+                , where plenty of mainland pools have run the same equipment for decades.
+              </p>
             </div>
           </div>
         </section>

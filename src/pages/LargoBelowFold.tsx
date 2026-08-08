@@ -212,6 +212,15 @@ const CoverageSection = () => (
           <p className="text-gray-500 text-[13px] mt-6 leading-relaxed border-t border-white/5 pt-5">
             Don't see your neighborhood? It's not a full list — if you've got a
             pool in Largo, we almost certainly already cover your street. Just ask.
+            And if you're just over the city line, the same trucks run{' '}
+            <SmartLink to="/clearwater-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+              pool service in Clearwater
+            </SmartLink>{' '}
+            and{' '}
+            <SmartLink to="/seminole-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+              Seminole
+            </SmartLink>{' '}
+            every week.
           </p>
         </m.div>
       </div>

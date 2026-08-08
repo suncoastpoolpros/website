@@ -164,13 +164,22 @@ const usePageSchema = () => {
         url: PAGE_URL,
         telephone: '+1-727-295-3621',
         priceRange: '$$',
+        // Mirrors the neighborhoods the page itself names (Coverage section) —
+        // schema and visible content must agree.
         areaServed: [
           { '@type': 'City', name: 'Clearwater', addressRegion: 'FL' },
           { '@type': 'Place', name: 'Clearwater Beach, FL' },
           { '@type': 'Place', name: 'Sand Key, FL' },
           { '@type': 'Place', name: 'Island Estates, FL' },
           { '@type': 'Place', name: 'Countryside, FL' },
+          { '@type': 'Place', name: 'Morningside, FL' },
           { '@type': 'Place', name: 'Del Oro, FL' },
+          { '@type': 'Place', name: 'Skycrest, FL' },
+          { '@type': 'Place', name: 'Harbor Oaks, FL' },
+          { '@type': 'Place', name: 'Coachman, FL' },
+          { '@type': 'Place', name: 'Sunset Point, FL' },
+          { '@type': 'Place', name: 'Eastwood, FL' },
+          { '@type': 'Place', name: 'Feather Sound, FL' },
         ],
         description:
           'Weekly pool service for all of Clearwater, FL — the barrier-island beach world (Clearwater Beach, Sand Key, Island Estates) and the established mainland (Countryside, Morningside, Del Oro). Same dedicated technician, salt systems and screened cages handled, flat rate with chemicals included, photo report after every visit.',
