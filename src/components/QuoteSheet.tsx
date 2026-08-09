@@ -9,7 +9,17 @@ import { useOverlayTransition } from '@/lib/useOverlayTransition';
  * Slide-up bottom sheet (mobile) that hosts the QuoteChooser.
  * Any component can open it via the useQuoteSheet() hook.
  */
-type Ctx = { open: () => void; close: () => void; isOpen: boolean };
+type Ctx = {
+  open: () => void;
+  /** Pre-mount the sheet (hidden, parked off-screen) on the trigger's
+      pointerdown. The QuoteChooser mount is heavy enough to drop the first
+      frames of the open transition when it happens on tap — the slide then
+      starts mid-flight and reads as "it just appears". Warming on finger-down
+      buys ~100ms so the entrance animates from an already-painted panel. */
+  warm: () => void;
+  close: () => void;
+  isOpen: boolean;
+};
 const QuoteSheetContext = createContext<Ctx | null>(null);
 
 export const useQuoteSheet = () => {
@@ -24,6 +34,10 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
   // the sheet header can swap to a confirmation. Reset whenever the sheet is
   // (re)opened so a fresh visit always starts on the question, not the thanks.
   const [submitted, setSubmitted] = useState(false);
+  // Warmed = mounted early (hidden) so opening never mounts on tap. Sticky
+  // after first use: the sheet then stays in the DOM across open/close, which
+  // also makes repeat opens instant.
+  const [warmed, setWarmed] = useState(false);
   // Mount/visible timing for the CSS-driven slide (see useOverlayTransition).
   const sheet = useOverlayTransition(isOpen);
 
@@ -42,19 +56,29 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
     setSubmitted(false);
     setIsOpen(true);
   };
+  const warm = () => setWarmed(true);
   const close = () => setIsOpen(false);
 
   return (
-    <QuoteSheetContext.Provider value={{ open, close, isOpen }}>
+    <QuoteSheetContext.Provider value={{ open, warm, close, isOpen }}>
       {children}
 
-      {sheet.mounted && (
-          <div className="quote-sheet fixed inset-0 z-[100] flex items-end sm:items-center sm:justify-center sm:p-6">
-            {/* Backdrop. Solid scrim on mobile (md:backdrop-blur only): the
-                blur's unmount otherwise re-rasterizes the page behind it on iOS,
-                causing a blank/repaint flash when the sheet closes. */}
+      {(sheet.mounted || warmed) && (
+          // z-[120]: above the mobile nav menu (z-[110]) — the menu's CTA opens
+          // this sheet OVER the still-open menu, scrim dimming it.
+          // pointer-events/inert gate: while warmed-but-closed (or exiting) the
+          // full-screen shell must not intercept taps or focus.
+          <div
+            className={`quote-sheet fixed inset-0 z-[120] flex items-end sm:items-center sm:justify-center sm:p-6 ${sheet.visible ? '' : 'pointer-events-none'}`}
+            inert={!sheet.visible}
+          >
+            {/* Backdrop: pure animated frost, no dim — scrim-blur ramps
+                0 → 6px on open, back to 0 BEFORE unmount (the animate-to-zero
+                is what sidesteps the iOS unmount blank-flash that originally
+                banned mobile blur here, CLAUDE.md #10). Same treatment over
+                the nav menu, page content, and the desktop modal. */}
             <div
-              className={`overlay-scrim absolute inset-0 bg-black/80 md:bg-black/70 md:backdrop-blur-[10px] ${sheet.visible ? 'is-open' : ''}`}
+              className={`overlay-scrim allow-blur scrim-blur absolute inset-0 ${sheet.visible ? 'is-open' : ''}`}
               onClick={close}
             />
 
@@ -63,7 +87,7 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
                 off the main thread, replacing the old Framer spring that
                 recomputed physics every frame while the chooser form mounted. */}
             <div
-              className={`overlay-panel-bottom relative w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0b1726] border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl px-5 pt-3 pb-8 sm:p-8 shadow-[0_-20px_50px_-10px_rgba(0,0,0,0.7)] sm:shadow-2xl sm:shadow-black/60 ${sheet.visible ? 'is-open' : ''}`}
+              className={`overlay-panel-bottom relative w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-black border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl px-5 pt-3 pb-8 sm:p-8 sm:shadow-2xl sm:shadow-black/60 ${sheet.visible ? 'is-open' : ''}`}
             >
               {/* Grab handle (mobile only) */}
               <div className="sm:hidden mx-auto mb-5 h-1.5 w-12 rounded-full bg-white/20" />

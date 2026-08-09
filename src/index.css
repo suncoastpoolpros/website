@@ -826,6 +826,42 @@ input[type="date"]::-webkit-date-and-time-value {
   opacity: 1;
 }
 
+/* Quote-sheet scrim blur: the blur RADIUS ramps 0 → 6px as the sheet opens
+   and back to 0 on close, so the surface is UNBLURRED by the time it unmounts
+   — that animate-to-zero is what makes this safe on iOS (the historical
+   blank-flash came from unmounting a still-blurred surface, CLAUDE.md #10).
+   Animating backdrop-filter directly is required — fading the element's
+   opacity does NOT fade the backdrop effect (Safari applies it at full
+   strength regardless of opacity). backdrop-filter is GPU-compositable like
+   transform/opacity. Pair with .allow-blur (exempts it from the global mobile
+   backdrop-filter kill). `transition` is one property, so opacity must ride
+   in these lists — this overrides .overlay-scrim's own transition, and any
+   background the scrim carries would snap instead of fade without it. */
+.scrim-blur {
+  -webkit-backdrop-filter: blur(0px);
+  backdrop-filter: blur(0px);
+  /* Exit timing (class removed → these styles win): quick, matching the
+     panel's 0.2s drop; must finish inside useOverlayTransition's 320ms
+     unmount window or the fade-out gets chopped. */
+  transition:
+    opacity 0.2s ease,
+    -webkit-backdrop-filter 0.2s ease,
+    backdrop-filter 0.2s ease;
+}
+.scrim-blur.is-open {
+  /* One deep frost on every breakpoint (user call). The old 10px desktop cap
+     was for PERSISTENT chrome (scroll-toggled navbar); this scrim is
+     transient and ramps to 0 before unmount. If the ramp ever stutters on an
+     older iPhone, drop the sub-768px radius first. */
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  /* Entrance timing — finishes with the panel's 0.35s glide. */
+  transition:
+    opacity 0.25s ease,
+    -webkit-backdrop-filter 0.35s ease,
+    backdrop-filter 0.35s ease;
+}
+
 .overlay-panel-right,
 .overlay-panel-bottom {
   will-change: transform;
@@ -836,10 +872,46 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 .overlay-panel-bottom {
   transform: translate3d(0, 100%, 0); /* off-screen bottom — sheet */
+  /* Exit (class removed → this wins). Perception note, learned the hard way:
+     exits are judged by how fast change STARTS after the tap — an accelerating
+     (ease-in) curve idles ~100ms before moving and reads "slow out" even at
+     0.25s. So: short + full velocity from the first frame. Must finish inside
+     useOverlayTransition's 320ms unmount window. */
+  transition: transform 0.2s cubic-bezier(0, 0, 0.2, 1);
 }
 .overlay-panel-right.is-open,
 .overlay-panel-bottom.is-open {
   transform: translate3d(0, 0, 0);
+}
+.overlay-panel-bottom.is-open {
+  /* Entrance. Perception note: entrances are judged by how fast the sheet
+     FILLS the screen — a decelerating curve covers half the travel in ~150ms
+     and reads "fast in" regardless of total duration. easeInOutCubic ramps:
+     gathers speed, sweeps the middle, brakes into the landing — and lands
+     together with the scrim's blur ramp. (Safe only because the panel is
+     always painted before .is-open flips — warm() + the mount-then-flip
+     useOverlayTransition; a dropped first frame would eat the ramp-up.) */
+  transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Full-screen nav menu: fade + subtle zoom (98% → 100%), iOS-app-open feel.
+   Same compositor-only contract as the slide panels — opacity + transform,
+   both GPU-composited. The pre-mounted panel sits at opacity:0 over the page
+   when closed; .nav-drawer's pointer-events:none + `inert` keep it untappable.
+   Timing is asymmetric on purpose: a slower, ease-out entrance reads smooth,
+   while the exit stays quick so dismissing feels responsive. (The panel never
+   unmounts, so the exit has no unmount-window constraint.) */
+.overlay-panel-fade {
+  will-change: transform, opacity;
+  opacity: 0;
+  transform: scale(0.98);
+  transition:
+    transform 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.25s ease;
+}
+.overlay-panel-fade.is-open {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* The nav drawer stays mounted (opening = class toggle → instant tap response).
@@ -895,9 +967,16 @@ input[type="date"]::-webkit-date-and-time-value {
    .glass-panel, .btn-glass, every page's pill badge, etc.) and lean on solid
    backgrounds instead. The glass surfaces use very low bg opacity that only
    reads as "frosted" *because* of the blur, so we raise their opacity on
-   mobile so they stay legible without it. Desktop is untouched. */
+   mobile so they stay legible without it. Desktop is untouched.
+
+   ONE sanctioned exemption: `.allow-blur` — currently only the quote-sheet
+   scrim (.scrim-blur). Its blur radius ANIMATES to 0 before the surface
+   unmounts, which sidesteps the unmount blank-flash that motivated this ban
+   (the flash came from tearing down a still-blurred surface). Any new use of
+   .allow-blur must follow the same animate-to-zero-before-unmount contract
+   and be verified on a real iPhone. */
 @media (max-width: 767px) {
-  *,
+  *:not(.allow-blur),
   *::before,
   *::after {
     -webkit-backdrop-filter: none !important;

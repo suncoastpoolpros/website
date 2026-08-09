@@ -734,9 +734,16 @@ const accentBorder = {
   neutral: 'border-white/15',
 };
 const accentBg = {
-  orange: 'bg-gradient-to-b from-brand-orange/[0.10] to-white/[0.02]',
-  blue: 'bg-gradient-to-b from-brand-blue/[0.10] to-white/[0.02]',
-  neutral: 'bg-white/[0.04]',
+  // Perceptual match, not numeric: orange at 10% reads bright over black, so
+  // the darker blue hue needs a higher alpha and the neutral card gets the
+  // same top-down wash in white to sit in the same family. Base (mobile)
+  // alphas run hotter than md: — OLED true blacks and phone gamma crush
+  // subtle dark tints that read fine on desktop monitors.
+  orange:
+    'bg-gradient-to-b from-brand-orange/[0.16] to-white/[0.04] md:from-brand-orange/[0.10] md:to-white/[0.02]',
+  blue: 'bg-gradient-to-b from-brand-blue/[0.24] to-white/[0.04] md:from-brand-blue/[0.16] md:to-white/[0.02]',
+  neutral:
+    'bg-gradient-to-b from-white/[0.13] to-white/[0.04] md:from-white/[0.09] md:to-white/[0.02]',
 };
 
 const accentBadge = {

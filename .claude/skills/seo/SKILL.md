@@ -94,8 +94,10 @@ section is just the SEO-audit checklist; don't duplicate CLAUDE.md here.
 - [ ] **CLS** — give `<img>` explicit `width`/`height` (intrinsic ratio) even
       when CSS sizes them, so the box is reserved before load. SVG logos need it.
 - [ ] **No blur on mobile** — `backdrop-filter` and large `filter: blur()` glows
-      are disabled `<768px` (they caused real-iPhone jank). Don't reintroduce
-      blur on mobile; desktop frosted glass is capped at 10px. See CLAUDE.md.
+      are disabled `<768px` (they caused real-iPhone jank). One sanctioned
+      exemption: the quote-sheet scrim (`.allow-blur .scrim-blur`) — its blur
+      animates to 0 before unmount, which sidesteps the unmount flash. Any new
+      blur must follow that same contract. See CLAUDE.md #10.
 - [ ] **Every page's meta via `usePageMeta`, never an inline `useEffect`** — or
       its prerendered HTML ships the homepage title/canonical (bad for indexing).
 - [ ] Verify with `npm run build` + a real-device-profile PageSpeed/Lighthouse

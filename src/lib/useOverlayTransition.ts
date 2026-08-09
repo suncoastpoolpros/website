@@ -26,38 +26,48 @@ export function useOverlayTransition(isOpen: boolean, duration = 320) {
   const timer = useRef<number | null>(null);
 
   useEffect(() => {
-    const cancelRaf = () => {
+    if (isOpen) {
+      if (timer.current !== null) {
+        clearTimeout(timer.current);
+        timer.current = null;
+      }
+      setMounted(true);
+    } else {
       if (raf.current !== null) {
         cancelAnimationFrame(raf.current);
         raf.current = null;
       }
-    };
-    const clearTimer = () => {
+      setVisible(false);
+      timer.current = window.setTimeout(() => setMounted(false), duration);
+    }
+    return () => {
       if (timer.current !== null) {
         clearTimeout(timer.current);
         timer.current = null;
       }
     };
-
-    if (isOpen) {
-      clearTimer();
-      setMounted(true);
-      // Two rAFs: the first lets the just-mounted closed state paint, the
-      // second flips to open so the transition has a frame to animate from.
-      raf.current = requestAnimationFrame(() => {
-        raf.current = requestAnimationFrame(() => setVisible(true));
-      });
-    } else {
-      cancelRaf();
-      setVisible(false);
-      timer.current = window.setTimeout(() => setMounted(false), duration);
-    }
-
-    return () => {
-      cancelRaf();
-      clearTimer();
-    };
   }, [isOpen, duration]);
+
+  // Flip `visible` only AFTER the mounted DOM has committed (this effect runs
+  // post-commit of `mounted`), then wait two rAFs so the closed state gets a
+  // painted frame to transition FROM. Starting the rAF countdown in the same
+  // effect that calls setMounted (the old shape) raced the mount: on a cold
+  // open of a heavy panel (QuoteChooser) the frames fired before/straddling
+  // the commit, the panel got `.is-open` on its first paint, and the entrance
+  // transition was skipped entirely — the sheet "just appeared". Pre-warmed
+  // panels skip the race anyway; this makes cold opens equally safe.
+  useEffect(() => {
+    if (!isOpen || !mounted) return;
+    raf.current = requestAnimationFrame(() => {
+      raf.current = requestAnimationFrame(() => setVisible(true));
+    });
+    return () => {
+      if (raf.current !== null) {
+        cancelAnimationFrame(raf.current);
+        raf.current = null;
+      }
+    };
+  }, [isOpen, mounted]);
 
   return { mounted, visible };
 }
