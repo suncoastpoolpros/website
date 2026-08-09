@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { SmartLink as Link } from '@/components/SmartLink';
@@ -36,11 +36,12 @@ export const Navbar = () => {
   const { open: openQuoteSheet, warm: warmQuoteSheet, isOpen: quoteSheetOpen } = useQuoteSheet();
   const { pathname } = useLocation();
   const [areasExpanded, setAreasExpanded] = useState(false);
-  // The drawer is mounted ONCE, right after hydration (not on tap), then kept
-  // in the DOM off-screen. Opening is then just an `is-open` class toggle — no
-  // React mount and no animation-frame wait on tap, so it slides immediately
-  // (the residual open-delay was the on-tap mount). `hydrated` gates the portal
-  // so nothing renders during SSR/first hydration commit.
+  // The menu is mounted ONCE, right after hydration (not on tap), then kept
+  // in the DOM hidden (visibility gated by .nav-drawer). Opening is then just
+  // an `is-open` class toggle — no React mount and no animation-frame wait on
+  // tap, so it opens immediately (the residual open-delay was the on-tap
+  // mount). `hydrated` gates the portal so nothing renders during SSR/first
+  // hydration commit.
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 
@@ -100,14 +101,17 @@ export const Navbar = () => {
   return (
     <>
     <nav
-      // backdrop-blur is desktop-only (md:). On mobile, toggling it on scroll
-      // and unmounting the drawer's blur together forces iOS Safari to
-      // re-rasterize the whole page — a visible blank/repaint flash. A solid
-      // bg on mobile reads the same without the GPU re-raster.
-      className={`fixed w-full z-50 transition-all duration-300 ${
+      // Mobile: absolute (not sticky — scrolls away with the page; the menu
+      // is reachable from the top, conversion lives in the sticky bottom CTA)
+      // and always transparent over the hero — no scroll-triggered change.
+      // Desktop: fixed, transparent at top, frosted on scroll (backdrop-blur
+      // stays md:-gated; toggling blur on mobile forces iOS to re-rasterize
+      // the page). `scrolled` only affects md: styles but the listener is
+      // viewport-agnostic — cheap, passive, and shared.
+      className={`absolute md:fixed top-0 w-full z-50 bg-transparent transition-all duration-300 ${
         scrolled
-          ? 'bg-[#0a1628] md:bg-[#0a1628]/85 md:backdrop-blur-[10px] border-b border-white/10'
-          : 'bg-transparent border-b border-transparent'
+          ? 'md:bg-[#0a1628]/85 md:backdrop-blur-[10px] md:border-b md:border-white/10'
+          : 'border-b border-transparent'
       }`}
     >
       <Container>
