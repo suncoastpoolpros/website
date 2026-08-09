@@ -77,13 +77,20 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-export default function App() {
-  const isMobile = useIsMobile();
-  // A route mounted successfully — reset the chunk-reload one-shot so a future
-  // chunk failure later in the session can self-heal too.
+// Rendered INSIDE the route Suspense boundary: its effect runs only when the
+// boundary commits real content (the lazy route resolved and mounted), never
+// while the fallback is up. Clearing the one-shot from App's own effect was a
+// RELOAD LOOP: App commits — and cleared the flag — even while the route chunk
+// was still failing, so every failed load re-armed the boundary's reload.
+const ChunkReloadReset = () => {
   useEffect(() => {
     clearChunkReloadFlag();
   }, []);
+  return null;
+};
+
+export default function App() {
+  const isMobile = useIsMobile();
 
   // Load GA4 only on the first real user interaction (scroll/tap/key/pointer).
   // gtag.js is ~154 KiB (72 KiB of it unused) of third-party JS we can't
@@ -177,6 +184,7 @@ export default function App() {
           {/* Catch-all 404 — must be last. */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        <ChunkReloadReset />
       </Suspense>
       </ChunkErrorBoundary>
       </MotionConfig>

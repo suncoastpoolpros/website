@@ -16,6 +16,14 @@ import React from 'react';
  * reload loop if the failure is something a reload can't fix.
  */
 const RELOAD_FLAG = 'chunk-reload-attempted';
+// Floor between automatic reloads (flag stores the last attempt's timestamp).
+// Defense in depth: even if the one-shot flag is cleared while chunks are
+// still failing (the App-level clear bug that shipped 2026-08 caused exactly
+// that — an infinite reload loop on stale-HTML devices), reloads can never
+// run hotter than this. It also doubles as a slow self-heal: a persistent
+// failure gets one fresh attempt per interval, which recovers automatically
+// once the edge serves consistent HTML+chunks again.
+const MIN_RELOAD_INTERVAL_MS = 15_000;
 
 // Heuristic: dynamic-import / chunk-load failures across browsers.
 const isChunkLoadError = (error: unknown): boolean => {
@@ -48,11 +56,14 @@ export class ChunkErrorBoundary extends React.Component<Props, State> {
       // Not a chunk error — rethrow on next tick so it isn't silently swallowed.
       throw error;
     }
-    // Hard-reload once to pick up the current deploy's chunks.
-    if (typeof window !== 'undefined' && !sessionStorage.getItem(RELOAD_FLAG)) {
-      sessionStorage.setItem(RELOAD_FLAG, '1');
-      window.location.reload();
-    }
+    // Hard-reload to pick up the current deploy's chunks — at most once per
+    // MIN_RELOAD_INTERVAL_MS. (Number('1') from the legacy flag format parses
+    // as an ancient timestamp, which correctly permits a reload.)
+    if (typeof window === 'undefined') return;
+    const last = Number(sessionStorage.getItem(RELOAD_FLAG) || 0);
+    if (Date.now() - last < MIN_RELOAD_INTERVAL_MS) return;
+    sessionStorage.setItem(RELOAD_FLAG, String(Date.now()));
+    window.location.reload();
   }
 
   render() {
