@@ -132,10 +132,10 @@ export const Navbar = () => {
       // border/bg colors so the two md: color utilities never coexist.
       // `scrolled` only affects md: styles but the listener is viewport-
       // agnostic — cheap, passive, and shared.
-      className={`absolute md:fixed top-0 w-full z-50 bg-white md:bg-transparent border-b border-black/[0.06] transition-all duration-300 ${
+      className={`absolute md:fixed top-0 w-full z-50 bg-white border-b border-black/[0.06] transition-all duration-300 ${
         scrolled
           ? 'md:bg-[#0a1628]/85 md:backdrop-blur-[10px] md:border-white/10'
-          : 'md:border-transparent'
+          : 'md:bg-transparent md:border-transparent'
       }`}
     >
       <Container>

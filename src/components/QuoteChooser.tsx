@@ -328,8 +328,8 @@ export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {})
       onToggle={() => select('call')}
       pinned={pinned}
       accent="neutral"
-      icon={<Phone className="w-[22px] h-[22px] text-brand-blue" />}
-      iconWrap="bg-gradient-to-br from-black/[0.05] to-black/[0.02] border border-black/10"
+      icon={<Phone className="w-[22px] h-[22px] text-white" />}
+      iconWrap="bg-gradient-to-br from-[#33363c] to-[#0b0d10] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_4px_12px_-2px_rgba(0,0,0,0.35)]"
       title="Give us a call"
       subtitle="A real person answers — same day."
     >
