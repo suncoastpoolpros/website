@@ -51,25 +51,33 @@ export const FeatureGrid = () => {
           </p>
         </div>
 
-        {/* Four equal cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+        {/* Four equal cards. Mobile: compact icon-left ROWS (four stacked
+            vertical cards was ~900px of scrolling for one message); desktop:
+            the original block cards, 4-across. Layout-only split — headings
+            and body text are identical in the DOM at every viewport, so
+            there's no content-hiding for mobile-first indexing to devalue. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
           {items.map((item) => (
             <div
               key={item.title}
-              className="relative rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 shadow-[0_12px_30px_-16px_rgba(0,0,0,0.8)] hover:bg-white/[0.06] hover:border-white/15 transition-colors"
+              className="relative rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 md:p-6 flex items-start gap-3.5 md:block shadow-[0_12px_30px_-16px_rgba(0,0,0,0.8)] hover:bg-white/[0.06] hover:border-white/15 transition-colors"
             >
               {/* faint top-edge highlight for subtle depth */}
               <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
-              {/* Mobile: tile background. Desktop: bare icon, no tile/border. */}
-              <div className="w-11 h-11 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center mb-4 md:w-auto md:h-auto md:rounded-none md:bg-transparent md:border-0 md:justify-start md:mb-4">
+              {/* Mobile: tile background, row-leading. Desktop: bare icon. */}
+              <div className="w-11 h-11 shrink-0 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center md:w-auto md:h-auto md:rounded-none md:bg-transparent md:border-0 md:justify-start md:mb-4">
                 <item.icon className="w-5 h-5 md:w-7 md:h-7 text-brand-blue-light" strokeWidth={1.9} />
               </div>
 
-              <h3 className="font-display text-base font-bold text-white leading-snug mb-2">
-                {item.title}
-              </h3>
-              <p className="text-sm text-gray-400 leading-relaxed">{item.body}</p>
+              <div className="min-w-0">
+                <h3 className="font-display text-[15px] md:text-base font-bold text-white leading-snug mb-1 md:mb-2">
+                  {item.title}
+                </h3>
+                <p className="text-[13px] md:text-sm text-gray-400 leading-snug md:leading-relaxed">
+                  {item.body}
+                </p>
+              </div>
             </div>
           ))}
         </div>
