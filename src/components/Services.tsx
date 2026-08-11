@@ -84,12 +84,14 @@ export const Services = () => {
 
           {/* LEFT — narrative + the flat-rate price anchor */}
           <div className="lg:pt-2">
-            <span className="text-brand-orange font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+            {/* One-accent rule: this section keeps orange for the CTA button
+                ONLY. Kicker follows the site's blue-kicker convention; the
+                heading is all white. */}
+            <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
               Weekly Pool Service
             </span>
             <h2 className="section-heading text-white leading-[1.1] mb-4">
-              Everything's handled in your{' '}
-              <span className="text-brand-orange">weekly pool service</span>.
+              Everything's handled in your weekly pool service.
             </h2>
             <p className="section-subtext mb-7">
               One dedicated technician does the brushing, skimming, vacuuming, and full
@@ -98,15 +100,16 @@ export const Services = () => {
             </p>
 
             {/* Price anchor — the differentiator, pulled out of the paragraph so
-                it actually lands. Brand-orange gradient frame, no blur (mobile-safe). */}
-            <div className="rounded-2xl border border-brand-orange/25 bg-gradient-to-br from-brand-orange/[0.13] via-brand-orange/[0.04] to-transparent p-6 mb-7">
+                it actually lands. Neutral card (matches FeatureGrid surfaces);
+                the big number carries the emphasis, not a colored frame. */}
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 mb-7">
               <div className="flex items-baseline gap-2">
                 <span className="font-display font-black text-white text-4xl md:text-5xl leading-none">
                   ~$150
                 </span>
                 <span className="text-gray-300 font-semibold text-lg">/ month</span>
               </div>
-              <p className="text-brand-orange-light font-semibold mt-2">
+              <p className="text-white font-semibold mt-2">
                 One flat rate · all standard chemicals included
               </p>
               <p className="text-sm text-gray-400 leading-relaxed mt-2">
@@ -138,8 +141,8 @@ export const Services = () => {
                 <ul className="space-y-3">
                   {group.items.map((item) => (
                     <li key={item} className="flex items-start gap-3">
-                      <span className="mt-0.5 w-5 h-5 rounded-md bg-brand-orange/15 border border-brand-orange/25 flex items-center justify-center shrink-0">
-                        <Check className="w-3 h-3 text-brand-orange-light" strokeWidth={3} />
+                      <span className="mt-0.5 w-5 h-5 rounded-md bg-brand-blue/10 border border-brand-blue/25 flex items-center justify-center shrink-0">
+                        <Check className="w-3 h-3 text-brand-blue-light" strokeWidth={3} />
                       </span>
                       <span className="text-[15px] text-gray-300 leading-snug">{item}</span>
                     </li>

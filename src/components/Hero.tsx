@@ -111,10 +111,17 @@ export const Hero = () => {
 
               {/* Visual headline (price differentiator) — a div, not h1, so the SEO H1 below carries the keyword weight */}
               <div className="font-display font-bold text-white tracking-tight mb-4 md:mb-7 text-3xl sm:text-4xl md:text-[2.7rem] leading-[1.15]">
-                <span className="text-shadow-hero-headline block text-white md:text-brand-orange font-black text-5xl sm:text-6xl md:text-[4.5rem] leading-[0.95] tracking-tight">
+                {/* Mobile: both lines at font-bold (700) — matched weights, and
+                    700 is the preloaded weight (the 900 preload is md:-gated;
+                    font-black on mobile was painting an unpreloaded font).
+                    Desktop keeps the original black/normal contrast pair. */}
+                <span className="text-shadow-hero-headline block text-white md:text-brand-orange font-bold md:font-black text-5xl sm:text-6xl md:text-[4.5rem] leading-[0.95] tracking-tight">
                   One Flat Rate
                 </span>
-                <span className="text-shadow-hero-sub block mt-2 md:mt-5 sm:whitespace-nowrap text-white font-normal tracking-tight text-2xl sm:text-3xl md:text-[2.25rem] leading-[1.1]">
+                {/* Mobile sizes measured so this line's rendered width matches
+                    "One Flat Rate" above (48px line ≈ 326px wide → this needs
+                    1.54rem; scaled for sm:). Desktop keeps its own scale. */}
+                <span className="text-shadow-hero-sub block mt-2 md:mt-5 sm:whitespace-nowrap text-white font-bold md:font-normal tracking-tight text-[1.54rem] sm:text-[1.92rem] md:text-[2.25rem] leading-[1.1]">
                   No Monthly Chemical Cost
                 </span>
               </div>
@@ -124,13 +131,11 @@ export const Hero = () => {
                 St. Petersburg's expert pool cleaning company.
               </h1>
 
-              {/* Mobile: one tight benefit line so the hero stays airy over the
-                  bright photo (the headline + "No Monthly Chemical Cost" already
-                  carry the flat-price hook). The full value prop shows md+ below. */}
-              <p className="text-shadow-hero-body md:hidden text-[15px] text-gray-100 max-w-[26rem] leading-[1.6] mb-6">
-                <span className="text-white">Weekly pool cleaning, full chemical balancing, GPS-verified visits</span>, and a written report after every visit — <span className="text-white">one flat price</span>.
-              </p>
-
+              {/* Mobile shows NO body paragraph — the display headline + the H1
+                  keyword line carry the message, keeping the hero airy over the
+                  photo. (The old mobile benefit line repeated both; its keywords
+                  remain in the title/description and visible sections below.)
+                  The full value prop shows md+ only. */}
               <p className="text-shadow-hero-body hidden md:block text-[15px] text-gray-100 font-normal max-w-[27rem] leading-[1.6] mb-8 sm:mb-9">
                 <span className="text-white">Weekly pool cleaning, full chemical balancing, GPS-verified visits</span>, and a written report after every clean. <span className="text-white">One flat monthly price</span> — no chemical surprises, no contracts, no green water.
               </p>
@@ -528,12 +533,50 @@ export const HomeHeroPhoneSection = () => {
   const clock = useLiveClock();
   const [gmailScrolled, setGmailScrolled] = useState(false);
   return (
-    <section className="lg:hidden relative bg-[#07111c] pt-16 pb-12 flex justify-center overflow-hidden" data-nosnippet="">
-      <div className="relative flex justify-center items-center">
-        {/* interactive={false}: on mobile this is a static showcase, so the
-            phone's inner Gmail body must NOT be its own scroll region (that traps
-            the page scroll and makes scrolling past the phone hesitate). */}
-        <HomeHeroPhone clock={clock} gmailScrolled={gmailScrolled} setGmailScrolled={setGmailScrolled} interactive={false} />
+    <section className="lg:hidden relative bg-[#07111c] pt-12 pb-12 overflow-hidden" data-nosnippet="">
+      <div className="flex flex-col items-center">
+        {/* Handwritten annotation, mobile variant of the desktop one beside
+            the phone — here it sits ABOVE the phone with a hand-drawn arrow
+            pointing down at it. Caveat 700 is homepage-preloaded (this
+            section renders only on the homepage). */}
+        <div className="pointer-events-none -rotate-6 mb-2 flex flex-col items-center" aria-hidden="true">
+          <span
+            className="text-brand-orange text-[1.9rem] leading-tight"
+            style={{ fontFamily: '"Caveat", cursive', fontWeight: 700 }}
+          >
+            Sent after every visit
+          </span>
+          <svg
+            width="60"
+            height="54"
+            viewBox="0 0 60 54"
+            fill="none"
+            className="text-brand-orange mt-1 translate-x-10 rotate-6"
+          >
+            <path
+              d="M30 4 C 44 14, 16 26, 28 44"
+              stroke="currentColor"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+            <path
+              d="M18 36 L 28 46 L 38 35"
+              stroke="currentColor"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </svg>
+        </div>
+        <div className="relative flex justify-center items-center">
+          {/* interactive={false}: on mobile this is a static showcase, so the
+              phone's inner Gmail body must NOT be its own scroll region (that traps
+              the page scroll and makes scrolling past the phone hesitate). */}
+          <HomeHeroPhone clock={clock} gmailScrolled={gmailScrolled} setGmailScrolled={setGmailScrolled} interactive={false} />
+        </div>
       </div>
     </section>
   );

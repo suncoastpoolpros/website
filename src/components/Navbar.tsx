@@ -137,13 +137,29 @@ export const Navbar = () => {
           <Link
             to="/"
             aria-label="Suncoast Pool Pros home"
-            className="shrink-0"
+            className="shrink-0 flex items-center gap-2 md:gap-2.5"
           >
-            {/* text-sm below md: the mobile header also fits the quote pill +
-                hamburger on 375px screens. Dark on the white mobile bar,
-                white on desktop's transparent/frosted bar. */}
-            <span className="font-display font-bold text-sm md:text-base tracking-wide text-[#0a1628] md:text-white uppercase">
-              Suncoast Pool Pros
+            {/* Full brand lockup: wave mark + STACKED wordmark, matching the
+                actual logo — SUNCOAST bold over POOL PROS, letter-spaced so
+                both lines span the same width (tracking tuned by measurement,
+                like the hero lockup). Explicit img width/height reserves the
+                box pre-load (CLS). Both lines are Montserrat 700 — the one
+                display weight NAV_FONTS preloads on every page. */}
+            <img
+              src="/icon-mark.svg"
+              alt=""
+              aria-hidden="true"
+              width={37}
+              height={24}
+              className="h-7 md:h-8 w-auto"
+            />
+            <span className="flex flex-col text-[#0a1628] md:text-white uppercase font-display font-bold">
+              <span className="text-[15px] md:text-[17px] leading-none tracking-[0.02em]">
+                Suncoast
+              </span>
+              <span className="mt-[3px] text-[9px] md:text-[10px] leading-none tracking-[0.405em] md:tracking-[0.426em]">
+                Pool Pros
+              </span>
             </span>
           </Link>
 
@@ -231,7 +247,7 @@ export const Navbar = () => {
             <button
               type="button"
               onClick={openQuoteSheet}
-              className="px-3.5 py-2 rounded-lg bg-brand-blue text-white text-[13px] font-semibold active:scale-95 transition-transform"
+              className="whitespace-nowrap px-3.5 py-2 rounded-lg bg-brand-blue text-white text-[13px] font-semibold active:scale-95 transition-transform"
             >
               Get a Quote
             </button>

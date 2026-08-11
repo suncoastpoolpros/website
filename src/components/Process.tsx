@@ -47,10 +47,10 @@ export const Process = () => {
             >
               {/* Numbered medallion — solid base so the connecting line is hidden behind it */}
               <div className="relative w-[5.5rem] h-[5.5rem] rounded-full flex items-center justify-center mb-5 transition-transform hover:scale-105">
-                {/* opaque base disc (matches section bg so the line can't bleed through) */}
-                <span className="absolute inset-0 rounded-full bg-[#e7ecf2]" />
-                {/* blue tint + ring on top */}
-                <span className="absolute inset-0 rounded-full bg-brand-blue/[0.08] border border-brand-blue/20 shadow-sm" />
+                {/* opaque WHITE disc (also hides the connecting line) */}
+                <span className="absolute inset-0 rounded-full bg-white" />
+                {/* ring on top (no tint — the disc stays white) */}
+                <span className="absolute inset-0 rounded-full border border-brand-blue/20 shadow-sm" />
                 <span className="relative font-display font-bold text-4xl text-brand-blue">
                   {index + 1}
                 </span>

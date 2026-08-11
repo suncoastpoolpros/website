@@ -82,8 +82,11 @@ export const LandingPage = () => {
       <div className="relative z-10">
         <Navbar />
         <Hero />
-        <HomeHeroPhoneSection />
+        {/* Mobile/tablet-only phone showcase (lg:hidden — desktop shows the
+            phone inside the hero) sits AFTER the "why us" section: the value
+            props follow the hero directly, then the report mockup proves them. */}
         <FeatureGrid />
+        <HomeHeroPhoneSection />
         <ServiceAreas />
         <Process />
         <Services />
