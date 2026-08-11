@@ -47,7 +47,7 @@ export const CtaBand = () => {
           </div>
 
           <p className="text-gray-500 text-xs mt-5">
-            Open Mon–Sat, 8 AM – 6 PM · Serving St. Pete, Clearwater, Largo &amp; Tampa
+            Open Mon–Sat, 8 AM – 6 PM · Serving St. Pete, Clearwater, Largo &amp; Palm Harbor
           </p>
         </div>
       </Container>

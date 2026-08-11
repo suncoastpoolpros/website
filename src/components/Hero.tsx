@@ -111,7 +111,9 @@ export const Hero = () => {
                   chip was invisible on mobile until the glow-orb kill selector
                   above stopped matching backdrop-blur classes.) */}
               <Glass className="glass-mobile-blur inline-flex items-center px-4 py-2 rounded-full mb-8">
-                <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">St. Pete · Largo · Clearwater · Tampa</span>
+                {/* 11px below sm: "Palm Harbor" made the list wrap at ≤375px
+                    at the 12px size. */}
+                <span className="whitespace-nowrap text-[11px] sm:text-xs font-semibold text-cyan-50 tracking-wider uppercase">St. Pete · Largo · Clearwater · Palm Harbor</span>
               </Glass>
 
               {/* Visual headline (price differentiator) — a div, not h1, so the SEO H1 below carries the keyword weight */}

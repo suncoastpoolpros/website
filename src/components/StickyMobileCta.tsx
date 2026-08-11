@@ -110,11 +110,19 @@ export const StickyMobileCta = () => {
           transition={{ type: 'spring', damping: 28, stiffness: 320 }}
           className="sm:hidden fixed bottom-0 inset-x-0 z-[90]"
         >
+          {/* White underlap shim: iOS Safari can re-anchor fixed bottom
+              elements a few px above the true screen bottom after the nav
+              menu's body scroll-lock releases (dynamic bottom bar +
+              safe-area recompute), exposing dark page under the bar. This
+              slab extends 7rem past the bar's bottom edge — fully offscreen
+              when Safari positions correctly, and paints any gap white when
+              it doesn't. */}
+          <div aria-hidden="true" className="absolute inset-x-0 top-full -mt-px h-28 bg-white" />
           {/* Full-bleed: rounded top corners only (rounded-t-3xl, matching the
               quote sheet's radius), flush to the screen edges; the white
               surface owns the home-indicator safe area. Soft wide shadow
               instead of a hard edge so the bar floats off the dark page. */}
-          <div className="flex items-stretch rounded-t-3xl bg-white px-3 pt-2 pb-[max(0.375rem,env(safe-area-inset-bottom))] shadow-[0_-12px_44px_rgba(2,8,20,0.38)]">
+          <div className="relative flex items-stretch rounded-t-3xl bg-white px-3 pt-2 pb-[max(0.375rem,env(safe-area-inset-bottom))] shadow-[0_-12px_44px_rgba(2,8,20,0.38)]">
             <Link to="/" className={home.item}>
               <span className={home.icon}>
                 <Home className="w-5 h-5" strokeWidth={1.75} />
