@@ -1,22 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { m, AnimatePresence } from 'motion/react';
-import { ArrowRight, Phone } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Home, CircleDollarSign, Headset } from 'lucide-react';
+import { SmartLink as Link } from '@/components/SmartLink';
 import { useQuoteSheet } from '@/components/QuoteSheet';
-import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 
-// Fraction of the page the user must scroll past before the CTA appears.
+// Fraction of the page the user must scroll past before the bar appears.
 // Tunable: lower = sooner, higher = further down. Page-length-relative, so it
 // scales with each page (later on long pages, sooner on short ones).
 const SHOW_AFTER_PAGE_FRACTION = 0.2;
 
 /**
- * Mobile-only sticky bottom CTA bar. Appears once the user has scrolled past
- * ~20% of the page (page-length-relative, so it scales per page), and hides
- * while the quote sheet is open or once the #quote form / footer is on screen
- * (so it never covers them).
+ * Mobile-only floating bottom tab bar (app-style): Home / Quote / Support.
+ * Quote opens the quote sheet; Home and Support navigate, with the active
+ * route's icon highlighted in a filled brand-blue circle.
+ *
+ * Appears once the user has scrolled past ~20% of the page (page-length-
+ * relative, so it scales per page), and hides while the quote sheet is open
+ * or once the #quote form / footer is on screen (so it never covers them).
  */
 export const StickyMobileCta = () => {
   const { open, isOpen } = useQuoteSheet();
+  const { pathname } = useLocation();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -77,6 +82,20 @@ export const StickyMobileCta = () => {
     };
   }, []);
 
+  // Icon sits in a fixed-size circle so active/inactive rows align; only the
+  // active route's circle is filled.
+  const tab = (active: boolean) => ({
+    item: 'flex flex-col items-center gap-1 px-5 py-1.5 active:scale-95 transition-transform',
+    icon: `w-11 h-11 rounded-full flex items-center justify-center ${
+      active ? 'bg-brand-blue text-white' : 'text-[#3f4650]'
+    }`,
+    label: 'text-[11px] font-semibold tracking-wide text-[#2f3540]',
+  });
+
+  const home = tab(pathname === '/');
+  const quote = tab(false); // never shown active: the bar hides while the sheet is open
+  const support = tab(pathname === '/contact/');
+
   return (
     <AnimatePresence>
       {show && !isOpen && (
@@ -85,26 +104,27 @@ export const StickyMobileCta = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-          className="sm:hidden fixed bottom-0 inset-x-0 z-[90] px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-3 bg-[#07111c] border-t border-white/10"
+          className="sm:hidden fixed bottom-0 inset-x-0 z-[90] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
         >
-          <div className="flex gap-2.5">
-            {/* Compact tap-to-call — matches the chooser's "Call us" icon tile */}
-            <a
-              href={PHONE_HREF}
-              aria-label={`Call ${PHONE_DISPLAY}`}
-              className="w-1/4 shrink-0 flex items-center justify-center py-3.5 rounded-xl bg-white/[0.14] border border-white/15 active:scale-[0.96] transition-transform"
-            >
-              <Phone className="w-5 h-5 text-brand-blue-light" />
-            </a>
-            {/* Primary quote action */}
-            <button
-              type="button"
-              onClick={open}
-              className="btn btn-blue w-3/4 active:scale-[0.98]"
-            >
-              Get a Quote
-              <ArrowRight className="w-[18px] h-[18px]" />
+          <div className="flex items-stretch justify-around rounded-2xl bg-white px-2 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
+            <Link to="/" className={home.item}>
+              <span className={home.icon}>
+                <Home className="w-[22px] h-[22px]" strokeWidth={1.75} />
+              </span>
+              <span className={home.label}>Home</span>
+            </Link>
+            <button type="button" onClick={open} className={quote.item}>
+              <span className={quote.icon}>
+                <CircleDollarSign className="w-[22px] h-[22px]" strokeWidth={1.75} />
+              </span>
+              <span className={quote.label}>Quote</span>
             </button>
+            <Link to="/contact/" className={support.item}>
+              <span className={support.icon}>
+                <Headset className="w-[22px] h-[22px]" strokeWidth={1.75} />
+              </span>
+              <span className={support.label}>Support</span>
+            </Link>
           </div>
         </m.div>
       )}
