@@ -998,7 +998,13 @@ input[type="date"]::-webkit-date-and-time-value {
      translucent brand color — pure ambiance, never content. Hide them on
      mobile (removing the blur instead would leave a hard-edged colored blob).
      Desktop keeps the glows. */
-  [class*="blur-["].rounded-full {
+  /* Match FILTER blur utilities only ("blur-[…]" at the start of the class
+     attribute or after a space) — NOT backdrop-blur-[…], whose substring is
+     "-blur-[". The old [class*="blur-["] matched both and silently
+     display:none'd every backdrop-blur pill on mobile (e.g. the hero's
+     service-area chip). */
+  .rounded-full[class^="blur-["],
+  .rounded-full[class*=" blur-["] {
     display: none !important;
   }
 

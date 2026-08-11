@@ -237,20 +237,24 @@ export const Navbar = () => {
             </button>
           </div>
 
-          <div className="flex md:hidden items-center gap-1.5">
-            {/* Compact quote pill: the header owns the above-the-fold quote
-                action on mobile (the bottom tab bar appears only past the
-                fold, and the hero CTAs are hidden on mobile). Opens via the
-                plain cold-open path — deliberately NO pointerdown work here:
-                iOS swallows the tap's click if the DOM mutates under the
-                finger (see the menu CTA's double-tap fix). */}
-            <button
-              type="button"
-              onClick={openQuoteSheet}
-              className="whitespace-nowrap px-3.5 py-2 rounded-lg bg-brand-blue text-white text-[13px] font-semibold active:scale-95 transition-transform"
+          {/* gap-4 keeps the phone and menu tap targets clearly separated —
+              both are 40px hit areas; the wider gutter prevents fat-finger
+              cross-taps. */}
+          <div className="flex md:hidden items-center gap-4">
+            {/* Icon-only phone button: the header owns the CALL action on
+                mobile (quote lives in the hero's blue CTA + the tab bar).
+                tel: link — on iOS a tap shows Apple's call prompt and a
+                LONG-PRESS shows the full Call/Message menu; the web can't
+                trigger that action sheet from a plain tap. */}
+            <a
+              href={PHONE_HREF}
+              aria-label={`Call or text ${PHONE_DISPLAY}`}
+              className="w-10 h-10 flex items-center justify-center text-[#0a1628] active:scale-95 transition-transform"
             >
-              Get a Quote
-            </button>
+              {/* Filled handset: fill-current + zero stroke turns the lucide
+                  outline into a solid glyph matching the wordmark's ink. */}
+              <Phone className="w-5 h-5 fill-current" strokeWidth={0} />
+            </a>
             <button
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"

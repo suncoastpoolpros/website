@@ -242,6 +242,37 @@ export const ServiceReport = ({
           text-align: left;
         }
 
+        /* ---- LSI card (black bar under chemistry, mirrors the real
+                report email's LSI Index row) ---- */
+        .sr-lsi {
+          margin: 10px 14px 0;
+          background: #000000;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 11px 14px;
+        }
+        .sr-lsi__label {
+          color: #ffffff;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+        .sr-lsi__value {
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 800;
+          font-variant-numeric: tabular-nums;
+        }
+        .sr-lsi__status {
+          color: #10b981;
+          font-size: 9.5px;
+          font-weight: 600;
+          margin-left: 6px;
+        }
+
         /* ---- Tasks pills ---- */
         .sr-tasks {
           padding: 0 14px;
@@ -382,10 +413,20 @@ export const ServiceReport = ({
               <div className="sr-trow"><span className="sr-tlabel">Total Chlorine</span><span className="sr-tvalue">3.7</span><span className="sr-tunit">ppm</span></div>
               <div className="sr-trow"><span className="sr-tlabel">pH</span><span className="sr-tvalue">7.4</span><span className="sr-tunit"></span></div>
               <div className="sr-trow"><span className="sr-tlabel">Total Alkalinity</span><span className="sr-tvalue">98</span><span className="sr-tunit">ppm</span></div>
+              <div className="sr-trow"><span className="sr-tlabel">Salt</span><span className="sr-tvalue">2950</span><span className="sr-tunit">ppm</span></div>
               <div className="sr-trow"><span className="sr-tlabel">Water Temp</span><span className="sr-tvalue">84</span><span className="sr-tunit">°F</span></div>
               <div className="sr-trow"><span className="sr-tlabel">Filter Pressure</span><span className="sr-tvalue">14</span><span className="sr-tunit">PSI</span></div>
               <div className="sr-trow"><span className="sr-tlabel">Water Level</span><span className="sr-tvalue">Normal</span><span className="sr-tunit"></span></div>
             </div>
+          </div>
+
+          {/* LSI card — the balance verdict, black bar like the real email */}
+          <div className="sr-lsi">
+            <span className="sr-lsi__label">LSI Index</span>
+            <span>
+              <span className="sr-lsi__value">-0.03</span>
+              <span className="sr-lsi__status">Balanced</span>
+            </span>
           </div>
 
           {/* Chemicals Added */}
@@ -393,6 +434,7 @@ export const ServiceReport = ({
           <div className="sr-table-wrap">
             <div className="sr-table">
               <div className="sr-trow"><span className="sr-tlabel">Muriatic Acid (gal)</span><span className="sr-tvalue">0.25</span><span className="sr-tunit"></span></div>
+              <div className="sr-trow"><span className="sr-tlabel">Salt (bags)</span><span className="sr-tvalue">1</span><span className="sr-tunit"></span></div>
             </div>
           </div>
 

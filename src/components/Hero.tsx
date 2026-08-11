@@ -105,7 +105,12 @@ export const Hero = () => {
             className="lg:col-span-6 pt-10 lg:pt-0"
           >
             <div>
-              <Glass className="inline-flex items-center px-4 py-2 rounded-full mb-8">
+              {/* glass-mobile-blur: on phones (no backdrop blur) the pill gets
+                  the solid grey surface so it reads over the bright sky —
+                  same mobile-glass treatment as the hero call button. (This
+                  chip was invisible on mobile until the glow-orb kill selector
+                  above stopped matching backdrop-blur classes.) */}
+              <Glass className="glass-mobile-blur inline-flex items-center px-4 py-2 rounded-full mb-8">
                 <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">St. Pete · Largo · Clearwater · Tampa</span>
               </Glass>
 
@@ -146,16 +151,15 @@ export const Hero = () => {
                     every side (radial gradient in .hero-cta-scrim) so the rest of
                     the hero stays bright. CSS class, not inline style, to keep SSR
                     hydration stable (CLAUDE.md #4). */}
-                {/* TEMP: CTA row hidden on mobile (<sm) while evaluating the
-                    bottom tab bar as the sole mobile CTA — restore by putting
-                    the scrim back to `md:hidden` and the row to `flex`. The
-                    scrim only ever showed below md, so `sm:block md:hidden`
-                    keeps its 640–767px appearance unchanged. */}
+                {/* Mobile shows the QUOTE button only (restored after the
+                    tab-bar-only experiment); the phone action lives in the
+                    header's Call or Text pill, so the Glass call button below
+                    is sm+ only. */}
                 <div
-                  className="hero-cta-scrim hidden sm:block md:hidden absolute -inset-x-8 -top-6 -bottom-8 pointer-events-none"
+                  className="hero-cta-scrim md:hidden absolute -inset-x-8 -top-6 -bottom-8 pointer-events-none"
                   aria-hidden
                 />
-                <div className="relative z-10 hidden sm:flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                   <a
                     href="#quote"
                     onClick={handleQuoteClick}
@@ -171,7 +175,7 @@ export const Hero = () => {
                       on mobile so it aligns under the quote CTA, inline on desktop. */}
                   <Glass
                     href={PHONE_HREF}
-                    className="glass-mobile-blur inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px] w-full sm:w-auto"
+                    className="glass-mobile-blur hidden sm:inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px] w-full sm:w-auto"
                   >
                     <Phone className="w-4 h-4 text-brand-blue-light" />
                     {PHONE_DISPLAY}

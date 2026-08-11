@@ -7,8 +7,8 @@ import { useQuoteSheet } from '@/components/QuoteSheet';
 
 // Show the bar once the user has scrolled this fraction of one VIEWPORT
 // height (not page length — consistent across long and short pages). 0.7 so
-// the bar slides in slightly before the non-sticky header (with its quote
-// pill) has fully scrolled away: there's never a CTA-less scroll position.
+// the bar slides in before the hero's quote CTA and the non-sticky header
+// (call pill) have fully scrolled away: no CTA-less scroll position.
 const SHOW_AFTER_VIEWPORT_FRACTION = 0.7;
 
 /**
