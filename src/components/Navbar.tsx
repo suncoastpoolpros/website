@@ -6,6 +6,7 @@ import { useScrollLock } from '@/lib/useScrollLock';
 import {
   X,
   Phone,
+  MessageSquare,
   ChevronDown,
   ArrowRight,
   Clock,
@@ -14,7 +15,7 @@ import { ServiceAreasMenu } from '@/components/ServiceAreasMenu';
 import { cities } from '@/lib/cities';
 import { Container } from '@/components/Container';
 import { useQuoteSheet } from '@/components/QuoteSheet';
-import { PHONE_DISPLAY, PHONE_HREF, HOURS_SHORT } from '@/lib/contact';
+import { PHONE_DISPLAY, PHONE_HREF, SMS_HREF, HOURS_SHORT } from '@/lib/contact';
 
 // Mobile menu nav items. `to` routes; `href` is an in-page anchor (homepage).
 // "Home" and the "Service Areas" accordion render separately above these.
@@ -36,6 +37,10 @@ export const Navbar = () => {
   const { open: openQuoteSheet, warm: warmQuoteSheet, isOpen: quoteSheetOpen } = useQuoteSheet();
   const { pathname } = useLocation();
   const [areasExpanded, setAreasExpanded] = useState(false);
+  // Mobile header call/text chooser — the OS action sheet (Call/Message) only
+  // appears on long-press of a tel: link, so a tap opens this tiny menu with
+  // both options instead.
+  const [callOpen, setCallOpen] = useState(false);
   // The menu is mounted ONCE, right after hydration (not on tap), then kept
   // in the DOM hidden (visibility gated by .nav-drawer). Opening is then just
   // an `is-open` class toggle — no React mount and no animation-frame wait on
@@ -98,6 +103,7 @@ export const Navbar = () => {
     setIsOpen(false);
     setAreasOpen(false);
     setAreasExpanded(false);
+    setCallOpen(false);
   }, [pathname]);
 
   // Delay close-on-leave so the user can travel from the trigger
@@ -241,20 +247,54 @@ export const Navbar = () => {
               both are 40px hit areas; the wider gutter prevents fat-finger
               cross-taps. */}
           <div className="flex md:hidden items-center gap-4">
-            {/* Icon-only phone button: the header owns the CALL action on
-                mobile (quote lives in the hero's blue CTA + the tab bar).
-                tel: link — on iOS a tap shows Apple's call prompt and a
-                LONG-PRESS shows the full Call/Message menu; the web can't
-                trigger that action sheet from a plain tap. */}
-            <a
-              href={PHONE_HREF}
-              aria-label={`Call or text ${PHONE_DISPLAY}`}
-              className="w-10 h-10 flex items-center justify-center text-[#0a1628] active:scale-95 transition-transform"
-            >
-              {/* Filled handset: fill-current + zero stroke turns the lucide
-                  outline into a solid glyph matching the wordmark's ink. */}
-              <Phone className="w-5 h-5 fill-current" strokeWidth={0} />
-            </a>
+            {/* Icon-only phone button: tap opens OUR call/text chooser (the
+                OS only shows its Call/Message sheet on long-press of a tel:
+                link — the web can't trigger it from a tap). */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setCallOpen((v) => !v)}
+                aria-label={`Call or text ${PHONE_DISPLAY}`}
+                aria-haspopup="true"
+                aria-expanded={callOpen}
+                className="w-10 h-10 flex items-center justify-center text-[#0a1628] active:scale-95 transition-transform"
+              >
+                {/* Filled handset: fill-current + zero stroke turns the lucide
+                    outline into a solid glyph matching the wordmark's ink. */}
+                <Phone className="w-5 h-5 fill-current" strokeWidth={0} />
+              </button>
+
+              {callOpen && (
+                <>
+                  {/* Invisible backdrop: outside tap closes the chooser. */}
+                  <button
+                    type="button"
+                    aria-label="Close call menu"
+                    onClick={() => setCallOpen(false)}
+                    className="fixed inset-0 z-40 cursor-default"
+                  />
+                  <div className="overlay-accordion-in absolute right-0 top-12 z-50 w-56 rounded-2xl bg-white border border-black/10 shadow-xl shadow-black/20 overflow-hidden">
+                    <a
+                      href={PHONE_HREF}
+                      onClick={() => setCallOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3.5 text-[14px] font-semibold text-[#0a1628] active:bg-black/[0.04]"
+                    >
+                      <Phone className="w-[18px] h-[18px] text-brand-blue" strokeWidth={2} />
+                      Call {PHONE_DISPLAY}
+                    </a>
+                    <div className="h-px bg-black/[0.06] mx-4" />
+                    <a
+                      href={SMS_HREF}
+                      onClick={() => setCallOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3.5 text-[14px] font-semibold text-[#0a1628] active:bg-black/[0.04]"
+                    >
+                      <MessageSquare className="w-[18px] h-[18px] text-brand-blue" strokeWidth={2} />
+                      Text us
+                    </a>
+                  </div>
+                </>
+              )}
+            </div>
             <button
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"

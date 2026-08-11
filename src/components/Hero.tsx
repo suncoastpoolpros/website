@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { m } from 'motion/react';
 import { Phone, Star, MapPin } from 'lucide-react';
 import { Glass } from '@/components/Glass';
@@ -183,12 +183,13 @@ export const Hero = () => {
                 </div>
               </div>
 
-              {/* Trust strip */}
-              <div className="text-shadow-hero-strip mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px] text-gray-200">
-                <div className="flex items-center gap-2">
+              {/* Trust strip — forced onto ONE line at every width: nowrap +
+                  smaller type/stars/gaps below sm so both items fit 360px. */}
+              <div className="text-shadow-hero-strip mt-7 flex flex-nowrap items-center gap-x-3 sm:gap-x-6 text-[12px] sm:text-[13px] text-gray-200">
+                <div className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
                   <div className="flex gap-0.5 text-brand-orange">
                     {[0,1,2,3,4].map(i => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
+                      <Star key={i} className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />
                     ))}
                   </div>
                   <span className="font-semibold text-white">5.0</span>
@@ -197,8 +198,8 @@ export const Hero = () => {
 
                 <span className="hidden sm:inline text-gray-500">•</span>
 
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-brand-blue-light" />
+                <div className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
+                  <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-blue-light shrink-0" />
                   <span>Locally Owned in St. Pete</span>
                 </div>
               </div>
@@ -240,9 +241,13 @@ type HomeHeroPhoneProps = {
   // the phone scrolls that box first and the page "hesitates" until it bottoms
   // out. Desktop keeps it scrollable so the report can be read in place.
   interactive?: boolean;
+  /** Ref to the phone's inner scrollable area. The mobile section drives it
+      from the side scroll wheel: overflow-hidden boxes still accept
+      programmatic scrollTop, so the report scrolls with NO touch trap. */
+  scrollBodyRef?: React.RefObject<HTMLDivElement | null>;
 };
 
-const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = true }: HomeHeroPhoneProps) => {
+const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = true, scrollBodyRef }: HomeHeroPhoneProps) => {
   return (
     <>
             {/* Handwritten label + arrow — animates as if being written/drawn in. */}
@@ -398,16 +403,16 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
                       {/* Scrollable area — subject, sender, and the report all
                           scroll together. Only the top icon bar stays pinned. */}
                       <div
+                        ref={scrollBodyRef}
                         className={`flex-1 min-h-0 bg-white ${interactive ? 'overflow-y-auto' : 'overflow-hidden'}`}
                         style={{ scrollbarWidth: 'none' }}
-                        onScroll={
-                          interactive
-                            ? (e) => {
-                                const scrolled = (e.currentTarget.scrollTop || 0) > 4;
-                                setGmailScrolled((prev) => (prev === scrolled ? prev : scrolled));
-                              }
-                            : undefined
-                        }
+                        // Attached in BOTH modes: programmatic scrollTop (the
+                        // mobile side wheel) fires scroll events too, so the
+                        // Gmail header tint reacts the same as real scrolling.
+                        onScroll={(e) => {
+                          const scrolled = (e.currentTarget.scrollTop || 0) > 4;
+                          setGmailScrolled((prev) => (prev === scrolled ? prev : scrolled));
+                        }}
                       >
                         {/* Subject line + Inbox label + star */}
                         <div className="px-3 pt-1.5 pb-2 flex items-start gap-2">
@@ -536,6 +541,51 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
 export const HomeHeroPhoneSection = () => {
   const clock = useLiveClock();
   const [gmailScrolled, setGmailScrolled] = useState(false);
+  // Side scroll wheel: drags on the track drive the phone's inner report
+  // scroll (programmatic scrollTop works on the overflow-hidden body, so the
+  // phone itself never captures touch — no page-scroll trap). Direct DOM
+  // writes from pointer events; no React state per drag frame.
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const thumbRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const track = trackRef.current;
+    const thumb = thumbRef.current;
+    const body = bodyRef.current;
+    if (!track || !thumb || !body) return;
+    const THUMB_H = 64;
+    const setProgress = (p: number) => {
+      const clamped = Math.max(0, Math.min(1, p));
+      body.scrollTop = clamped * (body.scrollHeight - body.clientHeight);
+      thumb.style.transform = `translateY(${clamped * (track.clientHeight - THUMB_H)}px)`;
+    };
+    let dragging = false;
+    const progressFrom = (e: PointerEvent) => {
+      const r = track.getBoundingClientRect();
+      return (e.clientY - r.top - THUMB_H / 2) / (r.height - THUMB_H);
+    };
+    const down = (e: PointerEvent) => {
+      dragging = true;
+      track.setPointerCapture(e.pointerId);
+      setProgress(progressFrom(e));
+    };
+    const move = (e: PointerEvent) => {
+      if (dragging) setProgress(progressFrom(e));
+    };
+    const up = () => {
+      dragging = false;
+    };
+    track.addEventListener('pointerdown', down);
+    track.addEventListener('pointermove', move);
+    track.addEventListener('pointerup', up);
+    track.addEventListener('pointercancel', up);
+    return () => {
+      track.removeEventListener('pointerdown', down);
+      track.removeEventListener('pointermove', move);
+      track.removeEventListener('pointerup', up);
+      track.removeEventListener('pointercancel', up);
+    };
+  }, []);
   return (
     <section className="lg:hidden relative bg-[#07111c] pt-12 pb-12 overflow-hidden" data-nosnippet="">
       <div className="flex flex-col items-center">
@@ -575,11 +625,32 @@ export const HomeHeroPhoneSection = () => {
             />
           </svg>
         </div>
-        <div className="relative flex justify-center items-center">
-          {/* interactive={false}: on mobile this is a static showcase, so the
-              phone's inner Gmail body must NOT be its own scroll region (that traps
-              the page scroll and makes scrolling past the phone hesitate). */}
-          <HomeHeroPhone clock={clock} gmailScrolled={gmailScrolled} setGmailScrolled={setGmailScrolled} interactive={false} />
+        <div className="relative flex justify-center items-center gap-2.5">
+          {/* interactive={false}: the phone's inner Gmail body must NOT be a
+              touch scroll region (that traps the page scroll). The side wheel
+              below is the ONLY way the report scrolls on mobile — via
+              programmatic scrollTop through bodyRef. */}
+          <HomeHeroPhone
+            clock={clock}
+            gmailScrolled={gmailScrolled}
+            setGmailScrolled={setGmailScrolled}
+            interactive={false}
+            scrollBodyRef={bodyRef}
+          />
+          {/* Scroll wheel: 28px-wide touch track (visual 4px line + thumb).
+              touch-action:none so dragging it never scrolls the page. */}
+          <div
+            ref={trackRef}
+            aria-hidden="true"
+            className="relative h-[400px] w-7 shrink-0 flex justify-center"
+            style={{ touchAction: 'none' }}
+          >
+            <div className="absolute inset-y-0 w-1 rounded-full bg-white/10" />
+            <div
+              ref={thumbRef}
+              className="absolute top-0 w-1.5 h-16 rounded-full bg-white/50"
+            />
+          </div>
         </div>
       </div>
     </section>
