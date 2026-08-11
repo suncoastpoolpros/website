@@ -554,11 +554,22 @@ export const HomeHeroPhoneSection = () => {
     const body = bodyRef.current;
     if (!track || !thumb || !body) return;
     const THUMB_H = 64;
+    // Thumb position is driven by the body's real scroll state (scroll event
+    // below), and via `top` — NOT an inline transform: the mobile
+    // .force-static-motion rule neutralizes inline transforms inside page
+    // content ([style*="transform"] { transform:none !important }), which
+    // silently pinned the thumb in place on phones.
+    const positionThumb = () => {
+      const max = body.scrollHeight - body.clientHeight;
+      const p = max > 0 ? body.scrollTop / max : 0;
+      thumb.style.top = `${p * (track.clientHeight - THUMB_H)}px`;
+    };
     const setProgress = (p: number) => {
       const clamped = Math.max(0, Math.min(1, p));
       body.scrollTop = clamped * (body.scrollHeight - body.clientHeight);
-      thumb.style.transform = `translateY(${clamped * (track.clientHeight - THUMB_H)}px)`;
     };
+    body.addEventListener('scroll', positionThumb, { passive: true });
+    positionThumb();
     let dragging = false;
     const progressFrom = (e: PointerEvent) => {
       const r = track.getBoundingClientRect();
@@ -580,6 +591,7 @@ export const HomeHeroPhoneSection = () => {
     track.addEventListener('pointerup', up);
     track.addEventListener('pointercancel', up);
     return () => {
+      body.removeEventListener('scroll', positionThumb);
       track.removeEventListener('pointerdown', down);
       track.removeEventListener('pointermove', move);
       track.removeEventListener('pointerup', up);
