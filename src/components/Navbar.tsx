@@ -74,6 +74,22 @@ export const Navbar = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen, quoteSheetOpen]);
 
+  // Pre-mount ("warm") the quote sheet shortly AFTER the menu opens, while
+  // the user is reading it — so tapping Get a Quote does zero mount work.
+  // Warming used to run on the CTA's own pointerdown, but iOS Safari refuses
+  // to synthesize the click when the DOM mutates under the finger between
+  // touchstart and touchend — the heavy QuoteChooser mount mid-gesture meant
+  // the first tap swallowed its own click and the popup needed two taps
+  // (Chrome synthesizes the click regardless, so tests never caught it).
+  // 450ms clears the menu's 250ms open fade first; a faster tap falls back to
+  // the cold-open path (useOverlayTransition mounts, then flips `.is-open`
+  // post-commit, so the slide still animates).
+  useEffect(() => {
+    if (!isOpen) return;
+    const t = window.setTimeout(warmQuoteSheet, 450);
+    return () => window.clearTimeout(t);
+  }, [isOpen, warmQuoteSheet]);
+
   // Close the mobile drawer + service-areas accordion on any route change.
   // Otherwise tapping a nav link leaves the drawer covering the new page
   // until the lazy chunk finishes — which on a real iPhone over LTE can take
@@ -354,11 +370,11 @@ export const Navbar = () => {
               <div className="px-6 pt-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
                 {/* Menu stays open: the sheet (z-[120]) layers over it, its
                     scrim frosting the menu; closing the sheet returns here.
-                    warm() on pointerdown pre-mounts the sheet so the slide
-                    never competes with the form's mount. */}
+                    NO pointerdown work on this button — the sheet is warmed
+                    when the menu opens (see the effect above); mutating the
+                    DOM mid-tap made iOS swallow the first click. */}
                 <button
                   type="button"
-                  onPointerDown={warmQuoteSheet}
                   onClick={openQuoteSheet}
                   className="btn btn-blue w-full"
                 >
