@@ -87,17 +87,17 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
                 off the main thread, replacing the old Framer spring that
                 recomputed physics every frame while the chooser form mounted. */}
             <div
-              className={`overlay-panel-bottom relative w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-black border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl px-5 pt-3 pb-8 sm:p-8 sm:shadow-2xl sm:shadow-black/60 ${sheet.visible ? 'is-open' : ''}`}
+              className={`overlay-panel-bottom relative w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-t sm:border border-black/[0.08] rounded-t-3xl sm:rounded-3xl px-5 pt-3 pb-8 sm:p-8 sm:shadow-2xl sm:shadow-black/60 ${sheet.visible ? 'is-open' : ''}`}
             >
               {/* Grab handle (mobile only) */}
-              <div className="sm:hidden mx-auto mb-5 h-1.5 w-12 rounded-full bg-white/20" />
+              <div className="sm:hidden mx-auto mb-5 h-1.5 w-12 rounded-full bg-black/15" />
 
-              <div className="flex items-start justify-between mb-5 pb-5 border-b border-white/[0.06]">
+              <div className="flex items-start justify-between mb-5 pb-5 border-b border-black/[0.08]">
                 <div>
-                  <h2 className="text-[22px] sm:text-2xl font-display font-bold text-white leading-tight tracking-tight">
+                  <h2 className="text-[22px] sm:text-2xl font-display font-bold text-[#0a1628] leading-tight tracking-tight">
                     {submitted ? 'Thank you!' : 'Tell us about your pool.'}
                   </h2>
-                  <p className="text-gray-400 text-[14px] mt-1.5 leading-snug">
+                  <p className="text-gray-600 text-[14px] mt-1.5 leading-snug">
                     {submitted
                       ? "We've received your details and will be in touch soon."
                       : 'Three ways to start. Pick whichever fits.'}
@@ -107,7 +107,7 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
                   type="button"
                   onClick={close}
                   aria-label="Close"
-                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/20 shrink-0 transition-colors"
+                  className="w-9 h-9 rounded-full bg-black/[0.04] border border-black/10 flex items-center justify-center text-gray-500 hover:text-[#0a1628] hover:bg-black/[0.07] hover:border-black/20 shrink-0 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -120,13 +120,13 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
                   want this will ask; everyone else picks one of the three above.
                   Hidden after a successful submit so the confirmation reads clean. */}
               {!submitted && (
-              <div className="mt-6 pt-5 border-t border-white/[0.06] flex items-center justify-center gap-2">
+              <div className="mt-6 pt-5 border-t border-black/[0.08] flex items-center justify-center gap-2">
                 <Handshake className="w-4 h-4 text-gray-500 shrink-0" />
                 <p className="text-[13px] text-gray-500">
                   Often the best quotes come from seeing the pool ourselves.{' '}
                   <a
                     href={PHONE_HREF}
-                    className="text-gray-200 hover:text-white underline underline-offset-2 decoration-white/20 hover:decoration-white/50 transition-colors"
+                    className="text-gray-800 hover:text-[#0a1628] underline underline-offset-2 decoration-black/25 hover:decoration-black/50 transition-colors"
                   >
                     Give us a call to schedule.
                   </a>

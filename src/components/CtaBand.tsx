@@ -39,8 +39,10 @@ export const CtaBand = () => {
             </a>
           </div>
 
-          {/* Mobile — interactive expanding quote chooser */}
-          <div className="sm:hidden">
+          {/* Mobile — interactive expanding quote chooser. The chooser is
+              light-themed (white quote sheet), so on this dark band it sits
+              in a white card — the site's navy-band + white-card signature. */}
+          <div className="sm:hidden rounded-3xl bg-white p-4 text-left shadow-xl shadow-black/40">
             <QuoteChooser />
           </div>
 

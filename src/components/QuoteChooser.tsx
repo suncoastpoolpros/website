@@ -41,7 +41,7 @@ type Service = '' | 'weekly' | 'green' | 'repair' | 'commercial' | 'other';
 // Shared input style — keeps every form field visually consistent. Used by
 // the standard fields and every conditional block below.
 const INPUT_CLS =
-  'w-full px-4 py-3 bg-[#0a1628]/60 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/50 transition';
+  'w-full px-4 py-3 bg-black/[0.03] border border-black/10 rounded-lg text-[#0a1628] placeholder-gray-400 text-sm focus:outline-none focus:border-brand-blue/60 focus:ring-1 focus:ring-brand-blue/40 transition';
 
 /**
  * Wrapper around a conditional block of form fields. Renders a small
@@ -57,7 +57,7 @@ const ConditionalBlock = ({
   children: React.ReactNode;
 }) => (
   <div className="space-y-3 pt-1">
-    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-blue-light">
+    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-blue">
       {label}
     </p>
     {children}
@@ -279,12 +279,12 @@ export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {})
           {TEXT_STEPS.map((step, i) => (
             <li
               key={i}
-              className="flex items-start gap-3 sm:flex-col sm:items-start sm:flex-1 sm:gap-2 sm:rounded-xl sm:bg-white/[0.03] sm:border sm:border-white/[0.06] sm:p-3.5"
+              className="flex items-start gap-3 sm:flex-col sm:items-start sm:flex-1 sm:gap-2 sm:rounded-xl sm:bg-black/[0.03] sm:border sm:border-black/[0.06] sm:p-3.5"
             >
               <span className="w-6 h-6 rounded-full bg-brand-orange/15 border border-brand-orange/30 flex items-center justify-center shrink-0 text-brand-orange text-xs font-bold">
                 {i + 1}
               </span>
-              <span className="flex items-start gap-2 text-sm text-gray-300 leading-snug">
+              <span className="flex items-start gap-2 text-sm text-gray-700 leading-snug">
                 <step.icon className="w-4 h-4 text-brand-orange/70 mt-0.5 shrink-0 sm:hidden" />
                 {step.text}
               </span>
@@ -294,11 +294,11 @@ export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {})
 
         {/* Action: real SMS deep-link on mobile, "text us at" number on desktop */}
         {isDesktop ? (
-          <div className="rounded-xl bg-white/[0.04] border border-white/10 px-5 py-4 text-center">
-            <p className="text-xs text-gray-400 mb-1">Text the photos to</p>
+          <div className="rounded-xl bg-black/[0.03] border border-black/10 px-5 py-4 text-center">
+            <p className="text-xs text-gray-600 mb-1">Text the photos to</p>
             <a
               href={SMS_HREF}
-              className="text-white font-display font-bold text-2xl tracking-tight hover:text-brand-orange-light transition-colors"
+              className="text-[#0a1628] font-display font-bold text-2xl tracking-tight hover:text-brand-orange transition-colors"
             >
               {PHONE_DISPLAY}
             </a>
@@ -328,18 +328,18 @@ export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {})
       onToggle={() => select('call')}
       pinned={pinned}
       accent="neutral"
-      icon={<Phone className="w-[22px] h-[22px] text-brand-blue-light" />}
-      iconWrap="bg-gradient-to-br from-white/[0.12] to-white/[0.04] border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+      icon={<Phone className="w-[22px] h-[22px] text-brand-blue" />}
+      iconWrap="bg-gradient-to-br from-black/[0.05] to-black/[0.02] border border-black/10"
       title="Give us a call"
       subtitle="A real person answers — same day."
     >
       <div className="px-5 pb-5 pt-1">
-        <p className="text-sm text-gray-300 leading-relaxed mb-5">
-          We answer <span className="text-white font-semibold">{HOURS_SHORT}</span> — a quick conversation to understand your pool.
+        <p className="text-sm text-gray-700 leading-relaxed mb-5">
+          We answer <span className="text-[#0a1628] font-semibold">{HOURS_SHORT}</span> — a quick conversation to understand your pool.
         </p>
         <a
           href={PHONE_HREF}
-          className="flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-white text-[#07111c] rounded-xl font-semibold text-[15px] hover:bg-gray-100 transition-colors"
+          className="flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-[#0a1628] text-white rounded-xl font-semibold text-[15px] hover:bg-[#13223a] transition-colors"
         >
           <Phone className="w-[18px] h-[18px]" />
           Call {PHONE_DISPLAY}
@@ -362,13 +362,13 @@ export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {})
       <div className="px-5 pb-5 pt-1">
         {formSent ? (
           <div className="flex flex-col items-center text-center py-6">
-            <span className="w-14 h-14 rounded-full bg-green-500/15 border border-green-400/30 flex items-center justify-center mb-4 shadow-[0_0_0_6px_rgba(34,197,94,0.06)]">
-              <Check className="w-7 h-7 text-green-400" strokeWidth={2.5} />
+            <span className="w-14 h-14 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center mb-4 shadow-[0_0_0_6px_rgba(34,197,94,0.06)]">
+              <Check className="w-7 h-7 text-green-600" strokeWidth={2.5} />
             </span>
-            <p className="text-white font-display font-bold text-lg leading-tight mb-1.5">
+            <p className="text-[#0a1628] font-display font-bold text-lg leading-tight mb-1.5">
               We've got your details.
             </p>
-            <p className="text-gray-300 text-sm leading-relaxed max-w-xs">
+            <p className="text-gray-700 text-sm leading-relaxed max-w-xs">
               Thank you — we've received your information and will be in touch
               soon with your flat-rate quote.
             </p>
@@ -400,14 +400,14 @@ export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {})
                 banner intercept clicks on the fields/submit button below. */}
             {showRestoredBanner && (
               <div className="mb-4 flex items-start justify-between gap-3 rounded-lg border border-brand-blue/25 bg-brand-blue/[0.06] px-3 py-2.5 pointer-events-none">
-                <p className="text-[12px] text-gray-200 leading-snug">
-                  <span className="text-white font-semibold">Picking up where you left off.</span>
-                  <span className="block text-gray-400 mt-0.5">Your info is still here from before.</span>
+                <p className="text-[12px] text-gray-700 leading-snug">
+                  <span className="text-[#0a1628] font-semibold">Picking up where you left off.</span>
+                  <span className="block text-gray-500 mt-0.5">Your info is still here from before.</span>
                 </p>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="pointer-events-auto text-[12px] text-brand-blue-light hover:text-white underline underline-offset-2 decoration-brand-blue-light/40 hover:decoration-white/60 transition-colors shrink-0"
+                  className="pointer-events-auto text-[12px] text-brand-blue hover:text-brand-blue-dark underline underline-offset-2 decoration-brand-blue/40 hover:decoration-brand-blue-dark/60 transition-colors shrink-0"
                 >
                   Start over
                 </button>
@@ -419,8 +419,8 @@ export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {})
             <div className="flex items-center justify-between mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500">
               <span>Step {formStep} of 2</span>
               <span className="flex gap-1.5" aria-hidden="true">
-                <span className={`h-1 w-8 rounded-full ${formStep >= 1 ? 'bg-brand-blue-light' : 'bg-white/10'}`} />
-                <span className={`h-1 w-8 rounded-full ${formStep >= 2 ? 'bg-brand-blue-light' : 'bg-white/10'}`} />
+                <span className={`h-1 w-8 rounded-full ${formStep >= 1 ? 'bg-brand-blue' : 'bg-black/10'}`} />
+                <span className={`h-1 w-8 rounded-full ${formStep >= 2 ? 'bg-brand-blue' : 'bg-black/10'}`} />
               </span>
             </div>
 
@@ -653,14 +653,14 @@ export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {})
                 )}
 
                 {formError && (
-                  <p className="text-center text-red-300 text-xs">{formError}</p>
+                  <p className="text-center text-red-600 text-xs">{formError}</p>
                 )}
 
                 <div className="flex gap-2 pt-1">
                   <button
                     type="button"
                     onClick={() => setFormStep(1)}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-lg bg-white/[0.06] border border-white/10 text-gray-200 hover:text-white hover:bg-white/10 transition-colors text-sm font-semibold"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-lg bg-black/[0.04] border border-black/10 text-gray-700 hover:text-[#0a1628] hover:bg-black/[0.07] transition-colors text-sm font-semibold"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Back
@@ -697,7 +697,7 @@ export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {})
             setChoice(null);
             resetForm();
           }}
-          className="inline-flex items-center gap-1.5 text-gray-400 hover:text-white text-[13px] -mt-1 mb-1 self-start transition-colors"
+          className="inline-flex items-center gap-1.5 text-gray-500 hover:text-[#0a1628] text-[13px] -mt-1 mb-1 self-start transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           All options
@@ -731,25 +731,21 @@ type CardProps = {
 const accentBorder = {
   orange: 'border-brand-orange/30',
   blue: 'border-brand-blue/30',
-  neutral: 'border-white/15',
+  neutral: 'border-black/10',
 };
 const accentBg = {
-  // Perceptual match, not numeric: orange at 10% reads bright over black, so
-  // the darker blue hue needs a higher alpha and the neutral card gets the
-  // same top-down wash in white to sit in the same family. Base (mobile)
-  // alphas run hotter than md: — OLED true blacks and phone gamma crush
-  // subtle dark tints that read fine on desktop monitors.
-  orange:
-    'bg-gradient-to-b from-brand-orange/[0.16] to-white/[0.04] md:from-brand-orange/[0.10] md:to-white/[0.02]',
-  blue: 'bg-gradient-to-b from-brand-blue/[0.24] to-white/[0.04] md:from-brand-blue/[0.16] md:to-white/[0.02]',
-  neutral:
-    'bg-gradient-to-b from-white/[0.13] to-white/[0.04] md:from-white/[0.09] md:to-white/[0.02]',
+  // Top-down color wash over the white sheet — light tints read consistently
+  // across screens (no OLED black-crush like the old dark theme), so one set
+  // serves every viewport.
+  orange: 'bg-gradient-to-b from-brand-orange/[0.08] to-black/[0.01]',
+  blue: 'bg-gradient-to-b from-brand-blue/[0.08] to-black/[0.01]',
+  neutral: 'bg-gradient-to-b from-black/[0.04] to-black/[0.01]',
 };
 
 const accentBadge = {
-  orange: 'bg-brand-orange/15 text-brand-orange-light border border-brand-orange/30',
-  blue: 'bg-brand-blue/15 text-brand-blue-light border border-brand-blue/30',
-  neutral: 'bg-white/10 text-gray-300 border border-white/15',
+  orange: 'bg-brand-orange/10 text-brand-orange border border-brand-orange/30',
+  blue: 'bg-brand-blue/10 text-brand-blue border border-brand-blue/30',
+  neutral: 'bg-black/5 text-gray-600 border border-black/10',
 };
 
 const Card = ({
@@ -771,7 +767,7 @@ const Card = ({
       </span>
       <span className="flex-1 min-w-0">
         <span className="flex items-center gap-2">
-          <span className="text-white font-semibold text-[15px] leading-tight">{title}</span>
+          <span className="text-[#0a1628] font-semibold text-[15px] leading-tight">{title}</span>
           {badge && (
             <span
               className={`text-[10px] font-semibold uppercase tracking-[0.08em] px-1.5 py-[2px] rounded-full ${accentBadge[accent]}`}
@@ -780,10 +776,10 @@ const Card = ({
             </span>
           )}
         </span>
-        <span className="block text-gray-400 text-[13px] mt-1 leading-snug">{subtitle}</span>
+        <span className="block text-gray-600 text-[13px] mt-1 leading-snug">{subtitle}</span>
       </span>
       {!pinned && (
-        <ChevronRight className="w-5 h-5 text-gray-500 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:text-gray-300" />
+        <ChevronRight className="w-5 h-5 text-gray-400 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:text-gray-600" />
       )}
     </>
   );
@@ -791,7 +787,7 @@ const Card = ({
   return (
     <div
       className={`rounded-2xl border ${accentBorder[accent]} ${accentBg[accent]} overflow-hidden transition-transform ${
-        !pinned ? 'hover:-translate-y-px hover:shadow-lg hover:shadow-black/20' : ''
+        !pinned ? 'hover:-translate-y-px hover:shadow-lg hover:shadow-black/10' : ''
       }`}
     >
       {pinned ? (
@@ -800,7 +796,7 @@ const Card = ({
         <button
           type="button"
           onClick={onToggle}
-          className="group w-full flex items-center gap-3.5 px-5 py-4 text-left hover:bg-white/[0.03] transition-colors"
+          className="group w-full flex items-center gap-3.5 px-5 py-4 text-left hover:bg-black/[0.02] transition-colors"
         >
           {HeaderInner}
         </button>

@@ -118,16 +118,18 @@ export const Navbar = () => {
     <>
     <nav
       // Mobile: absolute (not sticky — scrolls away with the page; the menu
-      // is reachable from the top, conversion lives in the sticky bottom CTA)
-      // and always transparent over the hero — no scroll-triggered change.
-      // Desktop: fixed, transparent at top, frosted on scroll (backdrop-blur
-      // stays md:-gated; toggling blur on mobile forces iOS to re-rasterize
-      // the page). `scrolled` only affects md: styles but the listener is
-      // viewport-agnostic — cheap, passive, and shared.
-      className={`absolute md:fixed top-0 w-full z-50 bg-transparent transition-all duration-300 ${
+      // is reachable from the top, conversion lives in the bottom tab bar)
+      // with a solid WHITE surface + hairline bottom edge — no scroll-
+      // triggered change. Desktop: fixed, transparent at top, frosted on
+      // scroll (backdrop-blur stays md:-gated; toggling blur on mobile forces
+      // iOS to re-rasterize the page). The scrolled ternary owns ALL md:
+      // border/bg colors so the two md: color utilities never coexist.
+      // `scrolled` only affects md: styles but the listener is viewport-
+      // agnostic — cheap, passive, and shared.
+      className={`absolute md:fixed top-0 w-full z-50 bg-white md:bg-transparent border-b border-black/[0.06] transition-all duration-300 ${
         scrolled
-          ? 'md:bg-[#0a1628]/85 md:backdrop-blur-[10px] md:border-b md:border-white/10'
-          : 'border-b border-transparent'
+          ? 'md:bg-[#0a1628]/85 md:backdrop-blur-[10px] md:border-white/10'
+          : 'md:border-transparent'
       }`}
     >
       <Container>
@@ -138,8 +140,9 @@ export const Navbar = () => {
             className="shrink-0"
           >
             {/* text-sm below md: the mobile header also fits the quote pill +
-                hamburger on 375px screens. */}
-            <span className="font-display font-bold text-sm md:text-base tracking-wide text-white uppercase">
+                hamburger on 375px screens. Dark on the white mobile bar,
+                white on desktop's transparent/frosted bar. */}
+            <span className="font-display font-bold text-sm md:text-base tracking-wide text-[#0a1628] md:text-white uppercase">
               Suncoast Pool Pros
             </span>
           </Link>
@@ -236,7 +239,7 @@ export const Navbar = () => {
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
               aria-expanded={isOpen}
-              className="relative inline-flex items-center justify-center w-10 h-10 rounded-md text-gray-200 hover:text-white hover:bg-white/5 transition-colors"
+              className="relative inline-flex items-center justify-center w-10 h-10 rounded-md text-[#0a1628] hover:bg-black/5 transition-colors"
             >
               <span className="relative block w-5 h-[14px]">
                 <span
