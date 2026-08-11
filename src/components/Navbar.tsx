@@ -137,7 +137,9 @@ export const Navbar = () => {
             aria-label="Suncoast Pool Pros home"
             className="shrink-0"
           >
-            <span className="font-display font-bold text-base tracking-wide text-white uppercase">
+            {/* text-sm below md: the mobile header also fits the quote pill +
+                hamburger on 375px screens. */}
+            <span className="font-display font-bold text-sm md:text-base tracking-wide text-white uppercase">
               Suncoast Pool Pros
             </span>
           </Link>
@@ -216,7 +218,20 @@ export const Navbar = () => {
             </button>
           </div>
 
-          <div className="flex md:hidden">
+          <div className="flex md:hidden items-center gap-1.5">
+            {/* Compact quote pill: the header owns the above-the-fold quote
+                action on mobile (the bottom tab bar appears only past the
+                fold, and the hero CTAs are hidden on mobile). Opens via the
+                plain cold-open path — deliberately NO pointerdown work here:
+                iOS swallows the tap's click if the DOM mutates under the
+                finger (see the menu CTA's double-tap fix). */}
+            <button
+              type="button"
+              onClick={openQuoteSheet}
+              className="px-3.5 py-2 rounded-lg bg-brand-blue text-white text-[13px] font-semibold active:scale-95 transition-transform"
+            >
+              Get a Quote
+            </button>
             <button
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
