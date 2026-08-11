@@ -53,8 +53,8 @@ export const StickyMobileCta = () => {
   // Icon sits in a fixed-size circle so active/inactive rows align; only the
   // active route's circle is filled.
   const tab = (active: boolean) => ({
-    item: 'flex flex-col items-center gap-1 px-5 py-1.5 active:scale-95 transition-transform',
-    icon: `w-11 h-11 rounded-full flex items-center justify-center ${
+    item: 'flex flex-col items-center gap-0.5 px-5 py-0.5 active:scale-95 transition-transform',
+    icon: `w-9 h-9 rounded-full flex items-center justify-center ${
       active ? 'bg-brand-blue text-white' : 'text-[#3f4650]'
     }`,
     label: 'text-[13px] font-semibold tracking-wide text-[#2f3540]',
@@ -76,22 +76,22 @@ export const StickyMobileCta = () => {
         >
           {/* Full-bleed: rounded top corners only, flush to the screen edges;
               the white surface owns the home-indicator safe area. */}
-          <div className="flex items-stretch justify-around rounded-t-2xl bg-white px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(0,0,0,0.25)]">
+          <div className="flex items-stretch justify-around rounded-t-2xl bg-white px-2 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(0,0,0,0.25)]">
             <Link to="/" className={home.item}>
               <span className={home.icon}>
-                <Home className="w-[22px] h-[22px]" strokeWidth={1.75} />
+                <Home className="w-5 h-5" strokeWidth={1.75} />
               </span>
               <span className={home.label}>Home</span>
             </Link>
             <button type="button" onClick={open} className={quote.item}>
               <span className={quote.icon}>
-                <CircleDollarSign className="w-[22px] h-[22px]" strokeWidth={1.75} />
+                <CircleDollarSign className="w-5 h-5" strokeWidth={1.75} />
               </span>
               <span className={quote.label}>Quote</span>
             </button>
             <Link to="/contact/" className={support.item}>
               <span className={support.icon}>
-                <Headset className="w-[22px] h-[22px]" strokeWidth={1.75} />
+                <Headset className="w-5 h-5" strokeWidth={1.75} />
               </span>
               <span className={support.label}>Support</span>
             </Link>

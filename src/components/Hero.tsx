@@ -141,11 +141,16 @@ export const Hero = () => {
                     every side (radial gradient in .hero-cta-scrim) so the rest of
                     the hero stays bright. CSS class, not inline style, to keep SSR
                     hydration stable (CLAUDE.md #4). */}
+                {/* TEMP: CTA row hidden on mobile (<sm) while evaluating the
+                    bottom tab bar as the sole mobile CTA — restore by putting
+                    the scrim back to `md:hidden` and the row to `flex`. The
+                    scrim only ever showed below md, so `sm:block md:hidden`
+                    keeps its 640–767px appearance unchanged. */}
                 <div
-                  className="hero-cta-scrim md:hidden absolute -inset-x-8 -top-6 -bottom-8 pointer-events-none"
+                  className="hero-cta-scrim hidden sm:block md:hidden absolute -inset-x-8 -top-6 -bottom-8 pointer-events-none"
                   aria-hidden
                 />
-                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                <div className="relative z-10 hidden sm:flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                   <a
                     href="#quote"
                     onClick={handleQuoteClick}
