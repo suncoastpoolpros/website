@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { m } from 'motion/react';
 import { Phone, Star, ArrowRight } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
+import { HomeHeroPhoneSection } from '@/components/Hero';
 import { Footer } from '@/components/Footer';
 import { Container } from '@/components/Container';
 import { useQuoteSheet } from '@/components/QuoteSheet';
@@ -50,23 +51,38 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="max-w-3xl"
+          className="max-w-3xl mx-auto text-center"
         >
-          {/* Bold eyebrow — a hard orange bar, not a soft pill. */}
-          <span className="flex items-center gap-3 mb-6">
-            <span className="w-8 h-[3px] bg-brand-orange" aria-hidden />
-            <span className="text-[12px] font-bold uppercase tracking-[0.2em] text-white">
-              Clearwater, FL — Beach &amp; Mainland
+          {/* Centered-poster composition — the homepage hero is left-anchored;
+              Clearwater's is symmetric over the open water. Eyebrow keeps its
+              hard orange rules (this page's mark), now flanking both sides. */}
+          <span className="flex items-center justify-center gap-3 mb-6">
+            <span className="w-6 sm:w-8 h-[3px] bg-brand-orange shrink-0" aria-hidden />
+            {/* Phones show just the city (the full label wrapped and stranded
+                the rules); "Beach & Mainland" returns at sm and lives in the
+                copy below regardless. */}
+            <span className="whitespace-nowrap text-[12px] font-bold uppercase tracking-[0.2em] text-white">
+              Clearwater, FL
+              <span className="hidden sm:inline"> — Beach &amp; Mainland</span>
             </span>
+            <span className="w-6 sm:w-8 h-[3px] bg-brand-orange shrink-0" aria-hidden />
           </span>
 
           {/* Oversized headline — a div, so the SEO h1 below carries keyword
-              weight. The town's name made into the promise. */}
-          <div className="text-shadow-city-h1 font-display font-black text-white tracking-[-0.02em] leading-[0.95] mb-6">
-            <span className="block text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[5.25rem]">
-              Clearwater deserves
+              weight. The town's name made into the promise. Width-matched
+              3-line lockup (the homepage hero/logo technique): each line's
+              size is "Clearwater"×k so all three span the SAME width. Ratios
+              measured per weight — the block is font-bold below md (the
+              preloaded Montserrat 700; black is preloaded md+ only) and
+              font-black from md. */}
+          <div className="text-shadow-city-h1 font-display font-bold md:font-black text-white tracking-[-0.02em] leading-[0.95] mb-6">
+            <span className="block text-[2.75rem] sm:text-6xl md:text-[4.5rem] lg:text-[5.25rem]">
+              Clearwater
             </span>
-            <span className="block text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[5.25rem] text-brand-orange">
+            <span className="block text-[3.358rem] sm:text-[4.58rem] md:text-[5.476rem] lg:text-[6.389rem]">
+              deserves
+            </span>
+            <span className="block text-[2.588rem] sm:text-[3.53rem] md:text-[4.196rem] lg:text-[4.896rem] text-brand-orange">
               clear water.
             </span>
           </div>
@@ -76,14 +92,9 @@ const HeroSection = () => {
             Weekly pool service in Clearwater, FL.
           </h1>
 
-          <p className="text-shadow-city-body md:hidden text-[15px] text-white/85 max-w-[34rem] leading-[1.6] mb-8">
-            From the beach to the mainland —{' '}
-            <span className="text-white font-medium">
-              same tech weekly, chemicals included, and water kept genuinely clear
-            </span>
-            , on one flat rate.
-          </p>
-          <p className="text-shadow-city-body hidden md:block text-base text-white/85 max-w-[36rem] leading-[1.65] mb-8">
+          {/* Mobile shows NO body paragraph (homepage pattern) — the lockup +
+              the H1 keyword line carry the message. Full value prop md+. */}
+          <p className="text-shadow-city-body hidden md:block text-base text-white/85 max-w-[36rem] mx-auto leading-[1.65] mb-8">
             Clearwater is really two towns sharing a name — the barrier-island beach world and the big
             established mainland. We keep both kinds of pool clear:{' '}
             <span className="text-white font-medium">the same dedicated tech every week</span>, all
@@ -91,7 +102,7 @@ const HeroSection = () => {
             report when we leave.
           </p>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
             {/* Orange = the site's action color. A specific label ("flat-rate")
                 outpulls a generic "free quote." */}
             <a
@@ -102,10 +113,12 @@ const HeroSection = () => {
               Get a Flat-Rate Quote
               <ArrowRight className="w-5 h-5" />
             </a>
-            {/* Solid white pill — high-contrast over the photo, no blur (mobile blur ban). */}
+            {/* Solid white pill — high-contrast over the photo, no blur
+                (mobile blur ban). sm+ only: on phones the header's phone icon
+                owns the call action (homepage pattern). */}
             <a
               href={`tel:${PHONE}`}
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-lg bg-white text-[#0a1628] hover:bg-white/90 font-bold text-base transition-colors"
+              className="hidden sm:inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-lg bg-white text-[#0a1628] hover:bg-white/90 font-bold text-base transition-colors"
             >
               <Phone className="w-5 h-5 text-brand-blue" />
               {PHONE_DISPLAY}
@@ -235,6 +248,10 @@ export const ClearwaterPage = () => {
       <Navbar />
       <HeroSection />
       <TrustMarquee />
+      {/* Mobile/tablet-only interactive report showcase (lg:hidden) — the
+          "Sent after every visit" phone + side scroll wheel, ported from the
+          homepage. Proof right after the marquee's claims. */}
+      <HomeHeroPhoneSection />
       <ClearwaterBelowFold />
       <CtaBand />
       <Footer />

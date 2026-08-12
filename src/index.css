@@ -760,8 +760,12 @@ input[type="date"]::-webkit-date-and-time-value {
   /* Desktop: oversized type sits left — darken the left and the very top (nav),
      keep the right bright over the water, then fade into the navy band below. */
   .cw-hero-scrim {
+    /* Centered-poster hero: a middle vignette holds the stacked lockup +
+       centered copy (was a left-biased band for the old left-aligned text),
+       plus the same top hint for the navbar and bottom fade into the navy
+       marquee band. */
     background-image:
-      linear-gradient(to right, rgba(3, 12, 24, 0.72) 0%, rgba(3, 12, 24, 0.4) 42%, rgba(3, 12, 24, 0.08) 66%, transparent 84%),
+      radial-gradient(ellipse 74% 66% at 50% 44%, rgba(3, 12, 24, 0.6) 0%, rgba(3, 12, 24, 0.34) 56%, transparent 80%),
       linear-gradient(to bottom, rgba(3, 12, 24, 0.36) 0%, transparent 26%, transparent 62%, rgba(10, 22, 40, 0.82) 92%, #0a1628 100%);
   }
 }

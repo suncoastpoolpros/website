@@ -185,9 +185,11 @@ export const Hero = () => {
                 </div>
               </div>
 
-              {/* Trust strip — forced onto ONE line at every width: nowrap +
-                  smaller type/stars/gaps below sm so both items fit 360px. */}
-              <div className="text-shadow-hero-strip mt-7 flex flex-nowrap items-center gap-x-3 sm:gap-x-6 text-[12px] sm:text-[13px] text-gray-200">
+              {/* Trust strip — ONE line at every width (nowrap + smaller
+                  type/stars/gaps below sm), and edge-to-edge on mobile:
+                  justify-between pins the stars left and "Locally Owned"
+                  right. sm+ returns to a left cluster with the bullet. */}
+              <div className="text-shadow-hero-strip mt-7 flex flex-nowrap items-center justify-between sm:justify-start gap-x-3 sm:gap-x-6 text-[12px] sm:text-[13px] text-gray-200">
                 <div className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
                   <div className="flex gap-0.5 text-brand-orange">
                     {[0,1,2,3,4].map(i => (
