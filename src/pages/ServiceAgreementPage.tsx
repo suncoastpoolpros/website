@@ -13,7 +13,7 @@ import {
 } from '@/lib/contact';
 import { usePageMeta } from '@/lib/usePageMeta';
 
-const LAST_UPDATED = '02-22-2026';
+const LAST_UPDATED = '08-11-2026';
 
 // Each block is one clause. `lead` renders a bolded inline label before the text
 // (used for the bulleted definition-style items in the original document).
@@ -58,6 +58,20 @@ const SECTIONS: Section[] = [
               {
                 lead: 'Condition of Transferred Pools:',
                 text: 'Because a transferred pool\'s prior care and condition are outside our knowledge and control, an acquired pool may require an initial assessment and, if needed, a one-time recovery or balancing service, quoted and approved before work proceeds. The flat-rate and guarantee terms take effect once the customer accepts this Agreement and the pool is confirmed to be in standard, balanced condition.',
+              },
+            ],
+          },
+          { type: 'subheading', text: 'Condition of the pool at start of service:' },
+          {
+            type: 'list',
+            items: [
+              {
+                lead: 'Pre-Existing Conditions:',
+                text: 'Any condition of the pool, its surfaces, or its equipment that exists before our first service visit — including surface staining, scale, etched or deteriorating finishes, worn or aging equipment, prior water-chemistry damage, or deferred maintenance — is considered pre-existing, whether or not it was visible or known at the time service began. Suncoast Pool Pros is not responsible for pre-existing conditions or for issues that develop from them.',
+              },
+              {
+                lead: 'Baseline Documentation:',
+                text: 'We may document the pool\'s condition at or near the start of service through photos, notes, or water-test results. Our service records — including visit logs, chemical readings, and photos — serve as the primary record of the pool\'s condition and the services performed.',
               },
             ],
           },
@@ -194,6 +208,10 @@ const SECTIONS: Section[] = [
               {
                 lead: 'Returned Payments:',
                 text: 'Customer is responsible for any declined payment or returned payment fees.',
+              },
+              {
+                lead: 'Invoice Disputes:',
+                text: 'Any billing dispute must be raised in writing within 30 days of the invoice date. Invoices that are paid, or that are not disputed in writing within that period, are deemed accurate and accepted.',
               },
               {
                 lead: 'Transparency:',
@@ -382,7 +400,7 @@ const SECTIONS: Section[] = [
       {
         id: 'water-level',
         number: 13,
-        title: 'Water Level & Structural Conditions',
+        title: 'Water Level, Surfaces & Structural Conditions',
         blocks: [
           {
             type: 'p',
@@ -396,7 +414,14 @@ const SECTIONS: Section[] = [
               { text: 'Pool leaks or structural issues' },
               { text: 'Underground plumbing failures' },
               { text: 'Pre-existing equipment conditions' },
+              {
+                text: 'Surface staining, scale, etching, discoloration, or delamination arising from pool age, construction materials, metals, source water, or water-chemistry history predating our service',
+              },
             ],
+          },
+          {
+            type: 'p',
+            text: 'Cosmetic and surface conditions of this kind typically develop over months or years. They are not caused by routine professional maintenance and are excluded from our responsibility.',
           },
         ],
       },
@@ -442,11 +467,33 @@ const SECTIONS: Section[] = [
       {
         id: 'satisfaction',
         number: 16,
-        title: 'Communication & Customer Satisfaction',
+        title: 'Customer Satisfaction, Claims & Disputes',
         blocks: [
           {
             type: 'p',
             text: 'Customer satisfaction is extremely important to us. If concerns arise, please contact us directly first so we can work toward a fair resolution.',
+          },
+          { type: 'subheading', text: 'Claims notice window:' },
+          {
+            type: 'list',
+            items: [
+              {
+                lead: 'Prompt Written Notice:',
+                text: 'Any concern about the quality or completeness of a service visit must be reported to us in writing within 14 days of that visit. Concerns not raised within this window are waived, and the services for that period are deemed performed and accepted.',
+              },
+              {
+                lead: 'Payment as Acceptance:',
+                text: 'Payment for recurring service without a written complaint constitutes acknowledgment that the services during the paid period were performed satisfactorily. A Customer may not accept and pay for service over an extended period and later assert that the pool was neglected or improperly serviced during that same period.',
+              },
+              {
+                lead: 'Opportunity to Cure:',
+                text: 'Before pursuing any claim or payment chargeback, the Customer agrees to provide written notice describing the issue and to allow us 30 days and reasonable access to investigate and correct it.',
+              },
+              {
+                lead: 'Claim Deadline:',
+                text: 'To the fullest extent permitted by law, any claim arising out of or relating to services under this Agreement must be brought within one (1) year of the service visit giving rise to the claim.',
+              },
+            ],
           },
         ],
       },
@@ -468,22 +515,30 @@ const SECTIONS: Section[] = [
       {
         id: 'severability',
         number: 18,
-        title: 'Severability',
+        title: 'Severability & Non-Waiver',
         blocks: [
           {
             type: 'p',
             text: 'If any provision of this Agreement is found to be invalid, unlawful, or unenforceable, that provision will be limited or removed to the minimum extent necessary, and the remaining provisions will continue in full force and effect.',
+          },
+          {
+            type: 'p',
+            text: 'Our failure to enforce any provision of this Agreement is not a waiver of that provision or of our right to enforce it later.',
           },
         ],
       },
       {
         id: 'entire-agreement',
         number: 19,
-        title: 'Entire Agreement',
+        title: 'Entire Agreement & Updates',
         blocks: [
           {
             type: 'p',
             text: 'This Agreement, together with any estimates, invoices, or written terms expressly referenced herein, constitutes the entire agreement between you and Suncoast Pool Pros LLC regarding the services described, and supersedes any prior or contemporaneous discussions, representations, or agreements. Any changes to this Agreement must be made in writing as described in the Communication & Written Notice section.',
+          },
+          {
+            type: 'p',
+            text: 'We may update this Agreement from time to time as our services, costs, or legal requirements evolve. Customers will receive at least 30 days written notice of material updates, provided in accordance with the Communication & Written Notice section. Continued service after the notice period constitutes acceptance of the updated Agreement.',
           },
         ],
       },
