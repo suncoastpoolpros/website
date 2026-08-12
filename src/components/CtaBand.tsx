@@ -1,7 +1,7 @@
 import React from 'react';
-import { MessageSquare, Phone } from 'lucide-react';
-import { QuoteChooser } from '@/components/QuoteChooser';
+import { MessageSquare, Phone, ChevronRight } from 'lucide-react';
 import { Container } from '@/components/Container';
+import { useQuoteSheet } from '@/components/QuoteSheet';
 import { PHONE_DISPLAY, PHONE_HREF, SMS_QUOTE_HREF } from '@/lib/contact';
 
 /**
@@ -10,6 +10,7 @@ import { PHONE_DISPLAY, PHONE_HREF, SMS_QUOTE_HREF } from '@/lib/contact';
  * Framed like a real local owner, not a generic marketing box.
  */
 export const CtaBand = () => {
+  const { open, warm } = useQuoteSheet();
   return (
     <section className="relative overflow-hidden bg-[#07111c] py-16 md:py-24">
       <Container className="text-center">
@@ -39,11 +40,59 @@ export const CtaBand = () => {
             </a>
           </div>
 
-          {/* Mobile — interactive expanding quote chooser. The chooser is
-              light-themed (white quote sheet), so on this dark band it sits
-              in a white card — the site's navy-band + white-card signature. */}
-          <div className="sm:hidden rounded-3xl bg-white p-4 text-left shadow-xl shadow-black/40">
-            <QuoteChooser />
+          {/* Mobile — the same two actions as desktop, as page-native tappable
+              rows in the dark-card DNA of the FeatureGrid above (NOT the white
+              quote-sheet chooser dropped inline — that read as the popup pasted
+              into the page). The form path stays available via a quiet link
+              that opens the real quote sheet. */}
+          <div className="sm:hidden flex flex-col gap-3 text-left">
+            <a
+              href={SMS_QUOTE_HREF}
+              className="rounded-2xl border border-brand-orange/25 bg-brand-orange/[0.07] p-4 flex items-center gap-3.5"
+            >
+              <span className="w-11 h-11 shrink-0 rounded-xl bg-brand-orange/15 border border-brand-orange/25 flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-brand-orange-light" strokeWidth={1.9} />
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="flex items-center gap-2">
+                  <span className="text-white font-semibold text-[15px] leading-tight">Text a few photos</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.08em] px-1.5 py-[2px] rounded-full bg-brand-orange/10 text-brand-orange-light border border-brand-orange/30">
+                    Fastest
+                  </span>
+                </span>
+                <span className="block text-gray-400 text-[13px] mt-1 leading-snug">
+                  Opens Messages pre-filled — we reply same day.
+                </span>
+              </span>
+              <ChevronRight className="w-5 h-5 text-gray-500 shrink-0" />
+            </a>
+
+            <a
+              href={PHONE_HREF}
+              className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 flex items-center gap-3.5"
+            >
+              <span className="w-11 h-11 shrink-0 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center">
+                <Phone className="w-5 h-5 text-gray-200" strokeWidth={1.9} />
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="block text-white font-semibold text-[15px] leading-tight">
+                  Call {PHONE_DISPLAY}
+                </span>
+                <span className="block text-gray-400 text-[13px] mt-1 leading-snug">
+                  A real person answers — same day.
+                </span>
+              </span>
+              <ChevronRight className="w-5 h-5 text-gray-500 shrink-0" />
+            </a>
+
+            <button
+              type="button"
+              onPointerDown={warm}
+              onClick={() => open()}
+              className="self-center mt-1 text-[13px] text-gray-400 underline decoration-white/25 underline-offset-4 active:text-white transition-colors"
+            >
+              Prefer a form? Send us your details
+            </button>
           </div>
 
           <p className="text-gray-500 text-xs mt-5">
