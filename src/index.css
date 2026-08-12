@@ -895,6 +895,31 @@ input[type="date"]::-webkit-date-and-time-value {
   transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
+/* sm+ the quote sheet is a CENTERED modal (`sm:items-center`), not a bottom
+   sheet — and translateY(100%) only parks a panel off-screen while it's
+   flush to the bottom edge. Once centered, 100% of its own height still
+   left ~256px of a warmed-but-closed sheet peeking into the viewport
+   (measured at 700px and 820px; correct at 390px). A centered modal should
+   fade + lift anyway, so scope that treatment to sm+ and leave the mobile
+   slide untouched. */
+@media (min-width: 640px) {
+  .overlay-panel-bottom {
+    will-change: transform, opacity;
+    transform: translate3d(0, 10px, 0) scale(0.985);
+    opacity: 0;
+    transition:
+      transform 0.2s cubic-bezier(0, 0, 0.2, 1),
+      opacity 0.18s ease;
+  }
+  .overlay-panel-bottom.is-open {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+    transition:
+      transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+      opacity 0.22s ease;
+  }
+}
+
 /* Full-screen nav menu: fade + subtle zoom (98% → 100%), iOS-app-open feel.
    Same compositor-only contract as the slide panels — opacity + transform,
    both GPU-composited. The pre-mounted panel sits at opacity:0 over the page

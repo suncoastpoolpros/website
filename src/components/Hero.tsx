@@ -104,7 +104,12 @@ export const Hero = () => {
             transition={{ duration: 1, ease: 'easeOut' }}
             className="lg:col-span-6 pt-10 lg:pt-0"
           >
-            <div>
+            {/* Below lg the phone-mockup column doesn't exist (it renders in
+                its own section under the hero), so a left-aligned stack leaves
+                a dead right half at tablet widths. Center the whole
+                composition below lg; lg+ restores the original two-column
+                left-aligned layout. */}
+            <div className="text-center lg:text-left max-w-[34rem] lg:max-w-none mx-auto lg:mx-0">
               {/* glass-mobile-blur: on phones (no backdrop blur) the pill gets
                   the solid grey surface so it reads over the bright sky —
                   same mobile-glass treatment as the hero call button. (This
@@ -143,7 +148,7 @@ export const Hero = () => {
                   photo. (The old mobile benefit line repeated both; its keywords
                   remain in the title/description and visible sections below.)
                   The full value prop shows md+ only. */}
-              <p className="text-shadow-hero-body hidden md:block text-[15px] text-gray-100 font-normal max-w-[27rem] leading-[1.6] mb-8 sm:mb-9">
+              <p className="text-shadow-hero-body hidden md:block text-[15px] text-gray-100 font-normal max-w-[27rem] mx-auto lg:mx-0 leading-[1.6] mb-8 sm:mb-9">
                 <span className="text-white">Weekly pool cleaning, full chemical balancing, GPS-verified visits</span>, and a written report after every clean. <span className="text-white">One flat monthly price</span> — no chemical surprises, no contracts, no green water.
               </p>
 
@@ -161,7 +166,7 @@ export const Hero = () => {
                   className="hero-cta-scrim md:hidden absolute -inset-x-8 -top-6 -bottom-8 pointer-events-none"
                   aria-hidden
                 />
-                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-center lg:justify-start gap-3 sm:gap-4">
                   <a
                     href="#quote"
                     onClick={handleQuoteClick}
@@ -189,7 +194,7 @@ export const Hero = () => {
                   type/stars/gaps below sm), and edge-to-edge on mobile:
                   justify-between pins the stars left and "Locally Owned"
                   right. sm+ returns to a left cluster with the bullet. */}
-              <div className="text-shadow-hero-strip mt-7 flex flex-nowrap items-center justify-between sm:justify-start gap-x-3 sm:gap-x-6 text-[12px] sm:text-[13px] text-gray-200">
+              <div className="text-shadow-hero-strip mt-7 flex flex-nowrap items-center justify-between sm:justify-center lg:justify-start gap-x-3 sm:gap-x-6 text-[12px] sm:text-[13px] text-gray-200">
                 <div className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
                   <div className="flex gap-0.5 text-brand-orange">
                     {[0,1,2,3,4].map(i => (

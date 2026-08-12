@@ -175,7 +175,13 @@ export const Navbar = () => {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-1">
+          {/* Inline nav links are DESKTOP-ONLY (lg+). At tablet widths the row
+              (logo + 5 links + number + CTA) measured ~795px of content in a
+              ~704px box, which pushed "Get a Quote" off the right edge. Tablet
+              keeps the sticky dark bar + visible CTA and moves these links into
+              the same white takeover menu mobile uses (it already carries all
+              of them, plus Pool Care and Contact). */}
+          <div className="hidden lg:flex items-center gap-1">
             {/* Service Areas — opens mega-menu on hover */}
             <div
               className="relative"
@@ -187,7 +193,7 @@ export const Navbar = () => {
                 onClick={() => setAreasOpen((v) => !v)}
                 aria-expanded={areasOpen}
                 aria-haspopup="true"
-                className="inline-flex items-center gap-1 text-gray-300 hover:text-white px-3 py-2 text-sm font-semibold transition-colors"
+                className="inline-flex items-center gap-1 whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
               >
                 Service Areas
                 <ChevronDown
@@ -208,55 +214,51 @@ export const Navbar = () => {
 
             <Link
               to="/how-it-works/"
-              className="text-gray-300 hover:text-white px-3 py-2 text-sm font-semibold transition-colors"
+              className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
             >
               How It Works
             </Link>
             <Link
               to="/faq/"
-              className="text-gray-300 hover:text-white px-3 py-2 text-sm font-semibold transition-colors"
+              className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
             >
               FAQ
             </Link>
             <Link
               to="/tools/"
-              className="text-gray-300 hover:text-white px-3 py-2 text-sm font-semibold transition-colors"
+              className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
             >
               Tools
             </Link>
             <Link
               to="/careers/"
-              className="text-gray-300 hover:text-white px-3 py-2 text-sm font-semibold transition-colors"
+              className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
             >
               Careers
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
+          {/* ONE right-side cluster at every width, so the row is always
+              [logo] … [actions] — with the inline links hidden at tablet, two
+              separate right-side groups in a justify-between row would have
+              left the CTA floating mid-row.
+              Mobile keeps gap-4: the phone and menu are both 40px hit areas and
+              the wider gutter prevents fat-finger cross-taps. */}
+          <div className="flex items-center gap-4 md:gap-1.5 lg:gap-2">
+            {/* Phone: full number on the dark bar at md+ */}
             <a
               href={PHONE_HREF}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-300 hover:text-white transition-colors"
+              className="hidden md:inline-flex items-center gap-2 whitespace-nowrap px-2.5 lg:px-3 py-2 text-sm font-semibold text-gray-300 hover:text-white transition-colors"
             >
-              <Phone className="w-4 h-4" />
+              <Phone className="w-4 h-4 shrink-0" />
               {PHONE_DISPLAY}
             </a>
-            <button
-              type="button"
-              onClick={openQuoteSheet}
-              className="btn btn-orange"
-            >
-              Get a Quote
-            </button>
-          </div>
 
-          {/* gap-4 keeps the phone and menu tap targets clearly separated —
-              both are 40px hit areas; the wider gutter prevents fat-finger
-              cross-taps. */}
-          <div className="flex md:hidden items-center gap-4">
             {/* Icon-only phone button: tap opens OUR call/text chooser (the
                 OS only shows its Call/Message sheet on long-press of a tel:
-                link — the web can't trigger it from a tap). */}
-            <div className="relative">
+                link — the web can't trigger it from a tap). Phones only —
+                md+ uses the plain number link above. */}
+            <div className="relative md:hidden">
               <button
                 type="button"
                 onClick={() => setCallOpen((v) => !v)}
@@ -301,11 +303,23 @@ export const Navbar = () => {
                 </>
               )}
             </div>
+            {/* Get a Quote — md+. Sits before the hamburger so the menu stays
+                the rightmost control at every width. */}
+            <button
+              type="button"
+              onClick={openQuoteSheet}
+              className="btn btn-orange hidden md:inline-flex whitespace-nowrap px-4 lg:px-6"
+            >
+              Get a Quote
+            </button>
+
+            {/* Hamburger — below lg (phones AND tablet). Dark ink on the white
+                mobile bar, white ink on the dark tablet bar. */}
             <button
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
               aria-expanded={isOpen}
-              className="relative inline-flex items-center justify-center w-10 h-10 rounded-md text-[#0a1628] hover:bg-black/5 transition-colors"
+              className="relative lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-md text-[#0a1628] hover:bg-black/5 md:text-white md:hover:bg-white/10 transition-colors"
             >
               <span className="relative block w-5 h-[14px]">
                 <span
@@ -335,7 +349,7 @@ export const Navbar = () => {
         flips true only after the client mounts). */}
       {hydrated && createPortal(
           <div
-            className={`nav-drawer md:hidden fixed inset-0 z-[110] ${isOpen ? 'is-open' : ''}`}
+            className={`nav-drawer lg:hidden fixed inset-0 z-[110] ${isOpen ? 'is-open' : ''}`}
             inert={!isOpen}
           >
             {/* Full-screen white panel. Covers the viewport edge to edge, so
@@ -349,7 +363,7 @@ export const Navbar = () => {
               {/* Header: plain text wordmark (same treatment as the site
                   navbar, dark instead of white — no colorful mark) + bare
                   close. */}
-              <div className="flex items-center justify-between pl-6 pr-3 h-16">
+              <div className="flex items-center justify-between pl-6 pr-3 md:pl-8 md:pr-5 h-16">
                 <Link
                   to="/"
                   onClick={() => setIsOpen(false)}
@@ -371,7 +385,10 @@ export const Navbar = () => {
               {/* Nav links: plain editorial type — no icon tiles, dividers, or
                   arrows. Items render statically (no per-item entrance stagger;
                   the panel slide is the open affordance — see CLAUDE.md #12). */}
-              <nav className="flex-1 overflow-y-auto pl-12 pr-6 pt-8">
+              {/* md+ (tablet, where this menu now also serves): the links
+                  hugging the left of an 820px panel read as sparse, so the list
+                  gets a capped, centered column and larger type. */}
+              <nav className="flex-1 overflow-y-auto pl-12 pr-6 pt-8 md:px-10 md:pt-14 md:max-w-2xl md:mx-auto md:w-full md:text-[19px]">
                 {/* Home first — it replaced the header logo as the way back */}
                 <Link
                   to="/"
