@@ -20,12 +20,12 @@ import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 // named for clear water, held to it — so the hook leans on that wordplay:
 // "Water Worthy of the Name." 50 chars.
 const PAGE_TITLE = 'Clearwater Pool Service — Flat-Rate, Always Clear';
-// ~157 chars. Leads with the local keyword, names the duality that defines
+// ~153 chars. Leads with the local keyword, names the duality that defines
 // Clearwater (barrier-island beach + established mainland) with real place
-// names, then stacks the click-drivers (same tech, flat rate, chemicals in,
-// clear water).
+// names, then stacks the click-drivers (consistent techs, flat rate, chemicals
+// in, clear water).
 const PAGE_DESC =
-  'Weekly pool service in Clearwater, FL — Clearwater Beach & Sand Key to Countryside. Same tech, flat rate, chemicals included, water kept crystal clear.';
+  'Weekly pool service in Clearwater, FL — Clearwater Beach & Sand Key to Countryside. Consistent techs, flat rate, chemicals included, crystal-clear water.';
 const PAGE_URL = 'https://suncoastpoolpros.com/clearwater-fl/';
 
 const HeroSection = () => {
@@ -133,7 +133,7 @@ const HeroSection = () => {
 // Bold trust marquee — a full-width navy band right under the hero. High-contrast
 // uppercase proof tokens separated by orange diamonds; doubles as the dark-to-
 // content handoff. Wraps (not scrolls) so it never overflows on mobile.
-const TRUST_TOKENS = ['One flat rate', 'No contracts', 'Chemicals included', 'Same tech weekly'];
+const TRUST_TOKENS = ['One flat rate', 'No contracts', 'Chemicals included', 'Consistent techs'];
 const TrustMarquee = () => (
   <div className="bg-[#0a1628] border-b border-white/10">
     <Container className="py-4 md:py-5">
@@ -195,7 +195,7 @@ const usePageSchema = () => {
           { '@type': 'Place', name: 'Feather Sound, FL' },
         ],
         description:
-          'Weekly pool service for all of Clearwater, FL — the barrier-island beach world (Clearwater Beach, Sand Key, Island Estates) and the established mainland (Countryside, Morningside, Del Oro). Same dedicated technician, salt systems and screened cages handled, flat rate with chemicals included, photo report after every visit.',
+          'Weekly pool service for all of Clearwater, FL — the barrier-island beach world (Clearwater Beach, Sand Key, Island Estates) and the established mainland (Countryside, Morningside, Del Oro). Consistent vetted technicians, salt systems and screened cages handled, flat rate with chemicals included, photo report after every visit.',
       },
       {
         '@context': 'https://schema.org',

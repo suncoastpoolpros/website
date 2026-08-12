@@ -69,7 +69,7 @@ export const faqs: Faq[] = [
     category: 'Our Service',
     question: 'What makes Suncoast Pool Pros different?',
     answer:
-      "Honestly, it comes down to our people and our technology. We've built a team that takes real pride in every single pool they touch — the same tech comes back to yours each week, gets to know it, and treats it like their own instead of rushing through a route. Then there's the technology, which a lot of pool services still don't bother with: you get a clear report after every visit, easy online payments, and — the part that quietly saves people the most — a system that tracks your pool's numbers over time and flags major issues early, like a developing water leak or a failing pump, before they turn into a big repair bill. It all runs on one flat monthly rate and is backed by our Always Blue Guarantee. Most pool-service headaches come down to a rotating crew, surprise charges, and problems nobody caught in time — we built the whole service to take those off the table.",
+      "Honestly, it comes down to our people and our technology. We've built a team of vetted, friendly technicians who take real pride in every single pool they touch — we keep routes consistent, so a familiar face comes back to yours, gets to know it, and treats it like their own instead of rushing through a route. Then there's the technology, which a lot of pool services still don't bother with: you get a clear report after every visit, easy online payments, and — the part that quietly saves people the most — a system that tracks your pool's numbers over time and flags major issues early, like a developing water leak or a failing pump, before they turn into a big repair bill. It all runs on one flat monthly rate and is backed by our Always Blue Guarantee. Most pool-service headaches come down to a rotating crew, surprise charges, and problems nobody caught in time — we built the whole service to take those off the table.",
   },
   {
     category: 'Our Service',
@@ -118,7 +118,7 @@ export const faqs: Faq[] = [
     category: 'Our Service',
     question: 'Will I have the same technician each week?',
     answer:
-      "Yes, that's the whole idea. We build the service around consistent technicians instead of rotating crews, so the person caring for your pool actually knows it — its quirks, its equipment, and what \"normal\" looks like for your water. That consistency is how problems get caught early, and it's why your service reports stay accurate week to week. Every visit is GPS-verified and documented, so even on the rare occasion someone covers a route, you still get the same standard and the same written record.",
+      "That's how we build our routes. We hire vetted, knowledgeable technicians and keep assignments consistent instead of running rotating crews, so the person caring for your pool actually knows it — its quirks, its equipment, and what \"normal\" looks like for your water. That consistency is how problems get caught early, and it's why your service reports stay accurate week to week. Every visit is GPS-verified and documented, so even on the rare occasion someone covers a route, you still get the same standard and the same written record.",
   },
   {
     category: 'Our Service',

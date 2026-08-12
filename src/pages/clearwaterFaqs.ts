@@ -34,7 +34,7 @@ export const clearwaterFaqs = [
   },
   {
     q: 'Who actually shows up each week — is it the same person?',
-    a: "The same person, permanently — not \"usually.\" The tech who services your pool this week services it next week, and they're background-checked before they ever open a gate. Over a month or two they build a mental file on your setup: how your salt cell trends, which corner collects debris, what your filter pressure reads when everything's healthy. That accumulated knowledge is half of what you're paying for; a rotating crew starts from zero every visit.",
+    a: "A familiar face. Every tech is vetted and background-checked before they ever open a gate, and we keep routes consistent, so the person servicing your pool builds a mental file on your setup: how your salt cell trends, which corner collects debris, what your filter pressure reads when everything's healthy. That accumulated knowledge is half of what you're paying for — and because every visit is documented, even if someone covers your route, they're not starting from zero the way a rotating crew does.",
   },
   {
     q: 'What is the Always Blue Guarantee?',

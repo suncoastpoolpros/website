@@ -11,7 +11,7 @@
 export const BENEFITS_HEADING = 'The Suncoast Difference';
 
 export const INCLUDED_BENEFITS = [
-  'The same technician every week — never a rotating crew',
+  'Vetted, consistent technicians — a familiar face, not a rotating crew',
   'A photo service report in your inbox after every visit',
   'All standard service chemicals included',
   'Filter cleaning, backwashing & salt-cell cleaning — all included',

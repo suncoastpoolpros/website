@@ -18,7 +18,7 @@ export const seminoleFaqs = [
   },
   {
     q: "Will I have the same technician every week?",
-    a: "Yes. You get one dedicated, background-checked technician assigned to your pool — the same person every week who learns your equipment, your gate, and how your water behaves. When you're home and using the pool all the time, that consistency is the difference between a service you trust and one you have to keep checking up on.",
+    a: "We assign a background-checked technician to your route and keep it consistent, so the face at your gate is one you know — someone friendly who learns your equipment, your gate, and how your water behaves. When you're home and using the pool all the time, that consistency is the difference between a service you trust and one you have to keep checking up on.",
   },
   {
     q: 'My pool gets heavy use from the kids and grandkids — can you keep up with that?',

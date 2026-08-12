@@ -53,7 +53,7 @@ const processSteps = [
     icon: CalendarCheck,
     step: 'A set day, every week',
     body:
-      "Your pool is on a structured weekly route — same day, same tech, same checklist. You don't have to coordinate with us, remind us, or check in. It just happens.",
+      "Your pool is on a structured weekly route — same day, same checklist, a tech who knows the property. You don't have to coordinate with us, remind us, or check in. It just happens.",
   },
   {
     icon: Camera,
@@ -359,9 +359,9 @@ const WHY_US_PAIRS: Array<{
     failure: 'A rotating crew that doesn\'t know your property',
     failureDetail:
       "Different person every week. They don't know the gate code, the cleaner's schedule, or that the salt cell needs to be checked closely. Things get missed.",
-    us: 'The same dedicated technician every week',
+    us: 'A consistent tech who knows your property',
     usDetail:
-      'Background-checked. Assigned to your property. Knows your access, your equipment, and the cleaner you work with. Consistency is the entire job.',
+      'Background-checked. On a consistent route. Knows your access, your equipment, and the cleaner you work with. Consistency is the entire job.',
   },
   {
     failure: 'Surcharges that show up at month-end',
@@ -480,9 +480,9 @@ const PromiseStrip = () => (
           Guest-ready. Protected. Off your plate.
         </h2>
         <p className="section-subtext max-w-2xl mx-auto mb-8">
-          One dedicated technician, full chemistry balance, and a photo-verified
-          report after every visit — for one flat monthly rate, no contracts,
-          no surprise chemical bills.
+          A consistent, vetted technician, full chemistry balance, and a
+          photo-verified report after every visit — for one flat monthly rate,
+          no contracts, no surprise chemical bills.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-300">
           <span className="flex items-center gap-2">

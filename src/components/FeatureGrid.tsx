@@ -9,8 +9,8 @@ import { Container } from '@/components/Container';
 const items = [
   {
     icon: UserRound,
-    title: 'The Same Tech Every Week',
-    body: 'No rotating crews, ever. One dedicated technician learns your pool, your equipment, and your gate code by heart.',
+    title: 'Vetted Techs, Familiar Faces',
+    body: 'Every technician is vetted, friendly, and knowledgeable — and we keep routes consistent, so the face at your gate is one you recognize.',
   },
   {
     icon: ScanSearch,

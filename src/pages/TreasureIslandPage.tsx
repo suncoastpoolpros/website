@@ -18,7 +18,7 @@ import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 const PAGE_TITLE =
   'Treasure Island Pool Service — Always Guest-Ready';
 const PAGE_DESC =
-  'Weekly pool service across Treasure Island, FL — for homes, rentals & snowbirds. Same tech, same flat rate, photo report. Always guest-ready.';
+  'Weekly pool service across Treasure Island, FL — for homes, rentals & snowbirds. Consistent tech, one flat rate, photo report. Always guest-ready.';
 const PAGE_URL = 'https://suncoastpoolpros.com/treasure-island-fl/';
 
 const HeroSection = () => {
@@ -214,7 +214,7 @@ const usePageSchema = () => {
         priceRange: '$$',
         areaServed: { '@type': 'City', name: 'Treasure Island', addressRegion: 'FL' },
         description:
-          'Reliable weekly pool service for Treasure Island vacation rentals, Airbnbs, and second homes — same dedicated technician, photo report after every visit.',
+          'Reliable weekly pool service for Treasure Island vacation rentals, Airbnbs, and second homes — consistent vetted technicians, photo report after every visit.',
       },
       {
         '@context': 'https://schema.org',

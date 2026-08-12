@@ -30,7 +30,7 @@ export const largoFaqs = [
   },
   {
     q: 'Will it be the same technician every week?',
-    a: "Yes. One background-checked tech is assigned to your pool and stays your tech. They learn your equipment, your gate, the quirks of an older setup — which is exactly what keeps service reliable on a pool that's been around a while. You're not re-explaining your property to a new face every month.",
+    a: "We assign a background-checked tech to your pool and keep routes consistent, so it's a familiar face who learns your equipment, your gate, the quirks of an older setup — exactly what keeps service reliable on a pool that's been around a while. And every visit is documented, so nothing gets lost if someone ever covers the route.",
   },
   {
     q: 'My pool has gone green or I let it slip — can you still take it on?',

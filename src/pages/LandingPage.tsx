@@ -48,7 +48,7 @@ export const LandingPage = () => {
   usePageMeta({
     title: 'Pool Service St. Petersburg, FL — Flat-Rate Weekly Cleaning',
     description:
-      'Flat-rate weekly pool cleaning across St. Petersburg & Tampa Bay — chemicals included, the same tech every week, a photo report after each visit.',
+      'Flat-rate weekly pool cleaning across St. Petersburg & Tampa Bay — chemicals included, consistent vetted techs, a photo report after each visit.',
     canonicalPath: '/',
     // OG image matches the hero the page actually shows (the waterfront/Treasure
     // scene after the hero swap), not the default St-Pete image.

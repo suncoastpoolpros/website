@@ -81,7 +81,7 @@ const values = [
   {
     icon: CalendarCheck,
     title: 'Consistency, not rotating crews',
-    body: 'Each customer gets the same dedicated technician. It builds trust, it produces better pools, and it makes your job easier because you know every property on your route.',
+    body: 'Customers see a consistent technician, not a rotating crew. It builds trust, it produces better pools, and it makes your job easier because you know every property on your route.',
   },
   {
     icon: Award,

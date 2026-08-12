@@ -94,9 +94,9 @@ export const Services = () => {
               Everything's handled in your weekly pool service.
             </h2>
             <p className="section-subtext mb-7">
-              One dedicated technician does the brushing, skimming, vacuuming, and full
-              chemical balancing — with every standard chemical included. No add-ons, no
-              surprise invoices, no chasing anyone down.
+              A vetted, knowledgeable technician does the brushing, skimming, vacuuming,
+              and full chemical balancing — with every standard chemical included. No
+              add-ons, no surprise invoices, no chasing anyone down.
             </p>
 
             {/* Price anchor — the differentiator, pulled out of the paragraph so

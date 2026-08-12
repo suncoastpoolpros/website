@@ -54,7 +54,7 @@ export const poolServiceSchema = () => ({
   provider: { '@id': BUSINESS_ID },
   areaServed: AREAS_SERVED.map((name) => ({ '@type': 'City', name })),
   description:
-    'Flat-rate weekly pool cleaning and chemical balancing in St. Petersburg and the Tampa Bay area — all standard chemicals included, the same technician every week, and a photo report after every visit.',
+    'Flat-rate weekly pool cleaning and chemical balancing in St. Petersburg and the Tampa Bay area — all standard chemicals included, consistent vetted technicians, and a photo report after every visit.',
   offers: {
     '@type': 'Offer',
     priceCurrency: 'USD',

@@ -26,7 +26,7 @@ export const stPeteBeachFaqs = [
   },
   {
     q: 'Will it be the same technician every week?',
-    a: "Yes. One background-checked tech is assigned to your pool and stays your tech — they learn your equipment, how to get to the lanai, the little quirks of a beachside setup. That's what keeps a high-wear barrier-island pool reliable. You're not re-explaining the gate code to a new face every month.",
+    a: "We keep routes consistent, so the background-checked tech at your gate is a familiar face — they learn your equipment, how to get to the lanai, the little quirks of a beachside setup. That's what keeps a high-wear barrier-island pool reliable, and every visit is documented, so nothing about your pool gets lost if someone ever covers the route.",
   },
   {
     q: 'What is the Always Blue Guarantee?',

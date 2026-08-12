@@ -60,9 +60,9 @@ const islandToll = [
 const processSteps = [
   {
     icon: CalendarClock,
-    step: 'Same tech, same day, every week',
+    step: 'A familiar tech, same day every week',
     body:
-      "One technician owns your pool. Same day each week, every week. They learn your equipment, how to get to the lanai, the way your particular pool handles the salt and the sun — so nobody's relearning your property from scratch.",
+      "Your pool goes on a consistent route — same day each week, with a vetted tech who learns your equipment, how to get to the lanai, the way your particular pool handles the salt and the sun. Nobody's relearning your property from scratch.",
   },
   {
     icon: Camera,
@@ -593,9 +593,9 @@ const PromiseStrip = () => (
           Salt-tested. Sun-ready. Always clear.
         </h2>
         <p className="section-subtext max-w-2xl mx-auto mb-8">
-          One dedicated technician, full chemistry balance, and a photo-verified
-          report after every visit — for one flat monthly rate. No contracts, no
-          surprise chemical bills, no green water on the beach.
+          A consistent, vetted technician, full chemistry balance, and a
+          photo-verified report after every visit — for one flat monthly rate.
+          No contracts, no surprise chemical bills, no green water on the beach.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-300">
           <span className="flex items-center gap-2">

@@ -379,7 +379,7 @@ const steps = [
   {
     icon: CalendarCheck,
     title: 'Same day, every week',
-    body: "Your pool goes on a fixed weekly route — same day, same tech, same checklist. No reminding us, no chasing.",
+    body: "Your pool goes on a fixed weekly route — same day, same checklist, a tech who knows your pool. No reminding us, no chasing.",
   },
   {
     icon: FileText,

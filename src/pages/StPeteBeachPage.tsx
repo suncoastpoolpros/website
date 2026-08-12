@@ -17,7 +17,7 @@ import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 const PAGE_TITLE = 'St. Pete Beach Pool Service — Salt-Tested, Always Clear';
 const PAGE_DESC =
-  'Weekly pool service for St. Pete Beach, FL — built for salt air, sun & heavy use. Same tech, equipment checked, flat rate, photo report every visit.';
+  'Weekly pool service for St. Pete Beach, FL — built for salt air, sun & heavy use. Consistent tech, equipment checked, flat rate, photo report every visit.';
 const PAGE_URL = 'https://suncoastpoolpros.com/st-pete-beach-fl/';
 
 const HeroSection = () => {
@@ -179,7 +179,7 @@ const usePageSchema = () => {
         priceRange: '$$',
         areaServed: { '@type': 'City', name: 'St. Pete Beach', addressRegion: 'FL' },
         description:
-          'Weekly pool service for St. Pete Beach, FL barrier-island homes and rentals — salt-air equipment inspection, sun-tuned chemistry, same dedicated technician, and a photo report after every visit.',
+          'Weekly pool service for St. Pete Beach, FL barrier-island homes and rentals — salt-air equipment inspection, sun-tuned chemistry, consistent vetted technicians, and a photo report after every visit.',
       },
       {
         '@context': 'https://schema.org',

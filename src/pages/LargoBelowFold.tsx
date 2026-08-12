@@ -333,7 +333,7 @@ const steps = [
     icon: ShieldCheck,
     title: 'You stop thinking about it',
     body:
-      "Same tech, same day, photo report after every visit. The pool just stays clear and the equipment stays watched. That's the whole idea.",
+      "Same day each week, a familiar tech, photo report after every visit. The pool just stays clear and the equipment stays watched. That's the whole idea.",
   },
 ];
 

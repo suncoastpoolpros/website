@@ -28,11 +28,11 @@ import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 // With"). Largo's whole angle is honesty/flat-rate, so the hook is the one
 // homeowners scanning results care about most — "No Surprises". 51 chars.
 const PAGE_TITLE = 'Largo Pool Service — Flat-Rate Weekly, No Surprises';
-// 155 chars. Leads with the local keyword, stacks the click-drivers (flat rate,
-// chemicals included, same tech), and names the distinct angle (established homes
-// / equipment watched / no upsells) to pre-qualify the click.
+// ~157 chars. Leads with the local keyword, stacks the click-drivers (flat rate,
+// chemicals included, consistent tech), and names the distinct angle (established
+// homes / equipment watched / no upsells) to pre-qualify the click.
 const PAGE_DESC =
-  'Weekly pool service in Largo, FL — flat rate, chemicals included, same tech weekly. Established-home pools kept clear, aging equipment watched, no upsells.';
+  'Weekly pool service in Largo, FL — flat rate, chemicals included, a consistent tech. Established-home pools kept clear, aging equipment watched, no upsells.';
 const PAGE_URL = 'https://suncoastpoolpros.com/largo-fl/';
 
 // The flat-rate "promise ribbon" — Largo's distinct hero element. No phone mockup
@@ -40,7 +40,7 @@ const PAGE_URL = 'https://suncoastpoolpros.com/largo-fl/';
 // composition anchored by a single glass bar that states what one flat rate buys.
 const PROMISE = [
   { icon: Wallet, label: 'One flat rate' },
-  { icon: CalendarCheck, label: 'Same tech weekly' },
+  { icon: CalendarCheck, label: 'Consistent tech' },
   { icon: Gauge, label: 'Equipment checked' },
   { icon: Camera, label: 'Photo report' },
 ];
@@ -98,7 +98,7 @@ const HeroSection = () => {
 
           <p className="text-shadow-city-body mx-auto max-w-xl text-[15px] sm:text-base text-gray-200 leading-[1.65] mb-8">
             Honest, flat-rate pool care for Largo&rsquo;s established homes &mdash;{' '}
-            <span className="text-white">the same tech every week, chemicals included, and your equipment actually watched</span>.
+            <span className="text-white">a consistent tech who knows your pool, chemicals included, and your equipment actually watched</span>.
           </p>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3 sm:gap-4">
@@ -179,7 +179,7 @@ const usePageSchema = () => {
           { '@type': 'Place', name: 'Highland Lakes, FL' },
         ],
         description:
-          'Honest, flat-rate weekly pool service for Largo, FL — the established residential heart of Pinellas. Same dedicated technician, aging equipment watched and serviced, chemicals included, photo report after every visit, no commission-driven upsells.',
+          'Honest, flat-rate weekly pool service for Largo, FL — the established residential heart of Pinellas. Consistent vetted technicians, aging equipment watched and serviced, chemicals included, photo report after every visit, no commission-driven upsells.',
       },
       {
         '@context': 'https://schema.org',

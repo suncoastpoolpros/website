@@ -105,7 +105,7 @@ const QUICK_FAQ = [
   {
     question: 'Will I have the same technician each week?',
     answer:
-      'Yes. One consistent tech is assigned to your pool, which is how small problems get caught before they turn into big ones.',
+      'That\'s how we build our routes — a vetted, consistent tech is assigned to your pool, which is how small problems get caught before they turn into big ones.',
   },
   {
     question: 'How quickly can you start service?',

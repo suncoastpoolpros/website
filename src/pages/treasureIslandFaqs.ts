@@ -8,7 +8,7 @@ export const treasureIslandFaqs = [
   },
   {
     q: "How does it work if I'm not in town when you service the pool?",
-    a: "Most of our Treasure Island customers aren't on-site for the visit — that's the whole point. We just need safe gate or pool-area access. Your dedicated technician shows up the same day each week, completes a documented checklist, and emails the report when they leave. You'll know exactly what was done and the state of your water without lifting a finger.",
+    a: "Most of our Treasure Island customers aren't on-site for the visit — that's the whole point. We just need safe gate or pool-area access. Your technician shows up the same day each week, completes a documented checklist, and emails the report when they leave. You'll know exactly what was done and the state of your water without lifting a finger.",
   },
   {
     q: 'Can the pool be ready between back-to-back rental bookings?',
@@ -24,6 +24,6 @@ export const treasureIslandFaqs = [
   },
   {
     q: 'Will I have the same pool technician every week?',
-    a: "Yes. You get one dedicated technician assigned to your property who learns your pool, your equipment, and the access situation. That consistency is exactly what makes remote ownership work — you're not re-explaining the gate code or the trick to the salt cell to a new person every month.",
+    a: "That's how we run our routes — we keep assignments consistent, so the vetted tech at your property is a familiar face who learns your pool, your equipment, and the access situation. And because every visit follows a documented checklist, you're not re-explaining the gate code or the trick to the salt cell, even if someone covers the route.",
   },
 ];

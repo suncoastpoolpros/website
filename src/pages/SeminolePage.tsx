@@ -17,13 +17,13 @@ import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 const PAGE_TITLE = 'Seminole Pool Service — The Pool You Actually Live With';
 const PAGE_DESC =
-  'Weekly pool service in Seminole, FL — built for full-time homes that swim. Same tech, screen-enclosure debris handled, flat rate, chemicals included.';
+  'Weekly pool service in Seminole, FL — built for full-time homes that swim. Consistent tech, screen-enclosure debris handled, flat rate, chemicals included.';
 const PAGE_URL = 'https://suncoastpoolpros.com/seminole-fl/';
 
 // Hero stat tiles — replaces the beach pages' inline star/trust strip with a
 // distinct tiled row, framed for full-time residents (not absentee owners).
 const HERO_STATS = [
-  { icon: CalendarCheck, label: 'Same tech', sub: 'every week' },
+  { icon: CalendarCheck, label: 'Consistent tech', sub: 'a familiar face' },
   { icon: Camera, label: 'Photo report', sub: 'every visit' },
   { icon: Wallet, label: 'Flat rate', sub: 'chemicals included' },
   { icon: MapPin, label: '33772–33778', sub: 'all of Seminole' },
@@ -99,13 +99,13 @@ const HeroSection = () => {
           </h1>
 
           <p className="text-shadow-city-body md:hidden text-[15px] text-gray-200 max-w-[34rem] leading-[1.6] mb-7">
-            For full-time Seminole homes — <span className="text-white">families and retirees who use the pool year-round</span>. Same tech weekly, flat rate, chemicals included.
+            For full-time Seminole homes — <span className="text-white">families and retirees who use the pool year-round</span>. A consistent tech, flat rate, chemicals included.
           </p>
           <p className="text-shadow-city-body hidden md:block text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
             Not a beach rental, not a second home you visit twice a year — the pool
             the kids and grandkids actually swim in. From{' '}
             <span className="text-white">Bardmoor to Seminole Lake to Oakhurst</span>,
-            you get the same dedicated technician every week, all standard chemicals
+            you get a consistent, vetted technician, all standard chemicals
             included in one flat rate, and a photo report after every visit.
           </p>
 
@@ -179,7 +179,7 @@ const usePageSchema = () => {
           { '@type': 'Place', name: 'Seminole Lake, FL' },
         ],
         description:
-          'Reliable weekly pool service for full-time Seminole, FL homes — families and year-round residents. Same dedicated technician, screen-enclosure debris handled, flat rate with chemicals included, photo report after every visit.',
+          'Reliable weekly pool service for full-time Seminole, FL homes — families and year-round residents. Consistent vetted technicians, screen-enclosure debris handled, flat rate with chemicals included, photo report after every visit.',
       },
       {
         '@context': 'https://schema.org',

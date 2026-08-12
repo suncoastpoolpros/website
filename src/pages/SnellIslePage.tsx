@@ -175,7 +175,7 @@ const usePageSchema = () => {
         priceRange: '$$',
         areaServed: { '@type': 'Place', name: 'Snell Isle, St. Petersburg, FL' },
         description:
-          'Weekly estate pool service for Snell Isle, St. Petersburg — finish-safe chemistry for pebble and tile, mature-canopy debris management, larger custom pools, same dedicated technician, and a photo report after every visit.',
+          'Weekly estate pool service for Snell Isle, St. Petersburg — finish-safe chemistry for pebble and tile, mature-canopy debris management, larger custom pools, consistent vetted technicians, and a photo report after every visit.',
       },
       {
         '@context': 'https://schema.org',

@@ -56,9 +56,9 @@ const estateCare = [
 const processSteps = [
   {
     icon: CalendarClock,
-    step: 'One technician who knows your property',
+    step: 'A technician who knows your property',
     body:
-      "You get one assigned, background-checked tech — not a rotating crew. Over a few visits they come to know your equipment pad, your enclosure, your finish, and exactly how your pool behaves under that canopy. On a property like this, that familiarity is what keeps small things from slipping through.",
+      "You get a vetted, background-checked tech on a consistent route — not a rotating crew. Over a few visits they come to know your equipment pad, your enclosure, your finish, and exactly how your pool behaves under that canopy. On a property like this, that familiarity is what keeps small things from slipping through.",
   },
   {
     icon: Camera,
@@ -370,9 +370,9 @@ const WHY_US_PAIRS: Array<{
     failure: 'A rotating crew on a private property',
     failureDetail:
       "Different person every week, none of whom know your enclosure, your spa, or your gate. On a high-value home, that's both inconsistent service and a parade of strangers.",
-    us: 'One dedicated, background-checked tech',
+    us: 'A consistent, background-checked tech',
     usDetail:
-      "The same person every week, who knows your property and equipment and respects that it's your home. Consistency and discretion, not a new face each visit.",
+      "A familiar face on a consistent route, who knows your property and equipment and respects that it's your home. Consistency and discretion, not a parade of strangers.",
   },
   {
     failure: "A bill that never matches the quote",
@@ -483,9 +483,9 @@ const PromiseStrip = () => (
           Clear water. Protected finish. Zero hassle.
         </h2>
         <p className="section-subtext max-w-2xl mx-auto mb-8">
-          One dedicated technician, finish-safe chemistry, full debris and
-          equipment care, and a photo report after every visit — for one flat
-          monthly rate. No contracts, no surprise chemical bills.
+          A consistent, vetted technician, finish-safe chemistry, full debris
+          and equipment care, and a photo report after every visit — for one
+          flat monthly rate. No contracts, no surprise chemical bills.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-300">
           <span className="flex items-center gap-2">
