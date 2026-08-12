@@ -24,6 +24,10 @@ type PageMeta = {
    *  `{ href, media }` to scope a font to a viewport (e.g. a desktop-only
    *  decorative font shouldn't preload on mobile). See FONTS. */
   fontPreload?: Array<string | { href: string; media: string }>;
+  /** Structured data for this route. Passed here (not injected in a useEffect)
+   *  so it lands in the prerendered HTML — see SsrMeta.jsonLd. The client path
+   *  also mounts it, so SPA navigation still swaps schema correctly. */
+  jsonLd?: unknown[];
   /** Keep this page out of search results (transactional/thank-you pages).
    *  Emits <meta name="robots" content="noindex,follow"> — page stays
    *  crawlable and prerendered, just not indexed. */
@@ -107,14 +111,14 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
       ? { title: metaOrTitle, description: maybeDesc ?? '' }
       : metaOrTitle;
 
-  const { title, description, canonicalPath, heroPreload, fontPreload, noindex } = meta;
+  const { title, description, canonicalPath, heroPreload, fontPreload, noindex, jsonLd } = meta;
   const canonicalUrl = `${SITE_ORIGIN}${canonicalPath ?? '/'}`;
 
   // Server: populate the SSR meta singleton during render. The prerender script
   // reads this after renderToString and writes it into the static HTML head.
   // No og:image is emitted — link shares render as a plain card with no photo.
   if (IS_SERVER) {
-    setSsrMeta({ title, description, canonicalUrl, heroPreload, fontPreload, noindex });
+    setSsrMeta({ title, description, canonicalUrl, heroPreload, fontPreload, noindex, jsonLd });
   }
 
   useEffect(() => {
@@ -155,4 +159,29 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
       }
     };
   }, [title, description, canonicalUrl, noindex]);
+
+  // JSON-LD on the client. This lives in <head>, outside the hydrated tree, so
+  // it can't cause a hydration mismatch.
+  //
+  // On a cold load the prerendered HTML already carries this graph, so the
+  // effect ADOPTS that tag rather than appending a second copy. It still takes
+  // ownership either way, so navigating away removes it — otherwise the
+  // homepage's Service/FAQPage nodes would leak onto whatever route the user
+  // clicked into next. Keyed on the serialized graph so unrelated re-renders
+  // don't churn the tag.
+  const jsonLdText = jsonLd && jsonLd.length ? JSON.stringify(jsonLd) : '';
+  useEffect(() => {
+    if (!jsonLdText) return;
+    const adopted = document.head.querySelector<HTMLScriptElement>(
+      'script[type="application/ld+json"][data-page-schema]',
+    );
+    const el = adopted ?? document.createElement('script');
+    if (el.textContent !== jsonLdText) el.textContent = jsonLdText;
+    if (!adopted) {
+      el.type = 'application/ld+json';
+      el.setAttribute('data-page-schema', '');
+      document.head.appendChild(el);
+    }
+    return () => el.remove();
+  }, [jsonLdText]);
 }

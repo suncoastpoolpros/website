@@ -137,6 +137,24 @@ function injectHead(html, meta) {
   if (meta.description) replacements.push(`<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`);
 
   out = out.replace('</head>', `  ${replacements.join('\n    ')}\n  </head>`);
+
+  // Per-page JSON-LD, emitted STATICALLY. Previously each page injected its
+  // graph from a useEffect, which means the HTML a crawler reads on first fetch
+  // carries none of it — Google does render JS, but static is strictly safer and
+  // costs nothing here. `data-page-schema` marks it so the client hook adopts
+  // this tag instead of appending a duplicate. Escape `</script` and U+2028/9 so
+  // the payload can't break out of the script element.
+  if (meta.jsonLd && meta.jsonLd.length) {
+    const ld = JSON.stringify(meta.jsonLd)
+      .replace(/<\/script/gi, '<\\/script')
+      .replace(/\u2028/g, '\\u2028')
+      .replace(/\u2029/g, '\\u2029');
+    out = out.replace(
+      '</head>',
+      `  <script type="application/ld+json" data-page-schema>${ld}</script>\n  </head>`,
+    );
+  }
+
   return out;
 }
 

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Hero, HomeHeroPhoneSection } from '@/components/Hero';
 import { FeatureGrid } from '@/components/FeatureGrid';
@@ -18,31 +18,25 @@ import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 // Homepage JSON-LD. The canonical LocalBusiness entity ships statically in
 // index.html (crawlable on every page); here we add only the homepage-specific
 // nodes — WebSite, the priced Service, the homepage FAQ, and a one-level
-// breadcrumb — referencing the business by @id. Title/desc/canonical/OG are
-// handled by usePageMeta (SSR); usePageMeta doesn't do JSON-LD, so this effect
-// adds it client-side. See CLAUDE.md #9.
-const usePageSchema = () => {
-  useEffect(() => {
-    const ld = document.createElement('script');
-    ld.type = 'application/ld+json';
-    ld.textContent = JSON.stringify([
-      webSiteSchema(),
-      poolServiceSchema(),
-      {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: homepageFaqs.map((f) => ({
-          '@type': 'Question',
-          name: f.question,
-          acceptedAnswer: { '@type': 'Answer', text: f.answer },
-        })),
-      },
-      breadcrumbSchema([{ name: 'Home', path: '/' }]),
-    ]);
-    document.head.appendChild(ld);
-    return () => ld.remove();
-  }, []);
-};
+// breadcrumb — referencing the business by @id.
+//
+// Passed through usePageMeta({ jsonLd }) so it lands in the PRERENDERED head.
+// It used to be appended from a useEffect, which meant the HTML a crawler reads
+// on first fetch carried none of these four nodes.
+const HOMEPAGE_SCHEMA = [
+  webSiteSchema(),
+  poolServiceSchema(),
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: homepageFaqs.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+  breadcrumbSchema([{ name: 'Home', path: '/' }]),
+];
 
 export const LandingPage = () => {
   usePageMeta({
@@ -50,11 +44,10 @@ export const LandingPage = () => {
     description:
       'Flat-rate weekly pool cleaning across St. Petersburg & Tampa Bay — chemicals included, consistent vetted techs, a photo report after each visit.',
     canonicalPath: '/',
-    // OG image matches the hero the page actually shows (the waterfront/Treasure
-    // scene after the hero swap), not the default St-Pete image.
-    ogImage: '/treasure-island-hero.jpg',
     heroPreload: {
-      mobile: '/treasure-island-hero-mobile.webp',
+      // Must stay in lockstep with .hero-bg-mobile in index.css — preloading a
+      // different file than the CSS paints downloads both.
+      mobile: '/treasure-island-hero-mobile-v2.webp',
       desktop: '/treasure-island-hero.webp',
       wide: '/treasure-island-hero-1920.webp',
     },
@@ -65,8 +58,8 @@ export const LandingPage = () => {
       ...NAV_FONTS,
       { href: FONTS.caveat, media: '(min-width: 1024px)' },
     ],
+    jsonLd: HOMEPAGE_SCHEMA,
   });
-  usePageSchema();
 
   return (
     <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">

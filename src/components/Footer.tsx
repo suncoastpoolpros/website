@@ -92,7 +92,7 @@ export const Footer = () => {
 
           {/* Explore */}
           <nav aria-label="Footer">
-            <h4 className={colHeading}>Explore</h4>
+            <h3 className={colHeading}>Explore</h3>
             <ul className="space-y-2.5">
               {exploreLinks.map(({ label, href, route }) => (
                 <li key={label}>
@@ -112,7 +112,7 @@ export const Footer = () => {
 
           {/* Service Areas */}
           <nav aria-label="Service areas">
-            <h4 className={colHeading}>Service Areas</h4>
+            <h3 className={colHeading}>Service Areas</h3>
             <ul className="space-y-2.5">
               {footerCities.map((city) => (
                 <li key={city.slug}>
@@ -139,7 +139,7 @@ export const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h4 className={colHeading}>Contact</h4>
+            <h3 className={colHeading}>Contact</h3>
             <ul className="space-y-3">
               <li>
                 <a href={PHONE_HREF} className={`group inline-flex items-center gap-2.5 ${linkClass}`}>
@@ -166,7 +166,7 @@ export const Footer = () => {
 
           {/* Hours */}
           <div>
-            <h4 className={colHeading}>Hours</h4>
+            <h3 className={colHeading}>Hours</h3>
             <ul className="space-y-2.5 text-gray-400 text-sm">
               <li className="whitespace-nowrap">{HOURS_SHORT}</li>
               <li>Sunday: Closed</li>

@@ -23,6 +23,11 @@ export type SsrMeta = {
    *  weights it paints above the fold. A string preloads unconditionally; an
    *  `{ href, media }` entry scopes it to a viewport (e.g. desktop-only fonts). */
   fontPreload?: Array<string | { href: string; media: string }>;
+  /** Structured data for this route, emitted as a <script type="application/ld+json">
+   *  in the PRERENDERED head. Prefer this over a client-side useEffect: an
+   *  effect-injected graph only exists after hydration, so the static HTML a
+   *  crawler reads first carries none of it. */
+  jsonLd?: unknown[];
   /** When true, the page emits <meta name="robots" content="noindex,follow">
    *  so it's kept out of search results (e.g. transactional/thank-you pages)
    *  while still crawlable and prerendered. */

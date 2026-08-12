@@ -55,13 +55,17 @@ export const poolServiceSchema = () => ({
   areaServed: AREAS_SERVED.map((name) => ({ '@type': 'City', name })),
   description:
     'Flat-rate weekly pool cleaning and chemical balancing in St. Petersburg and the Tampa Bay area — all standard chemicals included, consistent vetted technicians, and a photo report after every visit.',
+  // A bare `price` asserts a fixed, purchasable amount. Our own FAQ says
+  // "approximately $150 per month… pricing varies based on trees, pool size,
+  // and many other factors", so a flat 150 was a claim the page contradicts —
+  // exactly the kind of mismatch that costs a rich result. `minPrice` on a
+  // PriceSpecification says "from $150/month", which is true.
   offers: {
     '@type': 'Offer',
     priceCurrency: 'USD',
-    price: '150',
     priceSpecification: {
       '@type': 'UnitPriceSpecification',
-      price: '150',
+      minPrice: '150',
       priceCurrency: 'USD',
       unitText: 'MONTH',
     },

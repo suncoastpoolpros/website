@@ -24,6 +24,11 @@ type ServiceReportPhoto = {
    *  `${base}-mobile.webp/.jpg` in /public, mirroring the hero asset naming. */
   base: string;
   alt: string;
+  /** Overrides the derived `${base}-mobile.webp`. Needed when a page's mobile
+   *  hero has been re-encoded under a versioned filename: this photo is only
+   *  free (a cache hit) while it requests the EXACT file the hero painted, so
+   *  the two must not drift apart. */
+  mobileWebp?: string;
 };
 
 type ServiceReportProps = {
@@ -401,7 +406,7 @@ export const ServiceReport = ({
             <p className="sr-hero__address">{customerAddress}</p>
             <div className="sr-hero__pills">
               <span className="sr-pill sr-pill--neutral">Serviced by Alex</span>
-              <a className="sr-pill sr-pill--link" href="#">GPS Verify ↗</a>
+              <span className="sr-pill sr-pill--link">GPS Verify ↗</span>
             </div>
           </section>
 
@@ -459,7 +464,7 @@ export const ServiceReport = ({
               <source
                 media="(max-width: 767px)"
                 type="image/webp"
-                srcSet={`${photo.base}-mobile.webp`}
+                srcSet={photo.mobileWebp ?? `${photo.base}-mobile.webp`}
               />
               <source
                 media="(max-width: 767px)"
@@ -498,7 +503,7 @@ export const ServiceReport = ({
               <ClientOnlyEmailLink href={EMAIL_HREF} label="Reply to this email" />
             </div>
 
-            <a className="sr-footer__prefs" href="#">Manage email preferences</a>
+            <span className="sr-footer__prefs">Manage email preferences</span>
 
             <div className="sr-footer__divider" />
             <span className="sr-footer__powered">Powered by PoolLogic</span>

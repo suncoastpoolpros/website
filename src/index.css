@@ -231,9 +231,17 @@ input[type="date"]::-webkit-date-and-time-value {
   filter: saturate(1.2) brightness(0.85) contrast(1.12) hue-rotate(-6deg);
 }
 .hero-bg-mobile {
-  /* Swapped to the Treasure Island photo (see .hero-bg-desktop note). */
+  /* Swapped to the Treasure Island photo (see .hero-bg-desktop note).
+     -v2 is the same photo re-encoded 1080w→900w at q78 (170KB → 109KB). This is
+     the mobile LCP payload on the critical path, so the 61KB matters more than
+     resolution the screen can't resolve: 900px over a 390pt viewport is still
+     2.3x, and the photo sits under saturate/brightness/contrast filters, a
+     readability scrim, and a mask that fades it out from 72% down. Verified
+     against the original at DPR3 — no visible difference in the smooth sky,
+     where webp artifacts show first. New filename because /public is immutably
+     cached (never edit an image in place here). */
   background-image: image-set(
-    url('/treasure-island-hero-mobile.webp') type('image/webp'),
+    url('/treasure-island-hero-mobile-v2.webp') type('image/webp'),
     url('/treasure-island-hero-mobile.jpg') type('image/jpeg')
   );
   filter: saturate(1.4) brightness(0.96) contrast(1.08) hue-rotate(-6deg);

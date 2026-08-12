@@ -448,6 +448,8 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
                           <img
                             src="/circle-icon.svg"
                             alt=""
+                            width={28}
+                            height={28}
                             loading="lazy"
                             decoding="async"
                             className="w-[28px] h-[28px] rounded-full shrink-0"
@@ -491,6 +493,10 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
                           inline
                           photo={{
                             base: '/treasure-island-hero',
+                            // Points at the SAME re-encoded file the mobile hero
+                            // paints, so this stays a cache hit instead of a
+                            // second full-size download.
+                            mobileWebp: '/treasure-island-hero-mobile-v2.webp',
                             alt: 'Waterfront infinity pool with palm trees in St. Petersburg, FL — cleaned and chemically balanced by Suncoast Pool Pros',
                           }}
                         />
