@@ -143,29 +143,35 @@ export const Navbar = () => {
           <Link
             to="/"
             aria-label="Suncoast Pool Pros home"
-            className="shrink-0 flex items-center gap-2 md:gap-2.5"
+            className="shrink-0 flex items-center gap-2"
           >
-            {/* Full brand lockup: wave mark + STACKED wordmark, matching the
-                actual logo — SUNCOAST bold over POOL PROS, letter-spaced so
-                both lines span the same width (tracking tuned by measurement,
-                like the hero lockup). Explicit img width/height reserves the
-                box pre-load (CLS). Both lines are Montserrat 700 — the one
-                display weight NAV_FONTS preloads on every page. */}
+            {/* MOBILE (<md): full brand lockup — wave mark + STACKED wordmark
+                (SUNCOAST bold over POOL PROS, letter-spaced so both lines span
+                the same width). Explicit img width/height reserves the box
+                pre-load (CLS).
+                DESKTOP/TABLET (md+): the original single-line wordmark in one
+                color. CSS visibility split only — the DOM is identical at
+                every viewport (no content-hiding penalty, no hydration risk).
+                All lines are Montserrat 700 — the one display weight
+                NAV_FONTS preloads on every page. */}
             <img
               src="/icon-mark.svg"
               alt=""
               aria-hidden="true"
               width={37}
               height={24}
-              className="h-7 md:h-8 w-auto"
+              className="h-7 w-auto md:hidden"
             />
-            <span className="flex flex-col text-[#0a1628] md:text-white uppercase font-display font-bold">
-              <span className="text-[15px] md:text-[17px] leading-none tracking-[0.02em]">
+            <span className="flex md:hidden flex-col text-[#0a1628] uppercase font-display font-bold">
+              <span className="text-[15px] leading-none tracking-[0.02em]">
                 Suncoast
               </span>
-              <span className="mt-[3px] text-[9px] md:text-[10px] leading-none tracking-[0.405em] md:tracking-[0.426em]">
+              <span className="mt-[3px] text-[9px] leading-none tracking-[0.405em]">
                 Pool Pros
               </span>
+            </span>
+            <span className="hidden md:inline font-display font-bold text-base tracking-wide text-white uppercase">
+              Suncoast Pool Pros
             </span>
           </Link>
 
