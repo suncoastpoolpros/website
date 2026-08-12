@@ -5,15 +5,25 @@
    lets font-display: swap show the system fallback instantly while the woff2
    downloads. Files live in public/fonts/; originals in public/fonts/_orig/.
    Re-subset with `node scripts/subset-fonts.mjs` after replacing an _orig file.
-   Trimmed to 3 weights per family to keep first-load font bytes minimal:
-   Inter 400/600/700, Montserrat 400/700/900, Caveat 700 (decorative accent). */
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/inter-400.woff2') format('woff2'); }
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/inter-600.woff2') format('woff2'); }
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/inter-700.woff2') format('woff2'); }
-@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/montserrat-400.woff2') format('woff2'); }
-@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/montserrat-700.woff2') format('woff2'); }
-@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 900; font-display: swap; src: url('/fonts/montserrat-900.woff2') format('woff2'); }
-@font-face { font-family: 'Caveat'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/caveat-700.woff2') format('woff2'); }
+
+   ONE FILE PER FAMILY. The subset woff2s are VARIABLE fonts (wght 100–900),
+   so the old per-weight files (inter-400/-600/-700, montserrat-400/-700/-900)
+   were byte-identical duplicates — verified by md5. Declaring them under
+   separate URLs meant the browser could not dedupe and fetched the same
+   38KB/33KB payload three times per family on the critical path (142KB of
+   fonts on a cold mobile homepage; now 71KB). A single face per family with a
+   `font-weight` RANGE lets one download serve every weight, and the variable
+   axis renders each weight properly.
+
+   NOTE: `/fonts/*` is immutably cached (public/_headers), so these are NEW
+   filenames rather than edits to the old ones. The old per-weight files stay
+   on disk for any still-cached HTML referencing them.
+
+   Bonus: `font-medium` (500) previously had no face and silently fell back to
+   400 — the variable range now covers it. */
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/fonts/inter-var.woff2') format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/fonts/montserrat-var.woff2') format('woff2'); }
+@font-face { font-family: 'Caveat'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('/fonts/caveat-700.woff2') format('woff2'); }
 
 /* Size-adjusted fallbacks. The LCP element on the homepage is the orange
    "One Flat Rate" headline (Montserrat 900) — with plain font-display:swap it

@@ -68,15 +68,25 @@ function injectHead(html, meta) {
     // Drop every hero <link rel="preload" as="image"> the template hardcoded.
     out = out.replace(/\s*<link rel="preload" as="image"[^>]*\/?>/g, '');
     const h = meta.heroPreload;
+    // These media queries MUST mirror how the CSS actually picks the file, or
+    // the browser preloads one hero and then paints a different one —
+    // downloading both. The `.hero-bg-*` rules use `image-set(… 1x, …-1920 2x)`,
+    // which selects purely on DEVICE PIXEL RATIO; the preloads used to select on
+    // WIDTH, so the two disagreed in both directions:
+    //   • tablet/laptop ≥768px at DPR2 preloaded the 1x but painted the 2x
+    //     (measured 588KB of hero on an 820px retina tablet — two full images,
+    //     LCP 4.8s on Slow 4G)
+    //   • ≥1536px at DPR1 preloaded the 2x but painted the 1x
+    // So gate the ≥768px preloads on resolution, exactly like image-set. Mobile
+    // stays width-only because `.hero-bg-mobile` ships a single DPR-agnostic
+    // entry. A browser without `resolution` media support simply doesn't preload
+    // and falls back to loading via CSS — slower, never wrong.
+    const wide = h.wide || h.desktop;
     const imgPreloads = [
       `<link rel="preload" as="image" href="${escapeHtml(h.mobile)}" type="image/webp" media="(max-width: 767px)" />`,
-      `<link rel="preload" as="image" href="${escapeHtml(h.desktop)}" type="image/webp" media="(min-width: 768px)${h.wide ? ' and (max-width: 1535px)' : ''}" />`,
+      `<link rel="preload" as="image" href="${escapeHtml(h.desktop)}" type="image/webp" media="(min-width: 768px) and (max-resolution: 1.99dppx)" />`,
+      `<link rel="preload" as="image" href="${escapeHtml(wide)}" type="image/webp" media="(min-width: 768px) and (min-resolution: 2dppx)" />`,
     ];
-    if (h.wide) {
-      imgPreloads.push(
-        `<link rel="preload" as="image" href="${escapeHtml(h.wide)}" type="image/webp" media="(min-width: 1536px)" />`,
-      );
-    }
     out = out.replace('</head>', `  ${imgPreloads.join('\n    ')}\n  </head>`);
   }
 
@@ -86,10 +96,20 @@ function injectHead(html, meta) {
   // homepage or Montserrat-900 on content pages).
   if (meta.fontPreload && meta.fontPreload.length) {
     out = out.replace(/\s*<link rel="preload" as="font"[^>]*\/?>/g, '');
-    const fontPreloads = meta.fontPreload.map((f) => {
+    // De-dupe by href. Each family is now a single variable file, so a page
+    // still listing weights individually (FONTS.inter400 + FONTS.inter600 …)
+    // resolves to the same URL several times — emitting it twice would make the
+    // browser warn and waste a head entry. An unconditional entry also wins
+    // over a media-gated one for the same file.
+    const seen = new Map();
+    for (const f of meta.fontPreload) {
       const href = typeof f === 'string' ? f : f.href;
-      const media = typeof f === 'string' ? '' : ` media="${escapeHtml(f.media)}"`;
-      return `<link rel="preload" as="font" type="font/woff2" href="${escapeHtml(href)}" crossorigin${media} />`;
+      const media = typeof f === 'string' ? '' : f.media;
+      if (!seen.has(href) || !media) seen.set(href, media);
+    }
+    const fontPreloads = [...seen].map(([href, media]) => {
+      const mediaAttr = media ? ` media="${escapeHtml(media)}"` : '';
+      return `<link rel="preload" as="font" type="font/woff2" href="${escapeHtml(href)}" crossorigin${mediaAttr} />`;
     });
     out = out.replace('</head>', `  ${fontPreloads.join('\n    ')}\n  </head>`);
   }
@@ -120,11 +140,47 @@ function injectHead(html, meta) {
   return out;
 }
 
+/**
+ * Hoist React 19's auto-emitted resource links out of the app HTML.
+ *
+ * React 19 preloads images it renders (`<img src>`) by emitting a
+ * `<link rel="preload" as="image">`. With the streaming APIs those "hoistables"
+ * go into <head>; `renderToString` has no head to hoist into, so it emits them
+ * INLINE at the point they were generated — i.e. inside #root. On the client,
+ * React puts the same link in <head>, so the server HTML had a node the client
+ * tree doesn't → hydration mismatch (React #418) on EVERY route, which forces a
+ * full client re-render of the tree (see CLAUDE.md #4 and "Don't deploy
+ * without"). Measured: 28/28 routes carried a stray
+ * `<link rel="preload" as="image" href="/icon-mark.svg">` as #root's first child
+ * and every viewport threw #418 on load.
+ *
+ * So: pull those links out of the body and return them for the head. The
+ * preload is still emitted (same benefit), just in the right place — and the
+ * hydrated tree now matches byte-for-byte.
+ *
+ * ORDER MATTERS: injectHead() already ran, so its `heroPreload` strip-and-
+ * replace is done and these links land after it — a hero page keeps both its
+ * deliberate hero set and this (tiny, deduped) logo-mark preload.
+ */
+function hoistResourceLinks(body) {
+  const links = [];
+  const cleaned = body.replace(/<link\s[^>]*rel="(?:preload|stylesheet|preconnect)"[^>]*\/?>/g, (tag) => {
+    links.push(tag);
+    return '';
+  });
+  return { cleaned, links };
+}
+
 function injectBody(html, body) {
-  return html.replace(
-    '<div id="root"></div>',
-    `<div id="root">${body}</div>`,
-  );
+  const { cleaned, links } = hoistResourceLinks(body);
+  let out = html.replace('<div id="root"></div>', `<div id="root">${cleaned}</div>`);
+  if (links.length) {
+    // De-dupe: the same asset can be rendered more than once (the logo mark is
+    // in both the navbar and the footer).
+    const unique = [...new Set(links)];
+    out = out.replace('</head>', `  ${unique.join('\n    ')}\n  </head>`);
+  }
+  return out;
 }
 
 /**

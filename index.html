@@ -99,9 +99,8 @@
          400 (body). Hero pages override this set per-route via
          usePageMeta({ fontPreload }) in scripts/prerender.mjs (e.g. adding
          Montserrat 900 for the big headline, or Caveat on the homepage). -->
-    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-600.woff2" crossorigin />
-    <link rel="preload" as="font" type="font/woff2" href="/fonts/montserrat-700.woff2" crossorigin />
-    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-var.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/montserrat-var.woff2" crossorigin />
 
     <!-- Hero image preloads are injected per-page by scripts/prerender.mjs from
          each route's usePageMeta({ heroPreload }) — so a page only preloads the

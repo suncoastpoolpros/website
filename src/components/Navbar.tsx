@@ -303,15 +303,23 @@ export const Navbar = () => {
                 </>
               )}
             </div>
-            {/* Get a Quote — md+. Sits before the hamburger so the menu stays
-                the rightmost control at every width. */}
-            <button
-              type="button"
-              onClick={openQuoteSheet}
-              className="btn btn-orange hidden md:inline-flex whitespace-nowrap px-4 lg:px-6"
-            >
-              Get a Quote
-            </button>
+            {/* Get a Quote — md+ only (mobile's CTA is the sticky tab bar).
+                The show/hide MUST live on this wrapper, not on the button:
+                `.btn` is declared in @layer utilities AFTER Tailwind's own
+                utilities, so its `display:inline-flex` beats a `hidden` class
+                on the same element (equal specificity → source order wins) and
+                the button stayed visible on phones.
+                Sits before the hamburger so the menu is the rightmost control
+                at every width. */}
+            <span className="hidden md:inline-flex">
+              <button
+                type="button"
+                onClick={openQuoteSheet}
+                className="btn btn-orange whitespace-nowrap px-4 lg:px-6"
+              >
+                Get a Quote
+              </button>
+            </span>
 
             {/* Hamburger — below lg (phones AND tablet). Dark ink on the white
                 mobile bar, white ink on the dark tablet bar. */}

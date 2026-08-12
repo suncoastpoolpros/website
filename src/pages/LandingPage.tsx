@@ -58,18 +58,12 @@ export const LandingPage = () => {
       desktop: '/treasure-island-hero.webp',
       wide: '/treasure-island-hero-1920.webp',
     },
-    // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
-    // hero H1 (font-display font-normal = Montserrat 400). The "One Flat Rate"
-    // headline is font-bold md:font-black (Montserrat 700 mobile, 900 desktop),
-    // so preload 900 only at md+. Caveat (the "Sent after every visit" script
-    // accent) is hidden lg:flex — desktop only — so preload it only at lg+.
-    // Mobile thus loads just inter-400/600 + montserrat-400/700.
+    // One variable file per family covers every weight above the fold (nav,
+    // hero body, H1, and the "One Flat Rate" headline). Caveat is a separate
+    // file and the accent it draws is hidden lg:flex, so it stays lg+ only.
     fontPreload: [
       ...NAV_FONTS,
-      FONTS.inter400,
-      FONTS.montserrat400,
-      { href: FONTS.montserrat900, media: '(min-width: 768px)' },
-      { href: FONTS.caveat700, media: '(min-width: 1024px)' },
+      { href: FONTS.caveat, media: '(min-width: 1024px)' },
     ],
   });
   usePageSchema();
