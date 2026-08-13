@@ -197,3 +197,23 @@ export const Footer = () => {
     </footer>
   );
 };
+
+/**
+ * Cache-bust (see the same note in Glass.tsx) AND a real displayName.
+ *
+ * `public/_headers` marks `/assets/*` immutable for a year BY PATH. When a
+ * newly-hashed chunk is requested during a deploy's propagation window,
+ * Cloudflare Pages answers with its SPA-fallback index.html (200, text/html) —
+ * and that HTML gets cached under the .js URL for a year. Chrome then rejects it
+ * on MIME grounds, the lazy route never resolves, and the page goes blank.
+ * Changing this file's content hash moves the app onto a fresh URL.
+ *
+ * This has now happened twice (Glass, then Footer), so it is a recurring deploy
+ * race rather than a fluke. The durable fixes are tracked separately: stop the
+ * fallback returning 200-HTML for asset paths, and fix the React #418 that makes
+ * a missing chunk blank the page instead of leaving the prerendered HTML up.
+ *
+ * Do NOT load the site in a browser immediately after a deploy — that request
+ * pattern is what lands in the propagation window and poisons the entry.
+ */
+Footer.displayName = 'Footer';
