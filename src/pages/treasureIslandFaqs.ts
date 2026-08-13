@@ -8,7 +8,7 @@ export const treasureIslandFaqs = [
   },
   {
     q: "How does it work if I'm not in town when you service the pool?",
-    a: "Most of our Treasure Island customers aren't on-site for the visit — that's the whole point. We just need safe gate or pool-area access. Your technician shows up the same day each week, completes a documented checklist, and emails the report when they leave. You'll know exactly what was done and the state of your water without lifting a finger.",
+    a: "Most of our Treasure Island customers aren't on-site for the visit — that's the whole point. We just need safe gate or pool-area access. Your technician shows up the same day each week, completes a documented checklist, and emails the report before they leave. You'll know exactly what was done and the state of your water without lifting a finger.",
   },
   {
     q: 'Can the pool be ready between back-to-back rental bookings?',

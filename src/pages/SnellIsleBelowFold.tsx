@@ -64,7 +64,7 @@ const processSteps = [
     icon: Camera,
     step: 'A documented report after every visit',
     body:
-      "Chemistry readings, what was done, and condition photos in your inbox within the hour. Whether you're home, traveling, or coordinating with a property manager, you have a clear record of exactly how your pool is being cared for.",
+      "Chemistry readings, what was done, and condition photos in your inbox before we leave the property. Whether you're home, traveling, or coordinating with a property manager, you have a clear record of exactly how your pool is being cared for.",
   },
   {
     icon: MessageSquareText,

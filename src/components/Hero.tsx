@@ -268,8 +268,9 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
                 className="text-brand-orange text-[1.7rem] xl:text-[2.15rem] leading-tight max-w-[180px]"
                 style={{ fontFamily: '"Caveat", cursive', fontWeight: 700 }}
               >
-                <span className="block">Sent after</span>
-                <span className="block">every visit</span>
+                <span className="block">Sent before</span>
+                <span className="block">we leave</span>
+                <span className="block">your pool</span>
               </span>
 
               {/* Hand-drawn swooping arrow — strokes draw themselves after the text. */}
@@ -614,8 +615,28 @@ export const HomeHeroPhoneSection = () => {
     };
   }, []);
   return (
-    <section className="lg:hidden relative bg-[#07111c] pt-12 pb-12 overflow-hidden" data-nosnippet="">
-      <div className="flex flex-col items-center">
+    <section className="lg:hidden relative bg-[#07111c] pt-12 pb-12 overflow-hidden">
+      {/* Real heading + one crawlable sentence, deliberately OUTSIDE the
+          data-nosnippet wrapper below. This section proves the biggest
+          differentiator on the site and had no heading at all — and because
+          Google indexes mobile-first, a heading in this (lg:hidden) section is
+          one it actually reads. The mockup itself stays nosnippet so Google
+          can't lift "Reply / Forward / Free Chlorine 3.5 ppm" out of the fake
+          email and use it as the search snippet. */}
+      <Container className="mb-8">
+        <div className="max-w-xl mx-auto text-center">
+          <h2 className="section-heading text-white leading-[1.15] mb-3">
+            See your weekly pool service report.
+          </h2>
+          <p className="section-subtext">
+            Chemistry readings, what we added, photos of your pool, and a
+            GPS-verified visit &mdash;{' '}
+            <span className="text-white">emailed before we leave your property</span>.
+          </p>
+        </div>
+      </Container>
+
+      <div className="flex flex-col items-center" data-nosnippet="">
         {/* Handwritten annotation, mobile variant of the desktop one beside
             the phone — here it sits ABOVE the phone with a hand-drawn arrow
             pointing down at it. Caveat 700 is homepage-preloaded (this
@@ -625,7 +646,7 @@ export const HomeHeroPhoneSection = () => {
             className="text-brand-orange text-[1.9rem] leading-tight"
             style={{ fontFamily: '"Caveat", cursive', fontWeight: 700 }}
           >
-            Sent after every visit
+            Sent before we leave your pool
           </span>
           <svg
             width="60"

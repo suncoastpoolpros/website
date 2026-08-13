@@ -68,7 +68,7 @@ const processSteps = [
     icon: Camera,
     step: 'A report hits your inbox after every visit',
     body:
-      "Chemistry numbers, what got done, photos of the pool — usually in your inbox within the hour. At the house, up north, or forwarding it to a guest, you always know exactly where the water stands. No guessing whether anyone showed up.",
+      "Chemistry numbers, what got done, photos of the pool — in your inbox before we leave the property. At the house, up north, or forwarding it to a guest, you always know exactly where the water stands. No guessing whether anyone showed up.",
   },
   {
     icon: MessageSquareText,
@@ -228,7 +228,7 @@ const WeeklyVisitSection = () => (
         <ClipboardCheck className="w-5 h-5 text-brand-orange-light shrink-0" />
         <p className="text-gray-400 text-[15px]">
           Then it's all written up —
-          <span className="text-white"> numbers, what got done, and photos in your inbox, usually within the hour.</span>
+          <span className="text-white"> numbers, what got done, and photos in your inbox before we leave.</span>
         </p>
       </m.div>
     </Container>
