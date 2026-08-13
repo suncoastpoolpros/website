@@ -16,7 +16,7 @@ export const CtaBand = () => {
       <Container className="text-center">
         <div className="max-w-2xl mx-auto">
           <h2 className="section-heading text-white leading-tight mb-3">
-            Two ways to get your flat-rate quote.
+            Get a fast, free pool cleaning quote.
           </h2>
           <p className="section-subtext max-w-xl mx-auto mb-9">
             Text us two quick photos — one of your pool, one of your equipment pad — plus your address. Or just give us a call. Either way you'll hear back from a real person — <span className="text-white/90">same day, every time.</span>

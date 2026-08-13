@@ -1,9 +1,10 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { MotionConfig } from 'motion/react';
 import { QuoteSheetProvider } from '@/components/QuoteSheet';
 import { ChunkErrorBoundary, clearChunkReloadFlag } from '@/components/ChunkErrorBoundary';
 import { initAnalytics, trackPageView } from '@/lib/analytics';
+import { lazyRoute, type PreloadableComponent } from '@/lib/lazyRoute';
 
 // Routes are lazy-loaded so the homepage hydration only has to parse
 // LandingPage code (~36 KB gz), not every page on the site. On real iPhone
@@ -15,39 +16,46 @@ import { initAnalytics, trackPageView } from '@/lib/analytics';
 // nav links and kicks off the chunk download on touchstart/mouseover, well
 // before the click event fires. By the time the click completes, the chunk
 // is usually already in cache.
-const LandingPage = lazy(() => import('@/pages/LandingPage').then((m) => ({ default: m.LandingPage })));
-const BelleairBeachPage = lazy(() => import('@/pages/BelleairBeachPage').then((m) => ({ default: m.BelleairBeachPage })));
-const TreasureIslandPage = lazy(() => import('@/pages/TreasureIslandPage').then((m) => ({ default: m.TreasureIslandPage })));
-const StPeteBeachPage = lazy(() => import('@/pages/StPeteBeachPage').then((m) => ({ default: m.StPeteBeachPage })));
-const SnellIslePage = lazy(() => import('@/pages/SnellIslePage').then((m) => ({ default: m.SnellIslePage })));
-const SeminolePage = lazy(() => import('@/pages/SeminolePage').then((m) => ({ default: m.SeminolePage })));
-const LargoPage = lazy(() => import('@/pages/LargoPage').then((m) => ({ default: m.LargoPage })));
-const ClearwaterPage = lazy(() => import('@/pages/ClearwaterPage').then((m) => ({ default: m.ClearwaterPage })));
-const CareersPage = lazy(() => import('@/pages/CareersPage').then((m) => ({ default: m.CareersPage })));
-const FaqPage = lazy(() => import('@/pages/FaqPage').then((m) => ({ default: m.FaqPage })));
-const HowItWorksPage = lazy(() => import('@/pages/HowItWorksPage').then((m) => ({ default: m.HowItWorksPage })));
-const ToolsPage = lazy(() => import('@/pages/ToolsPage').then((m) => ({ default: m.ToolsPage })));
-const PoolCarePage = lazy(() => import('@/pages/PoolCarePage').then((m) => ({ default: m.PoolCarePage })));
-const NitratesPage = lazy(() => import('@/pages/NitratesPage').then((m) => ({ default: m.NitratesPage })));
-const CloudyPoolWaterPage = lazy(() => import('@/pages/CloudyPoolWaterPage').then((m) => ({ default: m.CloudyPoolWaterPage })));
-const PoolSmellPage = lazy(() => import('@/pages/PoolSmellPage').then((m) => ({ default: m.PoolSmellPage })));
-const PoolServiceVsDiyPage = lazy(() => import('@/pages/PoolServiceVsDiyPage').then((m) => ({ default: m.PoolServiceVsDiyPage })));
-const CyanuricAcidPage = lazy(() => import('@/pages/CyanuricAcidPage').then((m) => ({ default: m.CyanuricAcidPage })));
-const GreenPoolPage = lazy(() => import('@/pages/GreenPoolPage').then((m) => ({ default: m.GreenPoolPage })));
-const VariableSpeedPumpsPage = lazy(() => import('@/pages/VariableSpeedPumpsPage').then((m) => ({ default: m.VariableSpeedPumpsPage })));
-const SaltWaterVsChlorinePage = lazy(() => import('@/pages/SaltWaterVsChlorinePage').then((m) => ({ default: m.SaltWaterVsChlorinePage })));
-const DrainPoolPage = lazy(() => import('@/pages/DrainPoolPage').then((m) => ({ default: m.DrainPoolPage })));
-const PoolVolumeCalculatorPage = lazy(() => import('@/pages/PoolVolumeCalculatorPage').then((m) => ({ default: m.PoolVolumeCalculatorPage })));
-const PoolHeatingCostCalculatorPage = lazy(() => import('@/pages/PoolHeatingCostCalculatorPage').then((m) => ({ default: m.PoolHeatingCostCalculatorPage })));
-const ContactPage = lazy(() => import('@/pages/ContactPage').then((m) => ({ default: m.ContactPage })));
-const SignupPage = lazy(() => import('@/pages/SignupPage').then((m) => ({ default: m.SignupPage })));
-const ServiceAgreementPage = lazy(() => import('@/pages/ServiceAgreementPage').then((m) => ({ default: m.ServiceAgreementPage })));
-const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage').then((m) => ({ default: m.PrivacyPolicyPage })));
+//
+// These use lazyRoute, NOT React.lazy: lazy() always suspends on its first
+// render even when the module is cached, which meant Suspense rendered its null
+// fallback during hydration of a PRERENDERED page, React saw a mismatch and
+// discarded the whole server-rendered tree (#418). lazyRoute can be preloaded so
+// the initial route renders synchronously — see src/lib/lazyRoute.ts and the
+// preload call in src/main.tsx.
+const LandingPage = lazyRoute(() => import('@/pages/LandingPage').then((m) => m.LandingPage));
+const BelleairBeachPage = lazyRoute(() => import('@/pages/BelleairBeachPage').then((m) => m.BelleairBeachPage));
+const TreasureIslandPage = lazyRoute(() => import('@/pages/TreasureIslandPage').then((m) => m.TreasureIslandPage));
+const StPeteBeachPage = lazyRoute(() => import('@/pages/StPeteBeachPage').then((m) => m.StPeteBeachPage));
+const SnellIslePage = lazyRoute(() => import('@/pages/SnellIslePage').then((m) => m.SnellIslePage));
+const SeminolePage = lazyRoute(() => import('@/pages/SeminolePage').then((m) => m.SeminolePage));
+const LargoPage = lazyRoute(() => import('@/pages/LargoPage').then((m) => m.LargoPage));
+const ClearwaterPage = lazyRoute(() => import('@/pages/ClearwaterPage').then((m) => m.ClearwaterPage));
+const CareersPage = lazyRoute(() => import('@/pages/CareersPage').then((m) => m.CareersPage));
+const FaqPage = lazyRoute(() => import('@/pages/FaqPage').then((m) => m.FaqPage));
+const HowItWorksPage = lazyRoute(() => import('@/pages/HowItWorksPage').then((m) => m.HowItWorksPage));
+const ToolsPage = lazyRoute(() => import('@/pages/ToolsPage').then((m) => m.ToolsPage));
+const PoolCarePage = lazyRoute(() => import('@/pages/PoolCarePage').then((m) => m.PoolCarePage));
+const NitratesPage = lazyRoute(() => import('@/pages/NitratesPage').then((m) => m.NitratesPage));
+const CloudyPoolWaterPage = lazyRoute(() => import('@/pages/CloudyPoolWaterPage').then((m) => m.CloudyPoolWaterPage));
+const PoolSmellPage = lazyRoute(() => import('@/pages/PoolSmellPage').then((m) => m.PoolSmellPage));
+const PoolServiceVsDiyPage = lazyRoute(() => import('@/pages/PoolServiceVsDiyPage').then((m) => m.PoolServiceVsDiyPage));
+const CyanuricAcidPage = lazyRoute(() => import('@/pages/CyanuricAcidPage').then((m) => m.CyanuricAcidPage));
+const GreenPoolPage = lazyRoute(() => import('@/pages/GreenPoolPage').then((m) => m.GreenPoolPage));
+const VariableSpeedPumpsPage = lazyRoute(() => import('@/pages/VariableSpeedPumpsPage').then((m) => m.VariableSpeedPumpsPage));
+const SaltWaterVsChlorinePage = lazyRoute(() => import('@/pages/SaltWaterVsChlorinePage').then((m) => m.SaltWaterVsChlorinePage));
+const DrainPoolPage = lazyRoute(() => import('@/pages/DrainPoolPage').then((m) => m.DrainPoolPage));
+const PoolVolumeCalculatorPage = lazyRoute(() => import('@/pages/PoolVolumeCalculatorPage').then((m) => m.PoolVolumeCalculatorPage));
+const PoolHeatingCostCalculatorPage = lazyRoute(() => import('@/pages/PoolHeatingCostCalculatorPage').then((m) => m.PoolHeatingCostCalculatorPage));
+const ContactPage = lazyRoute(() => import('@/pages/ContactPage').then((m) => m.ContactPage));
+const SignupPage = lazyRoute(() => import('@/pages/SignupPage').then((m) => m.SignupPage));
+const ServiceAgreementPage = lazyRoute(() => import('@/pages/ServiceAgreementPage').then((m) => m.ServiceAgreementPage));
+const PrivacyPolicyPage = lazyRoute(() => import('@/pages/PrivacyPolicyPage').then((m) => m.PrivacyPolicyPage));
 // Private admin proposal builder. Intentionally NOT in entry-server.tsx /
 // PRERENDER_ROUTES — it's a client-only app route (no SEO, no static HTML), and
 // it's Disallow-ed in robots.txt.
-const AdminPage = lazy(() => import('@/pages/AdminPage').then((m) => ({ default: m.AdminPage })));
-const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
+const AdminPage = lazyRoute(() => import('@/pages/AdminPage').then((m) => m.AdminPage));
+const NotFoundPage = lazyRoute(() => import('@/pages/NotFoundPage').then((m) => m.NotFoundPage));
 
 // On route change, jump to top (unless navigating to an in-page #anchor) and
 // send a GA4 page_view (SPA nav isn't auto-tracked). Runs on the initial route
@@ -87,6 +95,40 @@ const ChunkReloadReset = () => {
     clearChunkReloadFlag();
   }, []);
   return null;
+};
+
+/** Path -> component, for preloading the initial route before hydration (see
+ *  src/main.tsx). Keys MUST match the <Route path> values below. */
+export const ROUTE_COMPONENTS: Record<string, PreloadableComponent> = {
+  '/': LandingPage,
+  '/belleair-beach-fl': BelleairBeachPage,
+  '/treasure-island-fl': TreasureIslandPage,
+  '/st-pete-beach-fl': StPeteBeachPage,
+  '/snell-isle-fl': SnellIslePage,
+  '/seminole-fl': SeminolePage,
+  '/largo-fl': LargoPage,
+  '/clearwater-fl': ClearwaterPage,
+  '/careers': CareersPage,
+  '/faq': FaqPage,
+  '/how-it-works': HowItWorksPage,
+  '/pool-care': PoolCarePage,
+  '/pool-care/nitrates': NitratesPage,
+  '/pool-care/cloudy-pool-water': CloudyPoolWaterPage,
+  '/pool-care/pool-smells-like-chlorine': PoolSmellPage,
+  '/pool-care/pool-service-vs-diy': PoolServiceVsDiyPage,
+  '/pool-care/cyanuric-acid': CyanuricAcidPage,
+  '/pool-care/green-pool': GreenPoolPage,
+  '/pool-care/variable-speed-pumps': VariableSpeedPumpsPage,
+  '/pool-care/salt-water-vs-chlorine': SaltWaterVsChlorinePage,
+  '/pool-care/how-to-drain-a-pool': DrainPoolPage,
+  '/tools': ToolsPage,
+  '/tools/pool-volume-calculator': PoolVolumeCalculatorPage,
+  '/tools/pool-heating-cost-calculator': PoolHeatingCostCalculatorPage,
+  '/contact': ContactPage,
+  '/signup': SignupPage,
+  '/service-agreement': ServiceAgreementPage,
+  '/privacy-policy': PrivacyPolicyPage,
+  '/admin': AdminPage,
 };
 
 export default function App() {

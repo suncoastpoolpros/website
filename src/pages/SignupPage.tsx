@@ -119,13 +119,7 @@ const SignupPageInner = () => {
       <div className="absolute md:fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
 
       {/* Signup-only shadow overlay: darkens the edges & corners for depth */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(120% 90% at 50% 35%, transparent 35%, rgba(2, 6, 14, 0.55) 100%), linear-gradient(to bottom, rgba(2, 6, 14, 0.45) 0%, transparent 25%, transparent 70%, rgba(2, 6, 14, 0.7) 100%)',
-        }}
-      />
+      <div className="signup-shadow-overlay fixed inset-0 pointer-events-none" />
 
       <div className="relative z-10">
         <Navbar />

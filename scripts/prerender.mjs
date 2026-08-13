@@ -267,6 +267,20 @@ async function run() {
     count++;
     console.log(`✓ ${route} → ${path.relative(ROOT, outFile)} (${html.length} bytes)`);
   }
+
+  // Strip build-only assets that Vite copies straight out of public/. These are
+  // never referenced by any CSS, HTML or preload — public/fonts/_orig holds the
+  // UNSUBSET originals kept purely as the source for scripts/subset-fonts.mjs —
+  // so shipping them just pushes dead weight to the edge on every deploy.
+  for (const dead of ['fonts/_orig']) {
+    const target = path.join(CLIENT_DIST, dead);
+    try {
+      await fs.rm(target, { recursive: true, force: true });
+      console.log(`Pruned dist/${dead} (build-only, never served)`);
+    } catch {
+      /* nothing to prune */
+    }
+  }
   console.log(`\nPrerendered ${count}/${PRERENDER_ROUTES.length} routes.`);
 }
 

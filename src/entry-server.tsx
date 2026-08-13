@@ -4,10 +4,21 @@
 // imports every page too, so SSR and CSR produce matching DOM during hydrate.
 //
 // Why no React.lazy() anywhere: renderToString is synchronous and bails on
-// Suspense, swapping in the fallback. We avoid Suspense entirely on prerender
-// routes so the rendered HTML is the real content.
+// Suspense, swapping in the fallback. So nothing here may SUSPEND — every page
+// is imported eagerly below.
+//
+// There IS a <Suspense> boundary in the tree, though, and it must stay: the
+// client (App.tsx) wraps its routes in one, React represents a boundary in the
+// HTML with comment markers, and a tree that has the boundary hydrating over
+// HTML that lacks it is a structural mismatch — this was the minified #418 the
+// site threw on EVERY route, which made React discard the whole prerendered DOM.
+// A boundary whose children never suspend renders them inline and simply emits
+// the markers, so this is safe and is what makes the two trees line up. (Verify
+// after any change here: no `<template data-msg="Switched to client rendering"`
+// in dist, and `<!--$-->` present.)
 // Ref: https://react.dev/reference/react-dom/server/renderToString
 
+import { Suspense } from 'react';
 import { renderToString } from 'react-dom/server';
 import { StaticRouter, Routes, Route } from 'react-router-dom';
 import { LazyMotion, MotionConfig, domAnimation } from 'motion/react';
@@ -124,7 +135,10 @@ export function render(url: string) {
       <MotionConfig reducedMotion="user">
         <LazyMotion features={domAnimation} strict>
           <QuoteSheetProvider>
-            <Routing />
+            {/* Mirrors App.tsx's boundary exactly, fallback included. */}
+            <Suspense fallback={null}>
+              <Routing />
+            </Suspense>
           </QuoteSheetProvider>
         </LazyMotion>
       </MotionConfig>
