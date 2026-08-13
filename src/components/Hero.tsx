@@ -212,10 +212,18 @@ export const Hero = () => {
               </div>
 
               {/* Trust strip — ONE line at every width (nowrap + smaller
-                  type/stars/gaps below sm), and edge-to-edge on mobile:
-                  justify-between pins the stars left and "Locally Owned"
-                  right. sm+ returns to a left cluster with the bullet. */}
-              <div className="text-shadow-hero-strip mt-7 flex flex-nowrap items-center justify-between sm:justify-center lg:justify-start gap-x-3 sm:gap-x-6 text-[12px] sm:text-[13px] text-gray-200">
+                  type/stars/gaps below sm), CENTRED as a single cluster below lg
+                  to match the rest of the centred hero, then a left cluster at
+                  lg where the copy goes left-aligned.
+                  It used to be justify-between on mobile, which pinned the stars
+                  to the left edge and "Locally Owned" to the right — and that
+                  masked a real overflow: the two groups measure 344px together
+                  but the container is 288px at 320px wide and 328px at 360px, so
+                  the content was wider than its box and simply bled past the
+                  padding. Centring alone would have clipped BOTH ends, so the
+                  " in St. Pete" tail is dropped below 390px (see span), which
+                  brings the cluster to ~282px and lets it genuinely fit. */}
+              <div className="text-shadow-hero-strip mt-7 flex flex-nowrap items-center justify-center lg:justify-start gap-x-3 sm:gap-x-6 text-[12px] sm:text-[13px] text-gray-200">
                 <div className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
                   <div className="flex gap-0.5 text-brand-orange">
                     {[0,1,2,3,4].map(i => (
@@ -230,7 +238,12 @@ export const Hero = () => {
 
                 <div className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
                   <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-blue-light shrink-0" />
-                  <span>Locally Owned in St. Pete</span>
+                  {/* The tail is hidden, not removed — it stays in the DOM
+                      (and crawlable) at every width; only the narrowest phones
+                      drop it visually so the one-line cluster fits. */}
+                  <span>
+                    Locally Owned<span className="hidden min-[390px]:inline"> in St. Pete</span>
+                  </span>
                 </div>
               </div>
             </div>
