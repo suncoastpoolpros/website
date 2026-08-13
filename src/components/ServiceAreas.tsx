@@ -18,12 +18,17 @@ export const ServiceAreas = () => {
                 Where We Service
               </span>
             </div>
-            {/* Leads with the target phrase ("weekly pool service") — the old
-                heading was pure geography and carried no service keyword at all,
-                so a section whose whole job is local relevance was doing none of
-                that work. The coverage claim itself is unchanged. */}
+            {/* Leads with the target phrase ("weekly pool service") + the money
+                city — the original heading was pure geography with no service
+                keyword at all, so the one section whose job is local relevance
+                carried none of that signal.
+                Deliberately NO Tampa here: this is the page's strongest
+                service-area ranking signal and Tampa proper isn't a market we're
+                pursuing. Tampa coverage is still stated — South Tampa and Davis Island
+                remain in the chips below and in schema areaServed — it just isn't
+                targeted. */}
             <h2 className="section-heading text-white leading-[1.1] mb-5">
-              Weekly pool service across Pinellas County &amp; West Tampa.
+              Weekly pool service in St. Petersburg &amp; across Pinellas County.
             </h2>
             <p className="section-subtext mb-6 max-w-md">
               One flat-rate team across the bay. If you're in or near Pinellas, we've probably got a tech on your street already.

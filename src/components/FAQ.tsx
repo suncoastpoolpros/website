@@ -46,7 +46,7 @@ export const FAQ = () => {
       <Container>
         <div className="text-center mb-10 md:mb-12">
           <h2 className="section-heading text-white mb-4">
-            Common Questions
+            Pool service questions from St. Pete homeowners.
           </h2>
         </div>
 
@@ -56,19 +56,28 @@ export const FAQ = () => {
               key={index}
               className={`faq-item glass-panel rounded-2xl overflow-hidden transition-colors hover:bg-white/10 ${openIndex === index ? 'is-open' : ''}`}
             >
-              <button
-                type="button"
-                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full px-5 sm:px-6 py-4 flex items-center justify-between text-left gap-4"
-                aria-expanded={openIndex === index}
-              >
-                <span className="text-white font-semibold text-[15px] sm:text-[17px]">{faq.question}</span>
-                {openIndex === index ? (
-                  <Minus className="w-5 h-5 text-brand-orange" />
-                ) : (
-                  <Plus className="w-5 h-5 text-gray-400" />
-                )}
-              </button>
+              {/* The heading WRAPS the button (the ARIA accordion pattern), it
+                  does not sit inside it — <button> only takes phrasing content,
+                  so an <h3> nested inside would be invalid HTML. These questions
+                  are phrased as real long-tail queries, so they belong in the
+                  heading outline; wrapping keeps the visual result identical
+                  (Tailwind preflight zeroes heading margins, and the h3 is a bare
+                  block around an already-full-width button). */}
+              <h3>
+                <button
+                  type="button"
+                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                  className="w-full px-5 sm:px-6 py-4 flex items-center justify-between text-left gap-4"
+                  aria-expanded={openIndex === index}
+                >
+                  <span className="text-white font-semibold text-[15px] sm:text-[17px]">{faq.question}</span>
+                  {openIndex === index ? (
+                    <Minus className="w-5 h-5 text-brand-orange" />
+                  ) : (
+                    <Plus className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+              </h3>
               <div className="faq-answer">
                 <div className="faq-answer-inner">
                   <div className="px-5 sm:px-6 pb-5 sm:pb-6 text-[14px] sm:text-[15px] text-gray-400 leading-relaxed border-t border-white/5 pt-4">

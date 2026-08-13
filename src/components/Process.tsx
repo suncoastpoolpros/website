@@ -30,7 +30,7 @@ export const Process = () => {
             How It Works
           </span>
           <h2 className="section-heading text-[#0a1628] leading-tight">
-            Getting started takes 2 minutes.
+            How our weekly pool service works.
           </h2>
         </div>
 
