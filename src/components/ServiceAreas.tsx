@@ -18,8 +18,12 @@ export const ServiceAreas = () => {
                 Where We Service
               </span>
             </div>
+            {/* Leads with the target phrase ("weekly pool service") — the old
+                heading was pure geography and carried no service keyword at all,
+                so a section whose whole job is local relevance was doing none of
+                that work. The coverage claim itself is unchanged. */}
             <h2 className="section-heading text-white leading-[1.1] mb-5">
-              All of Pinellas County &amp; West Tampa.
+              Weekly pool service across Pinellas County &amp; West Tampa.
             </h2>
             <p className="section-subtext mb-6 max-w-md">
               One flat-rate team across the bay. If you're in or near Pinellas, we've probably got a tech on your street already.

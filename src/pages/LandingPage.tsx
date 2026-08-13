@@ -73,8 +73,12 @@ export const LandingPage = () => {
             phone inside the hero) sits AFTER the "why us" section: the value
             props follow the hero directly, then the report mockup proves them. */}
         <FeatureGrid />
-        <HomeHeroPhoneSection />
+        {/* "Do you serve me?" is the first question a local visitor has, so it
+            gets answered right after the value props — before the (long) report
+            mockup. The value props still follow the hero directly; that ordering
+            is deliberate and stays. */}
         <ServiceAreas />
+        <HomeHeroPhoneSection />
         <Process />
         <Services />
         <CtaBand />
