@@ -281,9 +281,23 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
   return (
     <>
             {/* Handwritten label + arrow — animates as if being written/drawn in. */}
+            {/* MEASURED placement, expressed entirely in classes.
+                It previously mixed Tailwind translates with an inline
+                `transform`, and in Tailwind v4 those are INDEPENDENT CSS
+                properties (`translate:` / `rotate:`, not the `transform`
+                shorthand) — so they composed instead of the inline winning, and
+                the real offset was translate-x-4/-12 PLUS the inline -20px. That
+                netted the handwriting 16px INSIDE the phone at 1280px+ and 45px
+                inside at 1024px. One source of truth now; x values are measured
+                to leave ~24px of air beside the phone.
+                Shown from 1200px, not lg: the text needs its width + a gap
+                (~169px at this size) and the space right of the phone is only
+                125px at 1024, 144 at 1100, 157 at 1152 — it does not fit until
+                1200 (181px). Below that the hero is already tight, and this is
+                decorative (aria-hidden, data-nosnippet), so it simply sits out
+                rather than colliding. */}
             <div
-              className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 xl:translate-x-12 flex-col items-start z-20 pointer-events-none"
-              style={{ transform: 'translate(-20px, -40px) rotate(-6deg)' }}
+              className="hidden min-[1200px]:flex absolute right-0 top-1/2 -translate-y-[calc(50%+40px)] translate-x-[33px] xl:translate-x-[68px] rotate-[-6deg] flex-col items-start z-20 pointer-events-none"
             >
               <span
                 className="text-brand-orange text-[1.7rem] xl:text-[2.15rem] leading-tight max-w-[180px]"
@@ -665,7 +679,7 @@ export const HomeHeroPhoneSection = () => {
             section renders only on the homepage). */}
         <div className="pointer-events-none -rotate-6 mb-2 flex flex-col items-center" aria-hidden="true">
           <span
-            className="text-brand-orange text-[1.9rem] leading-tight"
+            className="text-brand-orange text-[1.9rem] leading-tight text-center"
             style={{ fontFamily: '"Caveat", cursive', fontWeight: 700 }}
           >
             <span className="block">A pool service report</span>
@@ -714,12 +728,14 @@ export const HomeHeroPhoneSection = () => {
               scrollBodyRef={bodyRef}
             />
             {/* Scroll wheel: 28px-wide touch track (visual 4px line + thumb),
-                sitting just outside the phone's left edge. touch-action:none so
-                dragging it never scrolls the page. */}
+                sitting just outside the phone's RIGHT edge. Absolute, so it
+                stays out of the centring math — as a flex sibling it pushed the
+                phone ~19px off centre. touch-action:none so dragging it never
+                scrolls the page. */}
             <div
               ref={trackRef}
               aria-hidden="true"
-              className="absolute right-full top-1/2 -translate-y-1/2 h-[400px] w-7 flex justify-center"
+              className="absolute left-full top-1/2 -translate-y-1/2 h-[400px] w-7 flex justify-center"
               style={{ touchAction: 'none' }}
             >
               <div className="absolute inset-y-0 w-1 rounded-full bg-white/10" />
