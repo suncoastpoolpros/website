@@ -167,9 +167,15 @@ export const Hero = () => {
                 </span>
               </div>
 
-              {/* Semantic H1 carries the primary local-SEO keyword: "Pool Cleaning St. Petersburg" */}
+              {/* Semantic H1, phrased to match the top query verbatim.
+                  Search Console: "pool cleaning st petersburg fl" is #1, and
+                  "fl" appears in 3 of the top 7 — while 5 of 7 spell out
+                  "st petersburg" rather than "st pete". The old wording
+                  ("St. Petersburg's expert pool cleaning company") had the
+                  keyword but as a possessive and without the state, so it
+                  matched no query shape people actually type. */}
               <h1 className="text-shadow-hero-h1 font-display font-normal text-white text-xl md:text-[1.25rem] leading-snug mb-3 md:mb-7 sm:whitespace-nowrap tracking-tight">
-                St. Petersburg's expert pool cleaning company.
+                Expert pool cleaning in St. Petersburg, FL.
               </h1>
 
               {/* Mobile shows NO body paragraph — the display headline + the H1
