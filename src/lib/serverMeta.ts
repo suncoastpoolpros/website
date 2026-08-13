@@ -16,6 +16,9 @@ export type SsrMeta = {
    *  each route preloads its OWN hero instead of the global default. */
   heroPreload?: {
     mobile: string;
+    /** Optional 768–1023 variant. image-set() selects on DPR alone, so without
+     *  this a 2x tablet is served the full desktop/wide file. */
+    tablet?: string;
     desktop: string;
     wide?: string;
   };

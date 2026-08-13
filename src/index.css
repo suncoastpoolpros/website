@@ -230,6 +230,24 @@ input[type="date"]::-webkit-date-and-time-value {
   );
   filter: saturate(1.2) brightness(0.85) contrast(1.12) hue-rotate(-6deg);
 }
+/* Tablet band (768–1023) gets its own right-sized hero.
+   image-set() picks purely by DPR, so a 2x tablet was being handed the 1920px
+   desktop file: 330KB for a viewport needing ~1640 device px, which was the
+   whole reason tablet LCP sat at 2664ms while mobile was 544ms. This file is
+   1536x1024 at 157KB (-53%), which is 0.94x of native for a 2x tablet — and it
+   also beats the 266KB 1x file for a 1x tablet, so the whole band improves.
+   Verified visually at 820x1180 DPR2 against the 1920: no discernible
+   difference in the palm detail or the sky gradient.
+   Keep in lockstep with LandingPage's heroPreload.tablet — preloading a
+   different file than the CSS paints downloads both. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hero-bg-desktop {
+    background-image: image-set(
+      url('/treasure-island-hero-1536.webp') type('image/webp'),
+      url('/treasure-island-hero.jpg') type('image/jpeg')
+    );
+  }
+}
 .hero-bg-mobile {
   /* Swapped to the Treasure Island photo (see .hero-bg-desktop note).
      -v2 is the same photo re-encoded 1080w→900w at q78 (170KB → 109KB). This is

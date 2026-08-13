@@ -42,12 +42,13 @@ export const LandingPage = () => {
   usePageMeta({
     title: 'Pool Service St. Petersburg, FL — Flat-Rate Weekly Cleaning',
     description:
-      'Flat-rate weekly pool cleaning in St. Petersburg, Clearwater, Largo & Palm Harbor — chemicals included, vetted techs, a photo report every visit.',
+      'Flat-rate weekly pool cleaning in St. Petersburg, FL — plus Clearwater, Largo & Palm Harbor. Chemicals included, vetted techs, photo report every visit.',
     canonicalPath: '/',
     heroPreload: {
       // Must stay in lockstep with .hero-bg-mobile in index.css — preloading a
       // different file than the CSS paints downloads both.
       mobile: '/treasure-island-hero-mobile-v2.webp',
+      tablet: '/treasure-island-hero-1536.webp',
       desktop: '/treasure-island-hero.webp',
       wide: '/treasure-island-hero-1920.webp',
     },

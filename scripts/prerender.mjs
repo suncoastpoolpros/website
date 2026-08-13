@@ -81,12 +81,31 @@ function injectHead(html, meta) {
     // stays width-only because `.hero-bg-mobile` ships a single DPR-agnostic
     // entry. A browser without `resolution` media support simply doesn't preload
     // and falls back to loading via CSS — slower, never wrong.
+    // fetchpriority="high" is the actual LCP lever here. Halving the tablet hero
+    // (330KB -> 154KB) moved tablet LCP only 2664ms -> 2516ms, because the hero
+    // was not bandwidth-starved for its own size — it was queued behind the JS
+    // chunks. Raising its priority lets it start ahead of them. Only one of these
+    // media queries can match, so exactly one image is ever high-priority.
+    //
+    // A page may declare a TABLET variant. image-set() picks on DPR alone, so a
+    // 2x tablet otherwise receives the full desktop/wide file (measured: 330KB
+    // on an 820px tablet, LCP 2664ms vs 544ms on mobile). When `tablet` is set,
+    // the 768–1023 band takes it at any DPR and the DPR split starts at 1024 —
+    // which must mirror the media query on the matching `.hero-bg-*` rule.
     const wide = h.wide || h.desktop;
+    const dprFloor = h.tablet ? 1024 : 768;
     const imgPreloads = [
-      `<link rel="preload" as="image" href="${escapeHtml(h.mobile)}" type="image/webp" media="(max-width: 767px)" />`,
-      `<link rel="preload" as="image" href="${escapeHtml(h.desktop)}" type="image/webp" media="(min-width: 768px) and (max-resolution: 1.99dppx)" />`,
-      `<link rel="preload" as="image" href="${escapeHtml(wide)}" type="image/webp" media="(min-width: 768px) and (min-resolution: 2dppx)" />`,
+      `<link rel="preload" as="image" fetchpriority="high" href="${escapeHtml(h.mobile)}" type="image/webp" media="(max-width: 767px)" />`,
     ];
+    if (h.tablet) {
+      imgPreloads.push(
+        `<link rel="preload" as="image" fetchpriority="high" href="${escapeHtml(h.tablet)}" type="image/webp" media="(min-width: 768px) and (max-width: 1023px)" />`,
+      );
+    }
+    imgPreloads.push(
+      `<link rel="preload" as="image" fetchpriority="high" href="${escapeHtml(h.desktop)}" type="image/webp" media="(min-width: ${dprFloor}px) and (max-resolution: 1.99dppx)" />`,
+      `<link rel="preload" as="image" fetchpriority="high" href="${escapeHtml(wide)}" type="image/webp" media="(min-width: ${dprFloor}px) and (min-resolution: 2dppx)" />`,
+    );
     out = out.replace('</head>', `  ${imgPreloads.join('\n    ')}\n  </head>`);
   }
 

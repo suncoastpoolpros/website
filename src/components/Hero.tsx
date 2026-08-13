@@ -98,9 +98,17 @@ export const Hero = () => {
           {/* Text Content - Left Side. Slide-in entrance (desktop only — the
               global MotionConfig in App.tsx sets reducedMotion on mobile, so
               this renders static there). */}
+          {/* NO opacity in `initial`. Framer writes `initial` into the SSR'd
+              markup, so `opacity: 0` meant the prerendered HTML shipped the hero
+              headline INVISIBLE — it only appeared once the JS arrived and the
+              entrance ran. That made the LCP element wait on hydration: measured
+              2504ms on a Slow-4G tablet, versus 1824ms with the text simply
+              visible, and 476ms on mobile where the motion system already strips
+              the animation. Animating transform only keeps the slide while the
+              text paints from the static HTML. */}
           <m.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ x: -50 }}
+            animate={{ x: 0 }}
             transition={{ duration: 1, ease: 'easeOut' }}
             className="lg:col-span-6 pt-10 lg:pt-0"
           >
@@ -547,6 +555,7 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
                             // paints, so this stays a cache hit instead of a
                             // second full-size download.
                             mobileWebp: '/treasure-island-hero-mobile-v2.webp',
+                            wideWebp: '/treasure-island-hero-1920.webp',
                             alt: 'Waterfront infinity pool with palm trees in St. Petersburg, FL — cleaned and chemically balanced by Suncoast Pool Pros',
                           }}
                         />
