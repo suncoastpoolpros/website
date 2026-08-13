@@ -127,13 +127,34 @@ export const Hero = () => {
                     700 is the preloaded weight (the 900 preload is md:-gated;
                     font-black on mobile was painting an unpreloaded font).
                     Desktop keeps the original black/normal contrast pair. */}
-                <span className="text-shadow-hero-headline block text-white md:text-brand-orange font-bold md:font-black text-5xl sm:text-6xl md:text-[4.5rem] leading-[0.95] tracking-tight">
+                {/* lg:text-[3.9rem] fixes a wrap: from lg the text column is a
+                    6-of-12 grid cell — 456px at 1024px wide, 494px at 1100 —
+                    but this line needs 506px at 4.5rem, so it broke onto two
+                    lines ("One Flat" / "Rate") across the whole 1024–1199 band.
+                    3.9rem renders ~439px and clears it.
+                    Scoped as lg:max-[1199px] — a BOUNDED band — rather than a
+                    plain lg: plus a min-[1200px]: override. Tailwind emits the
+                    arbitrary min-width variant BEFORE lg:, so lg: won at every
+                    width above 1024 and the headline stayed small on desktop
+                    (measured: still 62.4px at 1440px). Bounding the override
+                    means md:text-[4.5rem] simply resumes at 1200, where the
+                    column finally reaches 520px. */}
+                <span className="text-shadow-hero-headline block text-white md:text-brand-orange font-bold md:font-black text-5xl sm:text-6xl md:text-[4.5rem] lg:max-[1199px]:text-[3.9rem] leading-[0.95] tracking-tight">
                   One Flat Rate
                 </span>
-                {/* Mobile sizes measured so this line's rendered width matches
-                    "One Flat Rate" above (48px line ≈ 326px wide → this needs
-                    1.54rem; scaled for sm:). Desktop keeps its own scale. */}
-                <span className="text-shadow-hero-sub block mt-2 md:mt-5 sm:whitespace-nowrap text-white font-bold md:font-normal tracking-tight text-[1.54rem] sm:text-[1.92rem] md:text-[2.25rem] leading-[1.1]">
+                {/* Every size here is MEASURED so this line's rendered width
+                    matches "One Flat Rate" above at that breakpoint — the two
+                    lines start and end together.
+                    The strings scale linearly, so the ratio is fixed: the
+                    headline renders 7.0347px of width per px of font-size
+                    (900 weight), this line 12.725px per px (400 weight). So
+                    sub = top x 0.5528:
+                      48px  top ->  1.54rem   (mobile, 700/700, both ~326px)
+                      72px  top ->  2.4877rem (~506px)
+                      62.4px top -> 2.1563rem (~439px, the lg column)
+                    Re-measure with a Range if either string or weight changes —
+                    eyeballing this never lands. */}
+                <span className="text-shadow-hero-sub block mt-2 md:mt-5 sm:whitespace-nowrap text-white font-bold md:font-normal tracking-tight text-[1.54rem] sm:text-[1.92rem] md:text-[2.4877rem] lg:max-[1199px]:text-[2.1563rem] leading-[1.1]">
                   No Monthly Chemical Cost
                 </span>
               </div>
