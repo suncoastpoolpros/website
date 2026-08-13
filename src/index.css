@@ -343,14 +343,25 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 @media (min-width: 768px) {
   .hero-scrim {
-    /* desktop: overall wash + left scrim (behind text) + right-edge darken
-       (tames the bright palm/sky on the far right, fading out ~38% in) + edge
-       vignette. */
+    /* desktop: overall wash + left scrim (behind text) + a bottom-right darken
+       + edge vignette.
+       The third layer used to be a full-height right-edge darken
+       (`to left`, 0.45 at the edge). Stacked with the wash (0.42) and the corner
+       vignette (0.60) that put the TOP-RIGHT at ~87% composite darkness, which
+       buried the house and planting on that side. It's now a radial anchored to
+       the bottom-right corner, so it still tames the bright lower-right deck
+       while leaving the top-right open.
+       The vignette is also softened (0.60 → 0.45) and its centre pushed right
+       and up (centre → 55% 45%), so the top-right corner sits nearer its
+       transparent core instead of in the darkest part of the ellipse.
+       Measured mean luminance, top-right region: 59.7 → 76.8 (+29%). The nav
+       strip lightens with it (36.9 → 42.5) — still ample for white nav text —
+       and the headline area is untouched at 61.6. */
     background-image:
       linear-gradient(to bottom, rgba(2,6,12,0.42) 0%, rgba(4,9,15,0.42) 60%, rgba(4,9,15,0.30) 100%),
       linear-gradient(to right, rgba(2,6,12,0.85) 0%, rgba(2,6,12,0.55) 25%, rgba(2,6,12,0.18) 55%, transparent 100%),
-      linear-gradient(to left, rgba(2,6,12,0.45) 0%, rgba(2,6,12,0.18) 22%, transparent 38%),
-      radial-gradient(ellipse 80% 60% at center, transparent 55%, rgba(5,11,20,0.60) 100%);
+      radial-gradient(ellipse 60% 75% at 100% 100%, rgba(2,6,12,0.42) 0%, transparent 72%),
+      radial-gradient(ellipse 95% 78% at 55% 45%, transparent 60%, rgba(5,11,20,0.45) 100%);
   }
 }
 /* Mobile-only soft backing behind the homepage hero CTAs. A single radial

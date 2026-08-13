@@ -154,7 +154,7 @@ export const Hero = () => {
                       62.4px top -> 2.1563rem (~439px, the lg column)
                     Re-measure with a Range if either string or weight changes —
                     eyeballing this never lands. */}
-                <span className="text-shadow-hero-sub block mt-2 md:mt-5 sm:whitespace-nowrap text-white font-bold md:font-normal tracking-tight text-[1.54rem] sm:text-[1.92rem] md:text-[2.4877rem] lg:max-[1199px]:text-[2.1563rem] leading-[1.1]">
+                <span className="text-shadow-hero-sub block mt-2 md:mt-5 sm:whitespace-nowrap text-white font-bold md:font-medium tracking-tight text-[1.54rem] sm:text-[1.92rem] md:text-[2.4569rem] lg:max-[1199px]:text-[2.1286rem] leading-[1.1]">
                   No Monthly Chemical Cost
                 </span>
               </div>
