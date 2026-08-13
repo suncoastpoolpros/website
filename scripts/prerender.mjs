@@ -131,8 +131,10 @@ function injectHead(html, meta) {
   replacements.push(`<meta property="og:image:width" content="1200" />`);
   replacements.push(`<meta property="og:image:height" content="630" />`);
   replacements.push(`<meta property="og:image:alt" content="Suncoast Pool Pros — Flat-Rate Weekly Pool Service" />`);
+  replacements.push(`<meta property="og:locale" content="en_US" />`);
   replacements.push(`<meta name="twitter:card" content="summary_large_image" />`);
   replacements.push(`<meta name="twitter:image" content="${OG_IMAGE}" />`);
+  replacements.push(`<meta name="twitter:image:alt" content="Suncoast Pool Pros — Flat-Rate Weekly Pool Service" />`);
   if (meta.title) replacements.push(`<meta name="twitter:title" content="${escapeHtml(meta.title)}" />`);
   if (meta.description) replacements.push(`<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`);
 
