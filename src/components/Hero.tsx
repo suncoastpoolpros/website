@@ -268,9 +268,10 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
                 className="text-brand-orange text-[1.7rem] xl:text-[2.15rem] leading-tight max-w-[180px]"
                 style={{ fontFamily: '"Caveat", cursive', fontWeight: 700 }}
               >
-                <span className="block">Sent before</span>
-                <span className="block">we leave</span>
-                <span className="block">your pool</span>
+                <span className="block">A pool service</span>
+                <span className="block">report before</span>
+                <span className="block">we leave your</span>
+                <span className="block">driveway</span>
               </span>
 
               {/* Hand-drawn swooping arrow — strokes draw themselves after the text. */}
@@ -631,7 +632,7 @@ export const HomeHeroPhoneSection = () => {
           <p className="section-subtext">
             Chemistry readings, what we added, photos of your pool, and a
             GPS-verified visit &mdash;{' '}
-            <span className="text-white">emailed before we leave your property</span>.
+            <span className="text-white">emailed before we leave your driveway</span>.
           </p>
         </div>
       </Container>
@@ -646,7 +647,8 @@ export const HomeHeroPhoneSection = () => {
             className="text-brand-orange text-[1.9rem] leading-tight"
             style={{ fontFamily: '"Caveat", cursive', fontWeight: 700 }}
           >
-            Sent before we leave your pool
+            <span className="block">A pool service report</span>
+            <span className="block">before we leave your driveway</span>
           </span>
           <svg
             width="60"
@@ -673,31 +675,38 @@ export const HomeHeroPhoneSection = () => {
             />
           </svg>
         </div>
-        <div className="relative flex justify-center items-center gap-2.5">
+        {/* The phone is centered on its own. The scroll wheel is ABSOLUTE, so it
+            no longer participates in the centering: as a flex sibling it added
+            its 28px width + 10px gap to the centered group, which pushed the
+            phone ~19px left of true center. */}
+        <div className="relative flex justify-center items-center">
           {/* interactive={false}: the phone's inner Gmail body must NOT be a
               touch scroll region (that traps the page scroll). The side wheel
               below is the ONLY way the report scrolls on mobile — via
               programmatic scrollTop through bodyRef. */}
-          <HomeHeroPhone
-            clock={clock}
-            gmailScrolled={gmailScrolled}
-            setGmailScrolled={setGmailScrolled}
-            interactive={false}
-            scrollBodyRef={bodyRef}
-          />
-          {/* Scroll wheel: 28px-wide touch track (visual 4px line + thumb).
-              touch-action:none so dragging it never scrolls the page. */}
-          <div
-            ref={trackRef}
-            aria-hidden="true"
-            className="relative h-[400px] w-7 shrink-0 flex justify-center"
-            style={{ touchAction: 'none' }}
-          >
-            <div className="absolute inset-y-0 w-1 rounded-full bg-white/10" />
-            <div
-              ref={thumbRef}
-              className="absolute top-0 w-1.5 h-16 rounded-full bg-white/50"
+          <div className="relative">
+            <HomeHeroPhone
+              clock={clock}
+              gmailScrolled={gmailScrolled}
+              setGmailScrolled={setGmailScrolled}
+              interactive={false}
+              scrollBodyRef={bodyRef}
             />
+            {/* Scroll wheel: 28px-wide touch track (visual 4px line + thumb),
+                sitting just outside the phone's left edge. touch-action:none so
+                dragging it never scrolls the page. */}
+            <div
+              ref={trackRef}
+              aria-hidden="true"
+              className="absolute right-full top-1/2 -translate-y-1/2 h-[400px] w-7 flex justify-center"
+              style={{ touchAction: 'none' }}
+            >
+              <div className="absolute inset-y-0 w-1 rounded-full bg-white/10" />
+              <div
+                ref={thumbRef}
+                className="absolute top-0 w-1.5 h-16 rounded-full bg-white/50"
+              />
+            </div>
           </div>
         </div>
       </div>
