@@ -29,6 +29,9 @@ type ServiceReportPhoto = {
    *  free (a cache hit) while it requests the EXACT file the hero painted, so
    *  the two must not drift apart. */
   mobileWebp?: string;
+  /** 1x source override, same principle as the two below: this photo is only
+   *  free while it requests the EXACT file the hero painted. */
+  webp?: string;
   /** 2x source, for the same reason. The hero's image-set serves a -1920 file at
    *  DPR>=2 while this picture asked for the 1x — so a retina desktop downloaded
    *  BOTH (measured 892KB of images at 1440 DPR2 vs 570KB at DPR1). Naming the
@@ -479,8 +482,8 @@ export const ServiceReport = ({
                 type="image/webp"
                 srcSet={
                   photo.wideWebp
-                    ? `${photo.base}.webp 1x, ${photo.wideWebp} 2x`
-                    : `${photo.base}.webp`
+                    ? `${photo.webp ?? `${photo.base}.webp`} 1x, ${photo.wideWebp} 2x`
+                    : (photo.webp ?? `${photo.base}.webp`)
                 }
               />
               <img

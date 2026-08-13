@@ -49,7 +49,7 @@ export const LandingPage = () => {
       // different file than the CSS paints downloads both.
       mobile: '/treasure-island-hero-mobile-v2.webp',
       tablet: '/treasure-island-hero-1536.webp',
-      desktop: '/treasure-island-hero.webp',
+      desktop: '/treasure-island-hero-1536.webp',
       wide: '/treasure-island-hero-1920.webp',
     },
     // One variable file per family covers every weight above the fold (nav,

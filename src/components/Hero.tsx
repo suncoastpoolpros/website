@@ -561,6 +561,7 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
                             // paints, so this stays a cache hit instead of a
                             // second full-size download.
                             mobileWebp: '/treasure-island-hero-mobile-v2.webp',
+                            webp: '/treasure-island-hero-1536.webp',
                             wideWebp: '/treasure-island-hero-1920.webp',
                             alt: 'Waterfront infinity pool with palm trees in St. Petersburg, FL — cleaned and chemically balanced by Suncoast Pool Pros',
                           }}

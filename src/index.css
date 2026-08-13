@@ -223,8 +223,12 @@ input[type="date"]::-webkit-date-and-time-value {
 .hero-bg-desktop {
   /* Homepage now shows the Treasure Island photo (swapped with Treasure, which
      shows the waterfront image). Treatment travels with the photo. */
+  /* The 1x slot uses the -1536 file, not the old -hero.webp. That file is
+     1500x1000 at 266KB (1.42 bpp — over-quality); -1536 is 1536x1024 at 157KB,
+     so it is LARGER in pixels and 104KB smaller. Strictly better for every 1x
+     display, and it covers 1440px desktops natively. */
   background-image: image-set(
-    url('/treasure-island-hero.webp') type('image/webp') 1x,
+    url('/treasure-island-hero-1536.webp') type('image/webp') 1x,
     url('/treasure-island-hero-1920.webp') type('image/webp') 2x,
     url('/treasure-island-hero.jpg') type('image/jpeg') 1x
   );
