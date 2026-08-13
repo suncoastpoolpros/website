@@ -82,12 +82,36 @@ export const QuoteSheetProvider = ({ children }: { children: React.ReactNode }) 
               onClick={close}
             />
 
+            {/* White underlap shim — mobile bottom-sheet only.
+                The strip behind iOS Safari's bottom toolbar / home indicator is
+                normally painted white by StickyMobileCta's own shim, but that
+                bar UNMOUNTS while this sheet is open (`show && !isOpen`), so
+                nothing was left holding that area white — the dark #07111c page
+                base showed through, and Safari tints its translucent bottom bar
+                from whatever is behind it. Hence the bar's color changing
+                instead of staying white.
+                Same defense as the CTA (see StickyMobileCta): a slab anchored to
+                this container's bottom edge and pushed fully below it, so it's
+                offscreen when iOS anchors the fixed container to the true screen
+                bottom, and paints any exposed gap white when it re-anchors a few
+                px high (which iOS does around a body scroll-lock + safe-area
+                recompute — exactly the conditions here).
+                sm:hidden because at sm+ this is a CENTERED modal, where a white
+                band at the bottom of the scrim would be visible. */}
+            <div
+              aria-hidden="true"
+              className="sm:hidden pointer-events-none absolute inset-x-0 bottom-0 h-24 translate-y-full bg-white"
+            />
+
             {/* Panel — bottom sheet on mobile, centered modal on desktop. The
                 slide-up is a composited CSS transform (overlay-panel-bottom),
                 off the main thread, replacing the old Framer spring that
                 recomputed physics every frame while the chooser form mounted. */}
             <div
-              className={`overlay-panel-bottom relative w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-t sm:border border-black/[0.08] rounded-t-3xl sm:rounded-3xl px-5 pt-3 pb-8 sm:p-8 sm:shadow-2xl sm:shadow-black/60 ${sheet.visible ? 'is-open' : ''}`}
+              // pb uses max(floor, env(...)) — NOT floor + env, which over-pads
+              // (CLAUDE.md #14). Without the safe-area term the last ~34px of
+              // the form sat under the home indicator on notched phones.
+              className={`overlay-panel-bottom relative w-full sm:max-w-2xl max-h-[90dvh] overflow-y-auto bg-white border-t sm:border border-black/[0.08] rounded-t-3xl sm:rounded-3xl px-5 pt-3 pb-[max(2rem,env(safe-area-inset-bottom))] sm:p-8 sm:shadow-2xl sm:shadow-black/60 ${sheet.visible ? 'is-open' : ''}`}
             >
               {/* Grab handle (mobile only) */}
               <div className="sm:hidden mx-auto mb-5 h-1.5 w-12 rounded-full bg-black/15" />
