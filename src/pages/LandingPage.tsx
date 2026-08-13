@@ -42,7 +42,7 @@ export const LandingPage = () => {
   usePageMeta({
     title: 'Pool Service St. Petersburg, FL — Flat-Rate Weekly Cleaning',
     description:
-      'Flat-rate weekly pool cleaning across St. Petersburg & Tampa Bay — chemicals included, consistent vetted techs, a photo report after each visit.',
+      'Flat-rate weekly pool cleaning in St. Petersburg, Clearwater, Largo & Palm Harbor — chemicals included, vetted techs, a photo report every visit.',
     canonicalPath: '/',
     heroPreload: {
       // Must stay in lockstep with .hero-bg-mobile in index.css — preloading a

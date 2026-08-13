@@ -54,7 +54,7 @@ export const poolServiceSchema = () => ({
   provider: { '@id': BUSINESS_ID },
   areaServed: AREAS_SERVED.map((name) => ({ '@type': 'City', name })),
   description:
-    'Flat-rate weekly pool cleaning and chemical balancing in St. Petersburg and the Tampa Bay area — all standard chemicals included, consistent vetted technicians, and a photo report after every visit.',
+    'Flat-rate weekly pool cleaning and chemical balancing in St. Petersburg, Clearwater, Largo, Palm Harbor and across Pinellas County — all standard chemicals included, consistent vetted technicians, and a photo report after every visit.',
   // A bare `price` asserts a fixed, purchasable amount. Our own FAQ says
   // "approximately $150 per month… pricing varies based on trees, pool size,
   // and many other factors", so a flat 150 was a claim the page contradicts —
