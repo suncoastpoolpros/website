@@ -1,9 +1,12 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { Send, LoaderCircle, CheckCircle, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ImagePlus, X } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
+import { Send, LoaderCircle, CheckCircle, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ChevronLeft, X } from 'lucide-react';
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
-import { useProposalDraft } from '@/lib/useProposalDraft';
+import { useProposalDraft } from '@/lib/useAdminDraft';
 import { sendProposal, logout, formatPrice, type ProposalData } from '@/lib/adminApi';
+import { blobToBase64 } from '@/lib/adminMedia';
 import { toTitleCase, formatUsPhone } from '@/lib/textFormat';
+import { Section, PreviewBlock, PreviewRow } from './adminUi';
+import { PhotoPicker } from './PhotoPicker';
 import { SCOPE_TEMPLATES } from './scopeTemplates';
 import { ADDON_PRESETS } from './addonPresets';
 import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE } from './proposalBenefits';
@@ -23,61 +26,18 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const todayLabel = () =>
   new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-// Read a Blob as a base64 string with the `data:...;base64,` prefix stripped.
-const blobToBase64 = (blob: Blob): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result);
-      resolve(result.slice(result.indexOf(',') + 1));
-    };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-
 const filenameFor = (data: ProposalData): string => {
   const name = data.customer.name.trim().replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   return `Suncoast-Proposal${name ? '-' + name : ''}.pdf`;
 };
 
-const MAX_PHOTOS = 8;
-
-// Shrink a phone photo to a sane size before it goes into the PDF — full-res
-// images would blow past the email attachment limit. Draws to a canvas capped
-// at 1400px on the long edge and re-encodes as JPEG.
-const downscaleImage = (file: File, maxDim = 1400, quality = 0.72): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      let { width, height } = img;
-      if (width >= height && width > maxDim) {
-        height = Math.round((height * maxDim) / width);
-        width = maxDim;
-      } else if (height > width && height > maxDim) {
-        width = Math.round((width * maxDim) / height);
-        height = maxDim;
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error('no_canvas'));
-        return;
-      }
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', quality));
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('image_load_failed'));
-    };
-    img.src = url;
-  });
-
-export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
+export const ProposalBuilder = ({
+  onLogout,
+  onBack,
+}: {
+  onLogout: () => void;
+  onBack: () => void;
+}) => {
   const { data, setData, update, clearDraft } = useProposalDraft();
   const [status, setStatus] = useState<SendStatus>({ kind: 'idle' });
   // Abort controller + a cancelled flag so Cancel actually stops the send:
@@ -89,17 +49,6 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
   // images would quickly exceed the storage quota. They're optional and baked
   // straight into the generated PDF.
   const [photos, setPhotos] = useState<string[]>([]);
-
-  const addPhotos = async (list: FileList | null) => {
-    if (!list || list.length === 0) return;
-    const room = MAX_PHOTOS - photos.length;
-    if (room <= 0) return;
-    const picked = Array.from(list).slice(0, room);
-    const results = await Promise.all(picked.map((f) => downscaleImage(f).catch(() => null)));
-    setPhotos((prev) => [...prev, ...results.filter((r): r is string => r !== null)].slice(0, MAX_PHOTOS));
-  };
-
-  const removePhoto = (idx: number) => setPhotos((prev) => prev.filter((_, i) => i !== idx));
 
   // Drop a pre-written service description into the scope field. Appends (with a
   // blank line) when scope already has text, so templates can be combined and
@@ -253,8 +202,14 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
 
       <div className="mx-auto max-w-6xl">
         {/* Top bar */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <div>
+            <button
+              onClick={onBack}
+              className="mb-1 inline-flex items-center gap-1 text-sm text-gray-400 hover:text-white"
+            >
+              <ChevronLeft className="h-4 w-4" /> All documents
+            </button>
             <h1 className="font-display text-2xl font-bold text-white">New Proposal</h1>
             <p className="text-sm text-gray-400">Draft saves automatically as you type.</p>
           </div>
@@ -381,45 +336,11 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
             </Section>
 
             <Section title="Photos">
-              <p className="-mt-1 text-sm text-gray-400">
-                Optional — attach pool or property photos to include in the proposal.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {photos.map((src, i) => (
-                  <div key={i} className="relative h-20 w-20 overflow-hidden rounded-lg border border-white/15">
-                    <img src={src} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removePhoto(i)}
-                      aria-label="Remove photo"
-                      className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-                {photos.length < MAX_PHOTOS && (
-                  <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-white/25 text-gray-400 transition-colors hover:border-brand-blue-light hover:text-white">
-                    <ImagePlus className="h-5 w-5" />
-                    <span className="text-[11px]">Add</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => {
-                        addPhotos(e.target.files);
-                        e.currentTarget.value = '';
-                      }}
-                    />
-                  </label>
-                )}
-              </div>
-              {photos.length > 0 && (
-                <p className="text-xs text-gray-500">
-                  {photos.length} of {MAX_PHOTOS} added. Photos aren&apos;t saved in the draft — re-add them if you leave this page.
-                </p>
-              )}
+              <PhotoPicker
+                photos={photos}
+                setPhotos={setPhotos}
+                hint="Optional — attach pool or property photos to include in the proposal."
+              />
             </Section>
 
             <Section title="Proposal">
@@ -558,13 +479,6 @@ export const ProposalBuilder = ({ onLogout }: { onLogout: () => void }) => {
   );
 };
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <section className="glass-panel rounded-2xl p-5 sm:p-6">
-    <h2 className="mb-5 font-display text-base font-bold text-white">{title}</h2>
-    <div className="space-y-5">{children}</div>
-  </section>
-);
-
 // HTML mirror of the PDF, kept visually close so the preview is trustworthy.
 const ProposalPreview = ({
   data,
@@ -689,20 +603,3 @@ const ProposalPreview = ({
   );
 };
 
-const PreviewBlock = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div>
-    <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-brand-blue-dark">{label}</div>
-    <div className="space-y-1">{children}</div>
-  </div>
-);
-
-const PreviewRow = ({ label, value }: { label: string; value?: string }) => {
-  const v = (value ?? '').trim();
-  if (!v) return null;
-  return (
-    <div className="flex gap-3">
-      <span className="w-28 shrink-0 text-stone-500">{label}</span>
-      <span className="flex-1 text-stone-800">{v}</span>
-    </div>
-  );
-};

@@ -6,28 +6,35 @@
  * token in JS — auth state is whatever the server says.
  */
 
+// Customer + pool are shared by both admin documents (proposal and inspection
+// report) so the two builders describe a pool the same way. Each document then
+// adds its own section on top.
+export type CustomerInfo = {
+  name: string;
+  address: string;
+  email: string;
+  phone: string;
+};
+
+export type PoolInfo = {
+  gallons: string;
+  length: string;
+  width: string;
+  avgDepth: string;
+  shape: string;
+  sanitization: string;
+  pump: string;
+  filter: string;
+  heater: string;
+  automation: string;
+  equipmentNotes: string;
+};
+
 // One shared shape for the whole proposal, used by the builder, the PDF
 // document, and the send call so they can't drift apart.
 export type ProposalData = {
-  customer: {
-    name: string;
-    address: string;
-    email: string;
-    phone: string;
-  };
-  pool: {
-    gallons: string;
-    length: string;
-    width: string;
-    avgDepth: string;
-    shape: string;
-    sanitization: string;
-    pump: string;
-    filter: string;
-    heater: string;
-    automation: string;
-    equipmentNotes: string;
-  };
+  customer: CustomerInfo;
+  pool: PoolInfo;
   proposal: {
     scope: string;
     price: string;
@@ -39,6 +46,61 @@ export type ProposalData = {
 };
 
 export type AddOn = { label: string; price: string };
+
+// ----- First service & inspection report ---------------------------------
+
+/** How urgent a found problem is. Drives the colour of the chip on the report. */
+export type IssueSeverity = 'urgent' | 'soon' | 'monitor';
+/** How strongly we're suggesting an upgrade/add-on. No pricing — advice only. */
+export type RecPriority = 'now' | 'soon' | 'optional';
+
+export type Issue = { label: string; severity: IssueSeverity; note: string };
+export type Recommendation = { label: string; priority: RecPriority; note: string };
+
+/** Water-chemistry panel taken on the first visit. All free-text so "N/A" works. */
+export type Chemistry = {
+  freeChlorine: string;
+  totalChlorine: string;
+  ph: string;
+  alkalinity: string;
+  cya: string;
+  calciumHardness: string;
+  salt: string;
+  waterTemp: string;
+  filterPressure: string;
+  waterLevel: string;
+};
+
+export type SurfaceCondition = {
+  material: string;
+  /** Excellent | Good | Fair | Worn */
+  condition: string;
+  /** Checked observations — stains, etching, chipping, etc. */
+  observations: string[];
+  notes: string;
+};
+
+export type InspectionData = {
+  customer: CustomerInfo;
+  pool: PoolInfo;
+  visit: {
+    /** ISO yyyy-mm-dd. Rendered as a friendly date on the report. */
+    date: string;
+    technician: string;
+    /** Plain-English overview of the pool and how the first visit went. */
+    summary: string;
+    /** What was actually done on the first service (multiline / bulleted). */
+    workPerformed: string;
+    /** Overall condition call: Excellent | Good | Fair | Needs work */
+    overall: string;
+  };
+  chemistry: Chemistry;
+  surface: SurfaceCondition;
+  findings: {
+    issues: Issue[];
+    recommendations: Recommendation[];
+  };
+};
 
 // Prefix a bare number with "$" (425 → $425, 185/mo → $185/mo) while leaving
 // values that already start with a symbol/word untouched ($425, "Call for price").
@@ -65,6 +127,45 @@ export const emptyProposal = (): ProposalData => ({
     equipmentNotes: '',
   },
   proposal: { scope: '', price: '', addOns: [], includeBenefits: true },
+});
+
+/** Local yyyy-mm-dd (NOT toISOString, which shifts to UTC and can go back a day). */
+export const todayIso = (): string => {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+export const emptyInspection = (): InspectionData => ({
+  customer: { name: '', address: '', email: '', phone: '' },
+  pool: {
+    gallons: '',
+    length: '',
+    width: '',
+    avgDepth: '',
+    shape: '',
+    sanitization: '',
+    pump: '',
+    filter: '',
+    heater: '',
+    automation: '',
+    equipmentNotes: '',
+  },
+  visit: { date: todayIso(), technician: '', summary: '', workPerformed: '', overall: '' },
+  chemistry: {
+    freeChlorine: '',
+    totalChlorine: '',
+    ph: '',
+    alkalinity: '',
+    cya: '',
+    calciumHardness: '',
+    salt: '',
+    waterTemp: '',
+    filterPressure: '',
+    waterLevel: '',
+  },
+  surface: { material: '', condition: '', observations: [], notes: '' },
+  findings: { issues: [], recommendations: [] },
 });
 
 /** True when a valid admin session cookie is present. */
@@ -117,17 +218,56 @@ export type SendProposalArgs = ProposalData & {
 
 /** POST the proposal + PDF to be emailed. Throws on failure (or AbortError if cancelled). */
 export async function sendProposal(args: SendProposalArgs, signal?: AbortSignal): Promise<void> {
-  const res = await fetch('/api/admin/send-proposal', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    signal,
-    body: JSON.stringify({
+  await postDocument(
+    '/api/admin/send-proposal',
+    {
       customer: args.customer,
       pool: args.pool,
       proposal: args.proposal,
       pdfBase64: args.pdfBase64,
       filename: args.filename,
-    }),
+    },
+    'send_proposal_failed',
+    signal,
+  );
+}
+
+export type SendInspectionArgs = InspectionData & {
+  /** Base64 PDF (no data: prefix needed; server strips one if present). */
+  pdfBase64: string;
+  filename: string;
+};
+
+/** POST the first-service report + PDF to be emailed. Throws on failure. */
+export async function sendInspection(args: SendInspectionArgs, signal?: AbortSignal): Promise<void> {
+  await postDocument(
+    '/api/admin/send-inspection',
+    {
+      customer: args.customer,
+      pool: args.pool,
+      visit: args.visit,
+      chemistry: args.chemistry,
+      surface: args.surface,
+      findings: args.findings,
+      pdfBase64: args.pdfBase64,
+      filename: args.filename,
+    },
+    'send_inspection_failed',
+    signal,
+  );
+}
+
+async function postDocument(
+  url: string,
+  body: unknown,
+  errorTag: string,
+  signal?: AbortSignal,
+): Promise<void> {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal,
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     let detail = '';
@@ -136,6 +276,6 @@ export async function sendProposal(args: SendProposalArgs, signal?: AbortSignal)
     } catch {
       /* ignore */
     }
-    throw new Error(`send_proposal_failed (${res.status}): ${detail.slice(0, 200)}`);
+    throw new Error(`${errorTag} (${res.status}): ${detail.slice(0, 200)}`);
   }
 }
