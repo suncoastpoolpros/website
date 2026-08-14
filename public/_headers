@@ -30,6 +30,14 @@
 /*.png
   Cache-Control: public, max-age=31536000, immutable
 
+# favicon.ico was the ONE homepage asset falling through to Cloudflare's 4-hour
+# default (no .ico rule existed), which is what YSlow/GTmetrix flags under "Add
+# Expires headers". 30 days, NOT a year+immutable: unlike the other icons this
+# filename isn't version-stamped (apple-touch-icon-v2.png etc.), so an immutable
+# year would make it impossible to ever change without renaming it.
+/*.ico
+  Cache-Control: public, max-age=2592000
+
 # Prerendered HTML — browser always revalidates with Cloudflare (so a redeploy
 # rolls out immediately to all visitors), but the edge keeps a cached copy and
 # can answer a conditional GET with a 304 in single-digit ms. CF Pages does NOT
