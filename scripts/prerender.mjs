@@ -246,6 +246,63 @@ function inlineCss(html, cssHref, cssText) {
   return html.replace(linkRe, replacement);
 }
 
+/**
+ * Write dist/sitemap.xml from the routes we actually prerendered.
+ *
+ * Generated, not hand-maintained: the old public/sitemap.xml had to be edited by
+ * hand for every new page, so a page could silently never get submitted. Here
+ * the URL list can't drift — it IS the prerender output — and `noindex` pages
+ * (currently /signup) drop out automatically because we read the same per-page
+ * meta the <meta name="robots"> tag comes from.
+ *
+ * `lastmod` comes from scripts/sitemap-dates.json, which is committed. Dates are
+ * deliberately NOT auto-set to the build date: that would tell Google every page
+ * changed on every deploy, and an inaccurate lastmod is worse than none — Google
+ * learns to ignore the field. A route missing from the JSON is genuinely new, so
+ * it gets today. Bump a date by hand when a page's content meaningfully changes.
+ */
+async function writeSitemap(entries) {
+  const datesFile = path.join(ROOT, 'scripts', 'sitemap-dates.json');
+  let dates = {};
+  try {
+    dates = JSON.parse(await fs.readFile(datesFile, 'utf8'));
+  } catch {
+    console.warn('⚠ scripts/sitemap-dates.json missing — every URL will get today.');
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const added = [];
+  const body = entries
+    .map(({ loc }) => {
+      let lastmod = dates[loc];
+      if (!lastmod) {
+        lastmod = today;
+        added.push(loc);
+      }
+      return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`;
+    })
+    .join('\n');
+
+  const xml =
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    `${body}\n` +
+    '</urlset>\n';
+  await fs.writeFile(path.join(CLIENT_DIST, 'sitemap.xml'), xml);
+
+  if (added.length) {
+    // Persist so the new page keeps its first-seen date instead of resetting on
+    // the next build. Only matters locally — a CI checkout is thrown away — so
+    // commit scripts/sitemap-dates.json along with the new page.
+    for (const loc of added) dates[loc] = today;
+    const sorted = Object.fromEntries(entries.map(({ loc }) => [loc, dates[loc]]));
+    await fs.writeFile(datesFile, JSON.stringify(sorted, null, 2) + '\n');
+    console.log(`  ↳ new in sitemap (dated ${today}): ${added.join(', ')}`);
+    console.log('  ↳ commit scripts/sitemap-dates.json');
+  }
+  console.log(`Wrote dist/sitemap.xml (${entries.length} URLs).`);
+}
+
 async function run() {
   const template = await fs.readFile(TEMPLATE, 'utf8');
   // Bun-style file URL import for the SSR bundle so Node ESM resolves correctly.
@@ -263,6 +320,7 @@ async function run() {
   }
 
   let count = 0;
+  const sitemapEntries = [];
   for (const route of PRERENDER_ROUTES) {
     let body, meta;
     try {
@@ -286,8 +344,15 @@ async function run() {
     await fs.mkdir(outDir, { recursive: true });
     await fs.writeFile(outFile, html);
     count++;
+    // Indexable pages go in the sitemap, keyed by the page's own canonical URL
+    // so the two can never disagree.
+    if (!meta.noindex && meta.canonicalUrl) {
+      sitemapEntries.push({ loc: meta.canonicalUrl });
+    }
     console.log(`✓ ${route} → ${path.relative(ROOT, outFile)} (${html.length} bytes)`);
   }
+
+  await writeSitemap(sitemapEntries);
 
   // Strip build-only assets that Vite copies straight out of public/. These are
   // never referenced by any CSS, HTML or preload — public/fonts/_orig holds the

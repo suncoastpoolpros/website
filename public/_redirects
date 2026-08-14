@@ -1,7 +1,17 @@
-# Cloudflare Pages SPA fallback.
-# Any non-file, non-/api request falls back to index.html so React Router
-# can handle deep links (e.g. /belleair-beach-fl, /tools/pool-volume-calculator).
-# The 200 (not 301/302) keeps the URL bar unchanged.
+# Cloudflare Pages routing.
+#
+# There is deliberately NO `/*  /index.html  200` catch-all. Every public route
+# is prerendered to its own dist/<route>/index.html (see PRERENDER_ROUTES in
+# src/entry-server.tsx), so Pages serves those as real files and deep links work
+# without a fallback. A catch-all would additionally serve the homepage — with a
+# 200 — for every URL that does NOT exist, which is a soft 404: Googlebot sees
+# success, Search Console fills with "Soft 404", and genuinely dead URLs can
+# never signal that they're gone. Unmatched paths now fall through to 404.html
+# with a real 404 status.
+#
+# So: any new route MUST be added to PRERENDER_ROUTES, or it will 404 in
+# production even though it works in dev. That includes private/app-like routes
+# — prerender them and keep them out of search with noindex, as /admin does.
 /api/*  /api/:splat  200
 
 # Retired URLs → 301 to a live page. These must come BEFORE the /* catch-all
@@ -13,4 +23,7 @@
 /getstarted   /  301
 /getstarted/  /  301
 
-/*      /index.html  200
+# NOTE: /admin needs no rule here. It's prerendered like every other route (see
+# PRERENDER_ROUTES), so Pages serves dist/admin/index.html directly. Rewriting it
+# to /index.html does NOT work — Pages canonicalises /index.html to / and turns
+# the 200 rewrite into a 308 to the homepage. Verified with `wrangler pages dev`.

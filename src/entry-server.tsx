@@ -54,6 +54,7 @@ import { ContactPage } from '@/pages/ContactPage';
 import { SignupPage } from '@/pages/SignupPage';
 import { ServiceAgreementPage } from '@/pages/ServiceAgreementPage';
 import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage';
+import { AdminPage } from '@/pages/AdminPage';
 
 // Routes to prerender. Marketing pages benefit most from static HTML for SEO
 // and instant first paint; the calculator and signup are heavily interactive
@@ -88,6 +89,14 @@ export const PRERENDER_ROUTES = [
   '/signup',
   '/service-agreement',
   '/privacy-policy',
+  // /admin is prerendered for ROUTING reasons, not SEO. Cloudflare Pages needs a
+  // real file at the path: rewriting to /index.html in _redirects doesn't work
+  // (Pages canonicalises /index.html → / and turns the rewrite into a 308), and
+  // the old `/*` SPA catch-all that used to cover it made every nonexistent URL
+  // return 200 — a soft 404. It stays out of search via noindex (usePageMeta)
+  // plus a robots.txt Disallow, and out of the sitemap automatically because the
+  // generator skips noindex routes. The HTML it emits is just the auth spinner.
+  '/admin',
 ];
 
 const Routing = () => (
@@ -120,6 +129,7 @@ const Routing = () => (
     <Route path="/signup" element={<SignupPage />} />
     <Route path="/service-agreement" element={<ServiceAgreementPage />} />
     <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+    <Route path="/admin" element={<AdminPage />} />
   </Routes>
 );
 

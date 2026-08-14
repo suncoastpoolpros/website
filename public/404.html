@@ -1,0 +1,156 @@
+<!doctype html>
+<!--
+  Cloudflare Pages serves this file, with a real 404 status, for any path that
+  doesn't match a prerendered route or a rewrite in _redirects.
+
+  Why a standalone page rather than the SPA: the app's NotFoundPage renders
+  client-side, which means the response would have to be index.html at HTTP 200
+  — a soft 404. Googlebot needs the status code, and it must be right in the
+  first byte, before any JS runs.
+
+  Deliberately self-contained: no hashed /assets/* bundle (those filenames change
+  every build, and a stale reference here would silently break), no JS. Only the
+  two variable fonts, whose paths are stable across deploys. Keep it in sync with
+  src/pages/NotFoundPage.tsx, which handles in-app 404s after hydration.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Page Not Found — Suncoast Pool Pros</title>
+    <meta
+      name="description"
+      content="The page you're looking for doesn't exist. Head back home or call Suncoast Pool Pros for help."
+    />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#0a1628" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="/circle-icon.svg" />
+    <style>
+      @font-face {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+        src: url('/fonts/inter-var.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Montserrat';
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+        src: url('/fonts/montserrat-var.woff2') format('woff2');
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; background: #07111c; }
+      body {
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.25rem;
+        background-color: #0a1628;
+        background-image:
+          radial-gradient(at 0% 50%, hsla(215, 98%, 15%, 1) 0, transparent 50%),
+          radial-gradient(at 50% 50%, hsla(210, 100%, 10%, 1) 0, transparent 50%),
+          radial-gradient(at 100% 50%, hsla(215, 98%, 15%, 1) 0, transparent 50%);
+        color: #fff;
+        font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { width: 100%; max-width: 42rem; text-align: center; }
+      .code {
+        font-family: 'Montserrat', system-ui, Arial, sans-serif;
+        font-weight: 900;
+        font-size: clamp(6rem, 22vw, 10rem);
+        line-height: 1;
+        letter-spacing: -0.03em;
+        color: rgba(93, 169, 226, 0.3);
+        margin: 0;
+        user-select: none;
+      }
+      h1 {
+        font-family: 'Montserrat', system-ui, Arial, sans-serif;
+        font-weight: 700;
+        font-size: clamp(1.75rem, 5vw, 2.25rem);
+        letter-spacing: -0.02em;
+        margin: 0.5rem 0 1rem;
+      }
+      p.lede {
+        color: #9ca3af;
+        font-size: 1.0625rem;
+        line-height: 1.65;
+        max-width: 30rem;
+        margin: 0 auto 2.5rem;
+      }
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        justify-content: center;
+        margin-bottom: 3rem;
+      }
+      @media (min-width: 640px) { .actions { flex-direction: row; } }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.8rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        text-decoration: none;
+        transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+      }
+      .btn-blue { background: #1669ae; color: #fff; border: 1px solid #1669ae; }
+      .btn-blue:hover { background: #1a7ac9; border-color: #1a7ac9; }
+      .btn-ghost {
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.9);
+      }
+      .btn-ghost:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.25); color: #fff; }
+      nav.links {
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 1.75rem;
+      }
+      nav.links .label {
+        font-size: 0.6875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #6b7f96;
+        margin: 0 0 0.9rem;
+      }
+      nav.links ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; justify-content: center; }
+      nav.links a { color: #9fc6e8; text-decoration: none; font-size: 0.9375rem; }
+      nav.links a:hover { color: #fff; text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <p class="code">404</p>
+      <h1>This page doesn&rsquo;t exist.</h1>
+      <p class="lede">
+        The link may be stale or mistyped. Try heading back home, or give us a call &mdash; a real
+        person picks up.
+      </p>
+
+      <div class="actions">
+        <a class="btn btn-blue" href="/">Back to home</a>
+        <a class="btn btn-ghost" href="tel:+17272953621">(727) 295-3621</a>
+      </div>
+
+      <nav class="links">
+        <p class="label">Popular pages</p>
+        <ul>
+          <li><a href="/how-it-works/">How It Works</a></li>
+          <li><a href="/pool-care/">Pool Care Guides</a></li>
+          <li><a href="/tools/">Pool Tools</a></li>
+          <li><a href="/faq/">FAQ</a></li>
+          <li><a href="/contact/">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </body>
+</html>
