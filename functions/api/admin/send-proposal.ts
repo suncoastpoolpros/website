@@ -83,7 +83,11 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
     // contact address, so a customer who replies outside the "APPROVED" flow
     // still reaches a real mailbox. Overridable via PROPOSAL_FROM_EMAIL.
     const fromEmail = env.PROPOSAL_FROM_EMAIL || 'service@suncoastpoolpros.com';
-    const replyTo = env.PROPOSAL_REPLY_TO || env.CONTACT_TO_EMAIL;
+    // Reply-To must NEVER fall back to CONTACT_TO_EMAIL: that's the contact
+    // form's delivery inbox and is deliberately a personal gmail address, which
+    // would then be visible to every customer who gets a proposal. Fall back to
+    // the public service@ address instead (it forwards to the same inbox).
+    const replyTo = env.PROPOSAL_REPLY_TO || 'service@suncoastpoolpros.com';
     const bcc = env.CONTACT_TO_EMAIL || env.PROPOSAL_REPLY_TO;
     if (!apiKey || !fromEmail) {
       const missing = [!apiKey && 'RESEND_API_KEY', !fromEmail && 'PROPOSAL_FROM_EMAIL/CONTACT_FROM_EMAIL']
