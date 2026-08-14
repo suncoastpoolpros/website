@@ -10,7 +10,7 @@
 // Raw values
 export const PHONE_E164 = '+17272953621'; // for tel:/sms: links
 export const PHONE_DISPLAY = '(727) 295-3621'; // for on-screen text
-export const EMAIL = 'Suncoastpoolpros@gmail.com';
+export const EMAIL = 'service@suncoastpoolpros.com';
 
 export const BUSINESS_NAME = 'Suncoast Pool Pros';
 export const ADDRESS_LINE = '1701 Central Ave, Unit 279';
