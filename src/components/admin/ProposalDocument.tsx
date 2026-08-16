@@ -101,9 +101,11 @@ const styles = StyleSheet.create({
     marginHorizontal: -18,
   },
   includedHeading: { fontSize: 12, fontFamily: 'Helvetica-Bold', color: BLUE_DARK, marginBottom: 9 },
-  includedItem: { flexDirection: 'row', marginBottom: 3 },
-  includedCheck: { color: GREEN, fontFamily: 'Helvetica-Bold', width: 13 },
-  includedItemText: { color: NAVY, flex: 1, fontFamily: 'Helvetica-Bold' },
+  includedItem: { flexDirection: 'row', marginBottom: 6 },
+  includedCheck: { color: GREEN, fontFamily: 'Helvetica-Bold', width: 13, fontSize: 8.5, lineHeight: 1.45 },
+  // fontSize is set explicitly alongside lineHeight — react-pdf sizes the line
+  // box from the INHERITED size otherwise, which throws the leading out.
+  includedItemText: { color: NAVY, flex: 1, fontFamily: 'Helvetica-Bold', fontSize: 8.5, lineHeight: 1.45 },
   includedNote: { marginTop: 6, fontSize: 8.5, color: MUTED, fontStyle: 'italic' },
   includedFootnote: { marginTop: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: TINT_BORDER, fontSize: 8, color: FAINT, lineHeight: 1.4 },
 

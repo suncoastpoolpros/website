@@ -530,7 +530,7 @@ export const composeProposalEmail = (
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
             <tr><td style="padding:16px 20px;background:#eef6fb;border:1px solid #cfe3f2;border-radius:12px;">
               <div style="font-size:15px;font-weight:700;color:#0f4d80;margin-bottom:8px;">${BENEFITS_HEADING}</div>
-              ${benefitsList.map((b) => `<div style="font-size:14px;color:#1f2937;font-weight:600;margin:5px 0;"><span style="color:#1d7a33;">&#10003;</span>&nbsp;&nbsp;${escapeHtml(b)}</div>`).join('')}
+              ${benefitsList.map((b) => `<div style="font-size:14px;color:#1f2937;font-weight:600;line-height:1.55;margin:10px 0;"><span style="color:#1d7a33;">&#10003;</span>&nbsp;&nbsp;${escapeHtml(b)}</div>`).join('')}
               <div style="font-size:12px;color:#6b7280;font-style:italic;margin-top:8px;">${escapeHtml(benefitsNoteText)}</div>
             </td></tr>
           </table>` : ''}

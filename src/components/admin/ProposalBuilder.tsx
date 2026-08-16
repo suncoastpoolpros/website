@@ -790,7 +790,7 @@ const ProposalPreview = ({
             <div className="mb-2 text-sm font-bold text-brand-blue-dark">{BENEFITS_HEADING}</div>
             <ul className="space-y-1">
               {includedBenefits(filterOption).map((b, i) => (
-                <li key={i} className="flex gap-2 text-[13px] font-semibold text-stone-800">
+                <li key={i} className="flex gap-2 py-[3px] text-[13px] font-semibold leading-relaxed text-stone-800">
                   <span className="text-green-600">✓</span>
                   {b}
                 </li>
