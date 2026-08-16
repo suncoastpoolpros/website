@@ -47,7 +47,7 @@ export const ANNUAL_MONTHS_CHARGED = 11;
 
 /** Terms specific to prepaying for the year. */
 export const ANNUAL_FINE_PRINT =
-  'One month free applies to a full twelve months of service paid in advance. Repair labour discount applies to our own labour and excludes work performed by subcontractors.';
+  'One month free applies to a full twelve months of service paid in advance. You can cancel at any time and we refund every unused month. Repair labour discount applies to our own labour and excludes work performed by subcontractors.';
 
 const BASE_SERVICE_INCLUDES = [
   'Weekly cleaning — brushing, skimming, netting and vacuuming',
@@ -101,10 +101,16 @@ export const syncFilterService = (tiers: Tier[], filter: FilterOption): Tier[] =
  * plus:" above this, so the weekly service is never repeated or implicitly
  * withheld.
  */
+/**
+ * No "rate locked for 12 months" bullet. It was meant to reassure and did the
+ * opposite — a customer reads "locked" as "committed", which is the fear that
+ * stops people prepaying at all. Cancel-any-time answers the same question the
+ * right way round.
+ */
 export const ANNUAL_INCLUDES = [
   'One month free — pay for 11, get the full 12',
   '20% off repair labour on repairs and upgrades',
-  'Your rate locked for the full 12 months',
+  'Cancel any time — every unused month refunded',
   'One payment for the year — nothing to remember each month',
 ];
 
@@ -120,6 +126,7 @@ export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', in
       // inside a 250pt column was both redundant and, with longer wordings like
       // DE's, tall enough to push the whole comparison onto the next page.
       tagline: 'Everything above, billed month to month.',
+      priceNote: '',
       includes: [],
       recommended: false,
       // Answers "why is this more than the quote down the road?" before the
@@ -132,16 +139,21 @@ export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', in
     },
     {
       name: 'Pay Annually',
-      price: annualPrice(base),
-      tagline: monthly
-        ? `The same service, one month free — works out to $${formatAmount(effectiveMonthly(monthly))}/mo.`
-        : 'The same service, with one month free.',
+      // Headline is the EFFECTIVE MONTHLY rate, not the annual total. "$1,958"
+      // next to "$178/mo" invites a comparison between two numbers that aren't
+      // comparable and reads as the expensive option; "$163/mo" next to
+      // "$178/mo" reads as the cheaper one, which it is.
+      price: monthly ? `${formatAmount(effectiveMonthly(monthly))}/mo` : '',
+      priceNote: monthly
+        ? `$${formatAmount(monthly * ANNUAL_MONTHS_CHARGED)} billed once — $${formatAmount(monthly)} saved`
+        : '',
+      tagline: 'The same service, with one month free.',
       includes: [...ANNUAL_INCLUDES],
       recommended: true,
-      // The persuasion line: the saving as a dollar figure, not a percentage.
+      // Answers the objection prepaying actually raises — being tied in.
       valueNote: monthly
-        ? `Paying for the year up front means one month on us — that is $${formatAmount(monthly)} back, and it brings your effective rate to about $${formatAmount(effectiveMonthly(monthly))} a month. Repairs and upgrades are 20% off the labour rate for the whole year.`
-        : 'Paying for the year up front means one month on us, and repairs and upgrades are 20% off the labour rate for the whole year.',
+        ? `One month is on us: you pay for eleven and get the full twelve, which brings your rate to about $${formatAmount(effectiveMonthly(monthly))} a month. Cancel any time and we refund every unused month — paying up front is a saving, not a commitment.`
+        : 'One month is on us: you pay for eleven and get the full twelve. Cancel any time and we refund every unused month — paying up front is a saving, not a commitment.',
       finePrint: ANNUAL_FINE_PRINT,
     },
   ];

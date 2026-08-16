@@ -611,6 +611,10 @@ export const ProposalBuilder = ({
                           value={tier.price} onChange={(e) => updateTier(i, { price: e.target.value })} />
                       </FieldShell>
                     </div>
+                    <FieldShell id={`tier-pricenote-${i}`} label="Line under the price (optional)">
+                      <input id={`tier-pricenote-${i}`} className={fieldClass} placeholder=" "
+                        value={tier.priceNote} onChange={(e) => updateTier(i, { priceNote: e.target.value })} />
+                    </FieldShell>
                     <FieldShell id={`tier-tagline-${i}`} label="One-line tagline">
                       <input id={`tier-tagline-${i}`} className={fieldClass} placeholder=" "
                         value={tier.tagline} onChange={(e) => updateTier(i, { tagline: e.target.value })} />
@@ -869,11 +873,13 @@ const ProposalPreview = ({
                   {tier.price.trim() && (
                     <div className="mt-1 text-base font-bold text-brand-blue-dark">{formatPrice(tier.price)}</div>
                   )}
-                  {i > 0 && delta && (
+                  {tier.priceNote.trim() ? (
+                    <div className="text-[10px] font-bold text-brand-blue">{tier.priceNote.trim()}</div>
+                  ) : i > 0 && delta ? (
                     <div className="text-[10px] font-bold text-brand-blue">
                       {delta} more than {tiers[i - 1].name.trim()}
                     </div>
-                  )}
+                  ) : null}
                   {(tier.includes.some((x) => x.trim()) || i > 0) && (
                     <div className="my-1.5 h-px bg-stone-200" />
                   )}

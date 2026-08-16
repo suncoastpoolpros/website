@@ -308,7 +308,15 @@ const TierCard = ({
       <Text style={styles.tierName}>{tier.name.trim()}</Text>
       {tier.tagline.trim() ? <Text style={styles.tierTagline}>{tier.tagline.trim()}</Text> : null}
       {tier.price.trim() ? <Text style={styles.tierPrice}>{formatPrice(tier.price)}</Text> : null}
-      {delta ? <Text style={styles.tierDeltaText}>{delta} more than {buildsOn}</Text> : null}
+      {/* An explicit note beats the computed delta: an annual plan shown at its
+          effective monthly rate needs "$1,958 billed once", not "+$X more". */}
+      {tier.priceNote.trim() ? (
+        <Text style={styles.tierDeltaText}>{tier.priceNote.trim()}</Text>
+      ) : delta ? (
+        <Text style={styles.tierDeltaText}>
+          {delta} more than {buildsOn}
+        </Text>
+      ) : null}
       {/* No divider when there's nothing under it — the base card carries only a
           price, because the service it buys is listed once above the cards. */}
       {items.length || buildsOn ? <View style={styles.tierRule} /> : null}

@@ -78,6 +78,13 @@ export type Tier = {
   price: string;
   /** One line under the name, e.g. "Everything your pool needs, every week." */
   tagline: string;
+  /**
+   * The small line under the price. Set explicitly when the headline figure
+   * needs context the prices can't express — e.g. an annual plan shown at its
+   * effective MONTHLY rate needs "$1,958 billed once". Left blank, the card
+   * falls back to the computed "+$12/mo more than X" delta.
+   */
+  priceNote: string;
   includes: string[];
   /** Draws the ribbon + brand border. Exactly one tier should have it. */
   recommended: boolean;

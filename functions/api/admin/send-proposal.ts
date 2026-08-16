@@ -44,6 +44,7 @@ type Tier = {
   name?: string;
   price?: string;
   tagline?: string;
+  priceNote?: string;
   includes?: string[];
   recommended?: boolean;
   valueNote?: string;
@@ -334,6 +335,7 @@ const renderTiers = (tiers: Tier[]): string => {
     price: formatPrice(safe(String(t?.price ?? '').trim(), 40)),
     rawPrice: safe(String(t?.price ?? '').trim(), 40),
     tagline: safe(String(t?.tagline ?? '').trim(), 200),
+    priceNote: safe(String(t?.priceNote ?? '').trim(), 200),
     includes: (t?.includes ?? []).map((i) => safe(String(i ?? '').trim(), 200)).filter(Boolean),
     recommended: t?.recommended === true,
     finePrint: safe(String(t?.finePrint ?? '').trim(), 600),
@@ -353,7 +355,13 @@ const renderTiers = (tiers: Tier[]): string => {
             <div style="font-size:17px;font-weight:700;color:#0a1628;">${escapeHtml(t.name)}</div>
             ${t.tagline ? `<div style="font-size:12px;color:#6b7280;margin-top:2px;line-height:1.4;">${escapeHtml(t.tagline)}</div>` : ''}
             ${t.price ? `<div style="font-size:24px;font-weight:800;color:#0f4d80;margin-top:8px;">${escapeHtml(t.price)}</div>` : ''}
-            ${delta ? `<div style="font-size:12px;font-weight:700;color:#1669AE;margin-top:2px;">${escapeHtml(delta)} more than ${escapeHtml(prev.name)}</div>` : ''}
+            ${
+              t.priceNote
+                ? `<div style="font-size:12px;font-weight:700;color:#1669AE;margin-top:2px;">${escapeHtml(t.priceNote)}</div>`
+                : delta
+                  ? `<div style="font-size:12px;font-weight:700;color:#1669AE;margin-top:2px;">${escapeHtml(delta)} more than ${escapeHtml(prev.name)}</div>`
+                  : ''
+            }
             <div style="border-top:1px solid #e3e8ef;margin:10px 0;"></div>
             ${prev ? `<div style="font-size:12px;font-weight:700;color:#0a1628;margin-bottom:6px;">Everything in ${escapeHtml(prev.name)}, plus:</div>` : ''}
             ${t.includes
