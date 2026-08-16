@@ -200,6 +200,33 @@
   }
 }
 
+/* Opt back IN to a visible scrollbar.
+
+   Scrollbars are hidden site-wide (see the `*::-webkit-scrollbar` rule above) —
+   right for a marketing page, wrong for an inner scroll pane in the admin tool,
+   where an invisible scrollbar means no signal that the pane scrolls at all.
+   This rule sits outside that layer so it wins on order. */
+.admin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  -ms-overflow-style: auto;
+}
+.admin-scroll::-webkit-scrollbar {
+  display: block;
+  width: 8px;
+  height: 8px;
+}
+.admin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.22);
+  border-radius: 4px;
+}
+.admin-scroll:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
 /* iOS Safari renders <input type="date"> with a native intrinsic width that
    ignores `width:100%`, so the field overflows its container on iPhone (the
    value lives in a ::-webkit-date-and-time-value pseudo with its own min-width).

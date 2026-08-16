@@ -640,12 +640,18 @@ export const InspectionBuilder = ({
           </div>
 
           {/* ---- Live preview + send ---- */}
-          <div className="lg:sticky lg:top-8 lg:self-start">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Live preview</p>
-            <InspectionPreview data={data} photos={photos} dateLabel={dateLabel} />
+          {/* Sticky column with its OWN scroll: the preview is usually taller than
+              the viewport, and before this the only way to see its foot was to
+              scroll the entire form past it. Only the preview scrolls — the Send
+              button and its validation hint stay pinned below it. */}
+          <div className="lg:sticky lg:top-8 lg:self-start lg:flex lg:max-h-[calc(100dvh-4rem)] lg:flex-col">
+            <p className="mb-2 shrink-0 text-xs font-semibold uppercase tracking-wider text-gray-500">Live preview</p>
+            <div className="admin-scroll lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
+              <InspectionPreview data={data} photos={photos} dateLabel={dateLabel} />
+            </div>
 
             {status.kind === 'error' && (
-              <div role="alert" className="mt-4 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              <div role="alert" className="mt-4 shrink-0 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
                 <AlertCircle className="h-5 w-5 shrink-0 text-red-400" />
                 <span>{status.message}</span>
               </div>
@@ -654,7 +660,7 @@ export const InspectionBuilder = ({
             <button
               onClick={handleSend}
               disabled={!canSend || status.kind === 'sending'}
-              className="mt-4 flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark py-4 text-lg font-bold text-white shadow-lg shadow-brand-blue/20 transition-all hover:from-brand-blue-light hover:to-brand-blue disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-4 shrink-0 flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark py-4 text-lg font-bold text-white shadow-lg shadow-brand-blue/20 transition-all hover:from-brand-blue-light hover:to-brand-blue disabled:cursor-not-allowed disabled:opacity-60"
             >
               {status.kind === 'sending' ? (
                 <>
@@ -667,7 +673,7 @@ export const InspectionBuilder = ({
               )}
             </button>
             {!canSend && (
-              <p className="mt-2 text-center text-xs text-gray-500">
+              <p className="mt-2 shrink-0 text-center text-xs text-gray-500">
                 Enter the customer&apos;s name and a valid email to send.
               </p>
             )}
