@@ -355,7 +355,7 @@ export const ProposalDocument = ({
   const tiered = proposal.pricingMode === 'tiers' && proposal.tiers.length > 0;
   // Every "what's included" surface is derived from THIS pool's filter, so a
   // sand-filter customer never reads a promise about cartridge elements.
-  const filterOption = { type: pool.filterType, included: pool.filterServiceIncluded };
+  const filterOption = { type: pool.filterType, included: pool.filterServiceIncluded === 'yes' };
   const extras = includedExtras(filterOption, pool.sanitization);
   const tiers = tiered ? proposal.tiers : [];
   const [baseTier, upgradeTier] = tiers;

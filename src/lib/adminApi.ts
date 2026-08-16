@@ -26,8 +26,15 @@ export type PoolInfo = {
   pump: string;
   /** Cartridge | DE | Sand | Other — drives the included filter-service wording. */
   filterType: string;
-  /** Whether the annual filter service for that type is bundled into the rate. */
-  filterServiceIncluded: boolean;
+  /**
+   * Whether the filter service is bundled into the rate: '' | 'yes' | 'no'.
+   *
+   * NOT a boolean. A boolean has no "not answered yet" state, so the control
+   * always displayed an answer nobody had given — and this field decides
+   * whether the quote promises a filter replacement, which is the last thing
+   * that should default silently.
+   */
+  filterServiceIncluded: string;
   /** Free text make & model, e.g. "Pentair Clean & Clear 320". */
   filter: string;
   heater: string;
@@ -209,7 +216,7 @@ export const emptyProposal = (): ProposalData => ({
     sanitization: '',
     pump: '',
     filterType: '',
-    filterServiceIncluded: false,
+    filterServiceIncluded: '',
     filter: '',
     heater: '',
     automation: '',
@@ -246,7 +253,7 @@ export const emptyInspection = (): InspectionData => ({
     sanitization: '',
     pump: '',
     filterType: '',
-    filterServiceIncluded: false,
+    filterServiceIncluded: '',
     filter: '',
     heater: '',
     automation: '',

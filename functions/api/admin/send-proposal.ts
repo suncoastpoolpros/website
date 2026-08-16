@@ -34,7 +34,7 @@ type Pool = {
   sanitization?: string;
   pump?: string;
   filterType?: string;
-  filterServiceIncluded?: boolean;
+  filterServiceIncluded?: boolean | string;
   filter?: string;
   heater?: string;
   automation?: string;
@@ -411,7 +411,9 @@ export const composeProposalEmail = (
   const emailNote = safe(String(p.proposal?.emailNote ?? '').trim(), FIELD_MAX);
   const emailNoteParas = emailNote.split(/\n{2,}/).map((x) => x.trim()).filter(Boolean);
   const filterType = safe(String(p.pool?.filterType ?? '').trim(), 40);
-  const filterIncluded = p.pool?.filterServiceIncluded === true;
+  // Accepts the tri-state string and the boolean older drafts still send.
+  const filterIncluded =
+    p.pool?.filterServiceIncluded === true || p.pool?.filterServiceIncluded === 'yes';
   const benefitsList = includedBenefits(filterType, filterIncluded);
   const benefitsNoteText = benefitsNote(filterType, filterIncluded);
   const extras = includedExtras(filterType, filterIncluded, safe(String(p.pool?.sanitization ?? '').trim(), 60));

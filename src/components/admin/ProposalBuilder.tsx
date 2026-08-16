@@ -107,23 +107,28 @@ export const ProposalBuilder = ({
   // anything typed by hand survives.
   const setFilterType = (type: string) =>
     setData((p) => {
-      // A type that can't carry the service (Other/blank) can't have it included.
-      const included = supportsFilterService(type) ? p.pool.filterServiceIncluded : false;
-      const filter = { type, included };
+      // A type that can't carry the service (Other/blank) can't have it
+      // included, and changing type re-opens the question rather than carrying
+      // the previous pool's answer over to a different filter.
+      const answer = supportsFilterService(type) ? p.pool.filterServiceIncluded : '';
+      const filter = { type, included: answer === 'yes' };
       return {
         ...p,
-        pool: { ...p.pool, filterType: type, filterServiceIncluded: included },
+        pool: { ...p.pool, filterType: type, filterServiceIncluded: answer },
         proposal: { ...p.proposal, tiers: syncFilterService(p.proposal.tiers, filter) },
       };
     });
 
-  const setFilterIncluded = (included: boolean) =>
+  const setFilterIncluded = (answer: string) =>
     setData((p) => ({
       ...p,
-      pool: { ...p.pool, filterServiceIncluded: included },
+      pool: { ...p.pool, filterServiceIncluded: answer },
       proposal: {
         ...p.proposal,
-        tiers: syncFilterService(p.proposal.tiers, { type: p.pool.filterType, included }),
+        tiers: syncFilterService(p.proposal.tiers, {
+          type: p.pool.filterType,
+          included: answer === 'yes',
+        }),
       },
     }));
 
@@ -141,7 +146,7 @@ export const ProposalBuilder = ({
           mode === 'tiers' && p.proposal.tiers.length === 0
             ? buildTiers(p.proposal.price, {
                 type: p.pool.filterType,
-                included: p.pool.filterServiceIncluded,
+                included: p.pool.filterServiceIncluded === 'yes',
               })
             : p.proposal.tiers,
       },
@@ -174,14 +179,19 @@ export const ProposalBuilder = ({
         ...p.proposal,
         tiers: buildTiers(p.proposal.price, {
           type: p.pool.filterType,
-          included: p.pool.filterServiceIncluded,
+          included: p.pool.filterServiceIncluded === 'yes',
         }),
       },
     }));
 
+  // An unanswered filter question can't be sent: the quote would silently omit
+  // a promise that was meant to be there, and nothing downstream would flag it.
+  const filterAnswered =
+    !supportsFilterService(data.pool.filterType) || data.pool.filterServiceIncluded !== '';
+
   const canSend = useMemo(
-    () => data.customer.name.trim() !== '' && EMAIL_RE.test(data.customer.email.trim()),
-    [data.customer.name, data.customer.email],
+    () => data.customer.name.trim() !== '' && EMAIL_RE.test(data.customer.email.trim()) && filterAnswered,
+    [data.customer.name, data.customer.email, filterAnswered],
   );
 
   const handleSend = async () => {
@@ -437,18 +447,46 @@ export const ProposalBuilder = ({
                     onBlur={(e) => update('pool', 'automation', toTitleCase(e.target.value))} />
                 </FieldShell>
               </div>
+              {/* A required choice, not a dropdown with a default. This field
+                  decides whether the quote promises a filter replacement, so it
+                  must be answered deliberately — and two full-width buttons beat
+                  a select on a phone: bigger targets, no truncated option text,
+                  and "unanswered" is visible at a glance. */}
               {supportsFilterService(data.pool.filterType) && (
-                <FieldShell id="p-filter-included" label={inclusionQuestion(data.pool.filterType)} floated>
-                  <select
-                    id="p-filter-included"
-                    className={selectClass}
-                    value={data.pool.filterServiceIncluded ? 'yes' : 'no'}
-                    onChange={(e) => setFilterIncluded(e.target.value === 'yes')}
-                  >
-                    <option value="yes">Yes — included in the monthly cost</option>
-                    <option value="no">No — quoted separately when needed</option>
-                  </select>
-                </FieldShell>
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-gray-200">
+                    {inclusionQuestion(data.pool.filterType)}
+                  </p>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {[
+                      { value: 'yes', label: 'Yes', hint: 'Included in the monthly cost' },
+                      { value: 'no', label: 'No', hint: 'Quoted separately when needed' },
+                    ].map((opt) => {
+                      const on = data.pool.filterServiceIncluded === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          aria-pressed={on}
+                          onClick={() => setFilterIncluded(opt.value)}
+                          className={`rounded-xl border px-4 py-3 text-left transition-colors ${
+                            on
+                              ? 'border-brand-blue-light bg-brand-blue/25 text-white'
+                              : 'border-white/15 bg-white/5 text-gray-300 hover:border-brand-blue-light hover:text-white'
+                          }`}
+                        >
+                          <span className="block text-base font-semibold">{opt.label}</span>
+                          <span className="block text-xs text-gray-400">{opt.hint}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {data.pool.filterServiceIncluded === '' && (
+                    <p className="text-xs text-amber-300/90">
+                      Pick one — this decides whether the quote promises a filter replacement.
+                    </p>
+                  )}
+                </div>
               )}
 
               <FieldShell id="p-eqnotes" label="Equipment notes" multiline>
@@ -731,7 +769,9 @@ export const ProposalBuilder = ({
             </button>
             {!canSend && (
               <p className="mt-2 shrink-0 text-center text-xs text-gray-500">
-                Enter the customer&apos;s name and a valid email to send.
+                {!filterAnswered
+                  ? `Answer “${inclusionQuestion(data.pool.filterType)}” to send.`
+                  : 'Enter the customer\u2019s name and a valid email to send.'}
               </p>
             )}
           </div>
@@ -756,7 +796,7 @@ const ProposalPreview = ({
     .filter(Boolean)
     .join(' × ');
   const tiered = proposal.pricingMode === 'tiers' && proposal.tiers.length > 0;
-  const filterOption = { type: pool.filterType, included: pool.filterServiceIncluded };
+  const filterOption = { type: pool.filterType, included: pool.filterServiceIncluded === 'yes' };
   const extras = includedExtras(filterOption, pool.sanitization);
   const tiers = tiered ? proposal.tiers : [];
   const delta = tierDelta(tiers[0], tiers[1]);

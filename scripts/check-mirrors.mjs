@@ -61,7 +61,7 @@ const emailMod = await bundle('functions/api/admin/send-proposal.ts', 'email.mjs
 
 const payload = (filterType, included, sanitization) => ({
   customer: { name: 'Check', email: 'check@example.com' },
-  pool: { filterType, filterServiceIncluded: included, sanitization },
+  pool: { filterType, filterServiceIncluded: included ? 'yes' : 'no', sanitization },
   proposal: {
     scope: 'Weekly service.',
     price: '200',
