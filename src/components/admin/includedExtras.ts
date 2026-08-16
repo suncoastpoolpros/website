@@ -54,8 +54,11 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
   if (isSaltwater(sanitization)) {
     rows.push({
       label: 'Salt cell acid wash',
+      // Annual figure, like every other row, with the derivation shown so the
+      // customer can check it: $25 a wash x 4 = $100. "Based on quarterly wash
+      // intervals" alone read as $100 PER wash, i.e. $400 a year.
       typical: '$100',
-      basis: 'based on quarterly wash intervals',
+      basis: '$25 a wash, washed quarterly',
     });
   }
   if (filter.included && supportsFilterService(filter.type)) {

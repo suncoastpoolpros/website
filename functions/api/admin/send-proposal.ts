@@ -247,7 +247,7 @@ const includedExtras = (
     rows.push({
       label: 'Salt cell acid wash',
       typical: '$100',
-      basis: 'based on quarterly wash intervals',
+      basis: '$25 a wash, washed quarterly',
     });
   }
   const priced = included ? FILTER_SERVICE[type] : undefined;
