@@ -37,7 +37,7 @@ export const EXTRAS_INTRO =
   'We build our service to be all-inclusive on purpose. When something is a known maintenance item — a filter element, a treatment your pool needs every year — we price it into your monthly cost rather than invoicing it separately. Splitting those out only makes a monthly rate look cheaper than it really is, and it costs you time approving work your pool was always going to need.';
 
 export const EXTRAS_NOTE =
-  'The figures above are what you would typically be quoted for these elsewhere.';
+  'The figures above are what you would typically be quoted for these elsewhere. Routine treatments are included; major remediation such as a green-to-clean recovery is quoted separately.';
 
 /** Column headings, so "$120" can't be mistaken for something being charged. */
 export const EXTRAS_COL_THEIRS = 'Others charge';

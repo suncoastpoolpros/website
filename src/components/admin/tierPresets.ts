@@ -46,8 +46,14 @@ import {
 export const ANNUAL_MONTHS_CHARGED = 11;
 
 /** Terms specific to prepaying for the year. */
+/**
+ * The free month sits at the END of the term, which is what makes the refund
+ * fair without needing a formula: cancel early and you are refunded the months
+ * you have not used at the standard rate, so the free month is earned by
+ * completing the year. Mirrors the Cancellation Policy in the service agreement.
+ */
 export const ANNUAL_FINE_PRINT =
-  'One month free applies to a full twelve months of service paid in advance. You can cancel at any time and we refund every unused month. Repair labour discount applies to our own labour and excludes work performed by subcontractors.';
+  'Your twelfth month is free and applied at the end of the term. Cancel at any time and we refund every month you have not used, at the standard monthly rate. Repair labour discount applies to our own labour and excludes work performed by subcontractors.';
 
 const BASE_SERVICE_INCLUDES = [
   'Weekly cleaning — brushing, skimming, netting and vacuuming',
@@ -108,9 +114,9 @@ export const syncFilterService = (tiers: Tier[], filter: FilterOption): Tier[] =
  * right way round.
  */
 export const ANNUAL_INCLUDES = [
-  'One month free — pay for 11, get the full 12',
+  'Your 12th month free — pay for 11, the last one is on us',
   '20% off repair labour on repairs and upgrades',
-  'Cancel any time — every unused month refunded',
+  'Cancel any time — unused months refunded',
   'One payment for the year — nothing to remember each month',
 ];
 
@@ -152,8 +158,8 @@ export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', in
       recommended: true,
       // Answers the objection prepaying actually raises — being tied in.
       valueNote: monthly
-        ? `One month is on us: you pay for eleven and get the full twelve, which brings your rate to about $${formatAmount(effectiveMonthly(monthly))} a month. Cancel any time and we refund every unused month — paying up front is a saving, not a commitment.`
-        : 'One month is on us: you pay for eleven and get the full twelve. Cancel any time and we refund every unused month — paying up front is a saving, not a commitment.',
+        ? `Pay for eleven months and your twelfth is on us, which brings your rate to about $${formatAmount(effectiveMonthly(monthly))} a month. You are not tied in: cancel any time and we refund the months you have not used. Paying up front is a saving, not a commitment.`
+        : 'Pay for eleven months and your twelfth is on us. You are not tied in: cancel any time and we refund the months you have not used. Paying up front is a saving, not a commitment.',
       finePrint: ANNUAL_FINE_PRINT,
     },
   ];

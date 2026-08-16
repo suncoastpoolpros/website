@@ -82,6 +82,10 @@ const SECTIONS: Section[] = [
         number: 2,
         title: 'Routine Weekly Service',
         blocks: [
+          {
+            type: 'p',
+            text: 'What your flat rate covers is set out in the Service Proposal you accepted. This section describes our standard recurring service; where this Agreement and your Service Proposal differ, your Service Proposal governs.',
+          },
           { type: 'subheading', text: 'Recurring service generally includes:' },
           {
             type: 'list',
@@ -113,7 +117,7 @@ const SECTIONS: Section[] = [
               },
               {
                 lead: 'Filter Components:',
-                text: 'Replacement of filter media, cartridges, grids, or internal filter components.',
+                text: 'Replacement of filter media, cartridges, grids, or internal filter components — except where your Service Proposal states that an annual filter service is included, in which case that service covers the items named in it. Filter housing parts, and DE grid replacement including torn grids, are not included in any case.',
               },
               {
                 lead: 'Extreme Corrective Actions:',
@@ -198,6 +202,10 @@ const SECTIONS: Section[] = [
                 text: 'Service is billed monthly in advance unless otherwise agreed. Invoices not paid within 10 days of the due date may incur a $25 late fee. Accounts more than 15 days past due may be subject to service suspension until the balance is cleared.',
               },
               {
+                lead: 'Annual Prepayment:',
+                text: 'Where a full year of recurring service is prepaid, the twelfth month is provided free and applied at the end of the term — you pay for eleven months and the twelfth is on us. Prepaid service is not billed monthly during the term. Early cancellation is handled under the Cancellation Policy below.',
+              },
+              {
                 lead: 'One-Time & Specialty Service:',
                 text: 'Full payment for estimated labor and service calls is required in advance to secure a service date. Work will not commence until prepayment is confirmed. Any additional materials or chemicals used during the visit will be invoiced immediately upon completion and are due upon receipt.',
               },
@@ -256,6 +264,10 @@ const SECTIONS: Section[] = [
           {
             type: 'p',
             text: 'Service and billing will continue during the notice period to maintain scheduling consistency and route efficiency.',
+          },
+          {
+            type: 'p',
+            text: 'If you have prepaid for a year, you may cancel at any time and we refund every month you have not used, calculated at the standard monthly rate. Because the free twelfth month is applied at the end of the term, it is earned by completing the year. The 30-day notice period above counts as service used.',
           },
         ],
       },
