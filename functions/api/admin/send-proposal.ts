@@ -38,11 +38,23 @@ type Pool = {
   automation?: string;
   equipmentNotes?: string;
 };
+type Tier = {
+  name?: string;
+  price?: string;
+  tagline?: string;
+  includes?: string[];
+  recommended?: boolean;
+  valueNote?: string;
+  finePrint?: string;
+};
+
 type Proposal = {
   scope?: string;
   price?: string;
   addOns?: Array<{ label?: string; price?: string }>;
   includeBenefits?: boolean;
+  pricingMode?: string;
+  tiers?: Tier[];
 };
 
 type SendProposalPayload = {
@@ -117,7 +129,9 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
         to: toEmail,
         replyTo: replyTo || undefined,
         bcc: bcc || undefined,
-        subject: `Your Pool Service Proposal — Suncoast Pool Pros`,
+        subject: hasTiers(payload)
+          ? 'Your Pool Service Plans — Suncoast Pool Pros'
+          : 'Your Pool Service Proposal — Suncoast Pool Pros',
         html,
         text,
         attachments,
@@ -172,7 +186,83 @@ const formatPrice = (raw: string): string => {
   return /^[0-9]/.test(s) ? `$${s}` : s;
 };
 
-const composeProposalEmail = (
+const hasTiers = (p: SendProposalPayload): boolean =>
+  p.proposal?.pricingMode === 'tiers' && (p.proposal?.tiers?.length ?? 0) > 0;
+
+/**
+ * Upgrade cost as a headline ("+$12/mo"). Mirrors tierDelta in src/lib/adminApi.ts
+ * (functions can't import from the client tree). Selling the delta rather than
+ * the total is the whole point — "+$12" reads as trivial, "$177" reads as a
+ * price rise. Blank when either price isn't numeric.
+ */
+const deltaLabel = (a: string, b: string): string => {
+  const num = (raw: string): number | null => {
+    const m = /-?\d[\d,]*(\.\d+)?/.exec(raw.replace(/\s/g, ''));
+    if (!m) return null;
+    const n = Number(m[0].replace(/,/g, ''));
+    return Number.isFinite(n) ? n : null;
+  };
+  const x = num(a);
+  const y = num(b);
+  if (x === null || y === null || y <= x) return '';
+  const diff = y - x;
+  return `+$${Number.isInteger(diff) ? diff : diff.toFixed(2)}${/\/\s*mo/i.test(b) ? '/mo' : ''}`;
+};
+
+/**
+ * The plan comparison, as nested tables — Gmail and Outlook strip flexbox and
+ * grid, so the two cards are cells in a single row. The upgrade lists only what
+ * it ADDS, under "Everything in <base>, plus:", so the base plan is never
+ * presented as the stripped-down option.
+ */
+const renderTiers = (tiers: Tier[]): string => {
+  const clean = tiers.map((t) => ({
+    name: safe(String(t?.name ?? '').trim(), 60),
+    price: formatPrice(safe(String(t?.price ?? '').trim(), 40)),
+    rawPrice: safe(String(t?.price ?? '').trim(), 40),
+    tagline: safe(String(t?.tagline ?? '').trim(), 200),
+    includes: (t?.includes ?? []).map((i) => safe(String(i ?? '').trim(), 200)).filter(Boolean),
+    recommended: t?.recommended === true,
+    finePrint: safe(String(t?.finePrint ?? '').trim(), 600),
+  }));
+  const width = Math.floor(100 / Math.max(clean.length, 1));
+
+  const cells = clean
+    .map((t, i) => {
+      const prev = clean[i - 1];
+      const delta = prev ? deltaLabel(prev.rawPrice, t.rawPrice) : '';
+      const border = t.recommended ? '#1669AE' : '#e3e8ef';
+      const bg = t.recommended ? '#f1f7fc' : '#ffffff';
+      return `<td width="${width}%" valign="top" style="padding:0 4px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${border};border-radius:12px;background:${bg};">
+          <tr><td style="padding:14px 16px;">
+            ${t.recommended ? '<div style="display:inline-block;background:#1669AE;color:#ffffff;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 7px;border-radius:4px;margin-bottom:8px;">Recommended</div>' : ''}
+            <div style="font-size:17px;font-weight:700;color:#0a1628;">${escapeHtml(t.name)}</div>
+            ${t.tagline ? `<div style="font-size:12px;color:#6b7280;margin-top:2px;line-height:1.4;">${escapeHtml(t.tagline)}</div>` : ''}
+            ${t.price ? `<div style="font-size:24px;font-weight:800;color:#0f4d80;margin-top:8px;">${escapeHtml(t.price)}</div>` : ''}
+            ${delta ? `<div style="font-size:12px;font-weight:700;color:#1669AE;margin-top:2px;">${escapeHtml(delta)} more than ${escapeHtml(prev.name)}</div>` : ''}
+            <div style="border-top:1px solid #e3e8ef;margin:10px 0;"></div>
+            ${prev ? `<div style="font-size:12px;font-weight:700;color:#0a1628;margin-bottom:6px;">Everything in ${escapeHtml(prev.name)}, plus:</div>` : ''}
+            ${t.includes
+              .map(
+                (item) =>
+                  `<div style="font-size:12.5px;color:#374151;line-height:1.45;margin-bottom:5px;"><span style="color:#1d7a33;">&bull;</span>&nbsp;&nbsp;${escapeHtml(item)}</div>`,
+              )
+              .join('')}
+            ${t.finePrint ? `<div style="font-size:10px;color:#9aa4b2;line-height:1.4;margin-top:10px;">${escapeHtml(t.finePrint)}</div>` : ''}
+          </td></tr>
+        </table>
+      </td>`;
+    })
+    .join('');
+
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px;"><tr>${cells}</tr></table>`;
+};
+
+// Exported (not just module-local) so the email can be rendered and eyeballed
+// offline — it's a pure function of the payload, and it's customer-facing HTML
+// that no test would otherwise cover.
+export const composeProposalEmail = (
   p: SendProposalPayload,
   _env: AdminEnv,
 ): { html: string; text: string } => {
@@ -180,7 +270,24 @@ const composeProposalEmail = (
   const greetingName = name ? name.split(/\s+/)[0] : 'there';
   const price = formatPrice(safe(String(p.proposal?.price ?? '').trim(), 40));
   const scope = safe(String(p.proposal?.scope ?? '').trim(), FIELD_MAX);
-  const includeBenefits = p.proposal?.includeBenefits !== false;
+  const tiered = hasTiers(p);
+  const tiers = tiered ? (p.proposal?.tiers ?? []) : [];
+  // With tiers, the Essential column already lists the all-inclusive benefits —
+  // repeating them above the comparison reads as padding.
+  const includeBenefits = p.proposal?.includeBenefits !== false && !tiered;
+  const recommendedTier = tiers.find((t) => t?.recommended === true) ?? tiers[tiers.length - 1];
+  // The reply words. Recommended first: the first option named is the one most
+  // people repeat back.
+  const acceptWords = tiers
+    .map((t) => safe(String(t?.name ?? '').trim(), 60).toUpperCase())
+    .filter(Boolean)
+    .sort((a, b) => {
+      const rec = safe(String(recommendedTier?.name ?? '').trim(), 60).toUpperCase();
+      return a === rec ? -1 : b === rec ? 1 : 0;
+    });
+  const valueNote = safe(String(recommendedTier?.valueNote ?? '').trim(), 600);
+  // A single price alongside a plan comparison is a contradiction — suppress it.
+  const showSinglePrice = !tiered && price !== '';
 
   const text = [
     `Hi ${greetingName},`,
@@ -192,9 +299,27 @@ const composeProposalEmail = (
       ? [`${BENEFITS_HEADING}:`, ...INCLUDED_BENEFITS.map((b) => `  - ${b}`), BENEFITS_NOTE, ``]
       : []),
     scope ? `Scope of work: ${scope}` : '',
-    price ? `Total: ${price}` : '',
+    ...(tiered
+      ? tiers.flatMap((t) => {
+          const name = safe(String(t?.name ?? '').trim(), 60);
+          const tp = formatPrice(safe(String(t?.price ?? '').trim(), 40));
+          return [
+            ``,
+            `${name}${tp ? ` — ${tp}` : ''}${t?.recommended ? '  (recommended)' : ''}`,
+            ...(t?.includes ?? [])
+              .map((i) => safe(String(i ?? '').trim(), 200))
+              .filter(Boolean)
+              .map((i) => `  - ${i}`),
+          ];
+        })
+      : []),
+    tiered && valueNote ? `` : '',
+    tiered && valueNote ? valueNote : '',
+    showSinglePrice ? `Total: ${price}` : '',
     ``,
-    `To accept, simply reply "APPROVED" to this email and we'll get you scheduled.`,
+    acceptWords.length > 1
+      ? `To accept, reply to this email with the plan you'd like — ${acceptWords.join(' or ')} — and we'll get you scheduled.`
+      : `To accept, simply reply "APPROVED" to this email and we'll get you scheduled.`,
     ``,
     `Questions? Just reply to this message.`,
     ``,
@@ -210,21 +335,31 @@ const composeProposalEmail = (
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#eef2f7;">
   <!-- Hidden inbox-preview line -->
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#eef2f7;">Your pool service proposal from Suncoast Pool Pros — PDF attached. Reply APPROVED to accept.</div>
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#eef2f7;">${
+    tiered
+      ? `Two plan options from Suncoast Pool Pros — PDF attached. Reply ${escapeHtml(acceptWords[0] ?? '')} to accept.`
+      : 'Your pool service proposal from Suncoast Pool Pros — PDF attached. Reply APPROVED to accept.'
+  }</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f7;padding:28px 12px;">
     <tr><td align="center">
       <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e3e8ef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
         <!-- Header -->
         <tr><td style="background:#0a1628;padding:26px 32px;">
           <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#8ea2c0;">Suncoast Pool Pros</div>
-          <div style="font-size:22px;font-weight:700;color:#ffffff;margin-top:6px;">Your Pool Service Proposal</div>
+          <div style="font-size:22px;font-weight:700;color:#ffffff;margin-top:6px;">${
+            tiered ? 'Your Pool Service Plans' : 'Your Pool Service Proposal'
+          }</div>
         </td></tr>
         <!-- Brand accent bar -->
         <tr><td style="height:4px;background:#1669AE;line-height:4px;font-size:0;">&nbsp;</td></tr>
         <!-- Body -->
         <tr><td style="padding:28px 32px;color:#111827;font-size:15px;line-height:1.6;">
           <p style="margin:0 0 14px;">Hi ${escapeHtml(greetingName)},</p>
-          <p style="margin:0 0 18px;color:#374151;">Thank you for the opportunity to earn your business. Your full proposal is attached to this email as a PDF.</p>
+          <p style="margin:0 0 18px;color:#374151;">Thank you for the opportunity to earn your business. ${
+            tiered
+              ? 'Here are your two plan options — the full details are attached as a PDF.'
+              : 'Your full proposal is attached to this email as a PDF.'
+          }</p>
 
           ${includeBenefits ? `
           <!-- What's included highlight -->
@@ -235,6 +370,16 @@ const composeProposalEmail = (
               <div style="font-size:12px;color:#6b7280;font-style:italic;margin-top:8px;">${escapeHtml(BENEFITS_NOTE)}</div>
             </td></tr>
           </table>` : ''}
+
+          ${tiered ? renderTiers(tiers) : ''}
+
+          ${
+            tiered && valueNote
+              ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+            <tr><td style="padding:14px 18px;background:#fff8ec;border:1px solid #f0dcb4;border-radius:12px;font-size:14px;color:#8a5a10;line-height:1.55;">${escapeHtml(valueNote)}</td></tr>
+          </table>`
+              : ''
+          }
 
           <!-- Attachment chip -->
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
@@ -249,7 +394,7 @@ const composeProposalEmail = (
             <div style="font-size:15px;color:#374151;line-height:1.6;">${escapeHtml(scope).replace(/\n/g, '<br>')}</div>
           </div>` : ''}
 
-          ${price ? `
+          ${showSinglePrice ? `
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
             <tr><td style="padding:16px 20px;background:#f1f6fb;border:1px solid #d6e6f3;border-radius:12px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
@@ -262,7 +407,13 @@ const composeProposalEmail = (
           <!-- Accept callout -->
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 6px;">
             <tr><td style="padding:16px 20px;background:#eefaf0;border:1px solid #bfe7c6;border-radius:12px;font-size:15px;color:#176a2c;line-height:1.55;">
-              <strong style="color:#1d7a33;">To accept:</strong> just reply <strong>&ldquo;APPROVED&rdquo;</strong> to this email and we&rsquo;ll get you on the schedule.
+              ${
+                acceptWords.length > 1
+                  ? `<strong style="color:#1d7a33;">To accept:</strong> reply to this email with the plan you&rsquo;d like &mdash; ${acceptWords
+                      .map((w) => `<strong>${escapeHtml(w)}</strong>`)
+                      .join(' or ')} &mdash; and we&rsquo;ll get you on the schedule.`
+                  : `<strong style="color:#1d7a33;">To accept:</strong> just reply <strong>&ldquo;APPROVED&rdquo;</strong> to this email and we&rsquo;ll get you on the schedule.`
+              }
             </td></tr>
           </table>
 

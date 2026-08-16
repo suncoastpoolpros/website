@@ -42,10 +42,65 @@ export type ProposalData = {
     addOns: AddOn[];
     /** Show the "what's included" all-inclusive highlight (recurring service). */
     includeBenefits: boolean;
+    /**
+     * 'single' = one headline price (the original behaviour, still the default).
+     * 'tiers'  = a two-option comparison; `price` is then ignored in favour of
+     * each tier's own price.
+     */
+    pricingMode: PricingMode;
+    /**
+     * Ordered cheapest → dearest. The second tier renders as "Everything in
+     * <first>, plus:" — the upgrade must never claw back anything from the base
+     * plan, or it undercuts the flat-rate "everything included" promise.
+     */
+    tiers: Tier[];
   };
 };
 
 export type AddOn = { label: string; price: string };
+
+export type PricingMode = 'single' | 'tiers';
+
+export type Tier = {
+  name: string;
+  /** Free text like "150" or "$150/mo" — formatPrice adds the $ when bare. */
+  price: string;
+  /** One line under the name, e.g. "Everything your pool needs, every week." */
+  tagline: string;
+  includes: string[];
+  /** Draws the ribbon + brand border. Exactly one tier should have it. */
+  recommended: boolean;
+  /** The persuasion line: break-even maths in the customer's own numbers. */
+  valueNote: string;
+  /** Eligibility limits, set small under the card. */
+  finePrint: string;
+};
+
+/** Leading number in a price string ("$169/mo" → 169). null when not numeric. */
+export const parsePrice = (raw: string): number | null => {
+  const m = /-?\d[\d,]*(\.\d+)?/.exec(raw.replace(/\s/g, ''));
+  if (!m) return null;
+  const n = Number(m[0].replace(/,/g, ''));
+  return Number.isFinite(n) ? n : null;
+};
+
+/**
+ * The upgrade cost as a headline ("+$12/mo"). Selling the DELTA rather than the
+ * total is the single biggest lever on take-rate — "+$12" reads as trivial where
+ * "$162" reads as a price rise. Returns '' when either price isn't a number
+ * (e.g. "Call for pricing"), in which case the callout is simply not rendered.
+ */
+export const tierDelta = (base: Tier | undefined, upgrade: Tier | undefined): string => {
+  if (!base || !upgrade) return '';
+  const a = parsePrice(base.price);
+  const b = parsePrice(upgrade.price);
+  if (a === null || b === null || b <= a) return '';
+  const diff = b - a;
+  const amount = Number.isInteger(diff) ? String(diff) : diff.toFixed(2);
+  // Carry the customer's own period wording ("/mo") onto the delta.
+  const period = /\/\s*mo/i.test(upgrade.price) ? '/mo' : '';
+  return `+$${amount}${period}`;
+};
 
 // ----- First service & inspection report ---------------------------------
 
@@ -126,7 +181,16 @@ export const emptyProposal = (): ProposalData => ({
     automation: '',
     equipmentNotes: '',
   },
-  proposal: { scope: '', price: '', addOns: [], includeBenefits: true },
+  proposal: {
+    scope: '',
+    price: '',
+    addOns: [],
+    includeBenefits: true,
+    // Single-price stays the default, so nothing about an ordinary proposal
+    // changes until the admin explicitly switches to tiers.
+    pricingMode: 'single',
+    tiers: [],
+  },
 });
 
 /** Local yyyy-mm-dd (NOT toISOString, which shifts to UTC and can go back a day). */

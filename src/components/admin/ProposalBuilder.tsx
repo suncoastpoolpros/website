@@ -2,7 +2,15 @@ import { useMemo, useRef, useState } from 'react';
 import { Send, LoaderCircle, CheckCircle, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ChevronLeft, X } from 'lucide-react';
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
 import { useProposalDraft } from '@/lib/useAdminDraft';
-import { sendProposal, logout, formatPrice, type ProposalData } from '@/lib/adminApi';
+import {
+  sendProposal,
+  logout,
+  formatPrice,
+  tierDelta,
+  type PricingMode,
+  type ProposalData,
+  type Tier,
+} from '@/lib/adminApi';
 import { blobToBase64 } from '@/lib/adminMedia';
 import { toTitleCase, formatUsPhone } from '@/lib/textFormat';
 import { Section, PreviewBlock, PreviewRow } from './adminUi';
@@ -10,6 +18,7 @@ import { PhotoPicker } from './PhotoPicker';
 import { SCOPE_TEMPLATES } from './scopeTemplates';
 import { ADDON_PRESETS } from './addonPresets';
 import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE } from './proposalBenefits';
+import { buildTiers } from './tierPresets';
 
 // Plain input (no floating label) for the add-on rows.
 const addonInput =
@@ -79,6 +88,46 @@ export const ProposalBuilder = ({
       ...p,
       proposal: { ...p.proposal, addOns: p.proposal.addOns.filter((_, i) => i !== idx) },
     }));
+
+  // --- Pricing tiers ---
+  // Switching to tiers seeds both plans from the preset, using whatever base
+  // rate is already typed. Switching back leaves `tiers` untouched, so toggling
+  // to compare and back never loses edited wording.
+  const setPricingMode = (mode: PricingMode) =>
+    setData((p) => ({
+      ...p,
+      proposal: {
+        ...p.proposal,
+        pricingMode: mode,
+        tiers:
+          mode === 'tiers' && p.proposal.tiers.length === 0
+            ? buildTiers(p.proposal.price)
+            : p.proposal.tiers,
+      },
+    }));
+
+  const updateTier = (idx: number, patch: Partial<Tier>) =>
+    setData((p) => ({
+      ...p,
+      proposal: {
+        ...p.proposal,
+        tiers: p.proposal.tiers.map((t, i) => (i === idx ? { ...t, ...patch } : t)),
+      },
+    }));
+
+  // Exactly one plan carries the ribbon — two "recommended" plans recommend
+  // nothing.
+  const setRecommended = (idx: number) =>
+    setData((p) => ({
+      ...p,
+      proposal: {
+        ...p.proposal,
+        tiers: p.proposal.tiers.map((t, i) => ({ ...t, recommended: i === idx })),
+      },
+    }));
+
+  const resetTiers = () =>
+    setData((p) => ({ ...p, proposal: { ...p.proposal, tiers: buildTiers(p.proposal.price) } }));
 
   const canSend = useMemo(
     () => data.customer.name.trim() !== '' && EMAIL_RE.test(data.customer.email.trim()),
@@ -366,11 +415,56 @@ export const ProposalBuilder = ({
                 <textarea id="pr-scope" rows={8} className={textareaClass} placeholder=" "
                   value={data.proposal.scope} onChange={(e) => update('proposal', 'scope', e.target.value)} />
               </FieldShell>
-              <FieldShell id="pr-price" label="Total price (e.g. $2,400 or $185/mo)">
+              <FieldShell
+                id="pr-price"
+                label={
+                  data.proposal.pricingMode === 'tiers'
+                    ? 'Base rate — seeds the plans (e.g. 165/mo)'
+                    : 'Total price (e.g. $2,400 or $185/mo)'
+                }
+              >
                 <input id="pr-price" className={fieldClass} placeholder=" "
                   value={data.proposal.price} onChange={(e) => update('proposal', 'price', e.target.value)} />
               </FieldShell>
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+
+              {/* Single price vs. two plans. */}
+              <div className="flex flex-wrap items-center gap-2">
+                {([
+                  { mode: 'single' as const, label: 'One price' },
+                  { mode: 'tiers' as const, label: 'Two plans' },
+                ]).map(({ mode, label }) => {
+                  const on = data.proposal.pricingMode === mode;
+                  return (
+                    <button
+                      key={mode}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => setPricingMode(mode)}
+                      className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
+                        on
+                          ? 'border-brand-blue-light bg-brand-blue/25 text-white'
+                          : 'border-white/15 text-gray-300 hover:border-brand-blue-light hover:text-white'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+                {data.proposal.pricingMode === 'tiers' && (
+                  <button
+                    type="button"
+                    onClick={resetTiers}
+                    className="ml-auto text-sm font-semibold text-brand-blue-light hover:text-white"
+                  >
+                    Reset to preset
+                  </button>
+                )}
+              </div>
+              <label
+                className={`flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4 ${
+                  data.proposal.pricingMode === 'tiers' ? 'opacity-50' : ''
+                }`}
+              >
                 <input
                   type="checkbox"
                   checked={data.proposal.includeBenefits}
@@ -379,10 +473,72 @@ export const ProposalBuilder = ({
                 />
                 <span className="text-sm text-gray-200">
                   Highlight &ldquo;what&rsquo;s included&rdquo; — chemicals, filter &amp; salt-cell cleans{' '}
-                  <span className="text-gray-400">(recommended for recurring service; turn off for one-time jobs)</span>
+                  <span className="text-gray-400">
+                    {data.proposal.pricingMode === 'tiers'
+                      ? '(skipped on tiered proposals — the Essential plan already lists these)'
+                      : '(recommended for recurring service; turn off for one-time jobs)'}
+                  </span>
                 </span>
               </label>
             </Section>
+
+            {data.proposal.pricingMode === 'tiers' && (
+              <Section title="Plans">
+                <p className="-mt-1 text-sm text-gray-400">
+                  The second plan shows as &ldquo;Everything in {data.proposal.tiers[0]?.name || 'the first plan'},
+                  plus&rdquo; — so it only ever adds. Never move something out of the first plan to make the
+                  upgrade look better; that turns the flat-rate promise into an upsell.
+                </p>
+                {data.proposal.tiers.map((tier, i) => (
+                  <div key={i} className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                        Plan {i + 1}
+                      </span>
+                      <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-200">
+                        <input
+                          type="radio"
+                          name="recommended-tier"
+                          checked={tier.recommended}
+                          onChange={() => setRecommended(i)}
+                          className="h-4 w-4 accent-brand-blue"
+                        />
+                        Recommended
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      <FieldShell id={`tier-name-${i}`} label="Plan name">
+                        <input id={`tier-name-${i}`} className={fieldClass} placeholder=" "
+                          value={tier.name} onChange={(e) => updateTier(i, { name: e.target.value })} />
+                      </FieldShell>
+                      <FieldShell id={`tier-price-${i}`} label="Price">
+                        <input id={`tier-price-${i}`} className={fieldClass} placeholder=" "
+                          value={tier.price} onChange={(e) => updateTier(i, { price: e.target.value })} />
+                      </FieldShell>
+                    </div>
+                    <FieldShell id={`tier-tagline-${i}`} label="One-line tagline">
+                      <input id={`tier-tagline-${i}`} className={fieldClass} placeholder=" "
+                        value={tier.tagline} onChange={(e) => updateTier(i, { tagline: e.target.value })} />
+                    </FieldShell>
+                    <FieldShell id={`tier-includes-${i}`} label={i === 0 ? "What's included — one per line" : 'What it adds — one per line'} multiline>
+                      <textarea id={`tier-includes-${i}`} rows={6} className={textareaClass} placeholder=" "
+                        value={tier.includes.join('\n')}
+                        onChange={(e) => updateTier(i, { includes: e.target.value.split('\n') })} />
+                    </FieldShell>
+                    {i > 0 && (
+                      <FieldShell id={`tier-value-${i}`} label="Value note — the break-even line" multiline>
+                        <textarea id={`tier-value-${i}`} rows={3} className={textareaClass} placeholder=" "
+                          value={tier.valueNote} onChange={(e) => updateTier(i, { valueNote: e.target.value })} />
+                      </FieldShell>
+                    )}
+                    <FieldShell id={`tier-fine-${i}`} label="Fine print / limits" multiline>
+                      <textarea id={`tier-fine-${i}`} rows={3} className={textareaClass} placeholder=" "
+                        value={tier.finePrint} onChange={(e) => updateTier(i, { finePrint: e.target.value })} />
+                    </FieldShell>
+                  </div>
+                ))}
+              </Section>
+            )}
 
             <Section title="Additional Services (optional)">
               <p className="-mt-1 text-sm text-gray-400">
@@ -493,6 +649,14 @@ const ProposalPreview = ({
   const dims = [pool.length && `${pool.length} ft L`, pool.width && `${pool.width} ft W`, pool.avgDepth && `${pool.avgDepth} ft avg`]
     .filter(Boolean)
     .join(' × ');
+  const tiered = proposal.pricingMode === 'tiers' && proposal.tiers.length > 0;
+  const tiers = tiered ? proposal.tiers : [];
+  const delta = tierDelta(tiers[0], tiers[1]);
+  const recommended = tiers.find((t) => t.recommended) ?? tiers[tiers.length - 1];
+  const acceptWords = tiers
+    .map((t) => t.name.trim().toUpperCase())
+    .filter(Boolean)
+    .sort((a, b) => (a === recommended?.name.trim().toUpperCase() ? -1 : b === recommended?.name.trim().toUpperCase() ? 1 : 0));
   return (
     <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white text-stone-800 shadow-xl">
       <div className="flex items-center justify-between border-b-4 border-brand-blue bg-navy px-6 py-5 text-white">
@@ -513,7 +677,7 @@ const ProposalPreview = ({
           <PreviewRow label="Phone" value={customer.phone} />
         </PreviewBlock>
 
-        {proposal.includeBenefits && (
+        {proposal.includeBenefits && !tiered && (
           <div className="rounded-lg border border-[#cfe3f2] bg-[#eef6fb] px-4 py-3">
             <div className="mb-2 text-sm font-bold text-brand-blue-dark">{BENEFITS_HEADING}</div>
             <ul className="space-y-1">
@@ -553,12 +717,66 @@ const ProposalPreview = ({
           </PreviewBlock>
         )}
 
-        {proposal.price.trim() && (
+        {tiered ? (
+          <PreviewBlock label="Choose Your Plan">
+            <div className="grid grid-cols-2 gap-2">
+              {tiers.map((tier, i) => (
+                <div
+                  key={i}
+                  className={`rounded-lg border p-2.5 ${
+                    tier.recommended ? 'border-brand-blue bg-[#f1f7fc]' : 'border-stone-200'
+                  }`}
+                >
+                  {tier.recommended && (
+                    <span className="mb-1.5 inline-block rounded bg-brand-blue px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-white">
+                      Recommended
+                    </span>
+                  )}
+                  <div className="text-[13px] font-bold text-navy">{tier.name.trim()}</div>
+                  {tier.tagline.trim() && (
+                    <div className="text-[10px] leading-snug text-stone-500">{tier.tagline.trim()}</div>
+                  )}
+                  {tier.price.trim() && (
+                    <div className="mt-1 text-base font-bold text-brand-blue-dark">{formatPrice(tier.price)}</div>
+                  )}
+                  {i > 0 && delta && (
+                    <div className="text-[10px] font-bold text-brand-blue">
+                      {delta} more than {tiers[i - 1].name.trim()}
+                    </div>
+                  )}
+                  <div className="my-1.5 h-px bg-stone-200" />
+                  {i > 0 && (
+                    <div className="mb-1 text-[10px] font-bold text-navy">
+                      Everything in {tiers[i - 1].name.trim()}, plus:
+                    </div>
+                  )}
+                  {tier.includes
+                    .map((x) => x.trim())
+                    .filter(Boolean)
+                    .map((item, j) => (
+                      <div key={j} className="flex gap-1.5 text-[10px] leading-snug text-stone-700">
+                        <span className="text-green-600">•</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  {tier.finePrint.trim() && (
+                    <div className="mt-1.5 text-[8px] leading-snug text-stone-400">{tier.finePrint.trim()}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {recommended?.valueNote.trim() && (
+              <div className="mt-2 rounded-lg border border-[#f0dcb4] bg-[#fff8ec] px-3 py-2 text-[11px] leading-relaxed text-[#8a5a10]">
+                {recommended.valueNote.trim()}
+              </div>
+            )}
+          </PreviewBlock>
+        ) : proposal.price.trim() ? (
           <div className="flex items-center justify-between rounded-lg border border-[#d6e6f3] bg-[#f1f6fb] px-4 py-3">
             <span className="text-stone-500">Total</span>
             <span className="text-lg font-bold text-brand-blue-dark">{formatPrice(proposal.price)}</span>
           </div>
-        )}
+        ) : null}
 
         {proposal.addOns.some((a) => a.label.trim() || a.price.trim()) && (
           <PreviewBlock label="Additional Services">
@@ -574,7 +792,16 @@ const ProposalPreview = ({
         )}
 
         <div className="rounded-lg border border-[#bfe7c6] bg-[#eefaf0] px-4 py-3 text-[13px] leading-relaxed text-[#1d7a33]">
-          To accept, simply reply <strong>&quot;APPROVED&quot;</strong> to the email this is attached to.
+          {acceptWords.length > 1 ? (
+            <>
+              To accept, reply to this email with the plan you&rsquo;d like —{' '}
+              <strong>{acceptWords.join(' or ')}</strong>.
+            </>
+          ) : (
+            <>
+              To accept, simply reply <strong>&quot;APPROVED&quot;</strong> to the email this is attached to.
+            </>
+          )}
         </div>
 
         {photos.length > 0 && (

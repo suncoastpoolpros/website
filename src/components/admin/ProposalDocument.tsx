@@ -10,7 +10,7 @@
  * by a small set of shared style tokens so sections read as intentional.
  */
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
-import { type ProposalData, formatPrice } from '@/lib/adminApi';
+import { type ProposalData, type Tier, formatPrice, tierDelta } from '@/lib/adminApi';
 import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE } from './proposalBenefits';
 
 const NAVY = '#0a1628';
@@ -133,6 +133,57 @@ const styles = StyleSheet.create({
   priceLabel: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: MUTED, letterSpacing: 1.5, textTransform: 'uppercase', lineHeight: 1 },
   priceValue: { fontSize: 17, fontFamily: 'Helvetica-Bold', color: BLUE_DARK, lineHeight: 1 },
 
+  // ----- Tier comparison -----
+  tierRow: { flexDirection: 'row', marginHorizontal: -18, marginBottom: 10 },
+  tierCol: { width: '50%', flexShrink: 0, paddingHorizontal: 5, flexDirection: 'column' },
+  // NOTE: no `height: '100%'` here. The parent column has no definite height,
+  // so the percentage resolves against nothing and corrupts the layout for the
+  // WHOLE page — the masthead clipped its own title and every row's leading
+  // collapsed. Verified by rendering.
+  tierCard: {
+    // flexGrow (not height:'100%') levels the two cards to the taller one.
+    flexGrow: 1,
+    borderWidth: 1,
+    borderColor: LINE,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 11,
+  },
+  tierCardRec: { borderWidth: 1.5, borderColor: BRAND_BLUE, backgroundColor: TINT },
+  ribbon: {
+    alignSelf: 'flex-start',
+    backgroundColor: BRAND_BLUE,
+    borderRadius: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginBottom: 5,
+  },
+  ribbonText: { fontSize: 6.5, lineHeight: 1.2, fontFamily: 'Helvetica-Bold', color: '#ffffff', letterSpacing: 1 },
+  tierName: { fontSize: 12, lineHeight: 1.2, fontFamily: 'Helvetica-Bold', color: NAVY },
+  tierTagline: { fontSize: 7.5, color: MUTED, marginTop: 1.5, lineHeight: 1.25 },
+  // Every fontSize here is paired with an explicit lineHeight: react-pdf sizes
+  // the line box from the INHERITED font size otherwise, so a large value in a
+  // small-text context reserves too little room and the next line overlaps it.
+  tierPrice: { fontSize: 18, lineHeight: 1.15, fontFamily: 'Helvetica-Bold', color: BLUE_DARK, marginTop: 6 },
+  tierDeltaText: { fontSize: 8.5, lineHeight: 1.3, fontFamily: 'Helvetica-Bold', color: BRAND_BLUE, marginTop: 3 },
+  tierRule: { borderTopWidth: 1, borderTopColor: LINE, marginTop: 7, marginBottom: 6 },
+  tierBuildsOn: { fontSize: 8, lineHeight: 1.3, fontFamily: 'Helvetica-Bold', color: NAVY, marginBottom: 5 },
+  tierItem: { flexDirection: 'row', marginBottom: 2.5 },
+  tierCheck: { color: GREEN, fontFamily: 'Helvetica-Bold', width: 10, fontSize: 7.8, lineHeight: 1.28 },
+  tierItemText: { flex: 1, fontSize: 7.8, color: INK, lineHeight: 1.28 },
+  tierFinePrint: { fontSize: 6.2, color: FAINT, lineHeight: 1.3, marginTop: 6 },
+  valueNoteBox: {
+    backgroundColor: '#fff8ec',
+    borderWidth: 1,
+    borderColor: '#f0dcb4',
+    borderRadius: 8,
+    paddingVertical: 9,
+    paddingHorizontal: 18,
+    marginHorizontal: -18,
+    marginBottom: 12,
+  },
+  valueNoteText: { fontSize: 8, color: '#8a5a10', lineHeight: 1.32 },
+
   // ----- Add-ons -----
   addonRow: {
     flexDirection: 'row',
@@ -183,6 +234,47 @@ const Row = ({ label, value, labelWidth }: { label: string; value?: string; labe
   );
 };
 
+/**
+ * One plan card. The upgrade card lists ONLY its extras, under an explicit
+ * "Everything in <base>, plus:" line — so the base plan never reads as the
+ * stripped-down option, and the added value is what stands out.
+ */
+const TierCard = ({
+  tier,
+  buildsOn,
+  delta,
+}: {
+  tier: Tier;
+  /** Name of the cheaper tier, when this one builds on it. */
+  buildsOn?: string;
+  /** Pre-formatted upgrade cost, e.g. "+$12/mo". */
+  delta?: string;
+}) => {
+  const items = tier.includes.map((i) => i.trim()).filter(Boolean);
+  return (
+    <View style={[styles.tierCard, tier.recommended ? styles.tierCardRec : null]}>
+      {tier.recommended ? (
+        <View style={styles.ribbon}>
+          <Text style={styles.ribbonText}>RECOMMENDED</Text>
+        </View>
+      ) : null}
+      <Text style={styles.tierName}>{tier.name.trim()}</Text>
+      {tier.tagline.trim() ? <Text style={styles.tierTagline}>{tier.tagline.trim()}</Text> : null}
+      {tier.price.trim() ? <Text style={styles.tierPrice}>{formatPrice(tier.price)}</Text> : null}
+      {delta ? <Text style={styles.tierDeltaText}>{delta} more than {buildsOn}</Text> : null}
+      <View style={styles.tierRule} />
+      {buildsOn ? <Text style={styles.tierBuildsOn}>Everything in {buildsOn}, plus:</Text> : null}
+      {items.map((item, i) => (
+        <View key={i} style={styles.tierItem}>
+          <Text style={styles.tierCheck}>•</Text>
+          <Text style={styles.tierItemText}>{item}</Text>
+        </View>
+      ))}
+      {tier.finePrint.trim() ? <Text style={styles.tierFinePrint}>{tier.finePrint.trim()}</Text> : null}
+    </View>
+  );
+};
+
 const dimensionsLine = (pool: ProposalData['pool']): string => {
   const { length, width, avgDepth } = pool;
   return [length && `${length} ft L`, width && `${width} ft W`, avgDepth && `${avgDepth} ft avg depth`]
@@ -204,6 +296,18 @@ export const ProposalDocument = ({
   const hasPoolBasics = pool.gallons || dimensionsLine(pool) || pool.shape || pool.sanitization;
   const hasEquipment = pool.pump || pool.filter || pool.heater || pool.automation || pool.equipmentNotes;
   const addOns = proposal.addOns.filter((a) => a.label.trim() || a.price.trim());
+  const tiered = proposal.pricingMode === 'tiers' && proposal.tiers.length > 0;
+  const tiers = tiered ? proposal.tiers : [];
+  const [baseTier, upgradeTier] = tiers;
+  const delta = tierDelta(baseTier, upgradeTier);
+  // With tiers on, the recommended plan's name is the word the customer replies
+  // with, so acceptance can't be ambiguous.
+  const recommended = tiers.find((t) => t.recommended) ?? upgradeTier ?? baseTier;
+  const acceptWords = tiers
+    .map((t) => t.name.trim().toUpperCase())
+    .filter(Boolean)
+    // Recommended first — the first option listed is the one most people take.
+    .sort((a, b) => (a === recommended?.name.trim().toUpperCase() ? -1 : b === recommended?.name.trim().toUpperCase() ? 1 : 0));
   // Drop blank/whitespace-only lines so the scope renders tight regardless of
   // how the text was spaced (blank lines between bullets were rendering as gaps).
   const scopeLines = proposal.scope.trim()
@@ -268,7 +372,9 @@ export const ProposalDocument = ({
           </View>
         )}
 
-        {proposal.includeBenefits ? (
+        {/* The all-inclusive highlight is skipped in tier mode — it's the same
+            list as the Essential column, and saying it twice reads as padding. */}
+        {proposal.includeBenefits && !tiered ? (
           <View style={styles.includedBox} wrap={false}>
             <Text style={styles.includedHeading}>{BENEFITS_HEADING}</Text>
             {INCLUDED_BENEFITS.map((b, i) => (
@@ -299,7 +405,40 @@ export const ProposalDocument = ({
           </View>
         ) : null}
 
-        {proposal.price.trim() ? (
+        {tiered ? (
+          /* The heading, both cards and the value note travel as ONE unbreakable
+             block. A comparison split across a page break can't be compared, and
+             wrapping only the cards left the heading stranded at the foot of the
+             previous page (react-pdf won't break a container's first child). */
+          <View style={styles.section}>
+            {/* The heading and BOTH cards are one unbreakable unit — a comparison
+                split across a page break can't be compared, and wrapping only the
+                cards leaves the heading stranded (react-pdf won't break a
+                container's first child). The value note is deliberately OUTSIDE
+                it: including it made the unit taller than the space left under a
+                normal scope of work, which bumped the whole comparison to page 2
+                and left page 1 40% empty. */}
+            <View wrap={false}>
+              <Text style={styles.sectionLabel}>Choose Your Plan</Text>
+              <View style={styles.tierRow}>
+                {tiers.map((tier, i) => (
+                  <View key={i} style={styles.tierCol}>
+                    <TierCard
+                      tier={tier}
+                      buildsOn={i > 0 ? tiers[i - 1].name.trim() : undefined}
+                      delta={i > 0 ? delta : ''}
+                    />
+                  </View>
+                ))}
+              </View>
+            </View>
+            {recommended?.valueNote.trim() ? (
+              <View style={styles.valueNoteBox} wrap={false}>
+                <Text style={styles.valueNoteText}>{recommended.valueNote.trim()}</Text>
+              </View>
+            ) : null}
+          </View>
+        ) : proposal.price.trim() ? (
           <View style={styles.section}>
             <View style={styles.priceBox}>
               <Text style={styles.priceLabel}>Total</Text>
@@ -322,8 +461,9 @@ export const ProposalDocument = ({
 
         <View style={styles.acceptBox} wrap={false}>
           <Text style={styles.acceptText}>
-            To accept this proposal, simply reply &quot;APPROVED&quot; to the email it was attached to,
-            and we&apos;ll get you on the schedule.
+            {acceptWords.length > 1
+              ? `To accept, simply reply to the email this was attached to with the plan you'd like — ${acceptWords.join(' or ')} — and we'll get you on the schedule.`
+              : 'To accept this proposal, simply reply "APPROVED" to the email it was attached to, and we\'ll get you on the schedule.'}
           </Text>
         </View>
 
