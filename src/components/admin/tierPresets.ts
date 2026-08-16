@@ -113,6 +113,21 @@ export const syncFilterService = (tiers: Tier[], filter: FilterOption): Tier[] =
  * stops people prepaying at all. Cancel-any-time answers the same question the
  * right way round.
  */
+/**
+ * What PAYING MONTHLY gets you, so the base card isn't a price floating in
+ * whitespace next to a full annual card. Deliberately terms, not a re-listing of
+ * the service: the service is described once above the cards, and repeating six
+ * bullets here is what made the comparison too tall for the page in the first
+ * place. Both cards now describe their payment terms, which is the actual
+ * difference between them.
+ */
+export const MONTHLY_INCLUDES = [
+  'The full service above, every week',
+  'Billed monthly, in advance',
+  'No long-term contract',
+  'Cancel any time with 30 days notice',
+];
+
 export const ANNUAL_INCLUDES = [
   'Your 12th month free — pay for 11, the last one is on us',
   '20% off repair labour on repairs and upgrades',
@@ -126,14 +141,16 @@ export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', in
   return [
     {
       name: 'Pay Monthly',
-      price: base,
+      // "/mo" is forced on when the typed rate omits it: a bare "$200" next to
+      // "$183/mo" reads as two different units rather than two prices.
+      price: monthly && !/\/\s*(mo|month)/i.test(base) ? `${formatAmount(monthly)}/mo` : base,
       // The service list lives ONCE in the "what's included" box above, because
       // both plans carry the identical service — repeating all six bullets
       // inside a 250pt column was both redundant and, with longer wordings like
       // DE's, tall enough to push the whole comparison onto the next page.
       tagline: 'Everything above, billed month to month.',
       priceNote: '',
-      includes: [],
+      includes: [...MONTHLY_INCLUDES],
       recommended: false,
       // Answers "why is this more than the quote down the road?" before the
       // customer asks it — the honest answer is that parts other companies

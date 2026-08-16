@@ -855,7 +855,10 @@ const ProposalPreview = ({
 
         {tiered ? (
           <PreviewBlock label="Choose Your Plan">
-            <div className="grid grid-cols-2 gap-2">
+            {/* Stacked on a phone — two 130px columns are unreadable, and the
+                preview is checked on a phone at the poolside more than anywhere
+                else. The PDF keeps its two columns; it has 520pt to play with. */}
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {tiers.map((tier, i) => (
                 <div
                   key={i}
