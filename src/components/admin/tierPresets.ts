@@ -18,19 +18,27 @@ import type { Tier } from '@/lib/adminApi';
  * The upgrade price. Set as a delta the admin adds to the base rate, and kept
  * as a named constant because it's the number most likely to change.
  *
- * COSTING NOTE: a 4-cartridge set (e.g. Clean & Clear 320) runs roughly
- * $280–450 and lasts ~2–3 years in Florida. At $12/mo the cartridge benefit
- * alone is close to break-even BEFORE the labour discount, so the two limits in
- * COMPLETE_FINE_PRINT are what make it viable: they stop a customer joining
- * with already-shot cartridges, taking a $400 set, and dropping back to
- * Essential. Raise this toward $19–29 if replacements come up more often than
- * every three years, or price it by filter size.
+ * COSTING (confirmed by the owner 2026-08-16): cartridges are replaced about
+ * ONCE A YEAR and cost around $100 a replacement. So $12/mo = $144/yr revenue
+ * against ~$100/yr of parts — roughly $44/yr, ~31% margin, before the labour
+ * discount and the waived trip charge. Positive but thin, which is fine if the
+ * point is to drive repair volume and retention; $15–19 would be healthier if
+ * you'd rather the tier stand on its own.
+ *
+ * The exposure if someone joins with already-worn cartridges is only ~$100, so
+ * the guard rail is a short 90-day wait rather than the 6 months + 36-month cap
+ * originally drafted — that cap assumed a 2–3 year replacement cycle and would
+ * have meant declining the benefit in years 2 and 3 of an annual cycle.
+ *
+ * WATCH: this assumes ~$100 per REPLACEMENT (a full set). If a pool takes four
+ * cartridges at ~$100 EACH, the cost is ~$400/yr and $12/mo loses money — price
+ * that filter size separately.
  */
 export const UPGRADE_DELTA = 12;
 
 /** Guard rails that make the cartridge benefit survivable. Editable per proposal. */
 export const COMPLETE_FINE_PRINT =
-  'Cartridge coverage begins after 6 months of continuous service and covers one cartridge set per 36 months, for cartridge filters only. Labour discount applies to our own repair labour and excludes work performed by subcontractors.';
+  'Cartridge coverage begins after 90 days of continuous service and covers one cartridge replacement per year, for cartridge filters only. Labour discount applies to our own repair labour and excludes work performed by subcontractors.';
 
 export const ESSENTIAL_INCLUDES = [
   'Weekly cleaning — brushing, skimming, netting and vacuuming',
@@ -51,7 +59,7 @@ export const ESSENTIAL_INCLUDES = [
  * warm lead for the repair work the labour discount then discounts.
  */
 export const COMPLETE_INCLUDES = [
-  'Cartridge filter replacement when due — parts and labour covered',
+  'Cartridge filter replacement every year — parts and labour covered',
   '25% off repair labour outside regular service',
   'No trip charge on repair visits',
   'Priority scheduling, including the first pass after a storm',
@@ -80,7 +88,7 @@ export const buildTiers = (basePrice = ''): Tier[] => {
       // The most persuasive line on the page: break-even in the customer's own
       // numbers. Edit the cartridge figure to match the pool being quoted.
       valueNote:
-        'A replacement cartridge set for a pool this size runs about $380. Complete covers it — so one replacement in three years pays for the plan on its own, before the labour discount.',
+        'Cartridges run about $100 a year, and Complete covers them — the parts and the labour to fit them. That is most of the plan back before you count the 25% off repair labour, the waived trip charge, or the rate lock.',
       finePrint: COMPLETE_FINE_PRINT,
     },
   ];
