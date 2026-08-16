@@ -14,6 +14,7 @@ import { type ProposalData, type Tier, formatPrice, tierDelta } from '@/lib/admi
 import { BENEFITS_HEADING, includedBenefits, benefitsNote } from './proposalBenefits';
 import {
   EXTRAS_COL_THEIRS,
+  EXTRAS_INTRO,
   EXTRAS_COL_YOURS,
   EXTRAS_HEADING,
   EXTRAS_INCLUDED_LABEL,
@@ -107,15 +108,11 @@ const styles = StyleSheet.create({
   includedFootnote: { marginTop: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: TINT_BORDER, fontSize: 8, color: FAINT, lineHeight: 1.4 },
 
   // ----- Value stack (what others bill separately) -----
-  extrasBox: {
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: TINT_BORDER,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    marginHorizontal: -18,
-  },
+  // No outer border: a bordered panel can't split across a page, which forced
+  // the whole section to be unbreakable — and an unbreakable block that doesn't
+  // fit pushes EVERYTHING behind it to the next page, so the scope of work fell
+  // off page 1 entirely and left a half-empty page. As a plain table it flows.
+  extrasBox: { marginBottom: 18 },
   extraRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -133,6 +130,7 @@ const styles = StyleSheet.create({
   // wrapped and the second word collided with the next column's heading.
   extraPrice: { width: 80, fontSize: 8.5, lineHeight: 1.3, color: MUTED, textDecoration: 'line-through', textAlign: 'right' },
   extraIncluded: { width: 54, fontSize: 8, lineHeight: 1.3, fontFamily: 'Helvetica-Bold', color: GREEN, textAlign: 'right' },
+  extrasIntro: { fontSize: 8.5, lineHeight: 1.4, color: INK, marginBottom: 9 },
   extrasNote: { marginTop: 7, fontSize: 7.5, color: FAINT, fontStyle: 'italic', lineHeight: 1.4 },
 
   // ----- Scope -----
@@ -456,29 +454,38 @@ export const ProposalDocument = ({
         ) : null}
 
         {(proposal.includeBenefits || tiered) && extras.length ? (
-          <View style={styles.section} wrap={false}>
-            <Text style={styles.sectionLabel}>{EXTRAS_HEADING}</Text>
+          <View style={styles.section}>
             <View style={styles.extrasBox}>
-              <View style={styles.extraHeadRow}>
-                <Text style={[styles.extraLabelCol, styles.extraHeadCell]}> </Text>
-                <Text style={[styles.extraPrice, styles.extraHeadCell, { textDecoration: 'none' }]}>
-                  {EXTRAS_COL_THEIRS}
-                </Text>
-                <Text style={[styles.extraIncluded, styles.extraHeadCell, { color: FAINT }]}>
-                  {EXTRAS_COL_YOURS}
-                </Text>
-              </View>
               {extras.map((x, i) => (
-                <View
-                  key={i}
-                  style={[styles.extraRow, i === extras.length - 1 ? { borderBottomWidth: 0 } : null]}
-                >
-                  <View style={styles.extraLabelCol}>
-                    <Text style={styles.extraLabel}>{x.label}</Text>
-                    <Text style={styles.extraBasis}>{x.basis}</Text>
+                // The heading, the reasoning, the column headers and the FIRST
+                // row travel together; the remaining rows flow, so the table can
+                // split across a page instead of blocking the page behind it.
+                <View key={i} wrap={i === 0 ? false : undefined}>
+                  {i === 0 ? (
+                    <View>
+                      <Text style={styles.sectionLabel}>{EXTRAS_HEADING}</Text>
+                      <Text style={styles.extrasIntro}>{EXTRAS_INTRO}</Text>
+                      <View style={styles.extraHeadRow}>
+                        <Text style={[styles.extraLabelCol, styles.extraHeadCell]}> </Text>
+                        <Text style={[styles.extraPrice, styles.extraHeadCell, { textDecoration: 'none' }]}>
+                          {EXTRAS_COL_THEIRS}
+                        </Text>
+                        <Text style={[styles.extraIncluded, styles.extraHeadCell, { color: FAINT }]}>
+                          {EXTRAS_COL_YOURS}
+                        </Text>
+                      </View>
+                    </View>
+                  ) : null}
+                  <View
+                    style={[styles.extraRow, i === extras.length - 1 ? { borderBottomWidth: 0 } : null]}
+                  >
+                    <View style={styles.extraLabelCol}>
+                      <Text style={styles.extraLabel}>{x.label}</Text>
+                      <Text style={styles.extraBasis}>{x.basis}</Text>
+                    </View>
+                    <Text style={styles.extraPrice}>{x.typical}</Text>
+                    <Text style={styles.extraIncluded}>{EXTRAS_INCLUDED_LABEL}</Text>
                   </View>
-                  <Text style={styles.extraPrice}>{x.typical}</Text>
-                  <Text style={styles.extraIncluded}>{EXTRAS_INCLUDED_LABEL}</Text>
                 </View>
               ))}
               <Text style={styles.extrasNote}>{EXTRAS_NOTE}</Text>

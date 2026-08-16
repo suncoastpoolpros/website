@@ -28,8 +28,16 @@ export type IncludedExtra = {
 
 export const EXTRAS_HEADING = 'What Others Charge Extra For';
 
+/**
+ * The reasoning, stated before the table. The rows prove the claim; this says
+ * why the business is built that way — which is the part a customer comparing
+ * three quotes has no other way to learn.
+ */
+export const EXTRAS_INTRO =
+  'We build our service to be all-inclusive on purpose. When something is a known maintenance item — a filter element, a treatment your pool needs every year — we price it into your monthly cost rather than invoicing it separately. Splitting those out only makes a monthly rate look cheaper than it really is, and it costs you time approving work your pool was always going to need.';
+
 export const EXTRAS_NOTE =
-  'Every line above is already covered by your monthly cost. These are the items most commonly billed as a separate visit or add-on — the figures are what you would typically be quoted for them elsewhere.';
+  'The figures above are what you would typically be quoted for these elsewhere.';
 
 /** Column headings, so "$120" can't be mistaken for something being charged. */
 export const EXTRAS_COL_THEIRS = 'Others charge';

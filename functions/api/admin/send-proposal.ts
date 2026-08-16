@@ -229,8 +229,10 @@ const formatPrice = (raw: string): string => {
 // Mirrors src/components/admin/includedExtras.ts — the value stack: work that
 // routinely arrives as a separate invoice elsewhere, priced and struck through.
 const EXTRAS_HEADING = 'What Others Charge Extra For';
+const EXTRAS_INTRO =
+  'We build our service to be all-inclusive on purpose. When something is a known maintenance item — a filter element, a treatment your pool needs every year — we price it into your monthly cost rather than invoicing it separately. Splitting those out only makes a monthly rate look cheaper than it really is, and it costs you time approving work your pool was always going to need.';
 const EXTRAS_NOTE =
-  'Every line above is already covered by your monthly cost. These are the items most commonly billed as a separate visit or add-on — the figures are what you would typically be quoted for them elsewhere.';
+  'The figures above are what you would typically be quoted for these elsewhere.';
 
 const includedExtras = (
   type: string,
@@ -267,6 +269,7 @@ const renderExtras = (rows: Array<{ label: string; typical: string; basis: strin
   rows.length
     ? `<div style="margin:0 0 20px;">
             <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa4b2;font-weight:700;margin-bottom:8px;">${escapeHtml(EXTRAS_HEADING)}</div>
+            <p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">${escapeHtml(EXTRAS_INTRO)}</p>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #cfe3f2;border-radius:12px;">
               <tr>
                 <td style="padding:8px 16px 4px;"></td>

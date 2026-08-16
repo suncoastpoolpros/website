@@ -21,6 +21,7 @@ import { ADDON_PRESETS } from './addonPresets';
 import { BENEFITS_HEADING, includedBenefits, benefitsNote } from './proposalBenefits';
 import {
   EXTRAS_COL_THEIRS,
+  EXTRAS_INTRO,
   EXTRAS_COL_YOURS,
   EXTRAS_HEADING,
   EXTRAS_INCLUDED_LABEL,
@@ -795,7 +796,8 @@ const ProposalPreview = ({
 
         {(proposal.includeBenefits || tiered) && extras.length > 0 && (
           <PreviewBlock label={EXTRAS_HEADING}>
-            <div className="rounded-lg border border-[#cfe3f2] px-3 py-2">
+            <p className="mb-2 text-[12px] leading-relaxed text-stone-700">{EXTRAS_INTRO}</p>
+            <div>
               <div className="flex gap-2 border-b border-stone-200 pb-1 text-[8px] uppercase tracking-wide text-stone-400">
                 <span className="flex-1" />
                 <span className="w-16 text-right">{EXTRAS_COL_THEIRS}</span>
