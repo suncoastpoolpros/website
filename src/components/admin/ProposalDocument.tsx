@@ -171,7 +171,13 @@ const styles = StyleSheet.create({
   tierItem: { flexDirection: 'row', marginBottom: 2.5 },
   tierCheck: { color: GREEN, fontFamily: 'Helvetica-Bold', width: 10, fontSize: 7.8, lineHeight: 1.28 },
   tierItemText: { flex: 1, fontSize: 7.8, color: INK, lineHeight: 1.28 },
-  tierFinePrint: { fontSize: 6.2, color: FAINT, lineHeight: 1.3, marginTop: 6 },
+  // Terms render FULL WIDTH beneath the comparison, not inside the cards. The
+  // same sentence wraps to ~2 lines across the page but 6–7 inside a 250pt
+  // column, and that height was enough to push the whole (unbreakable)
+  // comparison onto page 2.
+  finePrintBlock: { marginTop: 2, marginBottom: 12 },
+  finePrintLine: { fontSize: 6.4, color: FAINT, lineHeight: 1.35, marginBottom: 2 },
+  finePrintName: { fontFamily: 'Helvetica-Bold', color: MUTED },
   valueNoteBox: {
     backgroundColor: '#fff8ec',
     borderWidth: 1,
@@ -183,6 +189,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   valueNoteText: { fontSize: 8, color: '#8a5a10', lineHeight: 1.32 },
+  // The non-recommended plan's note explains the service rather than selling an
+  // offer, so it reads as information (blue tint) not promotion (amber).
+  valueNoteBoxPlain: { backgroundColor: TINT, borderColor: TINT_BORDER },
+  valueNoteTextPlain: { color: BLUE_DARK },
 
   // ----- Add-ons -----
   addonRow: {
@@ -270,7 +280,6 @@ const TierCard = ({
           <Text style={styles.tierItemText}>{item}</Text>
         </View>
       ))}
-      {tier.finePrint.trim() ? <Text style={styles.tierFinePrint}>{tier.finePrint.trim()}</Text> : null}
     </View>
   );
 };
@@ -303,6 +312,9 @@ export const ProposalDocument = ({
   // With tiers on, the recommended plan's name is the word the customer replies
   // with, so acceptance can't be ambiguous.
   const recommended = tiers.find((t) => t.recommended) ?? upgradeTier ?? baseTier;
+  const finePrints = tiers
+    .map((t) => ({ name: t.name.trim(), text: t.finePrint.trim() }))
+    .filter((f) => f.text !== '');
   const acceptWords = tiers
     .map((t) => t.name.trim().toUpperCase())
     .filter(Boolean)
@@ -432,11 +444,33 @@ export const ProposalDocument = ({
                 ))}
               </View>
             </View>
-            {recommended?.valueNote.trim() ? (
-              <View style={styles.valueNoteBox} wrap={false}>
-                <Text style={styles.valueNoteText}>{recommended.valueNote.trim()}</Text>
+            {finePrints.length ? (
+              <View style={styles.finePrintBlock}>
+                {finePrints.map((f, i) => (
+                  <Text key={i} style={styles.finePrintLine}>
+                    {finePrints.length > 1 ? <Text style={styles.finePrintName}>{f.name}: </Text> : null}
+                    {f.text}
+                  </Text>
+                ))}
               </View>
             ) : null}
+            {/* Every plan's note renders, in card order: the base plan explains
+                what the all-in rate covers, the recommended one sells the offer. */}
+            {tiers.map((tier, i) =>
+              tier.valueNote.trim() ? (
+                <View
+                  key={i}
+                  style={[styles.valueNoteBox, tier.recommended ? null : styles.valueNoteBoxPlain]}
+                  wrap={false}
+                >
+                  <Text
+                    style={[styles.valueNoteText, tier.recommended ? null : styles.valueNoteTextPlain]}
+                  >
+                    {tier.valueNote.trim()}
+                  </Text>
+                </View>
+              ) : null,
+            )}
           </View>
         ) : proposal.price.trim() ? (
           <View style={styles.section}>

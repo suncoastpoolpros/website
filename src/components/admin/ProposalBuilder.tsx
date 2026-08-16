@@ -759,16 +759,34 @@ const ProposalPreview = ({
                         <span>{item}</span>
                       </div>
                     ))}
-                  {tier.finePrint.trim() && (
-                    <div className="mt-1.5 text-[8px] leading-snug text-stone-400">{tier.finePrint.trim()}</div>
-                  )}
                 </div>
               ))}
             </div>
-            {recommended?.valueNote.trim() && (
-              <div className="mt-2 rounded-lg border border-[#f0dcb4] bg-[#fff8ec] px-3 py-2 text-[11px] leading-relaxed text-[#8a5a10]">
-                {recommended.valueNote.trim()}
+            {tiers.some((t) => t.finePrint.trim()) && (
+              <div className="mt-2 space-y-0.5">
+                {tiers
+                  .filter((t) => t.finePrint.trim())
+                  .map((t, i, arr) => (
+                    <p key={i} className="text-[9px] leading-snug text-stone-400">
+                      {arr.length > 1 && <span className="font-semibold text-stone-500">{t.name.trim()}: </span>}
+                      {t.finePrint.trim()}
+                    </p>
+                  ))}
               </div>
+            )}
+            {tiers.map((tier, i) =>
+              tier.valueNote.trim() ? (
+                <div
+                  key={i}
+                  className={`mt-2 rounded-lg border px-3 py-2 text-[11px] leading-relaxed ${
+                    tier.recommended
+                      ? 'border-[#f0dcb4] bg-[#fff8ec] text-[#8a5a10]'
+                      : 'border-[#d4e6f4] bg-[#f1f7fc] text-brand-blue-dark'
+                  }`}
+                >
+                  {tier.valueNote.trim()}
+                </div>
+              ) : null,
             )}
           </PreviewBlock>
         ) : proposal.price.trim() ? (

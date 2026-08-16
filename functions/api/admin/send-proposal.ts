@@ -175,8 +175,10 @@ const INCLUDED_BENEFITS = [
   'A photo service report in your inbox after every visit',
   'All standard service chemicals included',
   'Filter cleaning, backwashing & salt-cell cleaning — all included',
+  'Your annual filter service — replacement cartridge elements, or a DE split & recharge',
 ];
-const BENEFITS_NOTE = "It's all covered in your flat rate — no surprise fees.";
+const BENEFITS_NOTE =
+  "It's all covered in your flat rate — including the filter parts and labour most companies bill separately. That's why the monthly figure may read a little higher than a bare-bones quote, and why you won't get a surprise invoice on top of it.";
 
 // Prefix a bare number with "$" (425 → $425, 185/mo → $185/mo) while leaving
 // values that already start with a symbol/word untouched ($425, "Call for price").
@@ -259,14 +261,27 @@ const renderTiers = (tiers: Tier[]): string => {
                   `<div style="font-size:12.5px;color:#374151;line-height:1.45;margin-bottom:5px;"><span style="color:#1d7a33;">&bull;</span>&nbsp;&nbsp;${escapeHtml(item)}</div>`,
               )
               .join('')}
-            ${t.finePrint ? `<div style="font-size:10px;color:#9aa4b2;line-height:1.4;margin-top:10px;">${escapeHtml(t.finePrint)}</div>` : ''}
           </td></tr>
         </table>
       </td>`;
     })
     .join('');
 
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px;"><tr>${cells}</tr></table>`;
+  // Terms go FULL WIDTH under the comparison, not inside the cards — the same
+  // sentence is a couple of lines across the page but many inside a column.
+  const terms = clean.filter((t) => t.finePrint);
+  const termsHtml = terms.length
+    ? `<div style="margin:0 0 18px;">${terms
+        .map(
+          (t) =>
+            `<div style="font-size:10px;color:#9aa4b2;line-height:1.45;margin-bottom:3px;">${
+              terms.length > 1 ? `<strong style="color:#6b7280;">${escapeHtml(t.name)}:</strong> ` : ''
+            }${escapeHtml(t.finePrint)}</div>`,
+        )
+        .join('')}</div>`
+    : '';
+
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 10px;"><tr>${cells}</tr></table>${termsHtml}`;
 };
 
 // Exported (not just module-local) so the email can be rendered and eyeballed
@@ -295,7 +310,15 @@ export const composeProposalEmail = (
       const rec = safe(String(recommendedTier?.name ?? '').trim(), 60).toUpperCase();
       return a === rec ? -1 : b === rec ? 1 : 0;
     });
-  const valueNote = safe(String(recommendedTier?.valueNote ?? '').trim(), 600);
+  // Every plan's note, in card order: the base plan explains what the all-in
+  // rate covers, the recommended one sells the offer.
+  const valueNotes = tiers
+    .map((t) => ({
+      text: safe(String(t?.valueNote ?? '').trim(), 800),
+      recommended: t?.recommended === true,
+    }))
+    .filter((n) => n.text !== '');
+  const valueNote = valueNotes.map((n) => n.text).join('\n\n');
   // A single price alongside a plan comparison is a contradiction — suppress it.
   const showSinglePrice = !tiered && price !== '';
 
@@ -384,10 +407,15 @@ export const composeProposalEmail = (
           ${tiered ? renderTiers(tiers) : ''}
 
           ${
-            tiered && valueNote
-              ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
-            <tr><td style="padding:14px 18px;background:#fff8ec;border:1px solid #f0dcb4;border-radius:12px;font-size:14px;color:#8a5a10;line-height:1.55;">${escapeHtml(valueNote)}</td></tr>
-          </table>`
+            tiered
+              ? valueNotes
+                  .map(
+                    (n) =>
+                      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 14px;">
+            <tr><td style="padding:14px 18px;background:${n.recommended ? '#fff8ec' : '#f1f7fc'};border:1px solid ${n.recommended ? '#f0dcb4' : '#d4e6f4'};border-radius:12px;font-size:14px;color:${n.recommended ? '#8a5a10' : '#0f4d80'};line-height:1.55;">${escapeHtml(n.text)}</td></tr>
+          </table>`,
+                  )
+                  .join('')
               : ''
           }
 
