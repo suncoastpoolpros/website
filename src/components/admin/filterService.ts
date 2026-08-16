@@ -15,14 +15,24 @@
 export const FILTER_TYPES = ['Cartridge', 'DE', 'Sand', 'Other'] as const;
 
 /**
- * What the customer would otherwise be billed for that service. Used to name the
- * exact bill they're NOT going to get, which is far more persuasive than a
- * generic "included" — and true. Sand is absent deliberately: media replacement
- * hasn't been costed, so no figure is quoted for it.
+ * What the service is worth, and WHY — the basis is quoted alongside the figure
+ * so "$120 value" reads as a costed number rather than a marketing round-up. A
+ * customer who knows a cartridge set lasts about a year can check the maths, and
+ * that is the point.
+ *
+ * Sand is deliberately absent: media replacement hasn't been costed and runs on
+ * a 5–7 year cycle, not annual, so no figure is quoted for it rather than an
+ * invented one. Add an entry here and it appears automatically everywhere.
  */
-export const FILTER_SERVICE_VALUE: Record<string, number> = {
-  Cartridge: 120,
-  DE: 150,
+export const FILTER_SERVICE: Record<string, { value: number; basis: string }> = {
+  Cartridge: { value: 120, basis: 'based on a 12-month element life' },
+  DE: { value: 150, basis: 'based on a 12-month split cadence' },
+};
+
+/** "— a $120 value, based on a 12-month element life", or '' when uncosted. */
+const valueClause = (type: string): string => {
+  const v = FILTER_SERVICE[type];
+  return v ? ` — a $${v.value} value, ${v.basis}` : '';
 };
 
 export type FilterOption = {
@@ -57,11 +67,11 @@ export const filterServiceLine = ({ type, included }: FilterOption): string | nu
   if (!included || !supportsFilterService(type)) return null;
   switch (type) {
     case 'Cartridge':
-      return 'Cartridge filter replacement included in your monthly cost — elements and labour';
+      return `Cartridge filter replacement included in your monthly cost${valueClause(type)}`;
     case 'DE':
-      return 'DE filter split, clean and recharge included in your monthly cost — parts and labour';
+      return `DE filter split, clean and recharge included in your monthly cost${valueClause(type)}`;
     case 'Sand':
-      return 'Sand media replacement included in your monthly cost — media and labour';
+      return `Sand media replacement included in your monthly cost${valueClause(type)}`;
     default:
       return null;
   }
@@ -106,8 +116,8 @@ export const filterServiceTerms = ({ type, included }: FilterOption): string => 
  */
 export const filterServiceValueNote = ({ type, included }: FilterOption): string => {
   if (!included || !supportsFilterService(type)) return '';
-  const value = FILTER_SERVICE_VALUE[type];
-  const bill = value ? `a random $${value} bill` : 'a surprise bill';
+  const priced = FILTER_SERVICE[type];
+  const bill = priced ? `a random $${priced.value} bill` : 'a surprise bill';
   switch (type) {
     case 'Cartridge':
       return `Your cartridge filter replacement is built into the monthly cost. When the elements are due we simply fit them — no quote to approve, no separate invoice, and ${bill} never lands in your inbox.`;

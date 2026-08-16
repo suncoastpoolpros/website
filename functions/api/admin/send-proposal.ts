@@ -182,15 +182,25 @@ const BASE_BENEFITS = [
 // Mirrors filterServiceLine in src/components/admin/filterService.ts — the email
 // must name the SAME filter the PDF does, or the two documents contradict each
 // other in the same message.
+const FILTER_SERVICE: Record<string, { value: number; basis: string }> = {
+  Cartridge: { value: 120, basis: 'based on a 12-month element life' },
+  DE: { value: 150, basis: 'based on a 12-month split cadence' },
+};
+
+const valueClause = (type: string): string => {
+  const v = FILTER_SERVICE[type];
+  return v ? ` — a $${v.value} value, ${v.basis}` : '';
+};
+
 const filterServiceLine = (type: string, included: boolean): string | null => {
   if (!included) return null;
   switch (type) {
     case 'Cartridge':
-      return 'Cartridge filter replacement included in your monthly cost — elements and labour';
+      return `Cartridge filter replacement included in your monthly cost${valueClause(type)}`;
     case 'DE':
-      return 'DE filter split, clean and recharge included in your monthly cost — parts and labour';
+      return `DE filter split, clean and recharge included in your monthly cost${valueClause(type)}`;
     case 'Sand':
-      return 'Sand media replacement included in your monthly cost — media and labour';
+      return `Sand media replacement included in your monthly cost${valueClause(type)}`;
     default:
       return null;
   }
