@@ -456,6 +456,29 @@ export const ProposalBuilder = ({
               </FieldShell>
             </Section>
 
+            <Section title="Personal Note (email only)">
+              <p className="-mt-1 text-sm text-gray-400">
+                Appears at the top of the email, above the plan options — <span className="text-gray-300">not</span>{' '}
+                on the PDF. The PDF is the formal document that gets filed or forwarded; this is the
+                covering message.
+              </p>
+              <FieldShell id="pr-emailnote" label="Note to the customer" multiline>
+                <textarea id="pr-emailnote" rows={4} className={textareaClass} placeholder=" "
+                  value={data.proposal.emailNote}
+                  onChange={(e) => update('proposal', 'emailNote', e.target.value)} />
+              </FieldShell>
+              {data.proposal.emailNote.trim() && (
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    In the email
+                  </p>
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-gray-200">
+                    {data.proposal.emailNote.trim()}
+                  </p>
+                </div>
+              )}
+            </Section>
+
             <Section title="Photos">
               <PhotoPicker
                 photos={photos}

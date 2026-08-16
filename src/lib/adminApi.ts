@@ -48,6 +48,12 @@ export type ProposalData = {
     /** Show the "what's included" all-inclusive highlight (recurring service). */
     includeBenefits: boolean;
     /**
+     * A personal note that appears in the EMAIL ONLY, never in the PDF. The PDF
+     * is the formal document and gets filed or forwarded; this is the covering
+     * message — "great meeting you Tuesday", "here's the pricing we discussed".
+     */
+    emailNote: string;
+    /**
      * 'single' = one headline price (the original behaviour, still the default).
      * 'tiers'  = a two-option comparison; `price` is then ignored in favour of
      * each tier's own price.
@@ -207,6 +213,7 @@ export const emptyProposal = (): ProposalData => ({
     price: '',
     addOns: [],
     includeBenefits: true,
+    emailNote: '',
     // Single-price stays the default, so nothing about an ordinary proposal
     // changes until the admin explicitly switches to tiers.
     pricingMode: 'single',

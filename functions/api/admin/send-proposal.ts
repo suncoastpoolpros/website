@@ -55,6 +55,7 @@ type Proposal = {
   price?: string;
   addOns?: Array<{ label?: string; price?: string }>;
   includeBenefits?: boolean;
+  emailNote?: string;
   pricingMode?: string;
   tiers?: Tier[];
 };
@@ -395,6 +396,9 @@ export const composeProposalEmail = (
   const greetingName = name ? name.split(/\s+/)[0] : 'there';
   const price = formatPrice(safe(String(p.proposal?.price ?? '').trim(), 40));
   const scope = safe(String(p.proposal?.scope ?? '').trim(), FIELD_MAX);
+  // Email only — deliberately absent from the PDF, which is the formal document.
+  const emailNote = safe(String(p.proposal?.emailNote ?? '').trim(), FIELD_MAX);
+  const emailNoteParas = emailNote.split(/\n{2,}/).map((x) => x.trim()).filter(Boolean);
   const filterType = safe(String(p.pool?.filterType ?? '').trim(), 40);
   const filterIncluded = p.pool?.filterServiceIncluded === true;
   const benefitsList = includedBenefits(filterType, filterIncluded);
@@ -430,6 +434,7 @@ export const composeProposalEmail = (
   const text = [
     `Hi ${greetingName},`,
     ``,
+    ...(emailNote ? [emailNote, ``] : []),
     `Thank you for the opportunity to earn your business. Your proposal from`,
     `Suncoast Pool Pros is attached as a PDF.`,
     ``,
@@ -493,6 +498,16 @@ export const composeProposalEmail = (
         <!-- Body -->
         <tr><td style="padding:28px 32px;color:#111827;font-size:15px;line-height:1.6;">
           <p style="margin:0 0 14px;">Hi ${escapeHtml(greetingName)},</p>
+          ${
+            /* The personal note opens the message — it's the human sentence, so
+               the boilerplate below it reads as the handoff into the content. */
+            emailNoteParas
+              .map(
+                (para) =>
+                  `<p style="margin:0 0 14px;color:#374151;">${escapeHtml(para).replace(/\n/g, '<br>')}</p>`,
+              )
+              .join('')
+          }
           <p style="margin:0 0 18px;color:#374151;">Thank you for the opportunity to earn your business. ${
             tiered
               ? 'Here are your two plan options — the full details are attached as a PDF.'
