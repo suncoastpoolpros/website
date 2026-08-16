@@ -15,10 +15,18 @@ import { blobToBase64 } from '@/lib/adminMedia';
 import { toTitleCase, formatUsPhone } from '@/lib/textFormat';
 import { Section, PreviewBlock, PreviewRow } from './adminUi';
 import { PhotoPicker } from './PhotoPicker';
+import { SANITIZATION_TYPES } from './sanitization';
 import { SCOPE_TEMPLATES } from './scopeTemplates';
 import { ADDON_PRESETS } from './addonPresets';
 import { BENEFITS_HEADING, includedBenefits, benefitsNote } from './proposalBenefits';
-import { EXTRAS_HEADING, EXTRAS_NOTE, includedExtras } from './includedExtras';
+import {
+  EXTRAS_COL_THEIRS,
+  EXTRAS_COL_YOURS,
+  EXTRAS_HEADING,
+  EXTRAS_INCLUDED_LABEL,
+  EXTRAS_NOTE,
+  includedExtras,
+} from './includedExtras';
 import { buildTiers, syncFilterService } from './tierPresets';
 import { FILTER_TYPES, inclusionQuestion, supportsFilterService } from './filterService';
 
@@ -392,9 +400,9 @@ export const ProposalBuilder = ({
                 <select id="p-san" className={selectClass}
                   value={data.pool.sanitization} onChange={(e) => update('pool', 'sanitization', e.target.value)}>
                   <option value=""></option>
-                  <option>Chlorine</option>
-                  <option>Salt (chlorine generator)</option>
-                  <option>Other</option>
+                  {SANITIZATION_TYPES.map((t) => (
+                    <option key={t}>{t}</option>
+                  ))}
                 </select>
               </FieldShell>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -715,7 +723,7 @@ const ProposalPreview = ({
     .join(' × ');
   const tiered = proposal.pricingMode === 'tiers' && proposal.tiers.length > 0;
   const filterOption = { type: pool.filterType, included: pool.filterServiceIncluded };
-  const extras = includedExtras(filterOption);
+  const extras = includedExtras(filterOption, pool.sanitization);
   const tiers = tiered ? proposal.tiers : [];
   const delta = tierDelta(tiers[0], tiers[1]);
   const recommended = tiers.find((t) => t.recommended) ?? tiers[tiers.length - 1];
@@ -761,16 +769,26 @@ const ProposalPreview = ({
         {(proposal.includeBenefits || tiered) && extras.length > 0 && (
           <PreviewBlock label={EXTRAS_HEADING}>
             <div className="rounded-lg border border-[#cfe3f2] px-3 py-2">
+              <div className="flex gap-2 border-b border-stone-200 pb-1 text-[8px] uppercase tracking-wide text-stone-400">
+                <span className="flex-1" />
+                <span className="w-16 text-right">{EXTRAS_COL_THEIRS}</span>
+                <span className="w-12 text-right">{EXTRAS_COL_YOURS}</span>
+              </div>
               {extras.map((x, i) => (
                 <div
                   key={i}
-                  className={`flex items-baseline gap-2 py-1 ${
+                  className={`flex items-start gap-2 py-1 ${
                     i < extras.length - 1 ? 'border-b border-stone-100' : ''
                   }`}
                 >
-                  <span className="flex-1 text-[12px] font-semibold text-navy">{x.label}</span>
-                  <span className="text-[12px] text-stone-500 line-through">{x.typical}</span>
-                  <span className="text-[9px] text-stone-400">{x.basis}</span>
+                  <span className="flex-1">
+                    <span className="block text-[12px] font-semibold text-navy">{x.label}</span>
+                    <span className="block text-[9px] text-stone-400">{x.basis}</span>
+                  </span>
+                  <span className="w-16 text-right text-[12px] text-stone-500 line-through">{x.typical}</span>
+                  <span className="w-12 text-right text-[11px] font-bold text-green-700">
+                    {EXTRAS_INCLUDED_LABEL}
+                  </span>
                 </div>
               ))}
               <p className="mt-1.5 text-[10px] italic leading-snug text-stone-400">{EXTRAS_NOTE}</p>

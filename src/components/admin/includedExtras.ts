@@ -16,6 +16,7 @@
  * from the client src tree) — keep them in sync.
  */
 import { FILTER_SERVICE, type FilterOption, supportsFilterService } from './filterService';
+import { isSaltwater } from './sanitization';
 
 export type IncludedExtra = {
   label: string;
@@ -28,7 +29,12 @@ export type IncludedExtra = {
 export const EXTRAS_HEADING = 'What Others Charge Extra For';
 
 export const EXTRAS_NOTE =
-  'All of it is covered by your flat rate. These are the line items that most commonly arrive as a separate invoice — the pricing above is what you would typically be quoted for them.';
+  'Every line above is already covered by your monthly cost. These are the items most commonly billed as a separate visit or add-on — the figures are what you would typically be quoted for them elsewhere.';
+
+/** Column headings, so "$120" can't be mistaken for something being charged. */
+export const EXTRAS_COL_THEIRS = 'Others charge';
+export const EXTRAS_COL_YOURS = 'Your cost';
+export const EXTRAS_INCLUDED_LABEL = 'Included';
 
 const BASE_EXTRAS: IncludedExtra[] = [
   {
@@ -43,8 +49,15 @@ const BASE_EXTRAS: IncludedExtra[] = [
  * the rest of the proposal uses. Sand is skipped: its media replacement isn't
  * costed, and a row with no number defeats the point of the section.
  */
-export const includedExtras = (filter: FilterOption): IncludedExtra[] => {
+export const includedExtras = (filter: FilterOption, sanitization = ''): IncludedExtra[] => {
   const rows = [...BASE_EXTRAS];
+  if (isSaltwater(sanitization)) {
+    rows.push({
+      label: 'Salt cell acid wash',
+      typical: '$100',
+      basis: 'based on quarterly wash intervals',
+    });
+  }
   if (filter.included && supportsFilterService(filter.type)) {
     const priced = FILTER_SERVICE[filter.type];
     if (priced) {

@@ -228,9 +228,13 @@ const formatPrice = (raw: string): string => {
 // routinely arrives as a separate invoice elsewhere, priced and struck through.
 const EXTRAS_HEADING = 'What Others Charge Extra For';
 const EXTRAS_NOTE =
-  'All of it is covered by your flat rate. These are the line items that most commonly arrive as a separate invoice — the pricing above is what you would typically be quoted for them.';
+  'Every line above is already covered by your monthly cost. These are the items most commonly billed as a separate visit or add-on — the figures are what you would typically be quoted for them elsewhere.';
 
-const includedExtras = (type: string, included: boolean): Array<{ label: string; typical: string; basis: string }> => {
+const includedExtras = (
+  type: string,
+  included: boolean,
+  sanitization: string,
+): Array<{ label: string; typical: string; basis: string }> => {
   const rows = [
     {
       label: 'Algaecide & phosphate treatments',
@@ -238,6 +242,14 @@ const includedExtras = (type: string, included: boolean): Array<{ label: string;
       basis: 'depending on severity and pool size',
     },
   ];
+  // Matches "salt" loosely so older drafts ("Salt (chlorine generator)") resolve.
+  if (/salt/i.test(sanitization)) {
+    rows.push({
+      label: 'Salt cell acid wash',
+      typical: '$100',
+      basis: 'based on quarterly wash intervals',
+    });
+  }
   const priced = included ? FILTER_SERVICE[type] : undefined;
   if (priced) {
     rows.push({
@@ -254,18 +266,24 @@ const renderExtras = (rows: Array<{ label: string; typical: string; basis: strin
     ? `<div style="margin:0 0 20px;">
             <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa4b2;font-weight:700;margin-bottom:8px;">${escapeHtml(EXTRAS_HEADING)}</div>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #cfe3f2;border-radius:12px;">
+              <tr>
+                <td style="padding:8px 16px 4px;"></td>
+                <td align="right" style="padding:8px 16px 4px;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#9aa4b2;white-space:nowrap;">Others charge</td>
+                <td align="right" style="padding:8px 16px 4px;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#9aa4b2;white-space:nowrap;">Your cost</td>
+              </tr>
               ${rows
                 .map(
-                  (r, i) => `<tr>
-                <td style="padding:9px 16px;${i ? 'border-top:1px solid #eef1f5;' : ''}font-size:14px;font-weight:600;color:#0a1628;">${escapeHtml(r.label)}</td>
-                <td align="right" style="padding:9px 16px;${i ? 'border-top:1px solid #eef1f5;' : ''}white-space:nowrap;">
-                  <span style="font-size:14px;color:#6b7280;text-decoration:line-through;">${escapeHtml(r.typical)}</span>
-                  <span style="font-size:11px;color:#9aa4b2;">&nbsp;${escapeHtml(r.basis)}</span>
+                  (r) => `<tr>
+                <td style="padding:9px 16px;border-top:1px solid #eef1f5;">
+                  <div style="font-size:14px;font-weight:600;color:#0a1628;">${escapeHtml(r.label)}</div>
+                  <div style="font-size:11px;color:#9aa4b2;margin-top:1px;">${escapeHtml(r.basis)}</div>
                 </td>
+                <td align="right" style="padding:9px 16px;border-top:1px solid #eef1f5;white-space:nowrap;font-size:14px;color:#6b7280;text-decoration:line-through;">${escapeHtml(r.typical)}</td>
+                <td align="right" style="padding:9px 16px;border-top:1px solid #eef1f5;white-space:nowrap;font-size:13px;font-weight:700;color:#1d7a33;">Included</td>
               </tr>`,
                 )
                 .join('')}
-              <tr><td colspan="2" style="padding:0 16px 12px;font-size:11px;font-style:italic;color:#9aa4b2;line-height:1.5;">${escapeHtml(EXTRAS_NOTE)}</td></tr>
+              <tr><td colspan="3" style="padding:0 16px 12px;font-size:11px;font-style:italic;color:#9aa4b2;line-height:1.5;">${escapeHtml(EXTRAS_NOTE)}</td></tr>
             </table>
           </div>`
     : '';
@@ -381,7 +399,7 @@ export const composeProposalEmail = (
   const filterIncluded = p.pool?.filterServiceIncluded === true;
   const benefitsList = includedBenefits(filterType, filterIncluded);
   const benefitsNoteText = benefitsNote(filterType, filterIncluded);
-  const extras = includedExtras(filterType, filterIncluded);
+  const extras = includedExtras(filterType, filterIncluded, safe(String(p.pool?.sanitization ?? '').trim(), 60));
   const tiered = hasTiers(p);
   const tiers = tiered ? (p.proposal?.tiers ?? []) : [];
   // In tier mode the box IS the service definition (both plans include the same

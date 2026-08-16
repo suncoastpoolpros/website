@@ -26,6 +26,7 @@ import { blobToBase64 } from '@/lib/adminMedia';
 import { toTitleCase, formatUsPhone } from '@/lib/textFormat';
 import { Section, PreviewBlock, PreviewRow } from './adminUi';
 import { PhotoPicker } from './PhotoPicker';
+import { SANITIZATION_TYPES } from './sanitization';
 import {
   CHEMISTRY_FIELDS,
   ISSUE_PRESETS,
@@ -402,9 +403,9 @@ export const InspectionBuilder = ({
                 <select id="i-san" className={selectClass}
                   value={data.pool.sanitization} onChange={(e) => update('pool', 'sanitization', e.target.value)}>
                   <option value=""></option>
-                  <option>Chlorine</option>
-                  <option>Salt (chlorine generator)</option>
-                  <option>Other</option>
+                  {SANITIZATION_TYPES.map((t) => (
+                    <option key={t}>{t}</option>
+                  ))}
                 </select>
               </FieldShell>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
