@@ -24,6 +24,11 @@ export type PoolInfo = {
   shape: string;
   sanitization: string;
   pump: string;
+  /** Cartridge | DE | Sand | Other — drives the included filter-service wording. */
+  filterType: string;
+  /** Whether the annual filter service for that type is bundled into the rate. */
+  filterServiceIncluded: boolean;
+  /** Free text make & model, e.g. "Pentair Clean & Clear 320". */
   filter: string;
   heater: string;
   automation: string;
@@ -190,6 +195,8 @@ export const emptyProposal = (): ProposalData => ({
     shape: '',
     sanitization: '',
     pump: '',
+    filterType: '',
+    filterServiceIncluded: false,
     filter: '',
     heater: '',
     automation: '',
@@ -224,6 +231,8 @@ export const emptyInspection = (): InspectionData => ({
     shape: '',
     sanitization: '',
     pump: '',
+    filterType: '',
+    filterServiceIncluded: false,
     filter: '',
     heater: '',
     automation: '',

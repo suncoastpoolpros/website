@@ -21,6 +21,14 @@
  * Everything here is a starting point the admin edits per proposal.
  */
 import type { Tier } from '@/lib/adminApi';
+import {
+  ALL_FILTER_LINES,
+  ALL_FILTER_TERMS,
+  type FilterOption,
+  filterServiceLine,
+  filterServiceTerms,
+  filterServiceValueNote,
+} from './filterService';
 
 /**
  * Months charged for a year of service — 11, i.e. one month free (~8.3% off).
@@ -37,34 +45,56 @@ import type { Tier } from '@/lib/adminApi';
  */
 export const ANNUAL_MONTHS_CHARGED = 11;
 
-/**
- * Qualifies the filter service that is now part of the STANDARD rate, so it sits
- * on the monthly card (the base offer) rather than the annual one.
- *
- * COSTING (owner, 2026-08-16): $120 on a cartridge pool, $150 on a DE pool —
- * about $10–12.50/month, which is what the base rate rises by to absorb it.
- *
- * The exclusions matter and are deliberate: an unqualified "DE split and clean"
- * would arguably oblige a $150–250 grid set on top of the labour. This covers
- * CONSUMABLES AND LABOUR ONLY — cartridge elements, or the split, disassembly,
- * clean and DE recharge. Torn grids and housing parts are quoted separately.
- */
-export const SERVICE_FINE_PRINT =
-  'The included annual filter service covers replacement cartridge elements, or a DE filter split, disassembly, clean and recharge — parts and labour. It does not include DE grid replacement (including torn grids) or any filter housing parts; those are quoted separately, and always before any work is done.';
-
 /** Terms specific to prepaying for the year. */
 export const ANNUAL_FINE_PRINT =
   'One month free applies to a full twelve months of service paid in advance. Repair labour discount applies to our own labour and excludes work performed by subcontractors.';
 
-/** The weekly service itself. Identical on both options — do not edit one without the other. */
-export const SERVICE_INCLUDES = [
+const BASE_SERVICE_INCLUDES = [
   'Weekly cleaning — brushing, skimming, netting and vacuuming',
   'All standard chemicals included',
   'Filter cleaning, backwashing and salt-cell cleaning',
-  'Your annual filter service — cartridge elements, or a DE split and recharge',
   'Full equipment check on every visit',
   'A photo service report in your inbox after every visit',
 ];
+
+/**
+ * The weekly service, with this pool's filter-service line inserted right after
+ * the routine filter-cleaning bullet — and omitted entirely when nothing is
+ * bundled, so a sand pool is never shown a cartridge promise.
+ */
+export const serviceIncludes = (filter: FilterOption): string[] => {
+  const line = filterServiceLine(filter);
+  if (!line) return [...BASE_SERVICE_INCLUDES];
+  const out = [...BASE_SERVICE_INCLUDES];
+  out.splice(3, 0, line);
+  return out;
+};
+
+/**
+ * Swap a stale filter bullet and terms for the current ones after the admin
+ * changes the filter type or the inclusion toggle, WITHOUT disturbing anything
+ * typed by hand: only lines this module could itself have generated are touched.
+ */
+export const syncFilterService = (tiers: Tier[], filter: FilterOption): Tier[] => {
+  if (tiers.length === 0) return tiers;
+  const line = filterServiceLine(filter);
+  const terms = filterServiceTerms(filter);
+  return tiers.map((tier, i) => {
+    if (i !== 0) return tier;
+    const kept = tier.includes.filter((b) => !ALL_FILTER_LINES.includes(b.trim()));
+    let includes = kept;
+    if (line) {
+      // Put it back where serviceIncludes would have placed it, or at the end if
+      // the routine-cleaning bullet has been edited away.
+      const anchor = kept.findIndex((b) => /filter cleaning/i.test(b));
+      includes = anchor === -1 ? [...kept, line] : [...kept.slice(0, anchor + 1), line, ...kept.slice(anchor + 1)];
+    }
+    const finePrint = ALL_FILTER_TERMS.includes(tier.finePrint.trim()) || tier.finePrint.trim() === ''
+      ? terms
+      : tier.finePrint;
+    return { ...tier, includes, finePrint };
+  });
+};
 
 /**
  * What paying annually ADDS — the PDF renders "Everything in Pay Monthly,
@@ -78,22 +108,27 @@ export const ANNUAL_INCLUDES = [
   'One payment for the year — nothing to remember each month',
 ];
 
-export const buildTiers = (basePrice = ''): Tier[] => {
+export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', included: false }): Tier[] => {
   const base = basePrice.trim();
   const monthly = monthlyAmount(base);
   return [
     {
       name: 'Pay Monthly',
       price: base,
-      tagline: 'Everything below, billed month to month.',
-      includes: [...SERVICE_INCLUDES],
+      // The service list lives ONCE in the "what's included" box above, because
+      // both plans carry the identical service — repeating all six bullets
+      // inside a 250pt column was both redundant and, with longer wordings like
+      // DE's, tall enough to push the whole comparison onto the next page.
+      tagline: 'Everything above, billed month to month.',
+      includes: [],
       recommended: false,
       // Answers "why is this more than the quote down the road?" before the
       // customer asks it — the honest answer is that parts other companies
       // invoice separately are already in the number.
       valueNote:
-        'This rate is genuinely all-in. Your chemicals, filter cleans, salt-cell cleaning and your annual filter service — cartridge elements, or a full DE split and recharge — are all part of it. When the filter comes due we simply do it: no quote to approve, no separate invoice, no decision to make. That is why the monthly figure reads a little higher than a bare-bones quote, and why nothing lands on top of it.',
-      finePrint: SERVICE_FINE_PRINT,
+        filterServiceValueNote(filter) ||
+        'This rate is genuinely all-in — your chemicals, filter cleans and salt-cell cleaning are all part of it, with no surprise fees on top.',
+      finePrint: filterServiceTerms(filter),
     },
     {
       name: 'Pay Annually',

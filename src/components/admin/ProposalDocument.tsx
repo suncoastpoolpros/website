@@ -11,7 +11,7 @@
  */
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import { type ProposalData, type Tier, formatPrice, tierDelta } from '@/lib/adminApi';
-import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE } from './proposalBenefits';
+import { BENEFITS_HEADING, includedBenefits, benefitsNote } from './proposalBenefits';
 
 const NAVY = '#0a1628';
 const BRAND_BLUE = '#1669ae';
@@ -272,7 +272,9 @@ const TierCard = ({
       {tier.tagline.trim() ? <Text style={styles.tierTagline}>{tier.tagline.trim()}</Text> : null}
       {tier.price.trim() ? <Text style={styles.tierPrice}>{formatPrice(tier.price)}</Text> : null}
       {delta ? <Text style={styles.tierDeltaText}>{delta} more than {buildsOn}</Text> : null}
-      <View style={styles.tierRule} />
+      {/* No divider when there's nothing under it — the base card carries only a
+          price, because the service it buys is listed once above the cards. */}
+      {items.length || buildsOn ? <View style={styles.tierRule} /> : null}
       {buildsOn ? <Text style={styles.tierBuildsOn}>Everything in {buildsOn}, plus:</Text> : null}
       {items.map((item, i) => (
         <View key={i} style={styles.tierItem}>
@@ -306,6 +308,9 @@ export const ProposalDocument = ({
   const hasEquipment = pool.pump || pool.filter || pool.heater || pool.automation || pool.equipmentNotes;
   const addOns = proposal.addOns.filter((a) => a.label.trim() || a.price.trim());
   const tiered = proposal.pricingMode === 'tiers' && proposal.tiers.length > 0;
+  // Every "what's included" surface is derived from THIS pool's filter, so a
+  // sand-filter customer never reads a promise about cartridge elements.
+  const filterOption = { type: pool.filterType, included: pool.filterServiceIncluded };
   const tiers = tiered ? proposal.tiers : [];
   const [baseTier, upgradeTier] = tiers;
   const delta = tierDelta(baseTier, upgradeTier);
@@ -366,7 +371,11 @@ export const ProposalDocument = ({
                 <View style={hasPoolBasics ? { marginTop: 10 } : undefined}>
                   <Text style={styles.sectionLabel}>Equipment</Text>
                   <Row label="Pump" value={pool.pump} labelWidth={88} />
-                  <Row label="Filter" value={pool.filter} labelWidth={88} />
+                  <Row
+                    label="Filter"
+                    value={[pool.filterType, pool.filter].filter((v) => v.trim()).join(' — ')}
+                    labelWidth={88}
+                  />
                   <Row label="Heater" value={pool.heater} labelWidth={88} />
                   <Row label="Automation" value={pool.automation} labelWidth={88} />
                   <Row label="Notes" value={pool.equipmentNotes} labelWidth={88} />
@@ -384,18 +393,19 @@ export const ProposalDocument = ({
           </View>
         )}
 
-        {/* The all-inclusive highlight is skipped in tier mode — it's the same
-            list as the Essential column, and saying it twice reads as padding. */}
-        {proposal.includeBenefits && !tiered ? (
+        {/* In tier mode this box IS the service definition — both plans include
+            the same service, so it's stated once here rather than repeated in
+            each card — and it always renders regardless of the toggle. */}
+        {proposal.includeBenefits || tiered ? (
           <View style={styles.includedBox} wrap={false}>
             <Text style={styles.includedHeading}>{BENEFITS_HEADING}</Text>
-            {INCLUDED_BENEFITS.map((b, i) => (
+            {includedBenefits(filterOption).map((b, i) => (
               <View key={i} style={styles.includedItem}>
                 <Text style={styles.includedCheck}>•</Text>
                 <Text style={styles.includedItemText}>{b}</Text>
               </View>
             ))}
-            <Text style={styles.includedNote}>{BENEFITS_NOTE}</Text>
+            <Text style={styles.includedNote}>{benefitsNote(filterOption)}</Text>
           </View>
         ) : null}
 

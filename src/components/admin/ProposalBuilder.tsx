@@ -17,8 +17,9 @@ import { Section, PreviewBlock, PreviewRow } from './adminUi';
 import { PhotoPicker } from './PhotoPicker';
 import { SCOPE_TEMPLATES } from './scopeTemplates';
 import { ADDON_PRESETS } from './addonPresets';
-import { BENEFITS_HEADING, INCLUDED_BENEFITS, BENEFITS_NOTE } from './proposalBenefits';
-import { buildTiers } from './tierPresets';
+import { BENEFITS_HEADING, includedBenefits, benefitsNote } from './proposalBenefits';
+import { buildTiers, syncFilterService } from './tierPresets';
+import { FILTER_TYPES, inclusionQuestion, supportsFilterService } from './filterService';
 
 // Plain input (no floating label) for the add-on rows.
 const addonInput =
@@ -89,6 +90,33 @@ export const ProposalBuilder = ({
       proposal: { ...p.proposal, addOns: p.proposal.addOns.filter((_, i) => i !== idx) },
     }));
 
+  // --- Filter service ---
+  // Changing the filter type (or the inclusion answer) re-tailors the plan
+  // wording immediately, so a quote can't go out promising cartridge elements to
+  // a DE pool. syncFilterService only rewrites lines it generated itself, so
+  // anything typed by hand survives.
+  const setFilterType = (type: string) =>
+    setData((p) => {
+      // A type that can't carry the service (Other/blank) can't have it included.
+      const included = supportsFilterService(type) ? p.pool.filterServiceIncluded : false;
+      const filter = { type, included };
+      return {
+        ...p,
+        pool: { ...p.pool, filterType: type, filterServiceIncluded: included },
+        proposal: { ...p.proposal, tiers: syncFilterService(p.proposal.tiers, filter) },
+      };
+    });
+
+  const setFilterIncluded = (included: boolean) =>
+    setData((p) => ({
+      ...p,
+      pool: { ...p.pool, filterServiceIncluded: included },
+      proposal: {
+        ...p.proposal,
+        tiers: syncFilterService(p.proposal.tiers, { type: p.pool.filterType, included }),
+      },
+    }));
+
   // --- Pricing tiers ---
   // Switching to tiers seeds both plans from the preset, using whatever base
   // rate is already typed. Switching back leaves `tiers` untouched, so toggling
@@ -101,7 +129,10 @@ export const ProposalBuilder = ({
         pricingMode: mode,
         tiers:
           mode === 'tiers' && p.proposal.tiers.length === 0
-            ? buildTiers(p.proposal.price)
+            ? buildTiers(p.proposal.price, {
+                type: p.pool.filterType,
+                included: p.pool.filterServiceIncluded,
+              })
             : p.proposal.tiers,
       },
     }));
@@ -127,7 +158,16 @@ export const ProposalBuilder = ({
     }));
 
   const resetTiers = () =>
-    setData((p) => ({ ...p, proposal: { ...p.proposal, tiers: buildTiers(p.proposal.price) } }));
+    setData((p) => ({
+      ...p,
+      proposal: {
+        ...p.proposal,
+        tiers: buildTiers(p.proposal.price, {
+          type: p.pool.filterType,
+          included: p.pool.filterServiceIncluded,
+        }),
+      },
+    }));
 
   const canSend = useMemo(
     () => data.customer.name.trim() !== '' && EMAIL_RE.test(data.customer.email.trim()),
@@ -362,7 +402,16 @@ export const ProposalBuilder = ({
                     value={data.pool.pump} onChange={(e) => update('pool', 'pump', e.target.value)}
                     onBlur={(e) => update('pool', 'pump', toTitleCase(e.target.value))} />
                 </FieldShell>
-                <FieldShell id="p-filter" label="Filter type">
+                <FieldShell id="p-filter-type" label="Filter type" floated>
+                  <select id="p-filter-type" className={selectClass}
+                    value={data.pool.filterType} onChange={(e) => setFilterType(e.target.value)}>
+                    <option value=""></option>
+                    {FILTER_TYPES.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </FieldShell>
+                <FieldShell id="p-filter" label="Filter make & model">
                   <input id="p-filter" className={fieldClass} placeholder=" " autoCapitalize="words"
                     value={data.pool.filter} onChange={(e) => update('pool', 'filter', e.target.value)}
                     onBlur={(e) => update('pool', 'filter', toTitleCase(e.target.value))} />
@@ -378,6 +427,20 @@ export const ProposalBuilder = ({
                     onBlur={(e) => update('pool', 'automation', toTitleCase(e.target.value))} />
                 </FieldShell>
               </div>
+              {supportsFilterService(data.pool.filterType) && (
+                <FieldShell id="p-filter-included" label={inclusionQuestion(data.pool.filterType)} floated>
+                  <select
+                    id="p-filter-included"
+                    className={selectClass}
+                    value={data.pool.filterServiceIncluded ? 'yes' : 'no'}
+                    onChange={(e) => setFilterIncluded(e.target.value === 'yes')}
+                  >
+                    <option value="yes">Yes — included in the monthly cost</option>
+                    <option value="no">No — quoted separately when needed</option>
+                  </select>
+                </FieldShell>
+              )}
+
               <FieldShell id="p-eqnotes" label="Equipment notes" multiline>
                 <textarea id="p-eqnotes" rows={2} className={textareaClass} placeholder=" "
                   value={data.pool.equipmentNotes} onChange={(e) => update('pool', 'equipmentNotes', e.target.value)} />
@@ -475,7 +538,7 @@ export const ProposalBuilder = ({
                   Highlight &ldquo;what&rsquo;s included&rdquo; — chemicals, filter &amp; salt-cell cleans{' '}
                   <span className="text-gray-400">
                     {data.proposal.pricingMode === 'tiers'
-                      ? '(skipped on tiered proposals — the Essential plan already lists these)'
+                      ? '(always shown on a tiered proposal — it defines the service both plans include)'
                       : '(recommended for recurring service; turn off for one-time jobs)'}
                   </span>
                 </span>
@@ -650,6 +713,7 @@ const ProposalPreview = ({
     .filter(Boolean)
     .join(' × ');
   const tiered = proposal.pricingMode === 'tiers' && proposal.tiers.length > 0;
+  const filterOption = { type: pool.filterType, included: pool.filterServiceIncluded };
   const tiers = tiered ? proposal.tiers : [];
   const delta = tierDelta(tiers[0], tiers[1]);
   const recommended = tiers.find((t) => t.recommended) ?? tiers[tiers.length - 1];
@@ -677,18 +741,18 @@ const ProposalPreview = ({
           <PreviewRow label="Phone" value={customer.phone} />
         </PreviewBlock>
 
-        {proposal.includeBenefits && !tiered && (
+        {(proposal.includeBenefits || tiered) && (
           <div className="rounded-lg border border-[#cfe3f2] bg-[#eef6fb] px-4 py-3">
             <div className="mb-2 text-sm font-bold text-brand-blue-dark">{BENEFITS_HEADING}</div>
             <ul className="space-y-1">
-              {INCLUDED_BENEFITS.map((b, i) => (
+              {includedBenefits(filterOption).map((b, i) => (
                 <li key={i} className="flex gap-2 text-[13px] font-semibold text-stone-800">
                   <span className="text-green-600">✓</span>
                   {b}
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[11px] italic text-stone-500">{BENEFITS_NOTE}</p>
+            <p className="mt-2 text-[11px] italic text-stone-500">{benefitsNote(filterOption)}</p>
           </div>
         )}
 
@@ -704,7 +768,10 @@ const ProposalPreview = ({
         {(pool.pump || pool.filter || pool.heater || pool.automation || pool.equipmentNotes) && (
           <PreviewBlock label="Equipment">
             <PreviewRow label="Pump" value={pool.pump} />
-            <PreviewRow label="Filter" value={pool.filter} />
+            <PreviewRow
+              label="Filter"
+              value={[pool.filterType, pool.filter].filter((v) => v.trim()).join(' — ')}
+            />
             <PreviewRow label="Heater" value={pool.heater} />
             <PreviewRow label="Automation" value={pool.automation} />
             <PreviewRow label="Notes" value={pool.equipmentNotes} />
@@ -744,7 +811,9 @@ const ProposalPreview = ({
                       {delta} more than {tiers[i - 1].name.trim()}
                     </div>
                   )}
-                  <div className="my-1.5 h-px bg-stone-200" />
+                  {(tier.includes.some((x) => x.trim()) || i > 0) && (
+                    <div className="my-1.5 h-px bg-stone-200" />
+                  )}
                   {i > 0 && (
                     <div className="mb-1 text-[10px] font-bold text-navy">
                       Everything in {tiers[i - 1].name.trim()}, plus:

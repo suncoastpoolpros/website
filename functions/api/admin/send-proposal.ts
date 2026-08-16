@@ -33,6 +33,8 @@ type Pool = {
   shape?: string;
   sanitization?: string;
   pump?: string;
+  filterType?: string;
+  filterServiceIncluded?: boolean;
   filter?: string;
   heater?: string;
   automation?: string;
@@ -170,15 +172,39 @@ const BIZ = {
 
 // "What's included" highlight — mirrors src/components/admin/proposalBenefits.ts.
 const BENEFITS_HEADING = 'The Suncoast Difference';
-const INCLUDED_BENEFITS = [
+const BASE_BENEFITS = [
   'Vetted, consistent technicians — a familiar face, not a rotating crew',
   'A photo service report in your inbox after every visit',
   'All standard service chemicals included',
   'Filter cleaning, backwashing & salt-cell cleaning — all included',
-  'Your annual filter service — replacement cartridge elements, or a DE split & recharge',
 ];
-const BENEFITS_NOTE =
-  "It's all covered in your flat rate — including the filter parts and labour most companies bill separately. That's why the monthly figure may read a little higher than a bare-bones quote, and why you won't get a surprise invoice on top of it.";
+
+// Mirrors filterServiceLine in src/components/admin/filterService.ts — the email
+// must name the SAME filter the PDF does, or the two documents contradict each
+// other in the same message.
+const filterServiceLine = (type: string, included: boolean): string | null => {
+  if (!included) return null;
+  switch (type) {
+    case 'Cartridge':
+      return 'Cartridge filter replacement included in your monthly cost — elements and labour';
+    case 'DE':
+      return 'DE filter split, clean and recharge included in your monthly cost — parts and labour';
+    case 'Sand':
+      return 'Sand media replacement included in your monthly cost — media and labour';
+    default:
+      return null;
+  }
+};
+
+const includedBenefits = (type: string, included: boolean): string[] => {
+  const line = filterServiceLine(type, included);
+  return line ? [...BASE_BENEFITS, line] : [...BASE_BENEFITS];
+};
+
+const benefitsNote = (type: string, included: boolean): string =>
+  filterServiceLine(type, included)
+    ? "It's all covered in your flat rate — including the filter parts and labour most companies bill separately. That's why the monthly figure may read a little higher than a bare-bones quote, and why you won't get a surprise invoice on top of it."
+    : "It's all covered in your flat rate — no surprise fees.";
 
 // Prefix a bare number with "$" (425 → $425, 185/mo → $185/mo) while leaving
 // values that already start with a symbol/word untouched ($425, "Call for price").
@@ -295,11 +321,15 @@ export const composeProposalEmail = (
   const greetingName = name ? name.split(/\s+/)[0] : 'there';
   const price = formatPrice(safe(String(p.proposal?.price ?? '').trim(), 40));
   const scope = safe(String(p.proposal?.scope ?? '').trim(), FIELD_MAX);
+  const filterType = safe(String(p.pool?.filterType ?? '').trim(), 40);
+  const filterIncluded = p.pool?.filterServiceIncluded === true;
+  const benefitsList = includedBenefits(filterType, filterIncluded);
+  const benefitsNoteText = benefitsNote(filterType, filterIncluded);
   const tiered = hasTiers(p);
   const tiers = tiered ? (p.proposal?.tiers ?? []) : [];
-  // With tiers, the Essential column already lists the all-inclusive benefits —
-  // repeating them above the comparison reads as padding.
-  const includeBenefits = p.proposal?.includeBenefits !== false && !tiered;
+  // In tier mode the box IS the service definition (both plans include the same
+  // service), so it always renders there regardless of the toggle.
+  const includeBenefits = p.proposal?.includeBenefits !== false || tiered;
   const recommendedTier = tiers.find((t) => t?.recommended === true) ?? tiers[tiers.length - 1];
   // The reply words. Recommended first: the first option named is the one most
   // people repeat back.
@@ -329,7 +359,7 @@ export const composeProposalEmail = (
     `Suncoast Pool Pros is attached as a PDF.`,
     ``,
     ...(includeBenefits
-      ? [`${BENEFITS_HEADING}:`, ...INCLUDED_BENEFITS.map((b) => `  - ${b}`), BENEFITS_NOTE, ``]
+      ? [`${BENEFITS_HEADING}:`, ...benefitsList.map((b) => `  - ${b}`), benefitsNoteText, ``]
       : []),
     scope ? `Scope of work: ${scope}` : '',
     ...(tiered
@@ -399,8 +429,8 @@ export const composeProposalEmail = (
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
             <tr><td style="padding:16px 20px;background:#eef6fb;border:1px solid #cfe3f2;border-radius:12px;">
               <div style="font-size:15px;font-weight:700;color:#0f4d80;margin-bottom:8px;">${BENEFITS_HEADING}</div>
-              ${INCLUDED_BENEFITS.map((b) => `<div style="font-size:14px;color:#1f2937;font-weight:600;margin:5px 0;"><span style="color:#1d7a33;">&#10003;</span>&nbsp;&nbsp;${escapeHtml(b)}</div>`).join('')}
-              <div style="font-size:12px;color:#6b7280;font-style:italic;margin-top:8px;">${escapeHtml(BENEFITS_NOTE)}</div>
+              ${benefitsList.map((b) => `<div style="font-size:14px;color:#1f2937;font-weight:600;margin:5px 0;"><span style="color:#1d7a33;">&#10003;</span>&nbsp;&nbsp;${escapeHtml(b)}</div>`).join('')}
+              <div style="font-size:12px;color:#6b7280;font-style:italic;margin-top:8px;">${escapeHtml(benefitsNoteText)}</div>
             </td></tr>
           </table>` : ''}
 
