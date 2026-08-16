@@ -186,7 +186,7 @@ const BASE_BENEFITS = [
 // other in the same message.
 const FILTER_SERVICE: Record<string, { value: number; basis: string }> = {
   Cartridge: { value: 120, basis: 'based on an 8–18 month element life' },
-  DE: { value: 150, basis: 'based on a 12-month split cadence' },
+  DE: { value: 150, basis: 'based on an annual split cadence' },
 };
 
 const valueClause = (type: string): string => {

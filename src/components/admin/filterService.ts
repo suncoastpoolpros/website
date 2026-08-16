@@ -29,7 +29,13 @@ export const FILTER_SERVICE: Record<string, { value: number; basis: string }> = 
   // range rather than the midpoint is what makes the $120 checkable — a customer
   // whose elements lasted 18 months would otherwise catch the claim out.
   Cartridge: { value: 120, basis: 'based on an 8–18 month element life' },
-  DE: { value: 150, basis: 'based on a 12-month split cadence' },
+  // Annual is the mainstream cadence and what Florida-specific guidance
+  // recommends (full teardown yearly, backwash + DE replenishment every 4–6
+  // weeks). Twice yearly is also common nationally and quarterly is the
+  // aggressive end, so the TERMS cap what's included at one a year — otherwise a
+  // heavy-use pool wanting quarterly teardowns is $600/yr against a $150
+  // assumption. The real trigger is pressure (clean at 20–25% over clean psi).
+  DE: { value: 150, basis: 'based on an annual split cadence' },
 };
 
 /** "— a $120 value, based on an 8–18 month element life", or '' when uncosted. */
@@ -103,7 +109,7 @@ export const filterServiceTerms = ({ type, included }: FilterOption): string => 
     case 'Cartridge':
       return 'The included filter service covers replacement cartridge elements when they are due — parts and labour. Element life varies with use and typically runs 8 to 18 months. It does not include filter housing parts or other repairs; those are quoted separately, and always before any work is done.';
     case 'DE':
-      return 'The included annual filter service covers a DE filter split, disassembly, clean and recharge — parts and labour. It does not include DE grid replacement (including torn grids) or filter housing parts; those are quoted separately, and always before any work is done.';
+      return 'The included filter service covers one full DE split, disassembly, clean and recharge each year — parts and labour — plus routine backwashing and DE replenishment throughout the year. If your pool needs an additional teardown in the same year we quote it separately. It does not include DE grid replacement (including torn grids) or filter housing parts; those are quoted separately, and always before any work is done.';
     case 'Sand':
       return 'The included sand media replacement covers the media and the labour to change it when due. It does not include laterals, filter housing parts or other repairs; those are quoted separately, and always before any work is done.';
     default:
