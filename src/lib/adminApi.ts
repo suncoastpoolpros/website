@@ -84,21 +84,35 @@ export const parsePrice = (raw: string): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
+/** The billing period a price is quoted in, or '' when it doesn't say. */
+export const pricePeriod = (raw: string): string => {
+  if (/\/\s*(mo|month)/i.test(raw)) return '/mo';
+  if (/\/\s*(yr|year|annually)/i.test(raw)) return '/yr';
+  return '';
+};
+
 /**
  * The upgrade cost as a headline ("+$12/mo"). Selling the DELTA rather than the
  * total is the single biggest lever on take-rate — "+$12" reads as trivial where
- * "$162" reads as a price rise. Returns '' when either price isn't a number
- * (e.g. "Call for pricing"), in which case the callout is simply not rendered.
+ * "$162" reads as a price rise.
+ *
+ * Returns '' when the callout would mislead:
+ * - either price isn't a number ("Call for pricing")
+ * - the upgrade isn't dearer
+ * - the two prices are quoted in DIFFERENT PERIODS. Subtracting $165/mo from
+ *   $1,980/yr yields "+$1,815", which is not a real number in any sense — this
+ *   is exactly the case when the second option is an annual prepay rather than a
+ *   bigger monthly plan.
  */
 export const tierDelta = (base: Tier | undefined, upgrade: Tier | undefined): string => {
   if (!base || !upgrade) return '';
+  const period = pricePeriod(upgrade.price);
+  if (period !== pricePeriod(base.price)) return '';
   const a = parsePrice(base.price);
   const b = parsePrice(upgrade.price);
   if (a === null || b === null || b <= a) return '';
   const diff = b - a;
   const amount = Number.isInteger(diff) ? String(diff) : diff.toFixed(2);
-  // Carry the customer's own period wording ("/mo") onto the delta.
-  const period = /\/\s*mo/i.test(upgrade.price) ? '/mo' : '';
   return `+$${amount}${period}`;
 };
 

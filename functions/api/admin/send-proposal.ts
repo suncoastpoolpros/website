@@ -195,7 +195,17 @@ const hasTiers = (p: SendProposalPayload): boolean =>
  * the total is the whole point — "+$12" reads as trivial, "$177" reads as a
  * price rise. Blank when either price isn't numeric.
  */
+const pricePeriod = (raw: string): string => {
+  if (/\/\s*(mo|month)/i.test(raw)) return '/mo';
+  if (/\/\s*(yr|year|annually)/i.test(raw)) return '/yr';
+  return '';
+};
+
 const deltaLabel = (a: string, b: string): string => {
+  // Different periods can't be subtracted: $1,980/yr minus $165/mo is not
+  // "+$1,815" of anything. This is exactly the annual-prepay case.
+  const period = pricePeriod(b);
+  if (period !== pricePeriod(a)) return '';
   const num = (raw: string): number | null => {
     const m = /-?\d[\d,]*(\.\d+)?/.exec(raw.replace(/\s/g, ''));
     if (!m) return null;
@@ -206,7 +216,7 @@ const deltaLabel = (a: string, b: string): string => {
   const y = num(b);
   if (x === null || y === null || y <= x) return '';
   const diff = y - x;
-  return `+$${Number.isInteger(diff) ? diff : diff.toFixed(2)}${/\/\s*mo/i.test(b) ? '/mo' : ''}`;
+  return `+$${Number.isInteger(diff) ? diff : diff.toFixed(2)}${period}`;
 };
 
 /**

@@ -1,46 +1,47 @@
 /**
- * Two-tier pricing for the proposal builder.
+ * The two options shown on a tiered proposal.
  *
- * DESIGN RULE — the upgrade never claws back anything from the base plan.
- * The flat-rate promise ("chemicals, filter cleans and salt-cell cleans are all
- * included, no surprise fees" — see proposalBenefits.ts) stays fully intact in
- * the ESSENTIAL tier. COMPLETE only adds things that are honestly outside weekly
- * service: parts, repair labour, priority and protection. If a benefit ever
- * moves out of Essential and into Complete, the proposal starts reading as
- * "here's what you DON'T get", and the differentiator becomes an upsell.
+ * The axis is PAYMENT TERM, not scope. Both options are the identical weekly
+ * service at the identical rate — all chemicals included, exactly what was
+ * offered before tiers existed. Paying for the year up front adds the annual
+ * filter service — replacement cartridge elements, or a DE split and recharge.
  *
- * Everything here is a starting point the admin edits per proposal — prices,
- * wording and the bullet list are all editable in the builder.
+ * DESIGN RULE — the second option never claws back anything from the first.
+ * The flat-rate promise ("chemicals, filter cleans and salt-cell cleans all
+ * included, no surprise fees" — see proposalBenefits.ts) is fully intact when
+ * paying monthly. Annual only ADDS. If a benefit ever moves out of the monthly
+ * option to make annual look better, the proposal starts reading as "here's what
+ * you DON'T get", and the flat-rate differentiator becomes an upsell.
+ *
+ * Everything here is a starting point the admin edits per proposal.
  */
 import type { Tier } from '@/lib/adminApi';
 
 /**
- * The upgrade price. Set as a delta the admin adds to the base rate, and kept
- * as a named constant because it's the number most likely to change.
- *
- * COSTING (confirmed by the owner 2026-08-16): cartridges are replaced about
- * ONCE A YEAR and cost around $100 a replacement. So $12/mo = $144/yr revenue
- * against ~$100/yr of parts — roughly $44/yr, ~31% margin, before the labour
- * discount and the waived trip charge. Positive but thin, which is fine if the
- * point is to drive repair volume and retention; $15–19 would be healthier if
- * you'd rather the tier stand on its own.
- *
- * The exposure if someone joins with already-worn cartridges is only ~$100, so
- * the guard rail is a short 90-day wait rather than the 6 months + 36-month cap
- * originally drafted — that cap assumed a 2–3 year replacement cycle and would
- * have meant declining the benefit in years 2 and 3 of an annual cycle.
- *
- * WATCH: this assumes ~$100 per REPLACEMENT (a full set). If a pool takes four
- * cartridges at ~$100 EACH, the cost is ~$400/yr and $12/mo loses money — price
- * that filter size separately.
+ * Months charged for a year of service. 12 = no price discount; the annual
+ * filter service IS the incentive, and it costs $120–150 rather than the ~$165
+ * a "one month free" (11) would give away. Drop this to 11 if you'd rather lead
+ * with a free month instead.
  */
-export const UPGRADE_DELTA = 12;
+export const ANNUAL_MONTHS_CHARGED = 12;
 
-/** Guard rails that make the cartridge benefit survivable. Editable per proposal. */
-export const COMPLETE_FINE_PRINT =
-  'Cartridge coverage begins after 90 days of continuous service and covers one cartridge replacement per year, for cartridge filters only. Labour discount applies to our own repair labour and excludes work performed by subcontractors.';
+/**
+ * COSTING (owner, 2026-08-16): the annual filter service is worth $120 on a
+ * cartridge pool and $150 on a DE pool. Against a $1,980 annual prepay that's
+ * 6–8% of revenue — comfortably sustainable, and the two are close enough that
+ * they don't need separate pricing.
+ *
+ * The exclusions below are what keep it bounded, and they matter: an unqualified
+ * "DE split and clean" would arguably oblige a $150–250 grid set on top. This
+ * covers CONSUMABLES AND LABOUR ONLY — cartridge elements, or the split,
+ * disassembly, clean and DE recharge. Torn grids and housing parts are quoted
+ * separately (at the 25% labour discount).
+ */
+export const ANNUAL_FINE_PRINT =
+  'Includes one filter service per year for the pool at the service address above: replacement cartridge elements, or a DE filter split, disassembly, clean and recharge. It does not include DE grid replacement (including torn grids) or any filter housing parts — those are quoted separately. Repair labour discount applies to our own labour and excludes work performed by subcontractors.';
 
-export const ESSENTIAL_INCLUDES = [
+/** The weekly service itself. Identical on both options — do not edit one without the other. */
+export const SERVICE_INCLUDES = [
   'Weekly cleaning — brushing, skimming, netting and vacuuming',
   'All standard chemicals included',
   'Filter cleaning, backwashing and salt-cell cleaning',
@@ -49,60 +50,68 @@ export const ESSENTIAL_INCLUDES = [
 ];
 
 /**
- * COMPLETE lists ONLY what it adds — the PDF renders "Everything in Essential,
- * plus:" above it, so the base benefits are never repeated or implicitly
+ * What paying annually ADDS — the PDF renders "Everything in Pay Monthly,
+ * plus:" above this, so the weekly service is never repeated or implicitly
  * withheld.
- *
- * The last four cost almost nothing to deliver but carry real perceived value:
- * priority scheduling is only an ordering decision, and the annual inspection is
- * already built (the First Service & Inspection report), which also makes it a
- * warm lead for the repair work the labour discount then discounts.
  */
-export const COMPLETE_INCLUDES = [
-  'Cartridge filter replacement every year — parts and labour covered',
+export const ANNUAL_INCLUDES = [
+  'Annual filter service included — cartridge elements ($120 value), or a DE split and recharge ($150 value)',
   '25% off repair labour outside regular service',
-  'No trip charge on repair visits',
-  'Priority scheduling, including the first pass after a storm',
-  'A written equipment inspection once a year',
-  'Your rate locked for 24 months',
+  'Your rate locked for the full 12 months',
+  'One payment for the year — nothing to remember each month',
 ];
 
 export const buildTiers = (basePrice = ''): Tier[] => {
   const base = basePrice.trim();
+  const monthly = monthlyAmount(base);
   return [
     {
-      name: 'Essential',
+      name: 'Pay Monthly',
       price: base,
-      tagline: 'Everything your pool needs, every week.',
-      includes: [...ESSENTIAL_INCLUDES],
+      tagline: 'Weekly service, billed month to month.',
+      includes: [...SERVICE_INCLUDES],
       recommended: false,
       valueNote: '',
       finePrint: '',
     },
     {
-      name: 'Complete',
-      price: upgradePrice(base),
-      tagline: 'Your pool covered — and your equipment too.',
-      includes: [...COMPLETE_INCLUDES],
+      name: 'Pay Annually',
+      price: annualPrice(base),
+      tagline: monthly
+        ? `The same weekly service at the same rate — $${formatAmount(monthly)}/mo, paid once for the year.`
+        : 'The same weekly service at the same rate, paid once for the year.',
+      includes: [...ANNUAL_INCLUDES],
       recommended: true,
-      // The most persuasive line on the page: break-even in the customer's own
-      // numbers. Edit the cartridge figure to match the pool being quoted.
+      // The persuasion line: what the prepay actually buys, in real terms.
       valueNote:
-        'Cartridges run about $100 a year, and Complete covers them — the parts and the labour to fit them. That is most of the plan back before you count the 25% off repair labour, the waived trip charge, or the rate lock.',
-      finePrint: COMPLETE_FINE_PRINT,
+        'Paying for the year up front includes your annual filter service — replacement cartridge elements, a $120 value, or a full DE split, clean and recharge, a $150 value. Same weekly service, same rate, one less thing to think about.',
+      finePrint: ANNUAL_FINE_PRINT,
     },
   ];
 };
 
-/**
- * Base rate + UPGRADE_DELTA, preserving whatever period wording the admin typed
- * ("165/mo" → "177/mo"). Falls back to empty when the base isn't a plain number,
- * so a "Call for pricing" base doesn't produce a nonsense upgrade price.
- */
-export const upgradePrice = (basePrice: string): string => {
-  const m = /^\$?\s*(\d[\d,]*(?:\.\d+)?)(.*)$/.exec(basePrice.trim());
-  if (!m) return '';
+/** Leading number in a monthly price ("165/mo" → 165). null when not numeric. */
+const monthlyAmount = (basePrice: string): number | null => {
+  const m = /^\$?\s*(\d[\d,]*(?:\.\d+)?)/.exec(basePrice.trim());
+  if (!m) return null;
   const n = Number(m[1].replace(/,/g, ''));
-  if (!Number.isFinite(n)) return '';
-  return `${n + UPGRADE_DELTA}${m[2]}`;
+  return Number.isFinite(n) ? n : null;
+};
+
+const formatAmount = (n: number): string =>
+  (Number.isInteger(n) ? n : Number(n.toFixed(2))).toLocaleString('en-US');
+
+/**
+ * A year of service at the monthly rate, quoted per year ("165/mo" → "1,980/yr").
+ * The "/yr" matters: tierDelta suppresses its "+$X" callout when the two options
+ * are quoted in different periods, which is what stops the comparison claiming
+ * annual costs "$1,815 more" than monthly.
+ *
+ * Returns '' when the base isn't a plain number, so a "Call for pricing" base
+ * doesn't produce a nonsense annual figure.
+ */
+export const annualPrice = (basePrice: string): string => {
+  const n = monthlyAmount(basePrice);
+  if (n === null) return '';
+  return `${formatAmount(n * ANNUAL_MONTHS_CHARGED)}/yr`;
 };
