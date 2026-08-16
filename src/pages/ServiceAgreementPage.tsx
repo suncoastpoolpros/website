@@ -53,7 +53,7 @@ const SECTIONS: Section[] = [
               },
               {
                 lead: 'Acquired or Transferred Accounts:',
-                text: 'Accounts we take over from another service provider are not automatically bound by this Agreement. Until the customer affirmatively accepts it, the account is serviced on a month-to-month transitional basis, and the flat-rate chemical inclusions and "Always Blue" guarantee in this Agreement do not apply.',
+                text: 'Accounts we take over from another service provider are not automatically bound by this Agreement. Until the customer affirmatively accepts it, the account is serviced on a month-to-month transitional basis, and the flat-rate chemical inclusions and "Always Blue" guarantee in this Agreement do not apply. Service inclusions we introduce after an account transfers — such as an annual filter service — apply to that account only where set out in a Service Proposal the customer accepted, or otherwise confirmed to them in writing.',
               },
               {
                 lead: 'Condition of Transferred Pools:',
@@ -84,7 +84,7 @@ const SECTIONS: Section[] = [
         blocks: [
           {
             type: 'p',
-            text: 'What your flat rate covers is set out in the Service Proposal you accepted. This section describes our standard recurring service; where this Agreement and your Service Proposal differ, your Service Proposal governs.',
+            text: 'What your flat rate covers is set out in the Service Proposal you accepted, and where this Agreement and that Proposal differ, your Service Proposal governs. If you did not receive a Service Proposal — for example where your account transferred to us with a route acquired from another provider — the services described in this section apply as written, and any inclusion beyond them applies only where we have confirmed it to you in writing.',
           },
           { type: 'subheading', text: 'Recurring service generally includes:' },
           {
