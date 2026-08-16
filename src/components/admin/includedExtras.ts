@@ -58,7 +58,7 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
       // customer can check it: $25 a wash x 4 = $100. "Based on quarterly wash
       // intervals" alone read as $100 PER wash, i.e. $400 a year.
       typical: '$100',
-      basis: '$25 a wash, washed quarterly',
+      basis: '$25 a wash, typically washed quarterly',
     });
   }
   if (filter.included && supportsFilterService(filter.type)) {
