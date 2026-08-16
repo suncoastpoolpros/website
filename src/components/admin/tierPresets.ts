@@ -18,10 +18,14 @@
 import type { Tier } from '@/lib/adminApi';
 
 /**
- * Months charged for a year of service. 12 = no price discount; the annual
- * filter service IS the incentive, and it costs $120–150 rather than the ~$165
- * a "one month free" (11) would give away. Drop this to 11 if you'd rather lead
- * with a free month instead.
+ * Months charged for a year of service. Deliberately 12 — NO price discount.
+ *
+ * A free month (11) was considered and rejected: it gives away ~$165 of pure
+ * margin for nothing in return, where the filter service costs $120–150 and
+ * solves a real operational problem. The owner's actual motivation for the
+ * benefit is not the customer incentive — it's that prepaid filters can just be
+ * FITTED WHEN DUE, with no quote to approve and no invoice to chase. A free
+ * month buys none of that.
  */
 export const ANNUAL_MONTHS_CHARGED = 12;
 
@@ -84,7 +88,7 @@ export const buildTiers = (basePrice = ''): Tier[] => {
       recommended: true,
       // The persuasion line: what the prepay actually buys, in real terms.
       valueNote:
-        'Paying for the year up front includes your annual filter service — replacement cartridge elements, a $120 value, or a full DE split, clean and recharge, a $150 value. Same weekly service, same rate, one less thing to think about.',
+        'Paying for the year up front includes your annual filter service — replacement cartridge elements, a $120 value, or a full DE split, clean and recharge, a $150 value. When it comes due we simply do it: no quote to approve, no separate invoice, no decision to make. Same weekly service, same rate.',
       finePrint: ANNUAL_FINE_PRINT,
     },
   ];
