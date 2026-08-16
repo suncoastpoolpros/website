@@ -185,7 +185,7 @@ const BASE_BENEFITS = [
 // must name the SAME filter the PDF does, or the two documents contradict each
 // other in the same message.
 const FILTER_SERVICE: Record<string, { value: number; basis: string }> = {
-  Cartridge: { value: 120, basis: 'based on a 12-month element life' },
+  Cartridge: { value: 120, basis: 'based on an 8–18 month element life' },
   DE: { value: 150, basis: 'based on a 12-month split cadence' },
 };
 
@@ -259,7 +259,7 @@ const includedExtras = (
     rows.push({
       label: type === 'DE' ? 'DE filter split, clean & recharge' : 'Cartridge filter replacement',
       typical: `$${priced.value}`,
-      basis: 'a year',
+      basis: type === 'DE' ? 'a year' : 'per replacement, every 8–18 months',
     });
   }
   return rows;

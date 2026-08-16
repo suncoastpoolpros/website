@@ -25,11 +25,14 @@ export const FILTER_TYPES = ['Cartridge', 'DE', 'Sand', 'Other'] as const;
  * invented one. Add an entry here and it appears automatically everywhere.
  */
 export const FILTER_SERVICE: Record<string, { value: number; basis: string }> = {
-  Cartridge: { value: 120, basis: 'based on a 12-month element life' },
+  // 8–18 months is the real spread; 12 is only the middle of it. Quoting the
+  // range rather than the midpoint is what makes the $120 checkable — a customer
+  // whose elements lasted 18 months would otherwise catch the claim out.
+  Cartridge: { value: 120, basis: 'based on an 8–18 month element life' },
   DE: { value: 150, basis: 'based on a 12-month split cadence' },
 };
 
-/** "— a $120 value, based on a 12-month element life", or '' when uncosted. */
+/** "— a $120 value, based on an 8–18 month element life", or '' when uncosted. */
 const valueClause = (type: string): string => {
   const v = FILTER_SERVICE[type];
   return v ? ` — a $${v.value} value, ${v.basis}` : '';
@@ -98,7 +101,7 @@ export const filterServiceTerms = ({ type, included }: FilterOption): string => 
   }
   switch (type) {
     case 'Cartridge':
-      return 'The included annual filter service covers replacement cartridge elements — parts and labour. It does not include filter housing parts or other repairs; those are quoted separately, and always before any work is done.';
+      return 'The included filter service covers replacement cartridge elements when they are due — parts and labour. Element life varies with use and typically runs 8 to 18 months. It does not include filter housing parts or other repairs; those are quoted separately, and always before any work is done.';
     case 'DE':
       return 'The included annual filter service covers a DE filter split, disassembly, clean and recharge — parts and labour. It does not include DE grid replacement (including torn grids) or filter housing parts; those are quoted separately, and always before any work is done.';
     case 'Sand':

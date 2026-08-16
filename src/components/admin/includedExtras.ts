@@ -78,10 +78,10 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
             ? 'DE filter split, clean & recharge'
             : 'Cartridge filter replacement',
         typical: `$${priced.value}`,
-        // Just "a year" — the full basis ("based on a 12-month element life")
-        // already appears on this pool's line in the what's-included box a few
-        // centimetres above, and repeating the whole sentence reads as padding.
-        basis: 'a year',
+        // Short form: the full basis already appears on this pool's line in the
+        // what's-included box a few centimetres above, and repeating the whole
+        // sentence reads as padding.
+        basis: filter.type === 'DE' ? 'a year' : 'per replacement, every 8–18 months',
       });
     }
   }
