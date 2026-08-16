@@ -1,0 +1,65 @@
+/**
+ * The value stack: work that routinely arrives as a separate invoice elsewhere
+ * and is simply covered here.
+ *
+ * This is deliberately NOT another feature list — every row carries the price
+ * the customer would otherwise be quoted, struck through. A feature list says
+ * "we're thorough"; a struck-through $400 says what being thorough is worth, and
+ * that is the difference between a proposal that reads as marketing and one that
+ * reads as arithmetic.
+ *
+ * Only put a row here when the figure is real. An invented range is worse than
+ * no row: the whole section works because a customer who has been quoted for an
+ * algae treatment before recognises the number.
+ *
+ * Mirrored in functions/api/admin/send-proposal.ts (Pages Functions can't import
+ * from the client src tree) — keep them in sync.
+ */
+import { FILTER_SERVICE, type FilterOption, supportsFilterService } from './filterService';
+
+export type IncludedExtra = {
+  label: string;
+  /** What it typically costs when billed separately, e.g. "$35–$400". */
+  typical: string;
+  /** What the figure depends on, set small after the price. */
+  basis: string;
+};
+
+export const EXTRAS_HEADING = 'What Others Charge Extra For';
+
+export const EXTRAS_NOTE =
+  'All of it is covered by your flat rate. These are the line items that most commonly arrive as a separate invoice — the pricing above is what you would typically be quoted for them.';
+
+const BASE_EXTRAS: IncludedExtra[] = [
+  {
+    label: 'Algaecide & phosphate treatments',
+    typical: '$35–$400',
+    basis: 'depending on severity and pool size',
+  },
+];
+
+/**
+ * The list with this pool's filter service appended, priced from the same map
+ * the rest of the proposal uses. Sand is skipped: its media replacement isn't
+ * costed, and a row with no number defeats the point of the section.
+ */
+export const includedExtras = (filter: FilterOption): IncludedExtra[] => {
+  const rows = [...BASE_EXTRAS];
+  if (filter.included && supportsFilterService(filter.type)) {
+    const priced = FILTER_SERVICE[filter.type];
+    if (priced) {
+      rows.push({
+        label:
+          filter.type === 'DE'
+            ? 'DE filter split, clean & recharge'
+            : 'Cartridge filter replacement',
+        typical: `$${priced.value}`,
+        // Just "a year" — the full basis ("based on a 12-month element life")
+        // already appears on this pool's line in the what's-included box a few
+        // centimetres above, and repeating the whole sentence reads as padding.
+        basis: 'a year',
+      });
+    }
+  }
+  return rows;
+};

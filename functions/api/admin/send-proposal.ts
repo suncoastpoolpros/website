@@ -224,6 +224,52 @@ const formatPrice = (raw: string): string => {
   return /^[0-9]/.test(s) ? `$${s}` : s;
 };
 
+// Mirrors src/components/admin/includedExtras.ts — the value stack: work that
+// routinely arrives as a separate invoice elsewhere, priced and struck through.
+const EXTRAS_HEADING = 'What Others Charge Extra For';
+const EXTRAS_NOTE =
+  'All of it is covered by your flat rate. These are the line items that most commonly arrive as a separate invoice — the pricing above is what you would typically be quoted for them.';
+
+const includedExtras = (type: string, included: boolean): Array<{ label: string; typical: string; basis: string }> => {
+  const rows = [
+    {
+      label: 'Algaecide & phosphate treatments',
+      typical: '$35–$400',
+      basis: 'depending on severity and pool size',
+    },
+  ];
+  const priced = included ? FILTER_SERVICE[type] : undefined;
+  if (priced) {
+    rows.push({
+      label: type === 'DE' ? 'DE filter split, clean & recharge' : 'Cartridge filter replacement',
+      typical: `$${priced.value}`,
+      basis: 'a year',
+    });
+  }
+  return rows;
+};
+
+const renderExtras = (rows: Array<{ label: string; typical: string; basis: string }>): string =>
+  rows.length
+    ? `<div style="margin:0 0 20px;">
+            <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa4b2;font-weight:700;margin-bottom:8px;">${escapeHtml(EXTRAS_HEADING)}</div>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #cfe3f2;border-radius:12px;">
+              ${rows
+                .map(
+                  (r, i) => `<tr>
+                <td style="padding:9px 16px;${i ? 'border-top:1px solid #eef1f5;' : ''}font-size:14px;font-weight:600;color:#0a1628;">${escapeHtml(r.label)}</td>
+                <td align="right" style="padding:9px 16px;${i ? 'border-top:1px solid #eef1f5;' : ''}white-space:nowrap;">
+                  <span style="font-size:14px;color:#6b7280;text-decoration:line-through;">${escapeHtml(r.typical)}</span>
+                  <span style="font-size:11px;color:#9aa4b2;">&nbsp;${escapeHtml(r.basis)}</span>
+                </td>
+              </tr>`,
+                )
+                .join('')}
+              <tr><td colspan="2" style="padding:0 16px 12px;font-size:11px;font-style:italic;color:#9aa4b2;line-height:1.5;">${escapeHtml(EXTRAS_NOTE)}</td></tr>
+            </table>
+          </div>`
+    : '';
+
 const hasTiers = (p: SendProposalPayload): boolean =>
   p.proposal?.pricingMode === 'tiers' && (p.proposal?.tiers?.length ?? 0) > 0;
 
@@ -335,6 +381,7 @@ export const composeProposalEmail = (
   const filterIncluded = p.pool?.filterServiceIncluded === true;
   const benefitsList = includedBenefits(filterType, filterIncluded);
   const benefitsNoteText = benefitsNote(filterType, filterIncluded);
+  const extras = includedExtras(filterType, filterIncluded);
   const tiered = hasTiers(p);
   const tiers = tiered ? (p.proposal?.tiers ?? []) : [];
   // In tier mode the box IS the service definition (both plans include the same
@@ -458,6 +505,8 @@ export const composeProposalEmail = (
                   .join('')
               : ''
           }
+
+          ${includeBenefits ? renderExtras(extras) : ''}
 
           <!-- Attachment chip -->
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">

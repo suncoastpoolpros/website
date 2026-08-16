@@ -12,6 +12,7 @@
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import { type ProposalData, type Tier, formatPrice, tierDelta } from '@/lib/adminApi';
 import { BENEFITS_HEADING, includedBenefits, benefitsNote } from './proposalBenefits';
+import { EXTRAS_HEADING, EXTRAS_NOTE, includedExtras } from './includedExtras';
 
 const NAVY = '#0a1628';
 const BRAND_BLUE = '#1669ae';
@@ -97,6 +98,29 @@ const styles = StyleSheet.create({
   includedItemText: { color: NAVY, flex: 1, fontFamily: 'Helvetica-Bold' },
   includedNote: { marginTop: 6, fontSize: 8.5, color: MUTED, fontStyle: 'italic' },
   includedFootnote: { marginTop: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: TINT_BORDER, fontSize: 8, color: FAINT, lineHeight: 1.4 },
+
+  // ----- Value stack (what others bill separately) -----
+  extrasBox: {
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: TINT_BORDER,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    marginHorizontal: -18,
+  },
+  extraRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: LINE,
+  },
+  extraLabel: { flex: 1, fontSize: 8.5, lineHeight: 1.3, fontFamily: 'Helvetica-Bold', color: NAVY, paddingRight: 10 },
+  // Struck through: the number the customer is NOT going to be billed.
+  extraPrice: { fontSize: 8.5, lineHeight: 1.3, color: MUTED, textDecoration: 'line-through' },
+  extraBasis: { fontSize: 7, lineHeight: 1.3, color: FAINT, paddingLeft: 5 },
+  extrasNote: { marginTop: 7, fontSize: 7.5, color: FAINT, fontStyle: 'italic', lineHeight: 1.4 },
 
   // ----- Scope -----
   scopeIntro: { fontSize: 8.5, color: INK, marginBottom: 5, lineHeight: 1.35 },
@@ -311,6 +335,7 @@ export const ProposalDocument = ({
   // Every "what's included" surface is derived from THIS pool's filter, so a
   // sand-filter customer never reads a promise about cartridge elements.
   const filterOption = { type: pool.filterType, included: pool.filterServiceIncluded };
+  const extras = includedExtras(filterOption);
   const tiers = tiered ? proposal.tiers : [];
   const [baseTier, upgradeTier] = tiers;
   const delta = tierDelta(baseTier, upgradeTier);
@@ -406,6 +431,25 @@ export const ProposalDocument = ({
               </View>
             ))}
             <Text style={styles.includedNote}>{benefitsNote(filterOption)}</Text>
+          </View>
+        ) : null}
+
+        {(proposal.includeBenefits || tiered) && extras.length ? (
+          <View style={styles.section} wrap={false}>
+            <Text style={styles.sectionLabel}>{EXTRAS_HEADING}</Text>
+            <View style={styles.extrasBox}>
+              {extras.map((x, i) => (
+                <View
+                  key={i}
+                  style={[styles.extraRow, i === extras.length - 1 ? { borderBottomWidth: 0 } : null]}
+                >
+                  <Text style={styles.extraLabel}>{x.label}</Text>
+                  <Text style={styles.extraPrice}>{x.typical}</Text>
+                  <Text style={styles.extraBasis}>{x.basis}</Text>
+                </View>
+              ))}
+              <Text style={styles.extrasNote}>{EXTRAS_NOTE}</Text>
+            </View>
           </View>
         ) : null}
 
