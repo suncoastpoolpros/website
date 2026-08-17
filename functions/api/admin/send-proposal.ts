@@ -468,7 +468,16 @@ export const composeProposalEmail = (
     ...(includeBenefits
       ? [`${BENEFITS_HEADING}:`, ...benefitsList.map((b) => `  - ${b}`), ``]
       : []),
-    scope ? `Scope of work: ${scope}` : '',
+    // Same order as the HTML: value stack before the prices. The plain-text
+    // part used to omit this section entirely and put the scope ahead of the
+    // plans, so the two halves of the same message argued in a different order.
+    ...(includeBenefits && extras.length
+      ? [
+          `${EXTRAS_HEADING}:`,
+          ...extras.map((x) => `  - ${x.label} — others charge ${x.typical}, included for you`),
+          ``,
+        ]
+      : []),
     ...(tiered
       ? tiers.flatMap((t) => {
           const name = safe(String(t?.name ?? '').trim(), 60);
@@ -485,6 +494,8 @@ export const composeProposalEmail = (
       : []),
     tiered && valueNote ? `` : '',
     tiered && valueNote ? valueNote : '',
+    scope ? `` : '',
+    scope ? `Scope of work: ${scope}` : '',
     showSinglePrice ? `Total: ${price}` : '',
     ``,
     acceptLink ? `To accept, choose your plan here: ${acceptLink}` : '',
@@ -557,6 +568,13 @@ export const composeProposalEmail = (
             </td></tr>
           </table>` : ''}
 
+          ${/* The value stack comes BEFORE the prices in the email — the
+                opposite of the approve page, and deliberately so. Here is where
+                the customer meets the number for the first time, so every
+                reason it is what it is should already be read. On the approve
+                page they have seen all of this once and arrived to accept. */ ''}
+          ${includeBenefits ? renderExtras(extras) : ''}
+
           ${tiered ? renderTiers(tiers) : ''}
 
           ${
@@ -571,8 +589,6 @@ export const composeProposalEmail = (
                   .join('')
               : ''
           }
-
-          ${includeBenefits ? renderExtras(extras) : ''}
 
           <!-- Attachment chip -->
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
