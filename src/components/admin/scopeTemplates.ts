@@ -3,41 +3,88 @@
  * from a dropdown to drop a detailed, professional description into the scope
  * field, then edits as needed. Add/adjust wording here — it's the single source
  * for the dropdown.
+ *
+ * Templates BUILD from the pool rather than being fixed text. A static list
+ * promised a salt-cell check on chlorine pools and "backwashing" on cartridge
+ * filters, which aren't backwashed at all — you pull and rinse the elements.
+ * Wrong detail in a scope of work is worse than no detail: it tells the
+ * customer the quote wasn't written for their pool.
  */
-export type ScopeTemplate = { label: string; text: string };
+import { isSaltwater } from './sanitization';
+
+export type ScopeContext = {
+  /** pool.sanitization — Saltwater | Chlorine | Bromine | Unknown */
+  sanitization: string;
+  /** pool.filterType — Cartridge | DE | Sand | Other */
+  filterType: string;
+};
+
+export type ScopeTemplate = { label: string; build: (ctx: ScopeContext) => string };
+
+/** How the filter is actually serviced on this pool. */
+const filterLine = ({ filterType }: ScopeContext, detailed: boolean): string => {
+  const baseline = detailed
+    ? ', and compare filter pressure against its clean baseline so a rising reading is caught before flow drops off'
+    : '';
+  switch (filterType) {
+    case 'Cartridge':
+      return `• Pull and rinse the cartridge elements, inspecting them for tears or collapse${baseline}.`;
+    case 'DE':
+      return `• Backwash the DE filter and recharge it with fresh DE${baseline}.`;
+    case 'Sand':
+      return `• Backwash the sand filter and check the media${baseline}.`;
+    default:
+      return `• Empty and inspect the filter, backwashing or cleaning to suit the system${baseline}.`;
+  }
+};
+
+/** Only on a salt pool — a chlorine pool has no cell to check. */
+const saltLine = ({ sanitization }: ScopeContext): string[] =>
+  isSaltwater(sanitization)
+    ? ['• Check the salt cell and chlorine generator output, cleaning the cell as needed.']
+    : [];
 
 export const SCOPE_TEMPLATES: ScopeTemplate[] = [
   {
     label: 'Weekly Pool Cleaning (recurring)',
-    text: `Weekly full-service pool maintenance, performed once per week:
-
-• Test and balance water chemistry — chlorine, pH, total alkalinity, cyanuric acid and calcium hardness — keeping the water safe to swim in and correctly balanced, so it is neither acidic enough to etch plaster and corrode metal nor hard enough to leave scale on tile and inside the heater.
-• Brush walls, steps and the waterline tile, both to stop algae getting a foothold and to keep the surface finish clean and even.
-• Skim the surface and empty the skimmer, pump and cleaner baskets.
-• Vacuum the pool floor as needed.
-• Empty and inspect the filter, backwashing or cleaning to suit the system, and compare filter pressure against its clean baseline so a rising reading is caught before flow drops off.
-• Check the salt cell and chlorine generator output on salt pools, cleaning the cell as needed.
-• Check the water level and report anything that looks like a leak.
-• Inspect the equipment — pump, filter, heater and timer — and report any issues.
-• Send a photo service report to your inbox after every visit.
-
-Includes all routine chemicals. Service continues on a recurring weekly schedule with no long-term contract — cancel anytime.`,
+    build: (ctx) =>
+      [
+        'Weekly full-service pool maintenance, performed once per week:',
+        '',
+        '• Test and balance water chemistry — chlorine, pH, total alkalinity, cyanuric acid and calcium hardness — keeping the water safe to swim in and correctly balanced, so it is neither acidic enough to etch plaster and corrode metal nor hard enough to leave scale on tile and inside the heater.',
+        '• Brush walls, steps and the waterline tile, both to stop algae getting a foothold and to keep the surface finish clean and even.',
+        '• Skim the surface and empty the skimmer, pump and cleaner baskets.',
+        '• Vacuum the pool floor as needed.',
+        filterLine(ctx, true),
+        ...saltLine(ctx),
+        '• Check the water level and report anything that looks like a leak.',
+        '• Inspect the equipment — pump, filter, heater and timer — and report any issues.',
+        '• Send a photo service report to your inbox after every visit.',
+        '',
+        'Includes all routine chemicals. Service continues on a recurring weekly schedule with no long-term contract — cancel anytime.',
+      ].join('\n'),
   },
   {
     label: 'Bi-Weekly Pool Cleaning (recurring)',
-    text: `Bi-weekly (every other week) full-service pool maintenance:
-
-• Test and balance water chemistry and add the chemicals needed to keep the water safe and clear between visits.
-• Brush walls, steps, and waterline tile.
-• Skim the surface and empty skimmer and pump baskets.
-• Vacuum the pool floor as needed.
-• Clean/backwash the filter as required and inspect all equipment.
-
-Includes routine chemicals. Recurring every-other-week schedule, no long-term contract.`,
+    build: (ctx) =>
+      [
+        'Bi-weekly (every other week) full-service pool maintenance:',
+        '',
+        '• Test and balance water chemistry and add the chemicals needed to keep the water safe, clear and correctly balanced between visits.',
+        '• Brush walls, steps and the waterline tile to stop algae getting a foothold and protect the surface finish.',
+        '• Skim the surface and empty the skimmer, pump and cleaner baskets.',
+        '• Vacuum the pool floor as needed.',
+        filterLine(ctx, false),
+        ...saltLine(ctx),
+        '• Inspect the equipment and report any issues.',
+        '• Send a photo service report to your inbox after every visit.',
+        '',
+        'Includes routine chemicals. Recurring every-other-week schedule, no long-term contract.',
+      ].join('\n'),
   },
   {
     label: 'Green Pool Recovery (one-time)',
-    text: `One-time green-to-clean pool recovery:
+    build: () => `One-time green-to-clean pool recovery:
 
 • On-site assessment of water condition, circulation, and filtration.
 • Test water and apply an initial shock/sanitizer treatment to kill algae.
@@ -50,7 +97,7 @@ Goal: return the pool to clear, swimmable, properly balanced water. We recommend
   },
   {
     label: 'One-Time Deep Clean',
-    text: `One-time deep clean and chemistry reset:
+    build: () => `One-time deep clean and chemistry reset:
 
 • Thorough brushing of walls, steps, and waterline tile.
 • Full surface skim and complete vacuum of the pool floor.
@@ -60,7 +107,7 @@ Goal: return the pool to clear, swimmable, properly balanced water. We recommend
   },
   {
     label: 'Equipment Repair / Installation',
-    text: `Equipment repair / installation:
+    build: () => `Equipment repair / installation:
 
 • Diagnose the reported issue and confirm the recommended repair or replacement.
 • Supply and install [equipment — e.g. pump, filter, salt cell, heater, automation].
@@ -72,7 +119,7 @@ Parts and labor as detailed above. Manufacturer warranty applies to new equipmen
   },
   {
     label: 'Salt System Service',
-    text: `Salt system (chlorine generator) service:
+    build: () => `Salt system (chlorine generator) service:
 
 • Inspect the salt cell, control board, and flow switch.
 • Test salt level and water chemistry; add salt as needed to reach the target range.
@@ -82,7 +129,7 @@ Parts and labor as detailed above. Manufacturer warranty applies to new equipmen
   },
   {
     label: 'Filter Clean / Rebuild',
-    text: `Filter cleaning / rebuild:
+    build: () => `Filter cleaning / rebuild:
 
 • Disassemble the filter and inspect internal components.
 • Deep-clean cartridges/grids (or media for sand filters) to restore flow.
@@ -91,7 +138,7 @@ Parts and labor as detailed above. Manufacturer warranty applies to new equipmen
   },
   {
     label: 'Commercial / HOA Service',
-    text: `Commercial / HOA pool service:
+    build: () => `Commercial / HOA pool service:
 
 • Scheduled maintenance visits per the agreed frequency, performed to Florida public-pool standards.
 • Test and balance water chemistry each visit and maintain documented chemical logs.

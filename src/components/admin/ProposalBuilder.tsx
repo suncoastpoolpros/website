@@ -78,8 +78,14 @@ export const ProposalBuilder = ({
   const insertScopeTemplate = (label: string) => {
     const tpl = SCOPE_TEMPLATES.find((t) => t.label === label);
     if (!tpl) return;
+    // Built from THIS pool: a chlorine pool gets no salt-cell line, and the
+    // filter step describes what actually happens to that filter.
+    const text = tpl.build({
+      sanitization: data.pool.sanitization,
+      filterType: data.pool.filterType,
+    });
     const current = data.proposal.scope.trim();
-    update('proposal', 'scope', current ? `${current}\n\n${tpl.text}` : tpl.text);
+    update('proposal', 'scope', current ? `${current}\n\n${text}` : text);
   };
 
   // --- Additional-services (add-on) line items ---
