@@ -22,7 +22,16 @@ import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
  * catch-all that was removed to stop unknown URLs returning 200. Staying on one
  * URL across both steps also keeps the emailed link valid at any point.
  */
-type Tier = { name: string; price: string; tagline: string; includes: string[]; recommended: boolean };
+type Tier = {
+  name: string;
+  price: string;
+  /** e.g. "$2,035 billed once — $185 saved". The PDF and email both show this;
+   *  it was missing here, on the page where the decision actually happens. */
+  priceNote?: string;
+  tagline: string;
+  includes: string[];
+  recommended: boolean;
+};
 type Pool = {
   gallons?: string;
   length?: string;
@@ -232,21 +241,22 @@ export const ApprovePage = () => {
 
         {quote && step === 1 && (
           <>
-            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-brand-blue-light">
+            {/* Borderless and compact. These are reassurance — "yes, that's my
+                pool" — not the decision. Two bordered cards pushed the plans
+                below the fold on a phone, which is the wrong thing to make
+                someone scroll past. */}
+            <div className="mb-5 grid grid-cols-1 gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
+              <div>
+                <h2 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">
                   Your details
                 </h2>
                 <p className="font-semibold text-white">{quote.customerName}</p>
-                <div className="mt-1">
-                  <Row label="Service at" value={quote.customerAddress} />
-                  <Row label="Email" value={quote.customerEmail} />
-                  <Row label="Phone" value={quote.customerPhone} />
-                </div>
-              </section>
-
-              <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-brand-blue-light">
+                <Row label="Service at" value={quote.customerAddress} />
+                <Row label="Email" value={quote.customerEmail} />
+                <Row label="Phone" value={quote.customerPhone} />
+              </div>
+              <div>
+                <h2 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">
                   Your pool
                 </h2>
                 <Row label="Volume" value={quote.pool.gallons ? `${quote.pool.gallons} gallons` : ''} />
@@ -256,9 +266,9 @@ export const ApprovePage = () => {
                 <Row label="Filter" value={filterLine} />
                 <Row label="Pump" value={quote.pool.pump} />
                 <Row label="Heater" value={quote.pool.heater} />
-              </section>
+              </div>
             </div>
-            <p className="mb-8 text-center text-xs text-gray-500">
+            <p className="mb-8 text-xs text-gray-500">
               Something not right?{' '}
               <a href={PHONE_HREF} className="underline hover:text-white">
                 Call us
@@ -276,9 +286,17 @@ export const ApprovePage = () => {
                     onClick={() => setPlan(tier.name)}
                     aria-pressed={on}
                     className={`flex flex-col rounded-2xl border p-5 text-left transition-colors ${
+                      // Recommended leads on a phone: stacked, the upgrade would
+                      // otherwise sit below the fold under the option it's meant
+                      // to beat. Side by side on desktop, natural order reads
+                      // cheaper-then-better.
+                      tier.recommended ? 'order-first sm:order-none' : ''
+                    } ${
                       on
                         ? 'border-brand-blue-light bg-brand-blue/15 ring-2 ring-brand-blue-light/40'
-                        : 'border-white/12 bg-white/[0.03] hover:border-white/30'
+                        : tier.recommended
+                          ? 'border-brand-blue/60 bg-brand-blue/[0.07] hover:border-brand-blue-light'
+                          : 'border-white/12 bg-white/[0.03] hover:border-white/30'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -301,6 +319,11 @@ export const ApprovePage = () => {
                     {tier.tagline && <p className="mt-1 text-sm text-gray-400">{tier.tagline}</p>}
                     {tier.price && (
                       <p className="mt-3 text-2xl font-bold text-brand-blue-light">{formatPrice(tier.price)}</p>
+                    )}
+                    {tier.priceNote?.trim() && (
+                      <p className="mt-0.5 text-sm font-semibold text-brand-blue-light/90">
+                        {tier.priceNote.trim()}
+                      </p>
                     )}
                     <ul className="mt-4 space-y-2">
                       {tier.includes
