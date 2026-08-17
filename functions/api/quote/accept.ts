@@ -9,7 +9,7 @@
  * Live customers live in the technicians' service app — this endpoint's job
  * ends at notifying that a plan was accepted.
  */
-import { acceptQuote, getQuote, isExpired } from '../_quotes';
+import { TERMS_VERSION, acceptQuote, getQuote, isExpired } from '../_quotes';
 import { sendViaResend } from '../admin/_shared';
 
 type Ctx = {
@@ -40,7 +40,23 @@ const esc = (s: string): string =>
 
 export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   const { request, env } = ctx;
-  let body: { token?: string; plan?: string };
+  type Onboarding = {
+    billingSameAsService?: boolean;
+    billingName?: string;
+    billingEmail?: string;
+    billingAddress?: string;
+    billingCity?: string;
+    billingState?: string;
+    billingZip?: string;
+    preferredStart?: string;
+    accessNotes?: string;
+    /** Typed full name — the signature. */
+    signature?: string;
+    agreeRequirements?: boolean;
+    agreeService?: boolean;
+    agreePrivacy?: boolean;
+  };
+  let body: { token?: string; plan?: string; onboarding?: Onboarding };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -50,6 +66,18 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   const token = String(body.token ?? '').trim();
   const plan = String(body.plan ?? '').trim();
   if (!token || !plan) return json({ ok: false, error: 'bad_request' }, 400);
+
+  // All three consents are required. The service agreement treats submission of
+  // the onboarding form as legally binding acceptance, so a record without them
+  // would claim agreement that was never given.
+  const ob = body.onboarding ?? {};
+  if (!(ob.agreeRequirements === true && ob.agreeService === true && ob.agreePrivacy === true)) {
+    return json({ ok: false, error: 'consent_required' }, 400);
+  }
+  // A typed name is the signature. Required, and validated server-side too —
+  // client-side validation is a convenience, not evidence.
+  const signature = String(ob.signature ?? '').trim();
+  if (signature.length < 2) return json({ ok: false, error: 'signature_required' }, 400);
 
   const row = await getQuote(env.DB, token);
   if (!row) return json({ ok: false, error: 'not_found' }, 404);
@@ -75,7 +103,31 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
 
   const ip = request.headers.get('CF-Connecting-IP') ?? '';
   const ua = request.headers.get('User-Agent') ?? '';
-  const recorded = await acceptQuote(env.DB, token, acceptedPlan ?? plan, ip, ua);
+  const clean = (v: unknown, max = 200): string => String(v ?? '').trim().slice(0, max);
+  const onboarding = {
+    billingSameAsService: ob.billingSameAsService !== false,
+    billingName: clean(ob.billingName, 120),
+    billingEmail: clean(ob.billingEmail, 160),
+    billingAddress: clean(ob.billingAddress),
+    billingCity: clean(ob.billingCity, 80),
+    billingState: clean(ob.billingState, 40),
+    billingZip: clean(ob.billingZip, 20),
+    preferredStart: clean(ob.preferredStart, 40),
+    accessNotes: clean(ob.accessNotes, 1000),
+    // The signature and the moment it was given. accepted_at / accepted_ip on
+    // the row carry the same facts; duplicated here so the onboarding payload
+    // is self-contained if it's ever exported on its own.
+    signature: clean(signature, 120),
+    signedAt: new Date().toISOString(),
+    signedIp: clean(request.headers.get('CF-Connecting-IP') ?? '', 60),
+    // Stored as given: consent is evidence, not a preference to normalise.
+    agreeRequirements: true,
+    agreeService: true,
+    agreePrivacy: true,
+    termsVersion: TERMS_VERSION,
+  };
+
+  const recorded = await acceptQuote(env.DB, token, acceptedPlan ?? plan, ip, ua, onboarding);
   if (!recorded) return json({ ok: false, error: 'accept_failed' }, 500);
 
   const price =
@@ -98,15 +150,36 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   const owner = env.CONTACT_TO_EMAIL;
 
   if (apiKey) {
+    const billing = onboarding.billingSameAsService
+      ? 'Same as service address'
+      : [
+          onboarding.billingName,
+          onboarding.billingAddress,
+          [onboarding.billingCity, onboarding.billingState, onboarding.billingZip]
+            .filter(Boolean)
+            .join(', '),
+          onboarding.billingEmail,
+        ]
+          .filter(Boolean)
+          .join(' · ') || 'Not provided';
+
     const detail = [
       `Customer: ${row.customer_name}`,
       `Email: ${row.customer_email}`,
       row.customer_phone ? `Phone: ${row.customer_phone}` : '',
-      row.customer_address ? `Address: ${row.customer_address}` : '',
+      row.customer_address ? `Service address: ${row.customer_address}` : '',
       ``,
       `Plan accepted: ${acceptedPlan}${price ? ` — ${price}` : ''}`,
       `Accepted: ${when} (ET)`,
       ip ? `IP: ${ip}` : '',
+      ``,
+      `SIGNED: "${onboarding.signature}" (typed)`,
+      `Agreement version: ${TERMS_VERSION}`,
+      `Consents: service requirements, service agreement, privacy policy`,
+      ``,
+      `Billing: ${billing}`,
+      onboarding.preferredStart ? `Preferred start: ${onboarding.preferredStart}` : '',
+      onboarding.accessNotes ? `Access notes: ${onboarding.accessNotes}` : '',
       ``,
       `Quoted: ${new Date(row.created_at).toLocaleDateString('en-US')}`,
     ]
@@ -130,10 +203,11 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
       to: row.customer_email,
       replyTo,
       subject: `You're all set — ${BIZ.name}`,
-      text: `Hi ${row.customer_name.split(/\s+/)[0] || 'there'},\n\nThanks for accepting the ${acceptedPlan} plan${price ? ` at ${price}` : ''}. We'll be in touch shortly to confirm your first service day.\n\nQuestions? Just reply to this email.\n\n${BIZ.name}\n${BIZ.phoneDisplay} · ${BIZ.websiteDisplay}`,
+      text: `Hi ${row.customer_name.split(/\s+/)[0] || 'there'},\n\nThanks for accepting the ${acceptedPlan} plan${price ? ` at ${price}` : ''}.\n\nYou'll receive your first invoice on your first scheduled service date. We'll reach out to confirm that date, and with any questions we have.\n\nQuestions in the meantime? Just reply to this email.\n\n${BIZ.name}\n${BIZ.phoneDisplay} · ${BIZ.websiteDisplay}`,
       html: `<div style="font:16px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#111827;max-width:520px;">
         <p>Hi ${esc(row.customer_name.split(/\s+/)[0] || 'there')},</p>
-        <p>Thanks for accepting the <strong>${esc(acceptedPlan ?? '')}</strong> plan${price ? ` at <strong>${esc(price)}</strong>` : ''}. We&rsquo;ll be in touch shortly to confirm your first service day.</p>
+        <p>Thanks for accepting the <strong>${esc(acceptedPlan ?? '')}</strong> plan${price ? ` at <strong>${esc(price)}</strong>` : ''}.</p>
+        <p>You&rsquo;ll receive your first invoice on your first scheduled service date. We&rsquo;ll reach out to confirm that date, and with any questions we have.</p>
         <p style="color:#6b7280;">Questions? Just reply to this email.</p>
         <p style="color:#6b7280;">${BIZ.name}<br>${BIZ.phoneDisplay} &middot; ${BIZ.websiteDisplay}</p>
       </div>`,

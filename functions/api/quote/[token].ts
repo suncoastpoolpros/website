@@ -49,7 +49,14 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
     {
       ok: true,
       quote: {
+        // Their own contact details, shown back so they can check we have them
+        // right before accepting. All of it is already in the PDF they were
+        // sent, so a leaked link exposes nothing new — but the acceptance
+        // evidence columns (IP, user agent) are still never returned.
         customerName: row.customer_name,
+        customerEmail: row.customer_email,
+        customerPhone: row.customer_phone,
+        customerAddress: row.customer_address,
         createdAt: row.created_at,
         expiresAt: row.expires_at,
         pool,

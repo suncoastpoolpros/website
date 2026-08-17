@@ -54,7 +54,16 @@ export type QuoteRow = {
   accepted_plan: string | null;
   accepted_ip: string | null;
   accepted_ua: string | null;
+  onboarding_json?: string | null;
+  terms_version?: string | null;
 };
+
+/**
+ * The service agreement version a customer is agreeing to. Mirrors LAST_UPDATED
+ * in src/pages/ServiceAgreementPage.tsx — "they agreed" is worth little without
+ * "to what", so the accepted record names the version.
+ */
+export const TERMS_VERSION = '08-11-2026';
 
 /** How long an emailed approve link stays live. */
 export const QUOTE_TTL_DAYS = 30;
@@ -143,16 +152,29 @@ export async function acceptQuote(
   plan: string,
   ip: string,
   ua: string,
+  onboarding: unknown = null,
 ): Promise<boolean> {
   if (!isQuoteStorageAvailable(db)) return false;
   try {
+    // Plan, consents and evidence land in ONE write. Acceptance is a single
+    // fact; recording half of it would leave a row claiming agreement without
+    // the terms version that says agreement to what.
     await db
       .prepare(
         `UPDATE quotes
-            SET accepted_at = ?, accepted_plan = ?, accepted_ip = ?, accepted_ua = ?
+            SET accepted_at = ?, accepted_plan = ?, accepted_ip = ?, accepted_ua = ?,
+                onboarding_json = ?, terms_version = ?
           WHERE id = ? AND accepted_at IS NULL`,
       )
-      .bind(new Date().toISOString(), plan.slice(0, 80), ip.slice(0, 60), ua.slice(0, 300), id)
+      .bind(
+        new Date().toISOString(),
+        plan.slice(0, 80),
+        ip.slice(0, 60),
+        ua.slice(0, 300),
+        onboarding ? JSON.stringify(onboarding).slice(0, 8000) : null,
+        TERMS_VERSION,
+        id,
+      )
       .run();
     return true;
   } catch (err) {
