@@ -453,6 +453,15 @@ export const ApprovePage = () => {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {tiers.map((tier, i) => {
                 const on = plan === tier.name;
+                /**
+                 * The recommendation is only styled while nothing is chosen.
+                 * Once someone picks the other plan, a still-highlighted
+                 * "recommended" card argues with the choice they just made —
+                 * two cards competing for the same "this one" reading. The
+                 * RECOMMENDED badge stays either way: that's information about
+                 * the plan, not a claim about what's selected.
+                 */
+                const promote = tier.recommended && !plan;
                 return (
                   <button
                     key={i}
@@ -468,7 +477,7 @@ export const ApprovePage = () => {
                     } ${
                       on
                         ? 'border-[#1669AE] bg-white ring-2 ring-[#1669AE]/30'
-                        : tier.recommended
+                        : promote
                           ? 'border-[#1669AE] bg-white shadow-lg shadow-[#1669AE]/15 ring-1 ring-[#1669AE]/20 hover:border-[#0f4d80]'
                           : 'border-[#e3e8ef] bg-white hover:border-[#9fb3c8]'
                     }`}
@@ -539,7 +548,7 @@ export const ApprovePage = () => {
                           className={`flex items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-bold transition-colors ${
                             on
                               ? 'border-[#1669AE] bg-[#1669AE] text-white'
-                              : tier.recommended
+                              : promote
                                 ? 'border-[#1669AE]/60 text-[#0f4d80]'
                                 : 'border-[#dce7f2] text-[#374151]'
                           }`}
