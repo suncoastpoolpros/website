@@ -512,11 +512,6 @@ export const ProposalBuilder = ({
                     value={data.pool.filter} onChange={(e) => update('pool', 'filter', e.target.value)}
                     onBlur={(e) => update('pool', 'filter', toTitleCase(e.target.value))} />
                 </FieldShell>
-                <FieldShell id="p-auto" label="Automation" className="sm:col-span-2">
-                  <input id="p-auto" className={fieldClass} placeholder=" " autoCapitalize="words"
-                    value={data.pool.automation} onChange={(e) => update('pool', 'automation', e.target.value)}
-                    onBlur={(e) => update('pool', 'automation', toTitleCase(e.target.value))} />
-                </FieldShell>
               </div>
               {/* A required choice, not a dropdown with a default. This field
                   decides whether the quote promises a filter replacement, so it
@@ -574,7 +569,9 @@ export const ProposalBuilder = ({
                 </div>
               )}
 
-              <FieldShell id="p-eqnotes" label="Equipment notes" multiline>
+              {/* Automation had its own field; it's rare enough on a sales
+                  document that it lives here now when it's worth a mention. */}
+              <FieldShell id="p-eqnotes" label="Equipment notes — automation, anything unusual" multiline>
                 <textarea id="p-eqnotes" rows={2} className={textareaClass} placeholder=" "
                   value={data.pool.equipmentNotes} onChange={(e) => update('pool', 'equipmentNotes', e.target.value)} />
               </FieldShell>
@@ -980,7 +977,7 @@ const ProposalPreview = ({
           </PreviewBlock>
         )}
 
-        {(pool.pump || pool.filter || pool.heater || pool.automation || pool.equipmentNotes) && (
+        {(pool.pump || pool.filterType || pool.filter || pool.heater || pool.equipmentNotes) && (
           <PreviewBlock label="Equipment">
             <PreviewRow label="Pump" value={pool.pump} />
             <PreviewRow
@@ -988,7 +985,6 @@ const ProposalPreview = ({
               value={[pool.filterType, pool.filter].filter((v) => v.trim()).join(' — ')}
             />
             <PreviewRow label="Heater" value={pool.heater} />
-            <PreviewRow label="Automation" value={pool.automation} />
             <PreviewRow label="Notes" value={pool.equipmentNotes} />
           </PreviewBlock>
         )}

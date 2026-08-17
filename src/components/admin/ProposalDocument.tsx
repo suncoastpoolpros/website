@@ -350,7 +350,7 @@ export const ProposalDocument = ({
 }) => {
   const { customer, pool, proposal } = data;
   const hasPoolBasics = pool.gallons || dimensionsLine(pool) || pool.shape || pool.sanitization;
-  const hasEquipment = pool.pump || pool.filter || pool.heater || pool.automation || pool.equipmentNotes;
+  const hasEquipment = pool.pump || pool.filterType || pool.filter || pool.heater || pool.equipmentNotes;
   const addOns = proposal.addOns.filter((a) => a.label.trim() || a.price.trim());
   const tiered = proposal.pricingMode === 'tiers' && proposal.tiers.length > 0;
   // Every "what's included" surface is derived from THIS pool's filter, so a
@@ -423,7 +423,6 @@ export const ProposalDocument = ({
                     labelWidth={88}
                   />
                   <Row label="Heater" value={pool.heater} labelWidth={88} />
-                  <Row label="Automation" value={pool.automation} labelWidth={88} />
                   <Row label="Notes" value={pool.equipmentNotes} labelWidth={88} />
                 </View>
               ) : null}
