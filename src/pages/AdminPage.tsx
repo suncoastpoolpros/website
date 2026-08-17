@@ -6,6 +6,7 @@ import { AdminKeypad } from '@/components/admin/AdminKeypad';
 import { AdminHome } from '@/components/admin/AdminHome';
 import { ProposalBuilder } from '@/components/admin/ProposalBuilder';
 import { InspectionBuilder } from '@/components/admin/InspectionBuilder';
+import { QuotesList } from '@/components/admin/QuotesList';
 import { LAST_DOC_KEY, type DocKind } from '@/components/admin/docKinds';
 
 type AuthState = 'loading' | 'locked' | 'unlocked';
@@ -14,7 +15,7 @@ const readLastDoc = (): DocKind | null => {
   if (typeof window === 'undefined') return null;
   try {
     const v = window.localStorage.getItem(LAST_DOC_KEY);
-    return v === 'proposal' || v === 'inspection' ? v : null;
+    return v === 'proposal' || v === 'inspection' || v === 'quotes' ? v : null;
   } catch {
     return null;
   }
@@ -73,6 +74,7 @@ export const AdminPage = () => {
       {auth === 'unlocked' && doc === 'inspection' && (
         <InspectionBuilder onLogout={lock} onBack={backToHome} />
       )}
+      {auth === 'unlocked' && doc === 'quotes' && <QuotesList onLogout={lock} onBack={backToHome} />}
     </main>
   );
 };

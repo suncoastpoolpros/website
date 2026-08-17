@@ -3,7 +3,7 @@
  * Each builder keeps its own autosaved draft, so switching between them here
  * never disturbs work in progress on the other one.
  */
-import { ClipboardList, FileText, LogOut, ArrowRight } from 'lucide-react';
+import { ClipboardList, FileText, ListChecks, LogOut, ArrowRight } from 'lucide-react';
 import type { DocKind } from './docKinds';
 
 const CARDS: Array<{ kind: DocKind; title: string; blurb: string; Icon: typeof FileText }> = [
@@ -21,6 +21,13 @@ const CARDS: Array<{ kind: DocKind; title: string; blurb: string; Icon: typeof F
       'After the first visit. Water chemistry, what you did, anything broken or worn, and what you recommend next.',
     Icon: ClipboardList,
   },
+  {
+    kind: 'quotes',
+    title: 'Sent Quotes',
+    blurb:
+      'Every proposal you’ve sent and what came back — who accepted, which plan they chose, and who hasn’t answered yet.',
+    Icon: ListChecks,
+  },
 ];
 
 export const AdminHome = ({
@@ -31,7 +38,7 @@ export const AdminHome = ({
   onLogout: () => void;
 }) => (
   <div className="min-h-dvh px-4 py-10 md:px-8 md:py-16">
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       <div className="mb-10 flex items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold text-white">Documents</h1>
@@ -45,7 +52,7 @@ export const AdminHome = ({
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {CARDS.map(({ kind, title, blurb, Icon }) => (
           <button
             key={kind}

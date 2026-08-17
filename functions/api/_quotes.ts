@@ -36,6 +36,7 @@ export type D1Like = {
       run: () => Promise<unknown>;
       first: <T = Record<string, unknown>>() => Promise<T | null>;
     };
+    all: <T = Record<string, unknown>>() => Promise<{ results?: T[] }>;
   };
 };
 
@@ -157,6 +158,36 @@ export async function acceptQuote(
   } catch (err) {
     console.log('[quotes] accept_failed:', String(err).slice(0, 300));
     return false;
+  }
+}
+
+/**
+ * Recent quotes for the admin list, newest first.
+ *
+ * Returns null — not an empty array — when storage isn't available, so the UI
+ * can say "storage isn't set up" instead of the much more alarming "you have no
+ * quotes". Those are different facts and they deserve different screens.
+ *
+ * Capped rather than paginated: this is a solo operator's quote list, and a few
+ * hundred rows is years of work. Revisit if that ever stops being true.
+ */
+export async function listQuotes(db: unknown, limit = 200): Promise<QuoteRow[] | null> {
+  if (!isQuoteStorageAvailable(db)) return null;
+  try {
+    const res = await db
+      .prepare(
+        `SELECT id, created_at, expires_at, customer_name, customer_email,
+                customer_address, customer_phone, proposal_json,
+                accepted_at, accepted_plan
+           FROM quotes
+          ORDER BY created_at DESC
+          LIMIT ${Math.max(1, Math.min(limit, 500))}`,
+      )
+      .all<QuoteRow>();
+    return res.results ?? [];
+  } catch (err) {
+    console.log('[quotes] list_failed:', String(err).slice(0, 300));
+    return null;
   }
 }
 

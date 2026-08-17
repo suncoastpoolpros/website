@@ -1,6 +1,6 @@
 /** Which document the admin is building. Kept in its own module so the chooser
  *  and the page can share the type without importing either builder. */
-export type DocKind = 'proposal' | 'inspection';
+export type DocKind = 'proposal' | 'inspection' | 'quotes';
 
 /** Remembers the last-picked document across a reload, so a mid-draft refresh
  *  lands back in the same builder instead of the chooser. */
