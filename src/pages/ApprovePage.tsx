@@ -369,7 +369,7 @@ export const ApprovePage = () => {
             {/* An address block, not a table. "Service at / Email / Phone" labels
                 told people what an address, an email and a phone number are —
                 and the fixed label column left a dead gutter on a phone. */}
-            <div className="mb-5 grid grid-cols-1 gap-x-10 gap-y-5 sm:grid-cols-2">
+            <div className="mb-8 grid grid-cols-1 gap-x-10 gap-y-5 sm:grid-cols-2">
               <div>
                 <Eyebrow>Prepared for</Eyebrow>
                 <p className="font-semibold text-white">{quote.customerName}</p>
@@ -393,13 +393,10 @@ export const ApprovePage = () => {
                 </div>
               )}
             </div>
-            <p className="mb-8 text-xs text-gray-500">
-              Something not right?{' '}
-              <a href={PHONE_HREF} className="underline hover:text-white">
-                Call us
-              </a>{' '}
-              and we’ll put it right before you accept.
-            </p>
+            {/* A "Something not right? Call us" line lived here. Removed once
+                the header carried a phone number — two call-to-action phone
+                links a few hundred pixels apart read as clutter, not as help.
+                The spacing it provided now sits on the grid above. */}
 
             {/* The service itself, stated once — both plans include it, which is
                 why the plan cards describe billing terms rather than repeating
