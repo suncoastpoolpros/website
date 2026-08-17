@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Send, LoaderCircle, CheckCircle, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ChevronLeft, X } from 'lucide-react';
+import { Send, LoaderCircle, CheckCircle, Check, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ChevronLeft, X } from 'lucide-react';
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
 import { useProposalDraft } from '@/lib/useAdminDraft';
 import {
@@ -197,8 +197,22 @@ export const ProposalBuilder = ({
     data.proposal.tiers.length > 0 &&
     data.proposal.presetVersion < PRESET_VERSION;
 
+  /**
+   * Drafts saved before this was a tri-state hold a boolean. `false === 'no'` is
+   * false, so such a draft rendered with neither button lit AND no prompt — a
+   * silent dead state. Anything that isn't 'yes'/'no' is treated as unanswered,
+   * which also forces a re-answer on a draft whose `true` was a default nobody
+   * actually chose.
+   */
+  const filterAnswer =
+    data.pool.filterServiceIncluded === 'yes'
+      ? 'yes'
+      : data.pool.filterServiceIncluded === 'no'
+        ? 'no'
+        : '';
+
   const filterAnswered =
-    !supportsFilterService(data.pool.filterType) || data.pool.filterServiceIncluded !== '';
+    !supportsFilterService(data.pool.filterType) || filterAnswer !== '';
 
   const canSend = useMemo(
     () => data.customer.name.trim() !== '' && EMAIL_RE.test(data.customer.email.trim()) && filterAnswered,
@@ -433,6 +447,14 @@ export const ProposalBuilder = ({
                     value={data.pool.pump} onChange={(e) => update('pool', 'pump', e.target.value)}
                     onBlur={(e) => update('pool', 'pump', toTitleCase(e.target.value))} />
                 </FieldShell>
+                <FieldShell id="p-heater" label="Heater">
+                  <input id="p-heater" className={fieldClass} placeholder=" " autoCapitalize="words"
+                    value={data.pool.heater} onChange={(e) => update('pool', 'heater', e.target.value)}
+                    onBlur={(e) => update('pool', 'heater', toTitleCase(e.target.value))} />
+                </FieldShell>
+                {/* Filter type and its make/model sit together — with five fields
+                    in a two-column grid the model field previously landed beside
+                    Heater, pairing it with the wrong thing. */}
                 <FieldShell id="p-filter-type" label="Filter type" floated>
                   <select id="p-filter-type" className={selectClass}
                     value={data.pool.filterType} onChange={(e) => setFilterType(e.target.value)}>
@@ -447,12 +469,7 @@ export const ProposalBuilder = ({
                     value={data.pool.filter} onChange={(e) => update('pool', 'filter', e.target.value)}
                     onBlur={(e) => update('pool', 'filter', toTitleCase(e.target.value))} />
                 </FieldShell>
-                <FieldShell id="p-heater" label="Heater">
-                  <input id="p-heater" className={fieldClass} placeholder=" " autoCapitalize="words"
-                    value={data.pool.heater} onChange={(e) => update('pool', 'heater', e.target.value)}
-                    onBlur={(e) => update('pool', 'heater', toTitleCase(e.target.value))} />
-                </FieldShell>
-                <FieldShell id="p-auto" label="Automation">
+                <FieldShell id="p-auto" label="Automation" className="sm:col-span-2">
                   <input id="p-auto" className={fieldClass} placeholder=" " autoCapitalize="words"
                     value={data.pool.automation} onChange={(e) => update('pool', 'automation', e.target.value)}
                     onBlur={(e) => update('pool', 'automation', toTitleCase(e.target.value))} />
@@ -473,26 +490,40 @@ export const ProposalBuilder = ({
                       { value: 'yes', label: 'Yes', hint: 'Included in the monthly cost' },
                       { value: 'no', label: 'No', hint: 'Quoted separately when needed' },
                     ].map((opt) => {
-                      const on = data.pool.filterServiceIncluded === opt.value;
+                      const on = filterAnswer === opt.value;
                       return (
                         <button
                           key={opt.value}
                           type="button"
                           aria-pressed={on}
                           onClick={() => setFilterIncluded(opt.value)}
-                          className={`rounded-xl border px-4 py-3 text-left transition-colors ${
+                          className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
                             on
-                              ? 'border-brand-blue-light bg-brand-blue/25 text-white'
+                              ? 'border-brand-blue-light bg-brand-blue text-white ring-2 ring-brand-blue-light/40'
                               : 'border-white/15 bg-white/5 text-gray-300 hover:border-brand-blue-light hover:text-white'
                           }`}
                         >
-                          <span className="block text-base font-semibold">{opt.label}</span>
-                          <span className="block text-xs text-gray-400">{opt.hint}</span>
+                          {/* A filled tick, not just a tint: the previous 25%
+                              wash over a navy panel was easy to mistake for the
+                              browser's focus ring. */}
+                          <span
+                            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                              on ? 'border-white bg-white text-brand-blue' : 'border-white/30'
+                            }`}
+                          >
+                            {on && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                          </span>
+                          <span>
+                            <span className="block text-base font-semibold">{opt.label}</span>
+                            <span className={`block text-xs ${on ? 'text-white/80' : 'text-gray-400'}`}>
+                              {opt.hint}
+                            </span>
+                          </span>
                         </button>
                       );
                     })}
                   </div>
-                  {data.pool.filterServiceIncluded === '' && (
+                  {filterAnswer === '' && (
                     <p className="text-xs text-amber-300/90">
                       Pick one — this decides whether the quote promises a filter replacement.
                     </p>
