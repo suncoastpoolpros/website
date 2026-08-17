@@ -392,7 +392,11 @@ export const ApprovePage = () => {
                   {benefits.map((b, i) => (
                     <li
                       key={i}
-                      className="mb-2 flex break-inside-avoid gap-2 text-sm leading-relaxed text-gray-200"
+                      // Space BETWEEN bullets only. leading-relaxed is untouched,
+                      // so a bullet that wraps stays tight within itself and the
+                      // gap reads as separation between points rather than loose
+                      // text.
+                      className="mb-4 flex break-inside-avoid gap-2 text-sm leading-relaxed text-gray-200"
                     >
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-400" />
                       <span>{b}</span>
