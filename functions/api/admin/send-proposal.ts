@@ -275,6 +275,16 @@ const includedExtras = (
       basis: type === 'DE' ? 'a year' : 'per replacement, every 8–18 months',
     });
   }
+  // DE only, separate from the annual split — the powder is lost on every
+  // backwash and recharged every 4–8 weeks. See the sourcing note in
+  // src/components/admin/includedExtras.ts before changing the figure.
+  if (included && type === 'DE') {
+    rows.push({
+      label: 'DE powder after every backwash',
+      typical: '$50–$100',
+      basis: 'a year in DE, recharged every 4–8 weeks',
+    });
+  }
   return rows;
 };
 

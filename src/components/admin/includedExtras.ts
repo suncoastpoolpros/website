@@ -84,6 +84,32 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
         basis: filter.type === 'DE' ? 'a year' : 'per replacement, every 8–18 months',
       });
     }
+    /**
+     * DE only, and separate from the annual split above: a DE filter loses its
+     * powder every time it's backwashed and has to be recharged with fresh DE,
+     * roughly every 4–8 weeks. That's a consumable the annual teardown doesn't
+     * cover, and one our own terms confirm is included — filterServiceTerms
+     * promises "routine backwashing and DE replenishment throughout the year".
+     *
+     * The figure is the POWDER, not the labour. Backwashing itself turned out
+     * not to be a reliable line item — plenty of companies fold it into the base
+     * rate — so pricing it would have been inventing a charge. The powder is
+     * real, recurring and DE-specific, and two independent sources agree on the
+     * range:
+     *   · Florida's Best Pool Service puts DE powder at $500–$1,000 over ten
+     *     years, i.e. $50–$100 a year.
+     *   · From retail: a 25 lb box runs about $35, a recharge takes 5–6 lb, and
+     *     at every 4–8 weeks that's 30–78 lb a year — $40–$105.
+     * $50–$100 is the overlap, so it's the range a customer who has bought DE
+     * themselves will recognise.
+     */
+    if (filter.included && filter.type === 'DE') {
+      rows.push({
+        label: 'DE powder after every backwash',
+        typical: '$50–$100',
+        basis: 'a year in DE, recharged every 4–8 weeks',
+      });
+    }
   }
   return rows;
 };
