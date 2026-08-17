@@ -11,11 +11,22 @@
  * approve link. Sending a customer their quote is the job; storing it is an
  * enhancement, and an enhancement must never be able to break the job.
  *
- * Setup (one time, in the Cloudflare dashboard):
- *   1. Workers & Pages → D1 → Create database, name it `suncoast`
- *   2. npx wrangler d1 execute suncoast --remote --file=migrations/0001_quotes.sql
- *   3. Pages project → Settings → Functions → D1 bindings → variable name `DB`
- *   4. Redeploy (bindings only take effect on the next deployment)
+ * Setup:
+ *   1. D1 database `suncoast` — DONE (id 7c157f23-9a53-46c5-b2cf-9c76284f826a)
+ *   2. Binding DB → suncoast on Production — DONE
+ *   3. Schema: npx wrangler d1 execute suncoast --remote --file=migrations/0001_quotes.sql
+ *   4. Redeploy — bindings only take effect on the next deployment
+ *
+ * Only Production is bound. Preview deployments need no binding to be SAFE
+ * (they degrade like anything else here); bind Preview only if you want the
+ * feature there, and point it at a SEPARATE database so test acceptances can't
+ * write into real quotes or email real customers.
+ *
+ * Local development against the real schema:
+ *   npx wrangler pages dev dist --d1 DB=7c157f23-9a53-46c5-b2cf-9c76284f826a
+ *
+ * Note there is deliberately no wrangler.toml: this Pages project is configured
+ * in the dashboard, and adding one would take over that configuration.
  */
 
 /** Minimal shape of the D1 binding we use — avoids depending on CF types. */
