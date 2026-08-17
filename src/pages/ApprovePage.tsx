@@ -220,6 +220,21 @@ export const ApprovePage = () => {
     [quote, tiers.length, filterOption],
   );
 
+  /**
+   * Today in the browser's own timezone, as the date input's `min`.
+   *
+   * Built from the local parts rather than toISOString(), which converts to UTC
+   * — in Florida that lands on tomorrow's date from 8pm, so the customer would
+   * be blocked from picking the very day they're sitting there reading this.
+   * Only ever evaluated in step 2, which needs a loaded quote, so it can't be
+   * baked into the prerendered HTML.
+   */
+  const today = useMemo(() => {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }, []);
+
   /** Scope lines, parsed the same way the PDF parses them. */
   const scopeLines = useMemo(
     () =>
@@ -273,7 +288,12 @@ export const ApprovePage = () => {
 
   return (
     <main className="force-static-motion min-h-dvh bg-[#07111c] px-4 py-10 text-white sm:px-6">
-      <div className="mx-auto w-full max-w-3xl">
+      {/* 1024px, not 768px. At 3xl the two plan cards were ~370px each and every
+          benefit bullet wrapped to two lines, which is what made the page feel
+          cramped. Long PROSE stays narrower — see the max-w-3xl on the note and
+          the scope below; a 1024px-wide paragraph is past a comfortable reading
+          measure even when the cards beside it are not. */}
+      <div className="mx-auto w-full max-w-5xl">
         <div className="mb-8 text-center">
           <p className="text-[11px] uppercase tracking-[0.2em] text-gray-500">Suncoast Pool Pros</p>
           <h1 className="mt-1 font-display text-2xl font-bold sm:text-3xl">
@@ -379,7 +399,7 @@ export const ApprovePage = () => {
                     </li>
                   ))}
                 </ul>
-                <p className="mt-3 text-xs leading-relaxed text-gray-400">{benefitsNote(filterOption)}</p>
+                <p className="mt-3 max-w-3xl text-xs leading-relaxed text-gray-400">{benefitsNote(filterOption)}</p>
               </section>
             )}
 
@@ -523,7 +543,7 @@ export const ApprovePage = () => {
                   <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" />
                 </summary>
                 {scopeLines.length > 0 && (
-                  <div className="border-t border-white/10 pt-4">
+                  <div className="max-w-3xl border-t border-white/10 pt-4">
                     <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500">
                       Scope of work
                     </h3>
@@ -544,7 +564,7 @@ export const ApprovePage = () => {
                 {tiers
                   .filter((t) => t.finePrint?.trim())
                   .map((t, i) => (
-                    <div key={i} className="mt-4 border-t border-white/10 pt-4">
+                    <div key={i} className="mt-4 max-w-3xl border-t border-white/10 pt-4">
                       <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500">
                         {t.name} — terms
                       </h3>
@@ -632,10 +652,20 @@ export const ApprovePage = () => {
                 Getting started <span className="text-sm font-normal text-gray-500">(optional)</span>
               </h2>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {/* Asked as a question, and about how SOON rather than "preferred
+                    start date" — a form label invites a form answer, and this is
+                    the field where someone quietly decides whether they're
+                    starting this week or thinking about next month. */}
                 <label className="text-sm text-gray-400">
-                  Preferred start date
-                  <input className={`${field} mt-1`} type="date" value={preferredStart}
-                    onChange={(e) => setPreferredStart(e.target.value)} />
+                  How soon would you like us to start?
+                  <input
+                    className={`${field} mt-1`}
+                    type="date"
+                    value={preferredStart}
+                    // A start date in the past isn't a preference, it's a typo.
+                    min={today}
+                    onChange={(e) => setPreferredStart(e.target.value)}
+                  />
                 </label>
                 <label className="text-sm text-gray-400">
                   Gate code, pets, anything we should know
@@ -643,6 +673,10 @@ export const ApprovePage = () => {
                     onChange={(e) => setAccessNotes(e.target.value)} />
                 </label>
               </div>
+              <p className="mt-3 text-xs text-gray-500">
+                We&rsquo;ll confirm your first visit with you — the sooner you start, the sooner your pool
+                is on a routine.
+              </p>
             </section>
 
             <section className="mb-5 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -703,7 +737,7 @@ export const ApprovePage = () => {
                     autoComplete="name"
                   />
                 </label>
-                <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                <p className="mt-2 max-w-3xl text-xs leading-relaxed text-gray-500">
                   Typing your name acts as your electronic signature. We record the date, time and IP address
                   with it as proof of acceptance.
                 </p>
