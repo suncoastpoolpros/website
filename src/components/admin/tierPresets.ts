@@ -151,6 +151,44 @@ export const ANNUAL_INCLUDES = [
   'One payment for the year — nothing to remember each month',
 ];
 
+/**
+ * Re-derive everything that embeds the rate after the base rate changes.
+ *
+ * The base rate is the single place a price is typed; the plan cards' prices,
+ * the "billed once" line, and the annual tagline and value note are all just
+ * that number restated. They stay in the stored tier objects (so the PDF and
+ * email need no special casing) but are rewritten here rather than by hand.
+ *
+ * Only fields still matching what the preset generated for the OLD rate are
+ * replaced, so anything reworded for this customer survives — the same rule
+ * syncFilterService follows.
+ */
+export const syncTierPrices = (
+  tiers: Tier[],
+  oldBase: string,
+  newBase: string,
+  filter: FilterOption,
+): Tier[] => {
+  if (tiers.length === 0) return tiers;
+  const before = buildTiers(oldBase, filter);
+  const after = buildTiers(newBase, filter);
+  return tiers.map((tier, i) => {
+    const was = before[i];
+    const now = after[i];
+    if (!was || !now) return tier;
+    const carry = (field: 'price' | 'priceNote' | 'tagline' | 'valueNote') =>
+      tier[field] === was[field] ? now[field] : tier[field];
+    return {
+      ...tier,
+      // Price and its sub-line are always derived — they aren't editable.
+      price: now.price,
+      priceNote: now.priceNote,
+      tagline: carry('tagline'),
+      valueNote: carry('valueNote'),
+    };
+  });
+};
+
 export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', included: false }): Tier[] => {
   const base = basePrice.trim();
   const monthly = monthlyAmount(base);

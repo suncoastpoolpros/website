@@ -28,7 +28,7 @@ import {
   EXTRAS_NOTE,
   includedExtras,
 } from './includedExtras';
-import { PRESET_VERSION, buildTiers, syncFilterService } from './tierPresets';
+import { PRESET_VERSION, buildTiers, syncFilterService, syncTierPrices } from './tierPresets';
 import { FILTER_TYPES, inclusionQuestion, supportsFilterService } from './filterService';
 
 // Plain input (no floating label) for the add-on rows.
@@ -173,6 +173,24 @@ export const ProposalBuilder = ({
       proposal: {
         ...p.proposal,
         tiers: p.proposal.tiers.map((t, i) => ({ ...t, recommended: i === idx })),
+      },
+    }));
+
+  /**
+   * The base rate is the only place a price is typed. Editing it re-derives both
+   * plans, so the cards can never sit showing a rate the proposal no longer
+   * quotes — which is exactly what happened when they were independent fields.
+   */
+  const setBasePrice = (value: string) =>
+    setData((p) => ({
+      ...p,
+      proposal: {
+        ...p.proposal,
+        price: value,
+        tiers: syncTierPrices(p.proposal.tiers, p.proposal.tiers[0]?.price ?? '', value, {
+          type: p.pool.filterType,
+          included: p.pool.filterServiceIncluded === 'yes',
+        }),
       },
     }));
 
@@ -600,7 +618,7 @@ export const ProposalBuilder = ({
                 }
               >
                 <input id="pr-price" className={fieldClass} placeholder=" "
-                  value={data.proposal.price} onChange={(e) => update('proposal', 'price', e.target.value)} />
+                  value={data.proposal.price} onChange={(e) => setBasePrice(e.target.value)} />
               </FieldShell>
 
               {/* Single price vs. two plans. */}
@@ -691,20 +709,27 @@ export const ProposalBuilder = ({
                         Recommended
                       </label>
                     </div>
-                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                      <FieldShell id={`tier-name-${i}`} label="Plan name">
-                        <input id={`tier-name-${i}`} className={fieldClass} placeholder=" "
-                          value={tier.name} onChange={(e) => updateTier(i, { name: e.target.value })} />
-                      </FieldShell>
-                      <FieldShell id={`tier-price-${i}`} label="Price">
-                        <input id={`tier-price-${i}`} className={fieldClass} placeholder=" "
-                          value={tier.price} onChange={(e) => updateTier(i, { price: e.target.value })} />
-                      </FieldShell>
-                    </div>
-                    <FieldShell id={`tier-pricenote-${i}`} label="Line under the price (optional)">
-                      <input id={`tier-pricenote-${i}`} className={fieldClass} placeholder=" "
-                        value={tier.priceNote} onChange={(e) => updateTier(i, { priceNote: e.target.value })} />
+                    <FieldShell id={`tier-name-${i}`} label="Plan name">
+                      <input id={`tier-name-${i}`} className={fieldClass} placeholder=" "
+                        value={tier.name} onChange={(e) => updateTier(i, { name: e.target.value })} />
                     </FieldShell>
+                    {/* Read-only: both plans price off the base rate above, so
+                        there's nothing to type here and no way for the two to
+                        disagree. */}
+                    <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Price</p>
+                      {tier.price.trim() ? (
+                        <>
+                          <p className="text-lg font-bold text-white">{formatPrice(tier.price)}</p>
+                          {tier.priceNote.trim() && (
+                            <p className="text-xs font-semibold text-brand-blue-light">{tier.priceNote}</p>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-sm text-gray-400">Set the base rate above.</p>
+                      )}
+                      <p className="mt-1 text-xs text-gray-500">Calculated from the base rate.</p>
+                    </div>
                     <FieldShell id={`tier-tagline-${i}`} label="One-line tagline">
                       <input id={`tier-tagline-${i}`} className={fieldClass} placeholder=" "
                         value={tier.tagline} onChange={(e) => updateTier(i, { tagline: e.target.value })} />
