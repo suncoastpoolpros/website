@@ -262,7 +262,12 @@ const SECTIONS: Section[] = [
           // would be read as subject to them, which would make it worthless.
           {
             type: 'p',
-            text: 'New customers have a two-week money-back guarantee. If you are not happy with the service, tell us within fourteen days of your first scheduled service visit and we will cancel and refund everything you have paid us, in full — including an annual prepayment in its entirety. The 30-day notice requirement below does not apply within that period, and you are not charged for the visits already completed.',
+            // Fourteen days is the operative rule and the visit count is the
+            // plain-English gloss, not the other way round — they coincide on
+            // weekly service but NOT on bi-weekly, where the third visit falls
+            // at day 28. Stating the visit count as the rule would silently
+            // double the window for every bi-weekly customer.
+            text: 'New customers have a two-week money-back guarantee. If you are not happy with the service, tell us within fourteen days of your first service visit — on weekly service, any time before your third visit — and we will cancel and refund everything you have paid us, in full, including an annual prepayment in its entirety. The 30-day notice requirement below does not apply within that period, and you are not charged for the visits already completed.',
           },
           {
             type: 'p',
