@@ -425,7 +425,7 @@ export const ApprovePage = () => {
                 all of this twice. Two columns on desktop so five bullets cost
                 three rows of height instead of five, keeping the plans up. */}
             {benefits.length > 0 && (
-              <section className="mb-8 rounded-2xl border border-[#cfe3f2] bg-[#eef6fb] p-5">
+              <section className="mb-8 rounded-2xl border border-[#e3e8ef] bg-white p-5">
                 <h2 className="mb-3 font-display text-base font-bold text-[#0f4d80]">{BENEFITS_HEADING}</h2>
                 {/* CSS columns, not a grid. A grid aligns rows, so a two-line
                     bullet opposite a one-line bullet left a visible gap under
@@ -467,9 +467,9 @@ export const ApprovePage = () => {
                       tier.recommended ? 'order-first sm:order-none' : ''
                     } ${
                       on
-                        ? 'border-[#1669AE] bg-[#eaf3fb] ring-2 ring-[#1669AE]/30'
+                        ? 'border-[#1669AE] bg-white ring-2 ring-[#1669AE]/30'
                         : tier.recommended
-                          ? 'border-[#1669AE] bg-[#f5faff] shadow-lg shadow-[#1669AE]/15 ring-1 ring-[#1669AE]/20 hover:border-[#0f4d80]'
+                          ? 'border-[#1669AE] bg-white shadow-lg shadow-[#1669AE]/15 ring-1 ring-[#1669AE]/20 hover:border-[#0f4d80]'
                           : 'border-[#e3e8ef] bg-white hover:border-[#9fb3c8]'
                     }`}
                   >
@@ -657,7 +657,7 @@ export const ApprovePage = () => {
 
         {quote && step === 2 && (
           <>
-            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-[#cfe3f2] bg-[#eef6fb] p-4">
+            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-[#e3e8ef] bg-white p-4">
               <div>
                 <p className="text-xs uppercase tracking-wider text-[#6b7280]">Your plan</p>
                 <p className="font-display text-lg font-bold">{plan}</p>
@@ -687,7 +687,7 @@ export const ApprovePage = () => {
                     aria-pressed={sameBilling === opt.v}
                     className={`flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-colors ${
                       sameBilling === opt.v
-                        ? 'border-[#1669AE] bg-[#eaf3fb]'
+                        ? 'border-[#1669AE] bg-white'
                         : 'border-[#e3e8ef] hover:border-[#9fb3c8]'
                     }`}
                   >
