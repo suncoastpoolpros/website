@@ -294,11 +294,35 @@ export const ApprovePage = () => {
           the scope below; a 1024px-wide paragraph is past a comfortable reading
           measure even when the cards beside it are not. */}
       <div className="mx-auto w-full max-w-5xl">
-        <div className="mb-8 text-center">
+        <div className="relative mb-8 text-center">
           <p className="text-[11px] uppercase tracking-[0.2em] text-gray-500">Suncoast Pool Pros</p>
           <h1 className="mt-1 font-display text-2xl font-bold sm:text-3xl">
             {state.kind === 'accepted' ? 'You’re all set' : step === 1 ? 'Your proposal' : 'Confirm and sign'}
           </h1>
+          {/*
+            A reachable human. Every other word on this page argues for buying;
+            without this the only route to a question was "Call us" in 12px
+            gray-500 under the address — the faintest thing on a page asking
+            someone to commit to a year of service.
+
+            Corner on desktop, but NOT absolutely positioned until md: at 640px
+            the pill and a centred "Confirm and sign" collide. Below that it
+            sits under the title in normal flow, centred, with a taller tap
+            target — mobile is where it actually gets pressed.
+
+            Hidden on the error state only, which already leads with a
+            full-size phone button; two would just look like a mistake.
+          */}
+          {state.kind !== 'error' && (
+            <a
+              href={PHONE_HREF}
+              className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white transition-colors hover:border-white/30 hover:bg-white/10 md:absolute md:right-0 md:top-0 md:mt-0 md:py-2"
+            >
+              <Phone className="h-4 w-4 shrink-0 text-brand-blue-light" />
+              <span className="hidden lg:inline">Questions?</span>
+              {PHONE_DISPLAY}
+            </a>
+          )}
         </div>
 
         {state.kind === 'loading' && (
