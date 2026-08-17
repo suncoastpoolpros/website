@@ -408,6 +408,29 @@ export const ProposalBuilder = ({
                     onBlur={(e) => update('customer', 'phone', formatUsPhone(e.target.value))} />
                 </FieldShell>
               </div>
+
+              {/* Sits with the customer, not down by the document settings: it's
+                  the message TO this person, and it's written while they're
+                  still in mind — right after typing their name. */}
+              <FieldShell id="pr-emailnote" label="Personal note — email only, not on the PDF" multiline>
+                <textarea id="pr-emailnote" rows={4} className={textareaClass} placeholder=" "
+                  value={data.proposal.emailNote}
+                  onChange={(e) => update('proposal', 'emailNote', e.target.value)} />
+              </FieldShell>
+              <p className="-mt-2 text-xs text-gray-500">
+                Appears at the top of the email, under the greeting and above the plan options. The PDF
+                is the formal document and stays clean.
+              </p>
+              {data.proposal.emailNote.trim() && (
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    In the email
+                  </p>
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-gray-200">
+                    {data.proposal.emailNote.trim()}
+                  </p>
+                </div>
+              )}
             </Section>
 
             <Section title="Pool — Size & Volume">
@@ -555,29 +578,6 @@ export const ProposalBuilder = ({
                 <textarea id="p-eqnotes" rows={2} className={textareaClass} placeholder=" "
                   value={data.pool.equipmentNotes} onChange={(e) => update('pool', 'equipmentNotes', e.target.value)} />
               </FieldShell>
-            </Section>
-
-            <Section title="Personal Note (email only)">
-              <p className="-mt-1 text-sm text-gray-400">
-                Appears at the top of the email, above the plan options — <span className="text-gray-300">not</span>{' '}
-                on the PDF. The PDF is the formal document that gets filed or forwarded; this is the
-                covering message.
-              </p>
-              <FieldShell id="pr-emailnote" label="Note to the customer" multiline>
-                <textarea id="pr-emailnote" rows={4} className={textareaClass} placeholder=" "
-                  value={data.proposal.emailNote}
-                  onChange={(e) => update('proposal', 'emailNote', e.target.value)} />
-              </FieldShell>
-              {data.proposal.emailNote.trim() && (
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    In the email
-                  </p>
-                  <p className="whitespace-pre-line text-sm leading-relaxed text-gray-200">
-                    {data.proposal.emailNote.trim()}
-                  </p>
-                </div>
-              )}
             </Section>
 
             <Section title="Photos">
