@@ -14,9 +14,7 @@ import {
   LoaderCircle,
   LogOut,
   ChevronLeft,
-  Check,
-  Clock,
-  CircleSlash,
+  ChevronRight,
   Search,
   Link2,
   RefreshCw,
@@ -25,6 +23,8 @@ import {
   Phone,
 } from 'lucide-react';
 import { formatPrice } from '@/lib/adminApi';
+import { QuoteDetail } from './QuoteDetail';
+import { STATUS_META, type Status, ago, onDate, statusOf } from './quoteFormat';
 
 type Quote = {
   id: string;
@@ -40,55 +40,10 @@ type Quote = {
   planNames: string[];
 };
 
-type Status = 'accepted' | 'awaiting' | 'expired';
-
 type Load =
   | { kind: 'loading' }
   | { kind: 'ready'; quotes: Quote[]; storage: boolean }
   | { kind: 'error' };
-
-const statusOf = (q: Quote): Status => {
-  if (q.acceptedAt) return 'accepted';
-  return new Date(q.expiresAt).getTime() < Date.now() ? 'expired' : 'awaiting';
-};
-
-/** "3 days ago" reads faster than a date when you're scanning for stale ones. */
-const ago = (iso: string): string => {
-  const ms = Date.now() - new Date(iso).getTime();
-  const mins = Math.round(ms / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
-  const days = Math.round(hrs / 24);
-  if (days < 31) return `${days} day${days === 1 ? '' : 's'} ago`;
-  const months = Math.round(days / 30);
-  return `${months} month${months === 1 ? '' : 's'} ago`;
-};
-
-const onDate = (iso: string): string =>
-  new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
-const STATUS_META: Record<Status, { label: string; chip: string; accent: string; Icon: typeof Check }> = {
-  accepted: {
-    label: 'Accepted',
-    chip: 'border-green-500/30 bg-green-500/15 text-green-300',
-    accent: 'border-l-green-500/60',
-    Icon: Check,
-  },
-  awaiting: {
-    label: 'Awaiting',
-    chip: 'border-amber-400/30 bg-amber-400/10 text-amber-200',
-    accent: 'border-l-amber-400/50',
-    Icon: Clock,
-  },
-  expired: {
-    label: 'Expired',
-    chip: 'border-white/15 bg-white/5 text-gray-400',
-    accent: 'border-l-white/15',
-    Icon: CircleSlash,
-  },
-};
 
 export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack: () => void }) => {
   const [load, setLoad] = useState<Load>({ kind: 'loading' });
@@ -96,6 +51,10 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
   const [query, setQuery] = useState('');
   const [copied, setCopied] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  // The open quote. Kept here rather than in a route so the list's filter,
+  // search and scroll survive the round trip — closing a quote must put you back
+  // exactly where you were, not at the top of an unfiltered list.
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const fetchQuotes = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true);
@@ -158,6 +117,23 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
       window.prompt('Copy the approve link:', url);
     }
   };
+
+  // The detail view replaces the list rather than opening over it. This screen
+  // is mostly a phone screen, and a modal holding this much record would be a
+  // scroll trap inside a scroll.
+  if (openId) {
+    return (
+      <QuoteDetail
+        id={openId}
+        onBack={() => {
+          setOpenId(null);
+          // A customer could have accepted while it was open — cheap to re-check
+          // and it keeps the tiles honest.
+          fetchQuotes(true);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-dvh px-4 py-6 md:px-8 md:py-10">
@@ -276,14 +252,27 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                   return (
                     <li
                       key={q.id}
-                      className={`rounded-xl border border-l-4 border-white/10 bg-white/[0.03] p-4 ${meta.accent}`}
+                      className={`group relative rounded-xl border border-l-4 border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-white/25 hover:bg-white/[0.06] focus-within:border-white/25 sm:pr-10 ${meta.accent}`}
                     >
+                      {/* A stretched button rather than a clickable <li>: the row
+                          already contains a mailto, a tel and a copy button, and
+                          nesting those inside a <button> is invalid HTML. This
+                          covers the row and sits UNDER those three (they carry
+                          `relative z-10`), so clicking the row's own text opens
+                          it while the shortcuts still do their own thing. */}
+                      <button
+                        onClick={() => setOpenId(q.id)}
+                        className="absolute inset-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-light"
+                      >
+                        <span className="sr-only">Open the quote for {q.name || 'this customer'}</span>
+                      </button>
+                      <ChevronRight className="absolute right-3 top-1/2 hidden h-5 w-5 -translate-y-1/2 text-gray-600 transition-colors group-hover:text-gray-300 sm:block" />
                       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
                         <div className="min-w-0">
                           <p className="font-semibold text-white">{q.name || '—'}</p>
                           <a
                             href={`mailto:${q.email}`}
-                            className="block truncate text-sm text-gray-400 hover:text-white"
+                            className="relative z-10 block truncate text-sm text-gray-400 hover:text-white"
                           >
                             {q.email}
                           </a>
@@ -317,14 +306,17 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                         )}
                         <span>Sent {onDate(q.createdAt)}</span>
                         {q.phone && (
-                          <a href={`tel:${q.phone}`} className="inline-flex items-center gap-1 hover:text-white">
+                          <a
+                            href={`tel:${q.phone}`}
+                            className="relative z-10 inline-flex items-center gap-1 hover:text-white"
+                          >
                             <Phone className="h-3 w-3" /> {q.phone}
                           </a>
                         )}
                         {status === 'awaiting' && (
                           <button
                             onClick={() => copyLink(q.id)}
-                            className="ml-auto inline-flex items-center gap-1 font-semibold text-brand-blue-light hover:text-white"
+                            className="relative z-10 ml-auto inline-flex items-center gap-1 font-semibold text-brand-blue-light hover:text-white"
                           >
                             <Link2 className="h-3.5 w-3.5" />
                             {copied === q.id ? 'Link copied' : 'Copy approve link'}
