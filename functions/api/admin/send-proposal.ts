@@ -273,7 +273,7 @@ const renderExtras = (rows: Array<{ label: string; typical: string; basis: strin
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #cfe3f2;border-radius:12px;">
               <tr>
                 <td style="padding:8px 16px 4px;"></td>
-                <td align="right" style="padding:8px 16px 4px;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#9aa4b2;white-space:nowrap;">Others charge</td>
+                <td align="right" style="padding:8px 16px 4px;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#9aa4b2;white-space:nowrap;">Others charge</td>
                 <td align="right" style="padding:8px 16px 4px;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#9aa4b2;white-space:nowrap;">Your cost</td>
               </tr>
               ${rows
@@ -281,14 +281,14 @@ const renderExtras = (rows: Array<{ label: string; typical: string; basis: strin
                   (r) => `<tr>
                 <td style="padding:9px 16px;border-top:1px solid #eef1f5;">
                   <div style="font-size:14px;font-weight:600;color:#0a1628;">${escapeHtml(r.label)}</div>
-                  <div style="font-size:11px;color:#9aa4b2;margin-top:1px;">${escapeHtml(r.basis)}</div>
+                  <div style="font-size:12px;color:#9aa4b2;margin-top:2px;line-height:1.45;">${escapeHtml(r.basis)}</div>
                 </td>
                 <td align="right" style="padding:9px 16px;border-top:1px solid #eef1f5;white-space:nowrap;font-size:14px;color:#6b7280;text-decoration:line-through;">${escapeHtml(r.typical)}</td>
                 <td align="right" style="padding:9px 16px;border-top:1px solid #eef1f5;white-space:nowrap;font-size:13px;font-weight:700;color:#1d7a33;">Included</td>
               </tr>`,
                 )
                 .join('')}
-              <tr><td colspan="3" style="padding:0 16px 12px;font-size:11px;font-style:italic;color:#9aa4b2;line-height:1.5;">${escapeHtml(EXTRAS_NOTE)}</td></tr>
+              <tr><td colspan="3" style="padding:0 16px 12px;font-size:12px;font-style:italic;color:#9aa4b2;line-height:1.55;">${escapeHtml(EXTRAS_NOTE)}</td></tr>
             </table>
           </div>`
     : '';
@@ -356,21 +356,21 @@ const renderTiers = (tiers: Tier[]): string => {
           <tr><td style="padding:14px 16px;">
             ${t.recommended ? '<div style="display:inline-block;background:#1669AE;color:#ffffff;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 7px;border-radius:4px;margin-bottom:8px;">Recommended</div>' : ''}
             <div style="font-size:17px;font-weight:700;color:#0a1628;">${escapeHtml(t.name)}</div>
-            ${t.tagline ? `<div style="font-size:12px;color:#6b7280;margin-top:2px;line-height:1.4;">${escapeHtml(t.tagline)}</div>` : ''}
+            ${t.tagline ? `<div style="font-size:13.5px;color:#6b7280;margin-top:3px;line-height:1.5;">${escapeHtml(t.tagline)}</div>` : ''}
             ${t.price ? `<div style="font-size:24px;font-weight:800;color:#0f4d80;margin-top:8px;">${escapeHtml(t.price)}</div>` : ''}
             ${
               t.priceNote
-                ? `<div style="font-size:12px;font-weight:700;color:#1669AE;margin-top:2px;">${escapeHtml(t.priceNote)}</div>`
+                ? `<div style="font-size:13.5px;font-weight:700;color:#1669AE;margin-top:4px;">${escapeHtml(t.priceNote)}</div>`
                 : delta
-                  ? `<div style="font-size:12px;font-weight:700;color:#1669AE;margin-top:2px;">${escapeHtml(delta)} more than ${escapeHtml(prev.name)}</div>`
+                  ? `<div style="font-size:13.5px;font-weight:700;color:#1669AE;margin-top:4px;">${escapeHtml(delta)} more than ${escapeHtml(prev.name)}</div>`
                   : ''
             }
             <div style="border-top:1px solid #e3e8ef;margin:10px 0;"></div>
-            ${prev ? `<div style="font-size:12px;font-weight:700;color:#0a1628;margin-bottom:6px;">Everything in ${escapeHtml(prev.name)}, plus:</div>` : ''}
+            ${prev ? `<div style="font-size:13.5px;font-weight:700;color:#0a1628;margin-bottom:8px;">Everything in ${escapeHtml(prev.name)}, plus:</div>` : ''}
             ${t.includes
               .map(
                 (item) =>
-                  `<div style="font-size:12.5px;color:#374151;line-height:1.45;margin-bottom:5px;"><span style="color:#1d7a33;">&bull;</span>&nbsp;&nbsp;${escapeHtml(item)}</div>`,
+                  `<div style="font-size:14px;color:#374151;line-height:1.55;margin-bottom:8px;"><span style="color:#1d7a33;">&bull;</span>&nbsp;&nbsp;${escapeHtml(item)}</div>`,
               )
               .join('')}
           </td></tr>
@@ -386,7 +386,7 @@ const renderTiers = (tiers: Tier[]): string => {
     ? `<div style="margin:0 0 18px;">${terms
         .map(
           (t) =>
-            `<div style="font-size:10px;color:#9aa4b2;line-height:1.45;margin-bottom:3px;">${
+            `<div style="font-size:11.5px;color:#9aa4b2;line-height:1.5;margin-bottom:5px;">${
               terms.length > 1 ? `<strong style="color:#6b7280;">${escapeHtml(t.name)}:</strong> ` : ''
             }${escapeHtml(t.finePrint)}</div>`,
         )
@@ -533,7 +533,7 @@ export const composeProposalEmail = (
             <tr><td style="padding:16px 20px;background:#eef6fb;border:1px solid #cfe3f2;border-radius:12px;">
               <div style="font-size:15px;font-weight:700;color:#0f4d80;margin-bottom:8px;">${BENEFITS_HEADING}</div>
               ${benefitsList.map((b) => `<div style="font-size:14px;color:#1f2937;font-weight:600;line-height:1.55;margin:10px 0;"><span style="color:#1d7a33;">&#10003;</span>&nbsp;&nbsp;${escapeHtml(b)}</div>`).join('')}
-              <div style="font-size:12px;color:#6b7280;font-style:italic;margin-top:8px;">${escapeHtml(benefitsNoteText)}</div>
+              <div style="font-size:13px;color:#6b7280;font-style:italic;margin-top:10px;line-height:1.55;">${escapeHtml(benefitsNoteText)}</div>
             </td></tr>
           </table>` : ''}
 
