@@ -11,12 +11,15 @@ export const SCOPE_TEMPLATES: ScopeTemplate[] = [
     label: 'Weekly Pool Cleaning (recurring)',
     text: `Weekly full-service pool maintenance, performed once per week:
 
-• Test and balance water chemistry — chlorine, pH, total alkalinity, cyanuric acid, and calcium hardness — adjusting as needed for safe, clear water.
-• Brush walls, steps, and waterline tile to prevent algae and buildup.
-• Skim the surface and empty skimmer and pump baskets.
+• Test and balance water chemistry — chlorine, pH, total alkalinity, cyanuric acid and calcium hardness — keeping the water safe to swim in and correctly balanced, so it is neither acidic enough to etch plaster and corrode metal nor hard enough to leave scale on tile and inside the heater.
+• Brush walls, steps and the waterline tile, both to stop algae getting a foothold and to keep the surface finish clean and even.
+• Skim the surface and empty the skimmer, pump and cleaner baskets.
 • Vacuum the pool floor as needed.
-• Empty and inspect the filter, backwashing or cleaning per the system type.
-• Inspect equipment (pump, filter, heater, and timer) and report any issues.
+• Empty and inspect the filter, backwashing or cleaning to suit the system, and compare filter pressure against its clean baseline so a rising reading is caught before flow drops off.
+• Check the salt cell and chlorine generator output on salt pools, cleaning the cell as needed.
+• Check the water level and report anything that looks like a leak.
+• Inspect the equipment — pump, filter, heater and timer — and report any issues.
+• Send a photo service report to your inbox after every visit.
 
 Includes all routine chemicals. Service continues on a recurring weekly schedule with no long-term contract — cancel anytime.`,
   },
