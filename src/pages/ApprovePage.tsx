@@ -21,19 +21,11 @@ import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
  * DERIVED, NOT REPLAYED: these compute from the stored pool rather than from a
  * snapshot taken at send time, so editing the wording here changes what an
  * already-sent quote's page says. Acceptable while the wording only ever gets
- * more accurate; if a figure in includedExtras ever changes, old quotes would
+ * more accurate; if one of these lines ever changes materially, old quotes would
  * show the new one against a PDF showing the old, and it should be snapshotted
  * into proposal_json at send time instead.
  */
 import { BENEFITS_HEADING, benefitsNote, includedBenefits } from '@/components/admin/proposalBenefits';
-import {
-  EXTRAS_COL_THEIRS,
-  EXTRAS_COL_YOURS,
-  EXTRAS_HEADING,
-  EXTRAS_INCLUDED_LABEL,
-  EXTRAS_NOTE,
-  includedExtras,
-} from '@/components/admin/includedExtras';
 
 /**
  * /approve/?t=<token> — where an emailed "Review & accept your plan" link lands.
@@ -225,15 +217,6 @@ export const ApprovePage = () => {
    */
   const benefits = useMemo(
     () => (quote && (quote.proposal.includeBenefits || tiers.length > 0) ? includedBenefits(filterOption) : []),
-    [quote, tiers.length, filterOption],
-  );
-
-  /** The struck-through value stack. Empty when nothing is costed for this pool. */
-  const extras = useMemo(
-    () =>
-      quote && (quote.proposal.includeBenefits || tiers.length > 0)
-        ? includedExtras(filterOption, quote.pool.sanitization ?? '')
-        : [],
     [quote, tiers.length, filterOption],
   );
 
@@ -524,35 +507,11 @@ export const ApprovePage = () => {
               </div>
             )}
 
-            {/* The value stack sits AFTER the prices, not before. Read first it's
-                a claim; read straight after "$185/mo" it's the arithmetic behind
-                the number, which is the argument that actually lands. */}
-            {extras.length > 0 && (
-              <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                <h2 className="font-display text-base font-bold">{EXTRAS_HEADING}</h2>
-                <div className="mt-3 flex items-baseline justify-end gap-6 text-[11px] uppercase tracking-wider text-gray-500">
-                  <span className="w-24 text-right">{EXTRAS_COL_THEIRS}</span>
-                  <span className="w-20 text-right">{EXTRAS_COL_YOURS}</span>
-                </div>
-                <ul className="divide-y divide-white/5 border-t border-white/5">
-                  {extras.map((x, i) => (
-                    <li key={i} className="flex items-center gap-6 py-3">
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold text-gray-100">{x.label}</span>
-                        <span className="block text-xs text-gray-500">{x.basis}</span>
-                      </span>
-                      <span className="w-24 shrink-0 text-right text-sm text-gray-500 line-through">
-                        {x.typical}
-                      </span>
-                      <span className="w-20 shrink-0 text-right text-sm font-bold text-green-400">
-                        {EXTRAS_INCLUDED_LABEL}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="mt-3 text-xs leading-relaxed text-gray-500">{EXTRAS_NOTE}</p>
-              </section>
-            )}
+            {/* NOTE: the "What Others Charge Extra For" value stack is
+                deliberately NOT on this page. It stays in the PDF and the
+                proposal email — see includedExtras.ts — but by the time someone
+                is here they've read it once already and come to accept, not to
+                be sold to again. */}
 
             {/* Reference, not persuasion: the full week-by-week scope and each
                 plan's terms. Collapsed so it can be complete without pushing the
