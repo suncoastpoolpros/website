@@ -13,7 +13,7 @@
  * Path is /api/admin/quote (singular) rather than a child of /api/admin/quotes
  * so there's no ambiguity between the collection file and a dynamic child route.
  */
-import { getQuote } from '../../_quotes';
+import { deleteQuote, getQuote } from '../../_quotes';
 import { type AdminContext, json, isAllowedOrigin, requireSession } from '../_shared';
 
 type Ctx = AdminContext & { params: { id?: string | string[] } };
@@ -80,6 +80,48 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
     );
   } catch (err) {
     console.log('[admin/quote] server_error:', String(err).slice(0, 300));
+    return json({ ok: false, error: 'server_error' }, 500);
+  }
+};
+
+/**
+ * DELETE /api/admin/quote/:id — remove a quote for good.
+ *
+ * Same auth and same Origin check as the GET. The session cookie is
+ * `__Host-` prefixed and SameSite=Strict, so a cross-site page can't ride it
+ * even if it could guess an id — but the Origin check runs anyway, because a
+ * destructive verb shouldn't rely on a single control.
+ *
+ * Reads the row first so an unknown id is an honest 404 rather than a
+ * successful-looking DELETE that matched nothing.
+ *
+ * Deleting an ACCEPTED quote destroys the signed record with it: the typed
+ * signature, the timestamp, the IP and the agreed terms version. The owner
+ * confirms that in the UI; this endpoint doesn't refuse it, because it's a
+ * record they own — but the handoff email remains the durable copy.
+ */
+export const onRequestDelete = async (ctx: Ctx): Promise<Response> => {
+  const { request, env } = ctx;
+  try {
+    if (!isAllowedOrigin(request, env)) return json({ ok: false, error: 'forbidden' }, 403);
+    const denied = await requireSession(request, env);
+    if (denied) return denied;
+
+    const raw = ctx.params?.id;
+    const id = (Array.isArray(raw) ? raw[0] : raw) ?? '';
+    if (!id) return json({ ok: false, error: 'not_found' }, 404);
+
+    const db = (env as unknown as { DB?: unknown }).DB;
+    const row = await getQuote(db, id);
+    if (!row) return json({ ok: false, error: 'not_found' }, 404);
+
+    const gone = await deleteQuote(db, id);
+    if (!gone) return json({ ok: false, error: 'delete_failed' }, 500);
+
+    console.log(`[admin/quote] deleted ${id} (${row.customer_email})`);
+    return json({ ok: true }, 200, { 'cache-control': 'no-store' });
+  } catch (err) {
+    console.log('[admin/quote] delete_server_error:', String(err).slice(0, 300));
     return json({ ok: false, error: 'server_error' }, 500);
   }
 };

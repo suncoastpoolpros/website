@@ -139,6 +139,29 @@ export async function getQuote(db: unknown, id: string): Promise<QuoteRow | null
   }
 }
 
+/**
+ * Delete a quote outright.
+ *
+ * A hard DELETE, not a soft-delete flag. This table is a record of what was
+ * quoted, not an audit log — the acceptance email is the permanent copy of any
+ * decision, and a `deleted_at` column would mean every read path had to
+ * remember to filter on it. One place to forget is one place to leak a deleted
+ * quote back into the list.
+ *
+ * The caller is expected to have already read the row, so it can tell a real
+ * 404 from a delete that silently matched nothing.
+ */
+export async function deleteQuote(db: unknown, id: string): Promise<boolean> {
+  if (!isQuoteStorageAvailable(db) || !id) return false;
+  try {
+    await db.prepare('DELETE FROM quotes WHERE id = ?').bind(id).run();
+    return true;
+  } catch (err) {
+    console.log('[quotes] delete_failed:', String(err).slice(0, 300));
+    return false;
+  }
+}
+
 export const isExpired = (row: QuoteRow): boolean => new Date(row.expires_at).getTime() < Date.now();
 
 /**

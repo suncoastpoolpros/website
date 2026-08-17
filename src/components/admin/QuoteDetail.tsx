@@ -24,6 +24,7 @@ import {
   Phone,
   Check,
   ShieldCheck,
+  Trash2,
 } from 'lucide-react';
 import { formatPrice } from '@/lib/adminApi';
 import { STATUS_META, ago, onDate, onDateTime, statusOf } from './quoteFormat';
@@ -101,6 +102,10 @@ const RowList = ({ items }: { items: Rows }) => (
 export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) => {
   const [load, setLoad] = useState<Load>({ kind: 'loading' });
   const [copied, setCopied] = useState(false);
+  /** Two-step delete: arming shows what will actually be lost before the verb. */
+  const [armed, setArmed] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -201,6 +206,25 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
       window.prompt('Copy the approve link:', url);
+    }
+  };
+
+  const doDelete = async () => {
+    if (deleting) return;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      const res = await fetch(`/api/admin/quote/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean };
+      // onBack refetches the list, so the row and the tile counts go with it.
+      if (res.ok && data.ok) onBack();
+      else {
+        setDeleteError('Couldn’t delete that quote. Try again.');
+        setDeleting(false);
+      }
+    } catch {
+      setDeleteError('Couldn’t reach the server. Try again.');
+      setDeleting(false);
     }
   };
 
@@ -429,6 +453,75 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
               </button>
             )}
           </Card>
+
+          {/*
+            Delete, last on the page and behind two clicks.
+
+            The confirmation names what actually goes, and that differs by
+            status — an accepted quote takes the signed record with it
+            (signature, timestamp, IP, agreed terms version), while an awaiting
+            one kills a link the customer may be about to open. A generic "are
+            you sure?" would hide the part that matters.
+          */}
+          <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-gray-500">Delete</h2>
+            {!armed ? (
+              <>
+                <p className="text-sm text-gray-400">
+                  Removes this quote from your records for good.
+                </p>
+                <button
+                  onClick={() => {
+                    setArmed(true);
+                    setDeleteError('');
+                  }}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-red-500/30 px-3 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/10 hover:text-red-200"
+                >
+                  <Trash2 className="h-4 w-4" /> Delete this quote
+                </button>
+              </>
+            ) : (
+              <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+                <p className="text-sm font-semibold text-red-200">
+                  Delete {quote.customer.name || 'this quote'} permanently?
+                </p>
+                <p className="mt-1.5 text-sm leading-relaxed text-gray-300">
+                  {status === 'accepted'
+                    ? 'This also deletes the signed acceptance record — the typed signature, the timestamp, the IP address and the agreement version they accepted. The handoff email in your inbox stays, but this copy is gone.'
+                    : status === 'expired'
+                      ? 'The link is already dead, so nothing changes for the customer — but the record of what you quoted goes too.'
+                      : 'Their approve link stops working immediately. If they open it after this, they’ll be told the quote couldn’t be found.'}
+                </p>
+                <p className="mt-1.5 text-sm text-gray-400">This can’t be undone.</p>
+                {deleteError && (
+                  <p className="mt-3 flex items-center gap-2 text-sm text-red-300">
+                    <AlertCircle className="h-4 w-4 shrink-0" /> {deleteError}
+                  </p>
+                )}
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    onClick={doDelete}
+                    disabled={deleting}
+                    className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {deleting ? (
+                      <LoaderCircle className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                    {deleting ? 'Deleting…' : 'Yes, delete it'}
+                  </button>
+                  <button
+                    onClick={() => setArmed(false)}
+                    disabled={deleting}
+                    className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold text-gray-300 hover:bg-white/5 disabled:opacity-60"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
         </div>
       </div>
     </div>
