@@ -28,7 +28,7 @@ import {
   EXTRAS_NOTE,
   includedExtras,
 } from './includedExtras';
-import { buildTiers, syncFilterService } from './tierPresets';
+import { PRESET_VERSION, buildTiers, syncFilterService } from './tierPresets';
 import { FILTER_TYPES, inclusionQuestion, supportsFilterService } from './filterService';
 
 // Plain input (no floating label) for the add-on rows.
@@ -149,6 +149,10 @@ export const ProposalBuilder = ({
                 included: p.pool.filterServiceIncluded === 'yes',
               })
             : p.proposal.tiers,
+        presetVersion:
+          mode === 'tiers' && p.proposal.tiers.length === 0
+            ? PRESET_VERSION
+            : p.proposal.presetVersion,
       },
     }));
 
@@ -181,11 +185,18 @@ export const ProposalBuilder = ({
           type: p.pool.filterType,
           included: p.pool.filterServiceIncluded === 'yes',
         }),
+        presetVersion: PRESET_VERSION,
       },
     }));
 
   // An unanswered filter question can't be sent: the quote would silently omit
   // a promise that was meant to be there, and nothing downstream would flag it.
+  // Tiers exist but were generated before the current preset revision.
+  const presetsOutdated =
+    data.proposal.pricingMode === 'tiers' &&
+    data.proposal.tiers.length > 0 &&
+    data.proposal.presetVersion < PRESET_VERSION;
+
   const filterAnswered =
     !supportsFilterService(data.pool.filterType) || data.pool.filterServiceIncluded !== '';
 
@@ -594,6 +605,15 @@ export const ProposalBuilder = ({
                   </button>
                 )}
               </div>
+              {/* Plan cards are stored in the draft, so editing the presets does
+                  nothing to a proposal already in progress. This is the only
+                  signal that the saved wording has been superseded. */}
+              {presetsOutdated && (
+                <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200">
+                  The plan wording has been updated since this draft was started. Reset to preset to
+                  pick it up — that replaces both plans, including any edits you made here.
+                </p>
+              )}
               <label
                 className={`flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4 ${
                   data.proposal.pricingMode === 'tiers' ? 'opacity-50' : ''

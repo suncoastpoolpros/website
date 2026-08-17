@@ -72,6 +72,12 @@ export type ProposalData = {
      * plan, or it undercuts the flat-rate "everything included" promise.
      */
     tiers: Tier[];
+    /**
+     * PRESET_VERSION the stored `tiers` were generated from. 0 means they
+     * predate versioning. Lets the builder spot a draft built before a preset
+     * revision and offer a reset, without nagging about deliberate edits.
+     */
+    presetVersion: number;
   };
 };
 
@@ -232,6 +238,7 @@ export const emptyProposal = (): ProposalData => ({
     // changes until the admin explicitly switches to tiers.
     pricingMode: 'single',
     tiers: [],
+    presetVersion: 0,
   },
 });
 

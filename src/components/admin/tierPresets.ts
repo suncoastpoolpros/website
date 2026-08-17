@@ -45,6 +45,22 @@ import {
  */
 export const ANNUAL_MONTHS_CHARGED = 11;
 
+/**
+ * Bump whenever the wording or structure of the presets below changes.
+ *
+ * Plan cards are STORED, not derived: buildTiers() runs once, when tiers are
+ * first switched on, and the result lives in the draft so per-proposal edits
+ * survive. That means editing this file does nothing to a draft already in
+ * progress — which is how a card sat there showing superseded wording with no
+ * hint anything was wrong. The builder compares this against the version
+ * stamped on the draft and offers a reset.
+ *
+ * Deliberately a version rather than a content diff: a content diff can't tell
+ * a stale preset from wording the admin edited on purpose, so it would nag
+ * forever on any customised proposal.
+ */
+export const PRESET_VERSION = 2;
+
 /** Terms specific to prepaying for the year. */
 /**
  * The free month sits at the END of the term, which is what makes the refund
