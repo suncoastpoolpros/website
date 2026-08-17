@@ -1,7 +1,39 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Check, LoaderCircle, AlertCircle, Phone, ArrowRight, ArrowLeft, PenLine } from 'lucide-react';
+import {
+  Check,
+  LoaderCircle,
+  AlertCircle,
+  Phone,
+  ArrowRight,
+  ArrowLeft,
+  PenLine,
+  ChevronDown,
+} from 'lucide-react';
 import { usePageMeta } from '@/lib/usePageMeta';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
+/**
+ * The proposal's own content modules. They live under components/admin because
+ * the PDF and the proposal email are their other two consumers, but they hold no
+ * admin UI — they're pure data derived from the pool, which is why this public
+ * page can use them to render the same service definition the customer already
+ * read in their PDF.
+ *
+ * DERIVED, NOT REPLAYED: these compute from the stored pool rather than from a
+ * snapshot taken at send time, so editing the wording here changes what an
+ * already-sent quote's page says. Acceptable while the wording only ever gets
+ * more accurate; if a figure in includedExtras ever changes, old quotes would
+ * show the new one against a PDF showing the old, and it should be snapshotted
+ * into proposal_json at send time instead.
+ */
+import { BENEFITS_HEADING, benefitsNote, includedBenefits } from '@/components/admin/proposalBenefits';
+import {
+  EXTRAS_COL_THEIRS,
+  EXTRAS_COL_YOURS,
+  EXTRAS_HEADING,
+  EXTRAS_INCLUDED_LABEL,
+  EXTRAS_NOTE,
+  includedExtras,
+} from '@/components/admin/includedExtras';
 
 /**
  * /approve/?t=<token> — where an emailed "Review & accept your plan" link lands.
@@ -31,6 +63,10 @@ type Tier = {
   tagline: string;
   includes: string[];
   recommended: boolean;
+  /** The tailored persuasion line, e.g. why a $120 cartridge bill never lands. */
+  valueNote?: string;
+  /** Exactly what the included filter service does and doesn't cover. */
+  finePrint?: string;
 };
 type Pool = {
   gallons?: string;
@@ -54,7 +90,7 @@ type Quote = {
   createdAt: string;
   expiresAt: string;
   pool: Pool;
-  proposal: { tiers?: Tier[]; price?: string; scope?: string };
+  proposal: { tiers?: Tier[]; price?: string; scope?: string; includeBenefits?: boolean };
   acceptedAt: string | null;
   acceptedPlan: string | null;
 };
@@ -167,6 +203,50 @@ export const ApprovePage = () => {
       .join(' · ');
   }, [quote, dims]);
 
+  /**
+   * This pool's filter, in the shape every content module expects. `=== 'yes'`
+   * exactly, matching how the PDF read the same field — anything else means the
+   * question wasn't answered, and an unanswered question must not become a
+   * promise.
+   */
+  const filterOption = useMemo(
+    () => ({
+      type: (quote?.pool.filterType ?? '').trim(),
+      included: quote?.pool.filterServiceIncluded === 'yes',
+    }),
+    [quote],
+  );
+
+  /**
+   * The service definition both plans share. In tier mode this box IS what the
+   * taglines mean by "above" — "Everything above, billed month to month" was
+   * pointing at nothing, because this page rendered the plans without ever
+   * rendering the service they include.
+   */
+  const benefits = useMemo(
+    () => (quote && (quote.proposal.includeBenefits || tiers.length > 0) ? includedBenefits(filterOption) : []),
+    [quote, tiers.length, filterOption],
+  );
+
+  /** The struck-through value stack. Empty when nothing is costed for this pool. */
+  const extras = useMemo(
+    () =>
+      quote && (quote.proposal.includeBenefits || tiers.length > 0)
+        ? includedExtras(filterOption, quote.pool.sanitization ?? '')
+        : [],
+    [quote, tiers.length, filterOption],
+  );
+
+  /** Scope lines, parsed the same way the PDF parses them. */
+  const scopeLines = useMemo(
+    () =>
+      (quote?.proposal.scope ?? '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean),
+    [quote],
+  );
+
   const canSubmit =
     !!plan && agree.requirements && agree.service && agree.privacy && signature.trim().length >= 2;
 
@@ -277,19 +357,48 @@ export const ApprovePage = () => {
                 </p>
               </div>
               {poolSummary && (
-                <div>
+                /* A rule between the columns on desktop. Without it a two-fact
+                   pool leaves the right half looking like a gap in the layout
+                   rather than a short answer. */
+                <div className="sm:border-l sm:border-white/10 sm:pl-10">
                   <Eyebrow>Your pool</Eyebrow>
                   <p className="text-sm leading-relaxed text-gray-300">{poolSummary}</p>
                 </div>
               )}
             </div>
-            <p className="mb-9 text-xs text-gray-500">
+            <p className="mb-8 text-xs text-gray-500">
               Something not right?{' '}
               <a href={PHONE_HREF} className="underline hover:text-white">
                 Call us
               </a>{' '}
               and we’ll put it right before you accept.
             </p>
+
+            {/* The service itself, stated once — both plans include it, which is
+                why the plan cards describe billing terms rather than repeating
+                all of this twice. Two columns on desktop so five bullets cost
+                three rows of height instead of five, keeping the plans up. */}
+            {benefits.length > 0 && (
+              <section className="mb-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <h2 className="mb-3 font-display text-base font-bold">{BENEFITS_HEADING}</h2>
+                {/* CSS columns, not a grid. A grid aligns rows, so a two-line
+                    bullet opposite a one-line bullet left a visible gap under
+                    the short one; columns flow top-to-bottom, which is also the
+                    order a list should be read in. */}
+                <ul className="sm:columns-2 sm:gap-x-8">
+                  {benefits.map((b, i) => (
+                    <li
+                      key={i}
+                      className="mb-2 flex break-inside-avoid gap-2 text-sm leading-relaxed text-gray-200"
+                    >
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-400" />
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-xs leading-relaxed text-gray-400">{benefitsNote(filterOption)}</p>
+              </section>
+            )}
 
             <p className="mb-4 text-center text-gray-400">Choose the plan you’d like.</p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -304,13 +413,14 @@ export const ApprovePage = () => {
                       // Recommended leads on a phone: stacked, the upgrade would
                       // otherwise sit below the fold under the option it's meant
                       // to beat. Side by side on desktop, natural order reads
-                      // cheaper-then-better.
+                      // cheaper-then-better — which only works as anchoring if
+                      // the better one visually dominates, hence the ring below.
                       tier.recommended ? 'order-first sm:order-none' : ''
                     } ${
                       on
                         ? 'border-brand-blue-light bg-brand-blue/15 ring-2 ring-brand-blue-light/40'
                         : tier.recommended
-                          ? 'border-brand-blue/60 bg-brand-blue/[0.07] hover:border-brand-blue-light'
+                          ? 'border-brand-blue-light/70 bg-brand-blue/10 shadow-lg shadow-brand-blue/20 ring-1 ring-brand-blue-light/25 hover:border-brand-blue-light'
                           : 'border-white/12 bg-white/[0.03] hover:border-white/30'
                     }`}
                   >
@@ -333,10 +443,20 @@ export const ApprovePage = () => {
                     </div>
                     {tier.tagline && <p className="mt-1 text-sm text-gray-400">{tier.tagline}</p>}
                     {tier.price && (
-                      <p className="mt-3 text-2xl font-bold text-brand-blue-light">{formatPrice(tier.price)}</p>
+                      /* The recommended price is set a size larger. Two prices at
+                         identical weight ask the customer to do the comparison
+                         themselves; the point of recommending one is to have
+                         already done it. */
+                      <p
+                        className={`mt-3 font-bold text-brand-blue-light ${
+                          tier.recommended ? 'text-3xl' : 'text-2xl'
+                        }`}
+                      >
+                        {formatPrice(tier.price)}
+                      </p>
                     )}
                     {tier.priceNote?.trim() && (
-                      <p className="mt-0.5 text-sm font-semibold text-brand-blue-light/90">
+                      <p className="mt-1 inline-flex self-start rounded-md bg-green-500/15 px-2 py-1 text-sm font-semibold text-green-300">
                         {tier.priceNote.trim()}
                       </p>
                     )}
@@ -351,6 +471,40 @@ export const ApprovePage = () => {
                           </li>
                         ))}
                     </ul>
+                    {/* The note and the button are bottom-anchored TOGETHER. The
+                        two cards hold different amounts (only one has a price
+                        note), so the shorter one has slack to put somewhere;
+                        pushing this whole group down turns it into a gap above a
+                        divider — a section break — instead of ~150px of dead
+                        space trailing the card. */}
+                    <div className="mt-auto">
+                      {tier.valueNote?.trim() && (
+                        <p className="border-t border-white/10 pt-3 text-xs leading-relaxed text-gray-400">
+                          {tier.valueNote.trim()}
+                        </p>
+                      )}
+                      {/* An explicit affordance — two faint circles in the
+                          corners were not one. */}
+                      <span className="block pt-4">
+                        <span
+                          className={`flex items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-bold transition-colors ${
+                            on
+                              ? 'border-brand-blue-light bg-brand-blue-light/15 text-white'
+                              : tier.recommended
+                                ? 'border-brand-blue-light/50 text-brand-blue-light'
+                                : 'border-white/15 text-gray-300'
+                          }`}
+                        >
+                          {on ? (
+                            <>
+                              <Check className="h-4 w-4" strokeWidth={3} /> Selected
+                            </>
+                          ) : (
+                            `Choose ${tier.name}`
+                          )}
+                        </span>
+                      </span>
+                    </div>
                   </button>
                 );
               })}
@@ -368,6 +522,77 @@ export const ApprovePage = () => {
                   Continue with {plan} <ArrowRight className="h-5 w-5" />
                 </button>
               </div>
+            )}
+
+            {/* The value stack sits AFTER the prices, not before. Read first it's
+                a claim; read straight after "$185/mo" it's the arithmetic behind
+                the number, which is the argument that actually lands. */}
+            {extras.length > 0 && (
+              <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <h2 className="font-display text-base font-bold">{EXTRAS_HEADING}</h2>
+                <div className="mt-3 flex items-baseline justify-end gap-6 text-[11px] uppercase tracking-wider text-gray-500">
+                  <span className="w-24 text-right">{EXTRAS_COL_THEIRS}</span>
+                  <span className="w-20 text-right">{EXTRAS_COL_YOURS}</span>
+                </div>
+                <ul className="divide-y divide-white/5 border-t border-white/5">
+                  {extras.map((x, i) => (
+                    <li key={i} className="flex items-center gap-6 py-3">
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-gray-100">{x.label}</span>
+                        <span className="block text-xs text-gray-500">{x.basis}</span>
+                      </span>
+                      <span className="w-24 shrink-0 text-right text-sm text-gray-500 line-through">
+                        {x.typical}
+                      </span>
+                      <span className="w-20 shrink-0 text-right text-sm font-bold text-green-400">
+                        {EXTRAS_INCLUDED_LABEL}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-xs leading-relaxed text-gray-500">{EXTRAS_NOTE}</p>
+              </section>
+            )}
+
+            {/* Reference, not persuasion: the full week-by-week scope and each
+                plan's terms. Collapsed so it can be complete without pushing the
+                decision down the page. */}
+            {(scopeLines.length > 0 || tiers.some((t) => t.finePrint?.trim())) && (
+              <details className="group mt-4 rounded-2xl border border-white/10 bg-white/[0.03] px-5 open:pb-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-4 text-sm font-semibold text-gray-300 hover:text-white">
+                  Everything in writing — the full scope of work and plan terms
+                  <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" />
+                </summary>
+                {scopeLines.length > 0 && (
+                  <div className="border-t border-white/10 pt-4">
+                    <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                      Scope of work
+                    </h3>
+                    {scopeLines.map((line, i) =>
+                      /^[•\-]/.test(line) ? (
+                        <p key={i} className="mb-1.5 flex gap-2 text-sm leading-relaxed text-gray-300">
+                          <span className="text-brand-blue-light">•</span>
+                          <span>{line.replace(/^[•-]\s*/, '')}</span>
+                        </p>
+                      ) : (
+                        <p key={i} className="mb-2 text-sm leading-relaxed text-gray-300">
+                          {line}
+                        </p>
+                      ),
+                    )}
+                  </div>
+                )}
+                {tiers
+                  .filter((t) => t.finePrint?.trim())
+                  .map((t, i) => (
+                    <div key={i} className="mt-4 border-t border-white/10 pt-4">
+                      <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                        {t.name} — terms
+                      </h3>
+                      <p className="text-sm leading-relaxed text-gray-400">{t.finePrint?.trim()}</p>
+                    </div>
+                  ))}
+              </details>
             )}
           </>
         )}
