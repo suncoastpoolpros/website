@@ -63,7 +63,7 @@ export type QuoteRow = {
  * in src/pages/ServiceAgreementPage.tsx — "they agreed" is worth little without
  * "to what", so the accepted record names the version.
  */
-export const TERMS_VERSION = '08-11-2026';
+export const TERMS_VERSION = '08-17-2026';
 
 /** How long an emailed approve link stays live. */
 export const QUOTE_TTL_DAYS = 30;

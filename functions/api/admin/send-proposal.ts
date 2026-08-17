@@ -192,6 +192,11 @@ const BASE_BENEFITS = [
   'Filter cleaning, backwashing & salt-cell cleaning — all included',
 ];
 
+// Kept LAST, matching src/components/admin/proposalBenefits.ts. Backed by
+// section 6 of the Service Agreement — see the note there before editing.
+const GUARANTEE_BENEFIT =
+  'A two-week money-back guarantee — not happy in your first two weeks and we refund every penny';
+
 // Mirrors filterServiceLine in src/components/admin/filterService.ts — the email
 // must name the SAME filter the PDF does, or the two documents contradict each
 // other in the same message.
@@ -221,7 +226,7 @@ const filterServiceLine = (type: string, included: boolean): string | null => {
 
 const includedBenefits = (type: string, included: boolean): string[] => {
   const line = filterServiceLine(type, included);
-  return line ? [...BASE_BENEFITS, line] : [...BASE_BENEFITS];
+  return line ? [...BASE_BENEFITS, line, GUARANTEE_BENEFIT] : [...BASE_BENEFITS, GUARANTEE_BENEFIT];
 };
 
 const benefitsNote = (type: string, included: boolean): string =>

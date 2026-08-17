@@ -13,7 +13,7 @@ import {
 } from '@/lib/contact';
 import { usePageMeta } from '@/lib/usePageMeta';
 
-const LAST_UPDATED = '08-11-2026';
+const LAST_UPDATED = '08-17-2026';
 
 // Each block is one clause. `lead` renders a bolded inline label before the text
 // (used for the bulleted definition-style items in the original document).
@@ -255,7 +255,18 @@ const SECTIONS: Section[] = [
         blocks: [
           {
             type: 'p',
-            text: 'Suncoast Pool Pros does not require long-term contracts. However:',
+            text: 'Suncoast Pool Pros does not require long-term contracts.',
+          },
+          // Stated FIRST because it overrides the two clauses that follow. A
+          // guarantee printed after "30 days' notice and billing continues"
+          // would be read as subject to them, which would make it worthless.
+          {
+            type: 'p',
+            text: 'New customers have a two-week money-back guarantee. If you are not happy with the service, tell us within fourteen days of your first scheduled service visit and we will cancel and refund everything you have paid us, in full — including an annual prepayment in its entirety. The 30-day notice requirement below does not apply within that period, and you are not charged for the visits already completed.',
+          },
+          {
+            type: 'p',
+            text: 'After that, the following applies:',
           },
           {
             type: 'p',

@@ -26,13 +26,28 @@ const BASE_BENEFITS = [
 ];
 
 /**
+ * A refund promise, not a feature — so it has to be honoured by section 6 of the
+ * Service Agreement, which otherwise requires 30 days' notice and keeps billing
+ * running through it. Changing this line means changing that clause AND bumping
+ * LAST_UPDATED / TERMS_VERSION, or a customer's signed record names a version
+ * whose terms no longer say this.
+ *
+ * Last in the list on purpose: it's the one that answers "what if you're no
+ * good?", which is the last objection standing once everything above is read.
+ */
+export const GUARANTEE_BENEFIT =
+  'A two-week money-back guarantee — not happy in your first two weeks and we refund every penny';
+
+/**
  * The list, with the filter-service line appended ONLY when this pool's filter
  * type actually has one bundled. A sand-filter customer must never be shown a
  * promise about cartridge elements.
  */
 export const includedBenefits = (filter: FilterOption): string[] => {
   const line = filterServiceLine(filter);
-  return line ? [...BASE_BENEFITS, line] : [...BASE_BENEFITS];
+  return line
+    ? [...BASE_BENEFITS, line, GUARANTEE_BENEFIT]
+    : [...BASE_BENEFITS, GUARANTEE_BENEFIT];
 };
 
 // Carries the "why the rate may read a little higher" explanation. A flat rate
