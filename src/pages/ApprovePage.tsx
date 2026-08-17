@@ -74,16 +74,10 @@ const formatPrice = (raw: string): string => {
 const field =
   'h-12 w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 text-white placeholder-gray-500 focus:border-brand-blue focus:outline-none';
 
-const Row = ({ label, value }: { label: string; value?: string | null }) => {
-  const v = (value ?? '').trim();
-  if (!v) return null;
-  return (
-    <div className="flex gap-3 py-1 text-sm">
-      <span className="w-28 shrink-0 text-gray-500">{label}</span>
-      <span className="flex-1 text-gray-200">{v}</span>
-    </div>
-  );
-};
+/** Small caps heading for the two confirmation blocks. */
+const Eyebrow = ({ children }: { children: string }) => (
+  <h2 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">{children}</h2>
+);
 
 export const ApprovePage = () => {
   usePageMeta({
@@ -148,10 +142,30 @@ export const ApprovePage = () => {
       .join(' × ');
   }, [quote]);
 
-  const filterLine = useMemo(() => {
+  /**
+   * The pool as one flowing line rather than a table of labelled rows.
+   *
+   * A labelled table needs every row to earn its label, and looked stranded on a
+   * quote carrying only two facts ("Water: Saltwater / Filter: Cartridge" as a
+   * two-row grid). Joined, the same two facts read as a sentence — and a fully
+   * detailed pool wraps to two lines instead of becoming a seven-row block.
+   */
+  const poolSummary = useMemo(() => {
     const p = quote?.pool ?? {};
-    return [p.filterType, p.filter].filter((v) => (v ?? '').trim()).join(' — ');
-  }, [quote]);
+    const filter = [p.filterType, p.filter].filter((v) => (v ?? '').trim()).join(' ');
+    return [
+      p.sanitization,
+      filter && `${filter} filter`,
+      p.gallons && `${p.gallons} gallons`,
+      dims,
+      p.shape,
+      p.pump,
+      p.heater,
+    ]
+      .map((v) => (v ?? '').trim())
+      .filter(Boolean)
+      .join(' · ');
+  }, [quote, dims]);
 
   const canSubmit =
     !!plan && agree.requirements && agree.service && agree.privacy && signature.trim().length >= 2;
@@ -245,35 +259,36 @@ export const ApprovePage = () => {
                 pool" — not the decision. Two bordered cards pushed the plans
                 below the fold on a phone, which is the wrong thing to make
                 someone scroll past. */}
-            <div className="mb-5 grid grid-cols-1 gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
+            {/* An address block, not a table. "Service at / Email / Phone" labels
+                told people what an address, an email and a phone number are —
+                and the fixed label column left a dead gutter on a phone. */}
+            <div className="mb-5 grid grid-cols-1 gap-x-10 gap-y-5 sm:grid-cols-2">
               <div>
-                <h2 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                  Your details
-                </h2>
+                <Eyebrow>Prepared for</Eyebrow>
                 <p className="font-semibold text-white">{quote.customerName}</p>
-                <Row label="Service at" value={quote.customerAddress} />
-                <Row label="Email" value={quote.customerEmail} />
-                <Row label="Phone" value={quote.customerPhone} />
+                {quote.customerAddress?.trim() && (
+                  <p className="text-sm text-gray-300">{quote.customerAddress.trim()}</p>
+                )}
+                <p className="mt-0.5 text-sm text-gray-400">
+                  {[quote.customerEmail, quote.customerPhone]
+                    .map((v) => (v ?? '').trim())
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
               </div>
-              <div>
-                <h2 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                  Your pool
-                </h2>
-                <Row label="Volume" value={quote.pool.gallons ? `${quote.pool.gallons} gallons` : ''} />
-                <Row label="Dimensions" value={dims} />
-                <Row label="Shape" value={quote.pool.shape} />
-                <Row label="Water" value={quote.pool.sanitization} />
-                <Row label="Filter" value={filterLine} />
-                <Row label="Pump" value={quote.pool.pump} />
-                <Row label="Heater" value={quote.pool.heater} />
-              </div>
+              {poolSummary && (
+                <div>
+                  <Eyebrow>Your pool</Eyebrow>
+                  <p className="text-sm leading-relaxed text-gray-300">{poolSummary}</p>
+                </div>
+              )}
             </div>
-            <p className="mb-8 text-xs text-gray-500">
+            <p className="mb-9 text-xs text-gray-500">
               Something not right?{' '}
               <a href={PHONE_HREF} className="underline hover:text-white">
                 Call us
               </a>{' '}
-              before accepting and we’ll put it right.
+              and we’ll put it right before you accept.
             </p>
 
             <p className="mb-4 text-center text-gray-400">Choose the plan you’d like.</p>
