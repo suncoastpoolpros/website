@@ -9,6 +9,7 @@
  * customer approves by replying "approved", so Reply-To points at the business
  * inbox, not the no-reply From address.
  */
+import { approveUrl, saveQuote } from '../_quotes';
 import {
   type AdminContext,
   type AdminEnv,
@@ -115,7 +116,17 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
     // bare noreply@ address. Resend accepts "Display Name <email@domain>".
     const from = fromEmail.includes('<') ? fromEmail : `${BIZ.name} <${fromEmail}>`;
 
-    const { html, text } = composeProposalEmail(payload, env);
+    // Stored before sending so the email can carry a one-click accept link.
+    // Returns null when D1 isn't bound or the write fails — the proposal then
+    // sends exactly as it always has, minus the link.
+    const token = await saveQuote((env as { DB?: unknown }).DB, {
+      customer,
+      pool: payload.pool ?? {},
+      proposal: payload.proposal ?? {},
+    });
+    const acceptLink = token ? approveUrl(new URL(request.url).origin, token) : '';
+
+    const { html, text } = composeProposalEmail(payload, env, acceptLink);
     const attachments =
       typeof payload.pdfBase64 === 'string' && payload.pdfBase64.length > 0
         ? [
@@ -402,6 +413,8 @@ const renderTiers = (tiers: Tier[]): string => {
 export const composeProposalEmail = (
   p: SendProposalPayload,
   _env: AdminEnv,
+  /** One-click accept URL. Empty when quote storage isn't available. */
+  acceptLink = '',
 ): { html: string; text: string } => {
   const name = safe(String(p.customer?.name ?? '').trim(), 120);
   const greetingName = name ? name.split(/\s+/)[0] : 'there';
@@ -473,9 +486,16 @@ export const composeProposalEmail = (
     tiered && valueNote ? valueNote : '',
     showSinglePrice ? `Total: ${price}` : '',
     ``,
-    acceptWords.length > 1
-      ? `To accept, reply to this email with the plan you'd like — ${acceptWords.join(' or ')} — and we'll get you scheduled.`
-      : `To accept, simply reply "APPROVED" to this email and we'll get you scheduled.`,
+    acceptLink ? `To accept, choose your plan here: ${acceptLink}` : '',
+    acceptLink
+      ? `Prefer email? ${
+          acceptWords.length > 1
+            ? `Just reply with ${acceptWords.join(' or ')}.`
+            : 'Just reply "APPROVED".'
+        }`
+      : acceptWords.length > 1
+        ? `To accept, reply to this email with the plan you'd like — ${acceptWords.join(' or ')} — and we'll get you scheduled.`
+        : `To accept, simply reply "APPROVED" to this email and we'll get you scheduled.`,
     ``,
     `Questions? Just reply to this message.`,
     ``,
@@ -581,11 +601,21 @@ export const composeProposalEmail = (
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 6px;">
             <tr><td style="padding:16px 20px;background:#eefaf0;border:1px solid #bfe7c6;border-radius:12px;font-size:15px;color:#176a2c;line-height:1.55;">
               ${
-                acceptWords.length > 1
-                  ? `<strong style="color:#1d7a33;">To accept:</strong> reply to this email with the plan you&rsquo;d like &mdash; ${acceptWords
-                      .map((w) => `<strong>${escapeHtml(w)}</strong>`)
-                      .join(' or ')} &mdash; and we&rsquo;ll get you on the schedule.`
-                  : `<strong style="color:#1d7a33;">To accept:</strong> just reply <strong>&ldquo;APPROVED&rdquo;</strong> to this email and we&rsquo;ll get you on the schedule.`
+                acceptLink
+                  ? `<strong style="color:#1d7a33;">To accept:</strong> choose your plan below and we&rsquo;ll get you on the schedule.
+                     <div style="margin-top:14px;">
+                       <a href="${escapeHtml(acceptLink)}" style="display:inline-block;background:#1d7a33;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:13px 26px;border-radius:10px;">Review &amp; accept your plan</a>
+                     </div>
+                     <div style="margin-top:10px;font-size:13px;color:#3f7a4f;">Prefer email? ${
+                       acceptWords.length > 1
+                         ? `Just reply with ${acceptWords.map((w) => `<strong>${escapeHtml(w)}</strong>`).join(' or ')}.`
+                         : 'Just reply <strong>&ldquo;APPROVED&rdquo;</strong>.'
+                     }</div>`
+                  : acceptWords.length > 1
+                    ? `<strong style="color:#1d7a33;">To accept:</strong> reply to this email with the plan you&rsquo;d like &mdash; ${acceptWords
+                        .map((w) => `<strong>${escapeHtml(w)}</strong>`)
+                        .join(' or ')} &mdash; and we&rsquo;ll get you on the schedule.`
+                    : `<strong style="color:#1d7a33;">To accept:</strong> just reply <strong>&ldquo;APPROVED&rdquo;</strong> to this email and we&rsquo;ll get you on the schedule.`
               }
             </td></tr>
           </table>

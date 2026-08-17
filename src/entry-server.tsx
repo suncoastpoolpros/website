@@ -55,6 +55,7 @@ import { SignupPage } from '@/pages/SignupPage';
 import { ServiceAgreementPage } from '@/pages/ServiceAgreementPage';
 import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage';
 import { AdminPage } from '@/pages/AdminPage';
+import { ApprovePage } from '@/pages/ApprovePage';
 
 // Routes to prerender. Marketing pages benefit most from static HTML for SEO
 // and instant first paint; the calculator and signup are heavily interactive
@@ -97,6 +98,11 @@ export const PRERENDER_ROUTES = [
   // plus a robots.txt Disallow, and out of the sitemap automatically because the
   // generator skips noindex routes. The HTML it emits is just the auth spinner.
   '/admin',
+  // Reached from an emailed link carrying ?t=<token>. Prerendered like every
+  // other route — the SPA catch-all is gone, so an unlisted path 404s. The
+  // token lives in the query string precisely so this can stay a static file;
+  // usePageMeta marks it noindex.
+  '/approve',
 ];
 
 const Routing = () => (
@@ -130,6 +136,7 @@ const Routing = () => (
     <Route path="/service-agreement" element={<ServiceAgreementPage />} />
     <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
     <Route path="/admin" element={<AdminPage />} />
+    <Route path="/approve" element={<ApprovePage />} />
   </Routes>
 );
 

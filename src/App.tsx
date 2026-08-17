@@ -55,6 +55,7 @@ const PrivacyPolicyPage = lazyRoute(() => import('@/pages/PrivacyPolicyPage').th
 // PRERENDER_ROUTES — it's a client-only app route (no SEO, no static HTML), and
 // it's Disallow-ed in robots.txt.
 const AdminPage = lazyRoute(() => import('@/pages/AdminPage').then((m) => m.AdminPage));
+const ApprovePage = lazyRoute(() => import('@/pages/ApprovePage').then((m) => m.ApprovePage));
 const NotFoundPage = lazyRoute(() => import('@/pages/NotFoundPage').then((m) => m.NotFoundPage));
 
 // On route change, jump to top (unless navigating to an in-page #anchor) and
@@ -129,6 +130,7 @@ export const ROUTE_COMPONENTS: Record<string, PreloadableComponent> = {
   '/service-agreement': ServiceAgreementPage,
   '/privacy-policy': PrivacyPolicyPage,
   '/admin': AdminPage,
+  '/approve': ApprovePage,
 };
 
 export default function App() {
@@ -223,6 +225,7 @@ export default function App() {
           <Route path="/service-agreement" element={<ServiceAgreementPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/approve" element={<ApprovePage />} />
           {/* Catch-all 404 — must be last. */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
