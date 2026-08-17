@@ -588,10 +588,18 @@ export const composeProposalEmail = (
 
           ${tiered ? renderTiers(tiers) : ''}
 
-          <!-- Attachment chip -->
+          <!-- Attachment chip. Says what's IN the PDF, not just that one
+               exists: the pool survey and each plan's full terms are only in
+               there, so this is the reason to open it. -->
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
-            <tr><td style="padding:12px 16px;background:#f3f6fb;border:1px solid #dce7f2;border-radius:10px;font-size:14px;color:#0f4d80;">
-              <span style="font-size:16px;">📎</span>&nbsp;&nbsp;<strong>Your proposal is attached</strong> as a PDF
+            <tr><td style="padding:14px 18px;background:#f3f6fb;border:1px solid #dce7f2;border-radius:10px;">
+              <div style="font-size:14px;color:#0f4d80;">
+                <span style="font-size:16px;">📎</span>&nbsp;&nbsp;<strong>Your proposal is attached as a PDF</strong>
+              </div>
+              <div style="font-size:13px;color:#5b7590;line-height:1.55;margin-top:6px;">
+                The full document &mdash; your pool&rsquo;s details as we surveyed them, the scope of work, and the
+                complete terms for each plan. Worth keeping for your records.
+              </div>
             </td></tr>
           </table>
 
