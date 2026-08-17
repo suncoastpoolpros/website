@@ -231,7 +231,7 @@ const includedBenefits = (type: string, included: boolean): string[] => {
 
 const benefitsNote = (type: string, included: boolean): string =>
   filterServiceLine(type, included)
-    ? "It's all covered in your flat rate — including the filter parts and labour most companies bill separately. That's why the monthly figure may read a little higher than a bare-bones quote, and why you won't get a surprise invoice on top of it."
+    ? "It's all covered in your flat rate — including the filter parts and labour most companies bill separately. One number every month, and no surprise invoice on top of it."
     : "It's all covered in your flat rate — no surprise fees.";
 
 // Prefix a bare number with "$" (425 → $425, 185/mo → $185/mo) while leaving

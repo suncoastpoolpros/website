@@ -50,13 +50,20 @@ export const includedBenefits = (filter: FilterOption): string[] => {
     : [...BASE_BENEFITS, GUARANTEE_BENEFIT];
 };
 
-// Carries the "why the rate may read a little higher" explanation. A flat rate
-// that covers parts other companies invoice separately is the whole argument —
-// state it plainly rather than letting the customer discover it by comparison.
-/** The "why it may read higher" line — only true when something IS bundled. */
+// States what the flat rate covers, and lets "most companies bill separately" do
+// the comparing.
+//
+// It used to end "that's why the monthly figure may read a little higher than a
+// bare-bones quote". Cut deliberately: this string also renders on the approve
+// page, where the customer has already decided and is about to sign — naming a
+// competitor's advantage at the moment of commitment plants a doubt rather than
+// defusing one. It also conceded the wrong axis. A bare-bones quote plus a $120
+// cartridge, a $100 salt-cell wash and $35–$400 of algaecide is not cheaper, so
+// "higher" surrendered a comparison that the total cost wins.
+/** What the flat rate covers — only claims the extras when something IS bundled. */
 export const benefitsNote = (filter: FilterOption): string =>
   filterServiceLine(filter)
-    ? "It's all covered in your flat rate — including the filter parts and labour most companies bill separately. That's why the monthly figure may read a little higher than a bare-bones quote, and why you won't get a surprise invoice on top of it."
+    ? "It's all covered in your flat rate — including the filter parts and labour most companies bill separately. One number every month, and no surprise invoice on top of it."
     : "It's all covered in your flat rate — no surprise fees.";
 
 // Clarifies exactly what the included filter service covers vs. doesn't, so a
