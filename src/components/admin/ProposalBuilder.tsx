@@ -12,6 +12,7 @@ import {
   type Tier,
 } from '@/lib/adminApi';
 import { blobToBase64 } from '@/lib/adminMedia';
+import { proposalDateLabel, proposalFilename, renderProposalPdf } from '@/lib/proposalPdf';
 import { toTitleCase, formatUsPhone } from '@/lib/textFormat';
 import { Section, PreviewBlock, PreviewRow } from './adminUi';
 import { PhotoPicker } from './PhotoPicker';
@@ -43,13 +44,6 @@ type SendStatus =
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
-const todayLabel = () =>
-  new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-const filenameFor = (data: ProposalData): string => {
-  const name = data.customer.name.trim().replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  return `Suncoast-Proposal${name ? '-' + name : ''}.pdf`;
-};
 
 export const ProposalBuilder = ({
   onLogout,
@@ -252,20 +246,17 @@ export const ProposalBuilder = ({
     abortRef.current = controller;
     setStatus({ kind: 'sending' });
     try {
-      // Load the PDF engine + document only now, so @react-pdf is a lazy chunk
-      // fetched on first send — never part of the marketing or initial /admin JS.
-      const [{ pdf }, { ProposalDocument }] = await Promise.all([
-        import('@react-pdf/renderer'),
-        import('./ProposalDocument'),
-      ]);
-      if (cancelledRef.current) return;
-      const blob = await pdf(
-        <ProposalDocument data={data} photos={photos} dateLabel={todayLabel()} />,
-      ).toBlob();
+      // renderProposalPdf keeps the engine a lazy chunk fetched on first send,
+      // and is the same call the customer's approve page makes to build their
+      // download — so the two copies can't drift.
+      const blob = await renderProposalPdf({ data, photos, dateLabel: proposalDateLabel() });
       if (cancelledRef.current) return;
       const pdfBase64 = await blobToBase64(blob);
       if (cancelledRef.current) return;
-      await sendProposal({ ...data, pdfBase64, filename: filenameFor(data) }, controller.signal);
+      await sendProposal(
+        { ...data, pdfBase64, filename: proposalFilename(data.customer.name) },
+        controller.signal,
+      );
       setStatus({ kind: 'sent' });
     } catch (err) {
       // A cancel (flag set, or the fetch aborted) is not an error — stay idle.
@@ -845,7 +836,7 @@ export const ProposalBuilder = ({
           <div className="lg:sticky lg:top-8 lg:self-start lg:flex lg:max-h-[calc(100dvh-4rem)] lg:flex-col">
             <p className="mb-2 shrink-0 text-xs font-semibold uppercase tracking-wider text-gray-500">Live preview</p>
             <div className="admin-scroll lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
-              <ProposalPreview data={data} photos={photos} dateLabel={todayLabel()} />
+              <ProposalPreview data={data} photos={photos} dateLabel={proposalDateLabel()} />
             </div>
 
             {status.kind === 'error' && (

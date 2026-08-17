@@ -8,24 +8,17 @@ import {
   ArrowLeft,
   PenLine,
   ChevronDown,
+  Download,
 } from 'lucide-react';
 import { usePageMeta } from '@/lib/usePageMeta';
+import {
+  downloadBlob,
+  proposalDataFromQuote,
+  proposalDateLabel,
+  proposalFilename,
+  renderProposalPdf,
+} from '@/lib/proposalPdf';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
-/**
- * The proposal's own content modules. They live under components/admin because
- * the PDF and the proposal email are their other two consumers, but they hold no
- * admin UI — they're pure data derived from the pool, which is why this public
- * page can use them to render the same service definition the customer already
- * read in their PDF.
- *
- * DERIVED, NOT REPLAYED: these compute from the stored pool rather than from a
- * snapshot taken at send time, so editing the wording here changes what an
- * already-sent quote's page says. Acceptable while the wording only ever gets
- * more accurate; if one of these lines ever changes materially, old quotes would
- * show the new one against a PDF showing the old, and it should be snapshotted
- * into proposal_json at send time instead.
- */
-import { BENEFITS_HEADING, includedBenefits } from '@/components/admin/proposalBenefits';
 
 /**
  * /approve/?t=<token> — where an emailed "Review & accept your plan" link lands.
@@ -119,6 +112,7 @@ export const ApprovePage = () => {
   const [plan, setPlan] = useState('');
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState('');
+  const [pdfState, setPdfState] = useState<'idle' | 'working' | 'error'>('idle');
 
   const [sameBilling, setSameBilling] = useState(true);
   const [billing, setBilling] = useState({ name: '', email: '', address: '', city: '', state: '', zip: '' });
@@ -218,30 +212,11 @@ export const ApprovePage = () => {
   }, [quote, dims]);
 
   /**
-   * This pool's filter, in the shape every content module expects. `=== 'yes'`
-   * exactly, matching how the PDF read the same field — anything else means the
-   * question wasn't answered, and an unanswered question must not become a
-   * promise.
-   */
-  const filterOption = useMemo(
-    () => ({
-      type: (quote?.pool.filterType ?? '').trim(),
-      included: quote?.pool.filterServiceIncluded === 'yes',
-    }),
-    [quote],
-  );
-
-  /**
    * The service definition both plans share. In tier mode this box IS what the
    * taglines mean by "above" — "Everything above, billed month to month" was
    * pointing at nothing, because this page rendered the plans without ever
    * rendering the service they include.
    */
-  const benefits = useMemo(
-    () => (quote && (quote.proposal.includeBenefits || tiers.length > 0) ? includedBenefits(filterOption) : []),
-    [quote, tiers.length, filterOption],
-  );
-
   /**
    * Today in the browser's own timezone, as the date input's `min`.
    *
@@ -266,6 +241,34 @@ export const ApprovePage = () => {
         .filter(Boolean),
     [quote],
   );
+
+  /**
+   * Rebuild the proposal PDF in the browser and hand it over as a download.
+   *
+   * Same renderProposalPdf the admin builder calls when it emails the
+   * attachment, and the date comes from the quote's createdAt — so a download
+   * taken weeks later still carries the date the proposal was actually sent
+   * rather than today's.
+   *
+   * The engine is ~1.4MB and only fetched on this click, so it costs nothing to
+   * anyone who doesn't press it.
+   */
+  const downloadPdf = useCallback(async () => {
+    if (!quote || pdfState === 'working') return;
+    setPdfState('working');
+    try {
+      const blob = await renderProposalPdf({
+        data: proposalDataFromQuote(quote),
+        dateLabel: proposalDateLabel(quote.createdAt),
+      });
+      downloadBlob(blob, proposalFilename(quote.customerName));
+      setPdfState('idle');
+    } catch {
+      // The PDF is attached to their email too, so this is a convenience
+      // failing, not a dead end — the message below says so.
+      setPdfState('error');
+    }
+  }, [quote, pdfState]);
 
   const canSubmit =
     !!plan && agree.requirements && agree.service && agree.privacy && signature.trim().length >= 2;
@@ -404,6 +407,25 @@ export const ApprovePage = () => {
                     .filter(Boolean)
                     .join(' · ')}
                 </p>
+                {/* Sits with the customer's own details, because it's their copy
+                    of the document rather than another thing to consider. */}
+                <button
+                  onClick={downloadPdf}
+                  disabled={pdfState === 'working'}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#dce7f2] bg-white px-3 py-2 text-sm font-semibold text-[#0f4d80] transition-colors hover:border-[#1669AE] hover:bg-[#f3f6fb] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {pdfState === 'working' ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  {pdfState === 'working' ? 'Preparing…' : 'Download full proposal'}
+                </button>
+                {pdfState === 'error' && (
+                  <p className="mt-1.5 text-xs text-[#c0392b]">
+                    Couldn’t build the PDF — it’s also attached to the email we sent you.
+                  </p>
+                )}
               </div>
               {poolSummary && (
                 /* A rule between the columns on desktop. Without it a two-fact
@@ -420,34 +442,11 @@ export const ApprovePage = () => {
                 links a few hundred pixels apart read as clutter, not as help.
                 The spacing it provided now sits on the grid above. */}
 
-            {/* The service itself, stated once — both plans include it, which is
-                why the plan cards describe billing terms rather than repeating
-                all of this twice. Two columns on desktop so five bullets cost
-                three rows of height instead of five, keeping the plans up. */}
-            {benefits.length > 0 && (
-              <section className="mb-8 rounded-2xl border border-[#e3e8ef] bg-white p-5">
-                <h2 className="mb-3 font-display text-base font-bold text-[#0f4d80]">{BENEFITS_HEADING}</h2>
-                {/* CSS columns, not a grid. A grid aligns rows, so a two-line
-                    bullet opposite a one-line bullet left a visible gap under
-                    the short one; columns flow top-to-bottom, which is also the
-                    order a list should be read in. */}
-                <ul className="sm:columns-2 sm:gap-x-8">
-                  {benefits.map((b, i) => (
-                    <li
-                      key={i}
-                      // Space BETWEEN bullets only. leading-relaxed is untouched,
-                      // so a bullet that wraps stays tight within itself and the
-                      // gap reads as separation between points rather than loose
-                      // text.
-                      className="mb-4 flex break-inside-avoid gap-2 text-sm leading-relaxed text-[#1f2937]"
-                    >
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
-                      <span>{b}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
+            {/* The Suncoast Difference box lived here. Removed: the customer has
+                already read it twice by the time they reach this page — once in
+                the email, once in the attached PDF — and this page's job is the
+                decision, not the pitch. The download below keeps the full
+                document one click away. */}
 
             <p className="mb-4 text-center text-[#6b7280]">Choose the plan you’d like.</p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
