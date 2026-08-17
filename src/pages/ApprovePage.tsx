@@ -590,12 +590,12 @@ export const ApprovePage = () => {
                     </h3>
                     {scopeLines.map((line, i) =>
                       /^[•\-]/.test(line) ? (
-                        <p key={i} className="mb-1.5 flex gap-2 text-sm leading-relaxed text-[#374151]">
+                        <p key={i} className="mb-3 flex gap-2 text-sm leading-relaxed text-[#374151]">
                           <span className="text-[#1669AE]">•</span>
                           <span>{line.replace(/^[•-]\s*/, '')}</span>
                         </p>
                       ) : (
-                        <p key={i} className="mb-2 text-sm leading-relaxed text-[#374151]">
+                        <p key={i} className="mb-3.5 text-sm leading-relaxed text-[#374151]">
                           {line}
                         </p>
                       ),

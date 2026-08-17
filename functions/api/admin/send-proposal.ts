@@ -422,6 +422,13 @@ export const composeProposalEmail = (
   const greetingName = name ? name.split(/\s+/)[0] : 'there';
   const price = formatPrice(safe(String(p.proposal?.price ?? '').trim(), 40));
   const scope = safe(String(p.proposal?.scope ?? '').trim(), FIELD_MAX);
+  // One block per line rather than one blob joined by <br>. Blank lines in the
+  // source were only there to create spacing; as real margins they aren't
+  // needed, and a <br> can't carry a margin anyway.
+  const scopeLines = scope
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
   // Email only — deliberately absent from the PDF, which is the formal document.
   const emailNote = safe(String(p.proposal?.emailNote ?? '').trim(), FIELD_MAX);
   const emailNoteParas = emailNote.split(/\n{2,}/).map((x) => x.trim()).filter(Boolean);
@@ -600,7 +607,17 @@ export const composeProposalEmail = (
           ${scope ? `
           <div style="margin:0 0 18px;">
             <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa4b2;font-weight:700;margin-bottom:6px;">Scope of Work</div>
-            <div style="font-size:15px;color:#374151;line-height:1.6;">${escapeHtml(scope).replace(/\n/g, '<br>')}</div>
+            ${scopeLines
+              .map(
+                (line) =>
+                  // Margin between items only — line-height stays 1.6, so a
+                  // bullet that wraps is still tight within itself and the gap
+                  // reads as separation between points.
+                  `<div style="font-size:15px;color:#374151;line-height:1.6;margin:0 0 ${
+                    /^[•-]/.test(line) ? '11px' : '14px'
+                  };">${escapeHtml(line)}</div>`,
+              )
+              .join('')}
           </div>` : ''}
 
           ${showSinglePrice ? `
