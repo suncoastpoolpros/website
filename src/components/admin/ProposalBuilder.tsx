@@ -18,7 +18,7 @@ import { PhotoPicker } from './PhotoPicker';
 import { SANITIZATION_TYPES } from './sanitization';
 import { SCOPE_TEMPLATES } from './scopeTemplates';
 import { ADDON_PRESETS } from './addonPresets';
-import { BENEFITS_HEADING, includedBenefits, benefitsNote } from './proposalBenefits';
+import { BENEFITS_HEADING, includedBenefits } from './proposalBenefits';
 import {
   EXTRAS_COL_THEIRS,
   EXTRAS_INTRO,
@@ -939,7 +939,6 @@ const ProposalPreview = ({
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[11px] italic text-stone-500">{benefitsNote(filterOption)}</p>
           </div>
         )}
 

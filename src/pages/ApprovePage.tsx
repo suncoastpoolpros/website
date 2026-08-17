@@ -25,7 +25,7 @@ import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
  * show the new one against a PDF showing the old, and it should be snapshotted
  * into proposal_json at send time instead.
  */
-import { BENEFITS_HEADING, benefitsNote, includedBenefits } from '@/components/admin/proposalBenefits';
+import { BENEFITS_HEADING, includedBenefits } from '@/components/admin/proposalBenefits';
 
 /**
  * /approve/?t=<token> — where an emailed "Review & accept your plan" link lands.
@@ -424,7 +424,6 @@ export const ApprovePage = () => {
                     </li>
                   ))}
                 </ul>
-                <p className="mt-3 max-w-3xl text-xs leading-relaxed text-gray-400">{benefitsNote(filterOption)}</p>
               </section>
             )}
 

@@ -229,10 +229,7 @@ const includedBenefits = (type: string, included: boolean): string[] => {
   return line ? [...BASE_BENEFITS, line, GUARANTEE_BENEFIT] : [...BASE_BENEFITS, GUARANTEE_BENEFIT];
 };
 
-const benefitsNote = (type: string, included: boolean): string =>
-  filterServiceLine(type, included)
-    ? "It's all covered in your flat rate — including the filter parts and labour most companies bill separately. One number every month, and no surprise invoice on top of it."
-    : "It's all covered in your flat rate — no surprise fees.";
+// benefitsNote removed — see src/components/admin/proposalBenefits.ts.
 
 // Prefix a bare number with "$" (425 → $425, 185/mo → $185/mo) while leaving
 // values that already start with a symbol/word untouched ($425, "Call for price").
@@ -433,7 +430,6 @@ export const composeProposalEmail = (
   const filterIncluded =
     p.pool?.filterServiceIncluded === true || p.pool?.filterServiceIncluded === 'yes';
   const benefitsList = includedBenefits(filterType, filterIncluded);
-  const benefitsNoteText = benefitsNote(filterType, filterIncluded);
   const extras = includedExtras(filterType, filterIncluded, safe(String(p.pool?.sanitization ?? '').trim(), 60));
   const tiered = hasTiers(p);
   const tiers = tiered ? (p.proposal?.tiers ?? []) : [];
@@ -470,7 +466,7 @@ export const composeProposalEmail = (
     `Suncoast Pool Pros is attached as a PDF.`,
     ``,
     ...(includeBenefits
-      ? [`${BENEFITS_HEADING}:`, ...benefitsList.map((b) => `  - ${b}`), benefitsNoteText, ``]
+      ? [`${BENEFITS_HEADING}:`, ...benefitsList.map((b) => `  - ${b}`), ``]
       : []),
     scope ? `Scope of work: ${scope}` : '',
     ...(tiered
@@ -558,7 +554,6 @@ export const composeProposalEmail = (
             <tr><td style="padding:16px 20px;background:#eef6fb;border:1px solid #cfe3f2;border-radius:12px;">
               <div style="font-size:15px;font-weight:700;color:#0f4d80;margin-bottom:8px;">${BENEFITS_HEADING}</div>
               ${benefitsList.map((b) => `<div style="font-size:14px;color:#1f2937;font-weight:600;line-height:1.55;margin:10px 0;"><span style="color:#1d7a33;">&#10003;</span>&nbsp;&nbsp;${escapeHtml(b)}</div>`).join('')}
-              <div style="font-size:13px;color:#6b7280;font-style:italic;margin-top:10px;line-height:1.55;">${escapeHtml(benefitsNoteText)}</div>
             </td></tr>
           </table>` : ''}
 

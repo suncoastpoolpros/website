@@ -11,7 +11,7 @@
  */
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import { type ProposalData, type Tier, formatPrice, tierDelta } from '@/lib/adminApi';
-import { BENEFITS_HEADING, includedBenefits, benefitsNote } from './proposalBenefits';
+import { BENEFITS_HEADING, includedBenefits } from './proposalBenefits';
 import {
   EXTRAS_COL_THEIRS,
   EXTRAS_INTRO,
@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
   // fontSize is set explicitly alongside lineHeight — react-pdf sizes the line
   // box from the INHERITED size otherwise, which throws the leading out.
   includedItemText: { color: NAVY, flex: 1, fontFamily: 'Helvetica-Bold', fontSize: 8.5, lineHeight: 1.45 },
-  includedNote: { marginTop: 6, fontSize: 8.5, color: MUTED, fontStyle: 'italic' },
   includedFootnote: { marginTop: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: TINT_BORDER, fontSize: 8, color: FAINT, lineHeight: 1.4 },
 
   // ----- Value stack (what others bill separately) -----
@@ -450,7 +449,6 @@ export const ProposalDocument = ({
                 <Text style={styles.includedItemText}>{b}</Text>
               </View>
             ))}
-            <Text style={styles.includedNote}>{benefitsNote(filterOption)}</Text>
           </View>
         ) : null}
 
