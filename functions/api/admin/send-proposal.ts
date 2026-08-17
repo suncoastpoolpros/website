@@ -463,15 +463,11 @@ export const composeProposalEmail = (
       const rec = safe(String(recommendedTier?.name ?? '').trim(), 60).toUpperCase();
       return a === rec ? -1 : b === rec ? 1 : 0;
     });
-  // Every plan's note, in card order: the base plan explains what the all-in
-  // rate covers, the recommended one sells the offer.
-  const valueNotes = tiers
-    .map((t) => ({
-      text: safe(String(t?.valueNote ?? '').trim(), 800),
-      recommended: t?.recommended === true,
-    }))
-    .filter((n) => n.text !== '');
-  const valueNote = valueNotes.map((n) => n.text).join('\n\n');
+  // Each plan's valueNote is deliberately NOT rendered here. It lives in the
+  // proposal PDF (verified: both notes land on page 2, under the plan cards),
+  // and the email had grown into a second copy of the document rather than a
+  // covering note for it. The field is still carried on the payload and stored
+  // with the quote — this is a rendering decision, not a data one.
   // A single price alongside a plan comparison is a contradiction — suppress it.
   const showSinglePrice = !tiered && price !== '';
 
@@ -509,8 +505,6 @@ export const composeProposalEmail = (
           ];
         })
       : []),
-    tiered && valueNote ? `` : '',
-    tiered && valueNote ? valueNote : '',
     scope ? `` : '',
     scope ? `Scope of work: ${scope}` : '',
     showSinglePrice ? `Total: ${price}` : '',
@@ -593,19 +587,6 @@ export const composeProposalEmail = (
           ${includeBenefits ? renderExtras(extras) : ''}
 
           ${tiered ? renderTiers(tiers) : ''}
-
-          ${
-            tiered
-              ? valueNotes
-                  .map(
-                    (n) =>
-                      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 14px;">
-            <tr><td style="padding:14px 18px;background:${n.recommended ? '#fff8ec' : '#f1f7fc'};border:1px solid ${n.recommended ? '#f0dcb4' : '#d4e6f4'};border-radius:12px;font-size:14px;color:${n.recommended ? '#8a5a10' : '#0f4d80'};line-height:1.55;">${escapeHtml(n.text)}</td></tr>
-          </table>`,
-                  )
-                  .join('')
-              : ''
-          }
 
           <!-- Attachment chip -->
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
