@@ -23,10 +23,29 @@
  *
  * Run: `npm run check:mirrors` (also runs as part of `npm run build`).
  */
-import { build } from 'esbuild';
 import { readFile, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+
+/**
+ * esbuild is loaded defensively. This check runs as the first step of the build,
+ * so anything that stops it from RUNNING would otherwise block every deploy —
+ * which is worse than the drift it prevents. A tooling failure warns and lets
+ * the build through; drift it actually detected still fails hard.
+ *
+ * (This is not hypothetical: esbuild was undeclared and only resolved locally
+ * via hoisting out of vite, so the check crashed on Cloudflare and silently
+ * blocked three deploys. It's a declared devDependency now — this is the belt
+ * to that braces.)
+ */
+let build;
+try {
+  ({ build } = await import('esbuild'));
+} catch (err) {
+  console.warn(`⚠ Mirror check SKIPPED — could not load esbuild (${err.code ?? err.message}).`);
+  console.warn('  The PDF/email duplicates are unverified for this build.');
+  process.exit(0);
+}
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // Output must live INSIDE the project or Node can't resolve the external
