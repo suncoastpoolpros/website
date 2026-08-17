@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Send, LoaderCircle, CheckCircle, Check, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ChevronLeft, X } from 'lucide-react';
+import { Send, LoaderCircle, CheckCircle, Check, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ChevronLeft, ChevronDown, X } from 'lucide-react';
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
 import { useProposalDraft } from '@/lib/useAdminDraft';
 import {
@@ -69,6 +69,8 @@ export const ProposalBuilder = ({
   // images would quickly exceed the storage quota. They're optional and baked
   // straight into the generated PDF.
   const [photos, setPhotos] = useState<string[]>([]);
+  // Which plan's editor is open, if any. Both start collapsed.
+  const [editingTier, setEditingTier] = useState<number | null>(null);
 
   // Drop a pre-written service description into the scope field. Appends (with a
   // blank line) when scope already has text, so templates can be combined and
@@ -694,11 +696,20 @@ export const ProposalBuilder = ({
                 </p>
                 {data.proposal.tiers.map((tier, i) => (
                   <div key={i} className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-4">
-                    <div className="flex items-center justify-between gap-3">
+                    {/* Collapsed by default: the presets are right for almost
+                        every proposal, so the common case is reading them, not
+                        rewriting them. The summary keeps the two things that DO
+                        change per customer — which plan is recommended, and the
+                        rate — visible without expanding anything. */}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                       <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                         Plan {i + 1}
                       </span>
-                      <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-200">
+                      <span className="font-semibold text-white">{tier.name.trim() || '—'}</span>
+                      {tier.price.trim() && (
+                        <span className="text-sm text-brand-blue-light">{formatPrice(tier.price)}</span>
+                      )}
+                      <label className="ml-auto flex cursor-pointer items-center gap-2 text-sm text-gray-200">
                         <input
                           type="radio"
                           name="recommended-tier"
@@ -708,7 +719,18 @@ export const ProposalBuilder = ({
                         />
                         Recommended
                       </label>
+                      <button
+                        type="button"
+                        aria-expanded={editingTier === i}
+                        onClick={() => setEditingTier(editingTier === i ? null : i)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-sm font-semibold text-gray-300 hover:bg-white/5 hover:text-white"
+                      >
+                        {editingTier === i ? 'Done' : 'Edit'}
+                        <ChevronDown className={`h-4 w-4 transition-transform ${editingTier === i ? 'rotate-180' : ''}`} />
+                      </button>
                     </div>
+                    {editingTier === i && (
+                      <div className="space-y-4">
                     <FieldShell id={`tier-name-${i}`} label="Plan name">
                       <input id={`tier-name-${i}`} className={fieldClass} placeholder=" "
                         value={tier.name} onChange={(e) => updateTier(i, { name: e.target.value })} />
@@ -749,6 +771,8 @@ export const ProposalBuilder = ({
                       <textarea id={`tier-fine-${i}`} rows={3} className={textareaClass} placeholder=" "
                         value={tier.finePrint} onChange={(e) => updateTier(i, { finePrint: e.target.value })} />
                     </FieldShell>
+                      </div>
+                    )}
                   </div>
                 ))}
               </Section>
