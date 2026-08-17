@@ -100,11 +100,11 @@ const formatPrice = (raw: string): string => {
 };
 
 const field =
-  'h-12 w-full rounded-xl border border-white/15 bg-white/[0.04] px-4 text-white placeholder-gray-500 focus:border-brand-blue focus:outline-none';
+  'h-12 w-full rounded-xl border border-[#cbd5e1] bg-white px-4 text-[#0a1628] placeholder-[#9aa4b2] focus:border-[#1669AE] focus:outline-none';
 
 /** Small caps heading for the two confirmation blocks. */
 const Eyebrow = ({ children }: { children: string }) => (
-  <h2 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">{children}</h2>
+  <h2 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">{children}</h2>
 );
 
 export const ApprovePage = () => {
@@ -128,6 +128,28 @@ export const ApprovePage = () => {
   const [signature, setSignature] = useState('');
 
   const token = typeof window === 'undefined' ? '' : new URLSearchParams(window.location.search).get('t') ?? '';
+
+  /**
+   * This is the one light page on a dark site, and `html, body { background:
+   * #07111c }` is global (it exists so the iOS safe area isn't white — see
+   * CLAUDE.md). Left alone, rubber-band overscroll on a phone reveals a band of
+   * near-black above and below a white document, which reads as broken.
+   *
+   * Set while this page is mounted and restored on unmount, so in-app
+   * navigation away from here puts the dark site back exactly as it was.
+   */
+  useEffect(() => {
+    const { style } = document.documentElement;
+    const body = document.body.style;
+    const prevHtml = style.background;
+    const prevBody = body.background;
+    style.background = '#eef2f7';
+    body.background = '#eef2f7';
+    return () => {
+      style.background = prevHtml;
+      body.background = prevBody;
+    };
+  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -287,7 +309,7 @@ export const ApprovePage = () => {
   }, [canSubmit, busy, token, plan, sameBilling, billing, preferredStart, accessNotes, agree, signature]);
 
   return (
-    <main className="force-static-motion min-h-dvh bg-[#07111c] px-4 py-10 text-white sm:px-6">
+    <main className="force-static-motion min-h-dvh bg-[#eef2f7] px-4 py-10 text-[#0a1628] sm:px-6">
       {/* 1024px, not 768px. At 3xl the two plan cards were ~370px each and every
           benefit bullet wrapped to two lines, which is what made the page feel
           cramped. Long PROSE stays narrower — see the max-w-3xl on the note and
@@ -295,7 +317,7 @@ export const ApprovePage = () => {
           measure even when the cards beside it are not. */}
       <div className="mx-auto w-full max-w-5xl">
         <div className="relative mb-8 text-center">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-gray-500">Suncoast Pool Pros</p>
+          <p className="text-[11px] uppercase tracking-[0.2em] text-[#6b7280]">Suncoast Pool Pros</p>
           <h1 className="mt-1 font-display text-2xl font-bold sm:text-3xl">
             {state.kind === 'accepted' ? 'You’re all set' : step === 1 ? 'Your proposal' : 'Confirm and sign'}
           </h1>
@@ -316,9 +338,9 @@ export const ApprovePage = () => {
           {state.kind !== 'error' && (
             <a
               href={PHONE_HREF}
-              className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white transition-colors hover:border-white/30 hover:bg-white/10 md:absolute md:right-0 md:top-0 md:mt-0 md:py-2"
+              className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#dce7f2] bg-white px-4 py-3 text-sm font-semibold text-[#0a1628] transition-colors hover:border-[#1669AE] hover:bg-[#f3f6fb] md:absolute md:right-0 md:top-0 md:mt-0 md:py-2"
             >
-              <Phone className="h-4 w-4 shrink-0 text-brand-blue-light" />
+              <Phone className="h-4 w-4 shrink-0 text-[#1669AE]" />
               <span className="hidden lg:inline">Questions?</span>
               {PHONE_DISPLAY}
             </a>
@@ -327,36 +349,36 @@ export const ApprovePage = () => {
 
         {state.kind === 'loading' && (
           <div className="flex justify-center py-16">
-            <LoaderCircle className="h-8 w-8 animate-spin text-brand-blue-light" />
+            <LoaderCircle className="h-8 w-8 animate-spin text-[#1669AE]" />
           </div>
         )}
 
         {state.kind === 'error' && (
-          <div className="rounded-2xl border border-red-500/25 bg-red-500/10 p-6 text-center">
-            <AlertCircle className="mx-auto mb-3 h-7 w-7 text-red-400" />
-            <p className="text-gray-200">{state.message}</p>
+          <div className="rounded-2xl border border-[#f0c8c8] bg-[#fdf1f0] p-6 text-center">
+            <AlertCircle className="mx-auto mb-3 h-7 w-7 text-[#c0392b]" />
+            <p className="text-[#1f2937]">{state.message}</p>
             <a
               href={PHONE_HREF}
-              className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/15 px-5 py-3 font-semibold text-white hover:bg-white/5"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl border border-[#dce7f2] bg-white px-5 py-3 font-semibold text-[#0a1628] hover:bg-[#f3f6fb]"
             >
-              <Phone className="h-4 w-4 text-brand-blue-light" /> {PHONE_DISPLAY}
+              <Phone className="h-4 w-4 text-[#1669AE]" /> {PHONE_DISPLAY}
             </a>
           </div>
         )}
 
         {state.kind === 'accepted' && (
-          <div className="rounded-2xl border border-green-500/25 bg-green-500/10 p-8 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-green-500/30 bg-green-500/15">
-              <Check className="h-7 w-7 text-green-400" strokeWidth={3} />
+          <div className="rounded-2xl border border-[#bfe7c6] bg-[#eefaf0] p-8 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[#bfe7c6] bg-white">
+              <Check className="h-7 w-7 text-[#1d7a33]" strokeWidth={3} />
             </div>
             <p className="text-lg font-semibold">
-              Your <span className="text-brand-blue-light">{state.plan}</span> plan is confirmed.
+              Your <span className="text-[#0f4d80]">{state.plan}</span> plan is confirmed.
             </p>
-            <p className="mx-auto mt-3 max-w-md leading-relaxed text-gray-300">
+            <p className="mx-auto mt-3 max-w-md leading-relaxed text-[#374151]">
               You’ll receive your first invoice on your first scheduled service date. We’ll reach out to
               confirm that date, and with any questions we have.
             </p>
-            <p className="mt-5 text-sm text-gray-400">A copy is on its way to your inbox.</p>
+            <p className="mt-5 text-sm text-[#6b7280]">A copy is on its way to your inbox.</p>
           </div>
         )}
 
@@ -372,11 +394,11 @@ export const ApprovePage = () => {
             <div className="mb-8 grid grid-cols-1 gap-x-10 gap-y-5 sm:grid-cols-2">
               <div>
                 <Eyebrow>Prepared for</Eyebrow>
-                <p className="font-semibold text-white">{quote.customerName}</p>
+                <p className="font-semibold text-[#0a1628]">{quote.customerName}</p>
                 {quote.customerAddress?.trim() && (
-                  <p className="text-sm text-gray-300">{quote.customerAddress.trim()}</p>
+                  <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
                 )}
-                <p className="mt-0.5 text-sm text-gray-400">
+                <p className="mt-0.5 text-sm text-[#6b7280]">
                   {[quote.customerEmail, quote.customerPhone]
                     .map((v) => (v ?? '').trim())
                     .filter(Boolean)
@@ -387,9 +409,9 @@ export const ApprovePage = () => {
                 /* A rule between the columns on desktop. Without it a two-fact
                    pool leaves the right half looking like a gap in the layout
                    rather than a short answer. */
-                <div className="sm:border-l sm:border-white/10 sm:pl-10">
+                <div className="sm:border-l sm:border-[#dbe3ec] sm:pl-10">
                   <Eyebrow>Your pool</Eyebrow>
-                  <p className="text-sm leading-relaxed text-gray-300">{poolSummary}</p>
+                  <p className="text-sm leading-relaxed text-[#374151]">{poolSummary}</p>
                 </div>
               )}
             </div>
@@ -403,8 +425,8 @@ export const ApprovePage = () => {
                 all of this twice. Two columns on desktop so five bullets cost
                 three rows of height instead of five, keeping the plans up. */}
             {benefits.length > 0 && (
-              <section className="mb-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                <h2 className="mb-3 font-display text-base font-bold">{BENEFITS_HEADING}</h2>
+              <section className="mb-8 rounded-2xl border border-[#cfe3f2] bg-[#eef6fb] p-5">
+                <h2 className="mb-3 font-display text-base font-bold text-[#0f4d80]">{BENEFITS_HEADING}</h2>
                 {/* CSS columns, not a grid. A grid aligns rows, so a two-line
                     bullet opposite a one-line bullet left a visible gap under
                     the short one; columns flow top-to-bottom, which is also the
@@ -417,9 +439,9 @@ export const ApprovePage = () => {
                       // so a bullet that wraps stays tight within itself and the
                       // gap reads as separation between points rather than loose
                       // text.
-                      className="mb-4 flex break-inside-avoid gap-2 text-sm leading-relaxed text-gray-200"
+                      className="mb-4 flex break-inside-avoid gap-2 text-sm leading-relaxed text-[#1f2937]"
                     >
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-400" />
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
                       <span>{b}</span>
                     </li>
                   ))}
@@ -427,7 +449,7 @@ export const ApprovePage = () => {
               </section>
             )}
 
-            <p className="mb-4 text-center text-gray-400">Choose the plan you’d like.</p>
+            <p className="mb-4 text-center text-[#6b7280]">Choose the plan you’d like.</p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {tiers.map((tier, i) => {
                 const on = plan === tier.name;
@@ -445,16 +467,16 @@ export const ApprovePage = () => {
                       tier.recommended ? 'order-first sm:order-none' : ''
                     } ${
                       on
-                        ? 'border-brand-blue-light bg-brand-blue/15 ring-2 ring-brand-blue-light/40'
+                        ? 'border-[#1669AE] bg-[#eaf3fb] ring-2 ring-[#1669AE]/30'
                         : tier.recommended
-                          ? 'border-brand-blue-light/70 bg-brand-blue/10 shadow-lg shadow-brand-blue/20 ring-1 ring-brand-blue-light/25 hover:border-brand-blue-light'
-                          : 'border-white/12 bg-white/[0.03] hover:border-white/30'
+                          ? 'border-[#1669AE] bg-[#f5faff] shadow-lg shadow-[#1669AE]/15 ring-1 ring-[#1669AE]/20 hover:border-[#0f4d80]'
+                          : 'border-[#e3e8ef] bg-white hover:border-[#9fb3c8]'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         {tier.recommended && (
-                          <span className="mb-2 inline-block rounded bg-brand-blue px-2 py-1 text-[10px] font-bold uppercase tracking-wider">
+                          <span className="mb-2 inline-block rounded bg-[#1669AE] px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
                             Recommended
                           </span>
                         )}
@@ -462,20 +484,20 @@ export const ApprovePage = () => {
                       </div>
                       <span
                         className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
-                          on ? 'border-white bg-white text-brand-blue' : 'border-white/30'
+                          on ? 'border-[#1669AE] bg-[#1669AE] text-white' : 'border-[#c3cedb]'
                         }`}
                       >
                         {on && <Check className="h-4 w-4" strokeWidth={3} />}
                       </span>
                     </div>
-                    {tier.tagline && <p className="mt-1 text-sm text-gray-400">{tier.tagline}</p>}
+                    {tier.tagline && <p className="mt-1 text-sm text-[#6b7280]">{tier.tagline}</p>}
                     {tier.price && (
                       /* The recommended price is set a size larger. Two prices at
                          identical weight ask the customer to do the comparison
                          themselves; the point of recommending one is to have
                          already done it. */
                       <p
-                        className={`mt-3 font-bold text-brand-blue-light ${
+                        className={`mt-3 font-bold text-[#0f4d80] ${
                           tier.recommended ? 'text-3xl' : 'text-2xl'
                         }`}
                       >
@@ -483,7 +505,7 @@ export const ApprovePage = () => {
                       </p>
                     )}
                     {tier.priceNote?.trim() && (
-                      <p className="mt-1 inline-flex self-start rounded-md bg-green-500/15 px-2 py-1 text-sm font-semibold text-green-300">
+                      <p className="mt-1 inline-flex self-start rounded-md bg-[#e3f5e8] px-2 py-1 text-sm font-semibold text-[#176a2c]">
                         {tier.priceNote.trim()}
                       </p>
                     )}
@@ -492,8 +514,8 @@ export const ApprovePage = () => {
                         .map((x) => x.trim())
                         .filter(Boolean)
                         .map((item, j) => (
-                          <li key={j} className="flex gap-2 text-sm leading-relaxed text-gray-300">
-                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-400" />
+                          <li key={j} className="flex gap-2 text-sm leading-relaxed text-[#374151]">
+                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
                             {item}
                           </li>
                         ))}
@@ -506,7 +528,7 @@ export const ApprovePage = () => {
                         space trailing the card. */}
                     <div className="mt-auto">
                       {tier.valueNote?.trim() && (
-                        <p className="border-t border-white/10 pt-3 text-xs leading-relaxed text-gray-400">
+                        <p className="border-t border-[#e3e8ef] pt-3 text-xs leading-relaxed text-[#6b7280]">
                           {tier.valueNote.trim()}
                         </p>
                       )}
@@ -516,10 +538,10 @@ export const ApprovePage = () => {
                         <span
                           className={`flex items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-bold transition-colors ${
                             on
-                              ? 'border-brand-blue-light bg-brand-blue-light/15 text-white'
+                              ? 'border-[#1669AE] bg-[#1669AE] text-white'
                               : tier.recommended
-                                ? 'border-brand-blue-light/50 text-brand-blue-light'
-                                : 'border-white/15 text-gray-300'
+                                ? 'border-[#1669AE]/60 text-[#0f4d80]'
+                                : 'border-[#dce7f2] text-[#374151]'
                           }`}
                         >
                           {on ? (
@@ -547,24 +569,24 @@ export const ApprovePage = () => {
                 plan's terms. Collapsed so it can be complete without pushing the
                 decision down the page. */}
             {(scopeLines.length > 0 || tiers.some((t) => t.finePrint?.trim())) && (
-              <details className="group mt-4 rounded-2xl border border-white/10 bg-white/[0.03] px-5 open:pb-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-4 text-sm font-semibold text-gray-300 hover:text-white">
+              <details className="group mt-4 rounded-2xl border border-[#e3e8ef] bg-white px-5 open:pb-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-4 text-sm font-semibold text-[#374151] hover:text-[#0a1628]">
                   Everything in writing — the full scope of work and plan terms
                   <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" />
                 </summary>
                 {scopeLines.length > 0 && (
-                  <div className="max-w-3xl border-t border-white/10 pt-4">
-                    <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                  <div className="max-w-3xl border-t border-[#e3e8ef] pt-4">
+                    <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
                       Scope of work
                     </h3>
                     {scopeLines.map((line, i) =>
                       /^[•\-]/.test(line) ? (
-                        <p key={i} className="mb-1.5 flex gap-2 text-sm leading-relaxed text-gray-300">
-                          <span className="text-brand-blue-light">•</span>
+                        <p key={i} className="mb-1.5 flex gap-2 text-sm leading-relaxed text-[#374151]">
+                          <span className="text-[#1669AE]">•</span>
                           <span>{line.replace(/^[•-]\s*/, '')}</span>
                         </p>
                       ) : (
-                        <p key={i} className="mb-2 text-sm leading-relaxed text-gray-300">
+                        <p key={i} className="mb-2 text-sm leading-relaxed text-[#374151]">
                           {line}
                         </p>
                       ),
@@ -574,11 +596,11 @@ export const ApprovePage = () => {
                 {tiers
                   .filter((t) => t.finePrint?.trim())
                   .map((t, i) => (
-                    <div key={i} className="mt-4 max-w-3xl border-t border-white/10 pt-4">
-                      <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                    <div key={i} className="mt-4 max-w-3xl border-t border-[#e3e8ef] pt-4">
+                      <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
                         {t.name} — terms
                       </h3>
-                      <p className="text-sm leading-relaxed text-gray-400">{t.finePrint?.trim()}</p>
+                      <p className="text-sm leading-relaxed text-[#6b7280]">{t.finePrint?.trim()}</p>
                     </div>
                   ))}
               </details>
@@ -603,13 +625,13 @@ export const ApprovePage = () => {
             {plan && (
               <>
                 <div className="sticky bottom-4 z-10 mt-6">
-                  <div className="flex items-center justify-between gap-4 rounded-2xl border border-brand-blue-light/40 bg-[#0e1a29] p-3 pl-5 shadow-2xl shadow-black/60">
+                  <div className="flex items-center justify-between gap-4 rounded-2xl border border-[#cfe3f2] bg-white p-3 pl-5 shadow-2xl shadow-[#0a1628]/15">
                     <div className="min-w-0">
-                      <p className="truncate text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                      <p className="truncate text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
                         {plan}
                       </p>
                       {chosen?.price && (
-                        <p className="font-display text-lg font-bold leading-tight text-white">
+                        <p className="font-display text-lg font-bold leading-tight text-[#0a1628]">
                           {formatPrice(chosen.price)}
                         </p>
                       )}
@@ -619,7 +641,7 @@ export const ApprovePage = () => {
                         setStep(2);
                         window.scrollTo({ top: 0 });
                       }}
-                      className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark px-5 py-3 text-base font-bold shadow-lg shadow-brand-blue/25 sm:px-8"
+                      className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark px-5 py-3 text-base font-bold text-white shadow-lg shadow-brand-blue/25 sm:px-8"
                     >
                       Continue <ArrowRight className="h-5 w-5" />
                     </button>
@@ -635,23 +657,23 @@ export const ApprovePage = () => {
 
         {quote && step === 2 && (
           <>
-            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-brand-blue/40 bg-brand-blue/10 p-4">
+            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-[#cfe3f2] bg-[#eef6fb] p-4">
               <div>
-                <p className="text-xs uppercase tracking-wider text-gray-400">Your plan</p>
+                <p className="text-xs uppercase tracking-wider text-[#6b7280]">Your plan</p>
                 <p className="font-display text-lg font-bold">{plan}</p>
                 {chosen?.price && (
-                  <p className="text-sm font-semibold text-brand-blue-light">{formatPrice(chosen.price)}</p>
+                  <p className="text-sm font-semibold text-[#0f4d80]">{formatPrice(chosen.price)}</p>
                 )}
               </div>
               <button
                 onClick={() => setStep(1)}
-                className="inline-flex items-center gap-1 rounded-lg border border-white/15 px-3 py-2 text-sm text-gray-300 hover:bg-white/5"
+                className="inline-flex items-center gap-1 rounded-lg border border-[#dce7f2] bg-white px-3 py-2 text-sm text-[#374151] hover:bg-[#f3f6fb]"
               >
                 <ArrowLeft className="h-4 w-4" /> Change
               </button>
             </div>
 
-            <section className="mb-5 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <section className="mb-5 rounded-2xl border border-[#e3e8ef] bg-white p-5">
               <h2 className="mb-3 font-display text-base font-bold">Billing address</h2>
               <div className="space-y-2">
                 {[
@@ -665,20 +687,20 @@ export const ApprovePage = () => {
                     aria-pressed={sameBilling === opt.v}
                     className={`flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-colors ${
                       sameBilling === opt.v
-                        ? 'border-brand-blue-light bg-brand-blue/15'
-                        : 'border-white/12 hover:border-white/30'
+                        ? 'border-[#1669AE] bg-[#eaf3fb]'
+                        : 'border-[#e3e8ef] hover:border-[#9fb3c8]'
                     }`}
                   >
                     <span
                       className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                        sameBilling === opt.v ? 'border-white bg-white text-brand-blue' : 'border-white/30'
+                        sameBilling === opt.v ? 'border-[#1669AE] bg-[#1669AE] text-white' : 'border-[#c3cedb]'
                       }`}
                     >
                       {sameBilling === opt.v && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
                     </span>
                     <span>
                       <span className="block text-sm font-semibold">{opt.label}</span>
-                      {opt.sub && <span className="block text-xs text-gray-400">{opt.sub}</span>}
+                      {opt.sub && <span className="block text-xs text-[#6b7280]">{opt.sub}</span>}
                     </span>
                   </button>
                 ))}
@@ -704,16 +726,16 @@ export const ApprovePage = () => {
               )}
             </section>
 
-            <section className="mb-5 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <section className="mb-5 rounded-2xl border border-[#e3e8ef] bg-white p-5">
               <h2 className="mb-3 font-display text-base font-bold">
-                Getting started <span className="text-sm font-normal text-gray-500">(optional)</span>
+                Getting started <span className="text-sm font-normal text-[#6b7280]">(optional)</span>
               </h2>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {/* Asked as a question, and about how SOON rather than "preferred
                     start date" — a form label invites a form answer, and this is
                     the field where someone quietly decides whether they're
                     starting this week or thinking about next month. */}
-                <label className="text-sm text-gray-400">
+                <label className="text-sm text-[#6b7280]">
                   How soon would you like us to start?
                   <input
                     className={`${field} mt-1`}
@@ -724,19 +746,19 @@ export const ApprovePage = () => {
                     onChange={(e) => setPreferredStart(e.target.value)}
                   />
                 </label>
-                <label className="text-sm text-gray-400">
+                <label className="text-sm text-[#6b7280]">
                   Gate code, pets, anything we should know
                   <input className={`${field} mt-1`} value={accessNotes}
                     onChange={(e) => setAccessNotes(e.target.value)} />
                 </label>
               </div>
-              <p className="mt-3 text-xs text-gray-500">
+              <p className="mt-3 text-xs text-[#6b7280]">
                 We&rsquo;ll confirm your first visit with you — the sooner you start, the sooner your pool
                 is on a routine.
               </p>
             </section>
 
-            <section className="mb-5 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+            <section className="mb-5 rounded-2xl border border-[#e3e8ef] bg-white p-5">
               <h2 className="mb-3 font-display text-base font-bold">Service agreement</h2>
               <div className="space-y-3">
                 {[
@@ -749,7 +771,7 @@ export const ApprovePage = () => {
                     label: (
                       <>
                         I’ve read and agree to the{' '}
-                        <a href="/service-agreement/" target="_blank" rel="noreferrer" className="text-brand-blue-light underline">
+                        <a href="/service-agreement/" target="_blank" rel="noreferrer" className="text-[#0f4d80] underline">
                           Service Agreement
                         </a>
                         .
@@ -761,7 +783,7 @@ export const ApprovePage = () => {
                     label: (
                       <>
                         I’ve read and agree to the{' '}
-                        <a href="/privacy-policy/" target="_blank" rel="noreferrer" className="text-brand-blue-light underline">
+                        <a href="/privacy-policy/" target="_blank" rel="noreferrer" className="text-[#0f4d80] underline">
                           Privacy Policy
                         </a>
                         .
@@ -769,7 +791,7 @@ export const ApprovePage = () => {
                     ),
                   },
                 ].map((item) => (
-                  <label key={item.key} className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-gray-200">
+                  <label key={item.key} className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-[#1f2937]">
                     <input
                       type="checkbox"
                       checked={agree[item.key]}
@@ -781,10 +803,10 @@ export const ApprovePage = () => {
                 ))}
               </div>
 
-              <div className="mt-5 border-t border-white/10 pt-5">
-                <label className="block text-sm font-semibold text-gray-200">
+              <div className="mt-5 border-t border-[#e3e8ef] pt-5">
+                <label className="block text-sm font-semibold text-[#1f2937]">
                   <span className="mb-1 flex items-center gap-2">
-                    <PenLine className="h-4 w-4 text-brand-blue-light" /> Type your full name to sign
+                    <PenLine className="h-4 w-4 text-[#1669AE]" /> Type your full name to sign
                   </span>
                   <input
                     className={`${field} font-display text-lg`}
@@ -794,7 +816,7 @@ export const ApprovePage = () => {
                     autoComplete="name"
                   />
                 </label>
-                <p className="mt-2 max-w-3xl text-xs leading-relaxed text-gray-500">
+                <p className="mt-2 max-w-3xl text-xs leading-relaxed text-[#6b7280]">
                   Typing your name acts as your electronic signature. We record the date, time and IP address
                   with it as proof of acceptance.
                 </p>
@@ -802,8 +824,8 @@ export const ApprovePage = () => {
             </section>
 
             {formError && (
-              <div role="alert" className="mb-4 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                <AlertCircle className="h-5 w-5 shrink-0 text-red-400" />
+              <div role="alert" className="mb-4 flex items-start gap-3 rounded-xl border border-[#f0c8c8] bg-[#fdf1f0] px-4 py-3 text-sm text-[#8c2f22]">
+                <AlertCircle className="h-5 w-5 shrink-0 text-[#c0392b]" />
                 {formError}
               </div>
             )}
@@ -811,13 +833,13 @@ export const ApprovePage = () => {
             <button
               onClick={submit}
               disabled={!canSubmit || busy}
-              className="flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark py-4 text-lg font-bold shadow-lg shadow-brand-blue/25 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark py-4 text-lg font-bold text-white shadow-lg shadow-brand-blue/25 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {busy ? <LoaderCircle className="h-5 w-5 animate-spin" /> : null}
               {busy ? 'Confirming…' : `Accept and start service`}
             </button>
             {!canSubmit && (
-              <p className="mt-2 text-center text-xs text-gray-500">
+              <p className="mt-2 text-center text-xs text-[#6b7280]">
                 Tick all three boxes and type your name to continue.
               </p>
             )}
