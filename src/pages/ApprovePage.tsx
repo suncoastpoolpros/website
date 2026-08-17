@@ -513,20 +513,6 @@ export const ApprovePage = () => {
               })}
             </div>
 
-            {plan && (
-              <div className="sticky bottom-4 z-10 mt-6">
-                <button
-                  onClick={() => {
-                    setStep(2);
-                    window.scrollTo({ top: 0 });
-                  }}
-                  className="flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark py-4 text-lg font-bold shadow-lg shadow-brand-blue/25"
-                >
-                  Continue with {plan} <ArrowRight className="h-5 w-5" />
-                </button>
-              </div>
-            )}
-
             {/* NOTE: the "What Others Charge Extra For" value stack is
                 deliberately NOT on this page. It stays in the PDF and the
                 proposal email — see includedExtras.ts — but by the time someone
@@ -572,6 +558,53 @@ export const ApprovePage = () => {
                     </div>
                   ))}
               </details>
+            )}
+
+            {/*
+              The confirm bar. Deliberately the LAST element on the step.
+
+              Pinned directly under the cards it was worse than useless: a
+              `sticky bottom` element rests at its own position in the flow, and
+              that position was exactly the cards' footers — so the bar sat on
+              top of "Selected" and "Choose Pay Annually" and hid the control for
+              switching plans. Last, it stays pinned across the whole step and
+              only settles at the very bottom, and the spacer below guarantees
+              every part of the page can be scrolled out from under it.
+
+              It restates the plan and the price rather than being a bare button,
+              because this is the click that commits and the customer should see
+              what they're committing to without scrolling back up. Opaque
+              background, not a blur — blur is banned below 768px (CLAUDE.md #10).
+            */}
+            {plan && (
+              <>
+                <div className="sticky bottom-4 z-10 mt-6">
+                  <div className="flex items-center justify-between gap-4 rounded-2xl border border-brand-blue-light/40 bg-[#0e1a29] p-3 pl-5 shadow-2xl shadow-black/60">
+                    <div className="min-w-0">
+                      <p className="truncate text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                        {plan}
+                      </p>
+                      {chosen?.price && (
+                        <p className="font-display text-lg font-bold leading-tight text-white">
+                          {formatPrice(chosen.price)}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setStep(2);
+                        window.scrollTo({ top: 0 });
+                      }}
+                      className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark px-5 py-3 text-base font-bold shadow-lg shadow-brand-blue/25 sm:px-8"
+                    >
+                      Continue <ArrowRight className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+                {/* Scroll clearance, so the bar can never permanently cover the
+                    last thing on the page. */}
+                <div className="h-24" aria-hidden="true" />
+              </>
             )}
           </>
         )}
