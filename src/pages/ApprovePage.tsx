@@ -610,11 +610,23 @@ export const ApprovePage = () => {
                 >
                   <ArrowLeft className="h-4 w-4" /> Change plan
                 </button>
-                <Eyebrow>Your plan</Eyebrow>
-                <p className="font-display text-lg font-bold text-[#0a1628]">{plan}</p>
-                {chosen?.price && (
-                  <p className="text-sm font-semibold text-[#0f4d80]">{formatPrice(chosen.price)}</p>
-                )}
+                {/* One line, no "Your plan" label above it. After "Confirm and
+                    sign", with a Change plan link right there, a label saying
+                    this is the plan is stating the obvious in three lines.
+
+                    The NAME is left exactly as quoted — it's the admin's own
+                    tier name and it's what the PDF, the email and the signed
+                    record all say. Shortening it to "Annual plan" here would
+                    make the page disagree with the document. */}
+                <p className="font-display text-lg font-bold text-[#0a1628]">
+                  {plan}
+                  {chosen?.price && (
+                    <>
+                      <span className="font-normal text-[#9aa4b2]"> · </span>
+                      <span className="text-[#0f4d80]">{formatPrice(chosen.price)}</span>
+                    </>
+                  )}
+                </p>
               </div>
               {headerActions}
             </div>
