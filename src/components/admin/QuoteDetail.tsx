@@ -174,8 +174,13 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
     const a = quote?.accepted;
     if (!a) return [];
     const ob = a.onboarding ?? {};
+    // Undefined/null means it was never asked (the approve page stopped
+    // collecting it). rows() drops empty strings, so the Billing row simply
+    // doesn't render rather than claiming an address nobody confirmed.
     const billing =
-      ob.billingSameAsService === false
+      ob.billingSameAsService === null || ob.billingSameAsService === undefined
+        ? ''
+        : ob.billingSameAsService === false
         ? [
             str(ob.billingName),
             str(ob.billingAddress),

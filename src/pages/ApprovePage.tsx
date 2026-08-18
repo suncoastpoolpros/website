@@ -114,8 +114,6 @@ export const ApprovePage = () => {
   const [formError, setFormError] = useState('');
   const [pdfState, setPdfState] = useState<'idle' | 'working' | 'error'>('idle');
 
-  const [sameBilling, setSameBilling] = useState(true);
-  const [billing, setBilling] = useState({ name: '', email: '', address: '', city: '', state: '', zip: '' });
   const [preferredStart, setPreferredStart] = useState('');
   const [accessNotes, setAccessNotes] = useState('');
   const [agree, setAgree] = useState({ requirements: false, service: false, privacy: false });
@@ -248,13 +246,8 @@ export const ApprovePage = () => {
           token,
           plan,
           onboarding: {
-            billingSameAsService: sameBilling,
-            billingName: billing.name,
-            billingEmail: billing.email,
-            billingAddress: billing.address,
-            billingCity: billing.city,
-            billingState: billing.state,
-            billingZip: billing.zip,
+            // No billing fields: this page no longer asks. The endpoint records
+            // "not collected" rather than defaulting to "same as service".
             preferredStart,
             accessNotes,
             agreeRequirements: agree.requirements,
@@ -272,7 +265,7 @@ export const ApprovePage = () => {
     } finally {
       setBusy(false);
     }
-  }, [canSubmit, busy, token, plan, sameBilling, billing, preferredStart, accessNotes, agree, signature]);
+  }, [canSubmit, busy, token, plan, preferredStart, accessNotes, agree, signature]);
 
   /**
    * The right-hand side of the header row: the document, then a person.
@@ -608,73 +601,30 @@ export const ApprovePage = () => {
                 fold and read as another thing to act on. */}
             <div className="mb-8 flex items-start justify-between gap-4 sm:gap-8">
               <div className="min-w-0">
+                {/* Above the block, not between the label and the value: it's a
+                    back link for the step, and "YOUR PLAN → Pay Annually" is a
+                    label/value pair that shouldn't have a control inside it. */}
+                <button
+                  onClick={() => setStep(1)}
+                  className="-mt-1 mb-1 inline-flex items-center gap-1.5 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline sm:py-1"
+                >
+                  <ArrowLeft className="h-4 w-4" /> Change plan
+                </button>
                 <Eyebrow>Your plan</Eyebrow>
                 <p className="font-display text-lg font-bold text-[#0a1628]">{plan}</p>
                 {chosen?.price && (
                   <p className="text-sm font-semibold text-[#0f4d80]">{formatPrice(chosen.price)}</p>
                 )}
-                <button
-                  onClick={() => setStep(1)}
-                  className="mt-1.5 inline-flex items-center gap-1.5 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline sm:py-1"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Change plan
-                </button>
               </div>
               {headerActions}
             </div>
 
-            <section className="mb-5 rounded-2xl border border-[#e3e8ef] bg-white p-5">
-              <h2 className="mb-3 font-display text-base font-bold">Billing address</h2>
-              <div className="space-y-2">
-                {[
-                  { v: true, label: 'Same as my service address', sub: quote.customerAddress ?? '' },
-                  { v: false, label: 'Use a different billing address', sub: '' },
-                ].map((opt) => (
-                  <button
-                    key={String(opt.v)}
-                    type="button"
-                    onClick={() => setSameBilling(opt.v)}
-                    aria-pressed={sameBilling === opt.v}
-                    className={`flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-colors ${
-                      sameBilling === opt.v
-                        ? 'border-[#1669AE] bg-white'
-                        : 'border-[#e3e8ef] hover:border-[#9fb3c8]'
-                    }`}
-                  >
-                    <span
-                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                        sameBilling === opt.v ? 'border-[#1669AE] bg-[#1669AE] text-white' : 'border-[#c3cedb]'
-                      }`}
-                    >
-                      {sameBilling === opt.v && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
-                    </span>
-                    <span>
-                      <span className="block text-sm font-semibold">{opt.label}</span>
-                      {opt.sub && <span className="block text-xs text-[#6b7280]">{opt.sub}</span>}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              {!sameBilling && (
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <input className={field} placeholder="Billing name" value={billing.name}
-                    onChange={(e) => setBilling({ ...billing, name: e.target.value })} />
-                  <input className={field} placeholder="Billing email" type="email" value={billing.email}
-                    onChange={(e) => setBilling({ ...billing, email: e.target.value })} />
-                  <input className={`${field} sm:col-span-2`} placeholder="Street address" value={billing.address}
-                    onChange={(e) => setBilling({ ...billing, address: e.target.value })} />
-                  <input className={field} placeholder="City" value={billing.city}
-                    onChange={(e) => setBilling({ ...billing, city: e.target.value })} />
-                  <div className="grid grid-cols-2 gap-3">
-                    <input className={field} placeholder="State" value={billing.state}
-                      onChange={(e) => setBilling({ ...billing, state: e.target.value })} />
-                    <input className={field} placeholder="ZIP" inputMode="numeric" value={billing.zip}
-                      onChange={(e) => setBilling({ ...billing, zip: e.target.value })} />
-                  </div>
-                </div>
-              )}
-            </section>
+            {/* A "Billing address" section lived here — same-as-service vs a
+                different address, with the full address form behind it.
+                Removed: nothing about scheduling or acceptance needs it, and
+                billing details are collected when invoicing is set up. Asking
+                for an address twice is friction on the one screen that should
+                have none. */}
 
             <section className="mb-5 rounded-2xl border border-[#e3e8ef] bg-white p-5">
               <h2 className="mb-3 font-display text-base font-bold">

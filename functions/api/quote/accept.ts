@@ -104,8 +104,13 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   const ip = request.headers.get('CF-Connecting-IP') ?? '';
   const ua = request.headers.get('User-Agent') ?? '';
   const clean = (v: unknown, max = 200): string => String(v ?? '').trim().slice(0, max);
+  // NULL means the customer was never asked — the approve page stopped
+  // collecting billing, since it's gathered when invoicing is set up. Defaulting
+  // to true would record "billing is the service address" as though they had
+  // confirmed it, which is a claim about a fact nobody established.
+  const billingAsked = ob.billingSameAsService !== undefined;
   const onboarding = {
-    billingSameAsService: ob.billingSameAsService !== false,
+    billingSameAsService: billingAsked ? ob.billingSameAsService !== false : null,
     billingName: clean(ob.billingName, 120),
     billingEmail: clean(ob.billingEmail, 160),
     billingAddress: clean(ob.billingAddress),
@@ -150,7 +155,9 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   const owner = env.CONTACT_TO_EMAIL;
 
   if (apiKey) {
-    const billing = onboarding.billingSameAsService
+    const billing = !billingAsked
+      ? ''
+      : onboarding.billingSameAsService
       ? 'Same as service address'
       : [
           onboarding.billingName,
@@ -177,7 +184,7 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
       `Agreement version: ${TERMS_VERSION}`,
       `Consents: service requirements, service agreement, privacy policy`,
       ``,
-      `Billing: ${billing}`,
+      billing ? `Billing: ${billing}` : '',
       onboarding.preferredStart ? `Preferred start: ${onboarding.preferredStart}` : '',
       onboarding.accessNotes ? `Access notes: ${onboarding.accessNotes}` : '',
       ``,
