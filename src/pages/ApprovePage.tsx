@@ -186,59 +186,6 @@ export const ApprovePage = () => {
   const tiers = quote?.proposal.tiers ?? [];
   const chosen = tiers.find((t) => t.name === plan);
 
-  const dims = useMemo(() => {
-    const p = quote?.pool ?? {};
-    return [p.length && `${p.length} ft L`, p.width && `${p.width} ft W`, p.avgDepth && `${p.avgDepth} ft avg`]
-      .filter(Boolean)
-      .join(' × ');
-  }, [quote]);
-
-  /**
-   * The pool as one flowing line rather than a table of labelled rows.
-   *
-   * A labelled table needs every row to earn its label, and looked stranded on a
-   * quote carrying only two facts ("Water: Saltwater / Filter: Cartridge" as a
-   * two-row grid). Joined, the same two facts read as a sentence — and a fully
-   * detailed pool wraps to two lines instead of becoming a seven-row block.
-   */
-  const poolSummary = useMemo(() => {
-    const p = quote?.pool ?? {};
-    const filter = [p.filterType, p.filter].filter((v) => (v ?? '').trim()).join(' ');
-    return [
-      p.sanitization,
-      filter && `${filter} filter`,
-      p.gallons && `${p.gallons} gallons`,
-      dims,
-      p.shape,
-      p.pump,
-      p.heater,
-    ]
-      .map((v) => (v ?? '').trim())
-      .filter(Boolean)
-      .join(' · ');
-  }, [quote, dims]);
-
-  /**
-   * The service definition both plans share. In tier mode this box IS what the
-   * taglines mean by "above" — "Everything above, billed month to month" was
-   * pointing at nothing, because this page rendered the plans without ever
-   * rendering the service they include.
-   */
-  /**
-   * Today in the browser's own timezone, as the date input's `min`.
-   *
-   * Built from the local parts rather than toISOString(), which converts to UTC
-   * — in Florida that lands on tomorrow's date from 8pm, so the customer would
-   * be blocked from picking the very day they're sitting there reading this.
-   * Only ever evaluated in step 2, which needs a loaded quote, so it can't be
-   * baked into the prerendered HTML.
-   */
-  const today = useMemo(() => {
-    const d = new Date();
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  }, []);
-
   /** Scope lines, parsed the same way the PDF parses them. */
   const scopeLines = useMemo(
     () =>
@@ -248,6 +195,19 @@ export const ApprovePage = () => {
         .filter(Boolean),
     [quote],
   );
+
+  /**
+   * Today in the browser's own timezone, as the date input's `min`.
+   *
+   * Built from the local parts rather than toISOString(), which converts to UTC
+   * — in Florida that lands on tomorrow's date from 8pm, so the customer would
+   * be blocked from picking the very day they're sitting there reading this.
+   */
+  const today = useMemo(() => {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }, []);
 
   /**
    * Rebuild the proposal PDF in the browser and hand it over as a download.
@@ -406,13 +366,13 @@ export const ApprovePage = () => {
             {/* An address block, not a table. "Service at / Email / Phone" labels
                 told people what an address, an email and a phone number are —
                 and the fixed label column left a dead gutter on a phone. */}
-            {/* Flex, not a 2-col grid. A grid gave the pool its own half of the
-                page and stretched the divider to the full height of the left
-                column — so a two-fact pool sat at the top of a tall empty
-                column with a long rule pointing at the space. Sized to content,
-                the rule is only as tall as what it separates. */}
-            <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-10">
-              <div className="min-w-0">
+            {/* Two columns: who it's for, and how to reach us. The pool summary
+                used to sit between them — dropped, because by this point the
+                customer has confirmed their pool twice (the email and the PDF)
+                and this page is for the decision. The pool data is still in the
+                payload; the downloadable PDF needs it. */}
+            <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-10">
+              <div className="min-w-0 flex-1">
                 <Eyebrow>Prepared for</Eyebrow>
                 <p className="font-semibold text-[#0a1628]">{quote.customerName}</p>
                 {quote.customerAddress?.trim() && (
@@ -444,21 +404,12 @@ export const ApprovePage = () => {
                   </p>
                 )}
               </div>
-              {poolSummary && (
-                /* A rule between the columns on desktop. Without it a two-fact
-                   pool leaves the right half looking like a gap in the layout
-                   rather than a short answer. */
-                <div className="sm:border-l sm:border-[#dbe3ec] sm:pl-10">
-                  <Eyebrow>Your pool</Eyebrow>
-                  <p className="text-sm leading-relaxed text-[#374151]">{poolSummary}</p>
-                </div>
-              )}
               {/* Desktop only, and pushed to the right edge so the row is
                   anchored at both ends instead of trailing off. Mirrors the
                   download button opposite it: the left column offers the
                   document, this one offers a person. Replaces the masthead pill
                   above rather than joining it. */}
-              <div className="hidden md:ml-auto md:block md:max-w-[15rem] md:border-l md:border-[#dbe3ec] md:pl-10">
+              <div className="hidden md:block md:w-64 md:shrink-0 md:border-l md:border-[#dbe3ec] md:pl-10">
                 <Eyebrow>Questions?</Eyebrow>
                 <p className="text-sm leading-relaxed text-[#374151]">
                   If anything here doesn’t match your pool, tell us and we’ll put it right before you
