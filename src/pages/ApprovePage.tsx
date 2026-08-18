@@ -319,14 +319,6 @@ export const ApprovePage = () => {
           <h1 className="mt-1 font-display text-2xl font-bold sm:text-3xl">
             {state.kind === 'accepted' ? 'You’re all set' : step === 1 ? 'Your proposal' : 'Confirm and sign'}
           </h1>
-          {/* The same number that's on the PDF and in the email subject, so all
-              three surfaces are obviously one document. Absent on quotes sent
-              before numbering, rather than invented after the fact. */}
-          {quote?.number && (
-            <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-[#9aa4b2]">
-              Proposal #{quote.number}
-            </p>
-          )}
           {/*
             A reachable human. Every other word on this page argues for buying;
             without this the only route to a question was "Call us" in 12px
@@ -422,7 +414,11 @@ export const ApprovePage = () => {
             */}
             <div className="mb-8 flex items-start justify-between gap-4 sm:gap-8">
               <div className="min-w-0">
-                <Eyebrow>Prepared for</Eyebrow>
+                {/* The number takes this slot when there is one. It's the same
+                    number on the PDF and in the email subject, so it identifies
+                    the document; "Prepared for" only labelled a name that needs
+                    no label. Falls back for quotes sent before numbering. */}
+                <Eyebrow>{quote.number ? `Proposal #${quote.number}` : 'Prepared for'}</Eyebrow>
                 <p className="font-semibold text-[#0a1628]">{quote.customerName}</p>
                 {quote.customerAddress?.trim() && (
                   <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
@@ -638,6 +634,9 @@ export const ApprovePage = () => {
                 >
                   <ArrowLeft className="h-4 w-4" /> Change plan
                 </button>
+                {/* Same eyebrow slot as step 1, so the number stays visible on
+                    the screen where they sign. */}
+                {quote.number ? <Eyebrow>{`Proposal #${quote.number}`}</Eyebrow> : null}
                 {/* One line, no "Your plan" label above it. After "Confirm and
                     sign", with a Change plan link right there, a label saying
                     this is the plan is stating the obvious in three lines.
