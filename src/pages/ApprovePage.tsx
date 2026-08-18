@@ -366,63 +366,61 @@ export const ApprovePage = () => {
             {/* An address block, not a table. "Service at / Email / Phone" labels
                 told people what an address, an email and a phone number are —
                 and the fixed label column left a dead gutter on a phone. */}
-            {/* Two columns: who it's for, and how to reach us. The pool summary
-                used to sit between them — dropped, because by this point the
-                customer has confirmed their pool twice (the email and the PDF)
-                and this page is for the decision. The pool data is still in the
-                payload; the downloadable PDF needs it. */}
-            <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-10">
-              <div className="min-w-0 flex-1">
-                <Eyebrow>Prepared for</Eyebrow>
-                <p className="font-semibold text-[#0a1628]">{quote.customerName}</p>
-                {quote.customerAddress?.trim() && (
-                  <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
-                )}
-                <p className="mt-0.5 text-sm text-[#6b7280]">
-                  {[quote.customerEmail, quote.customerPhone]
-                    .map((v) => (v ?? '').trim())
-                    .filter(Boolean)
-                    .join(' · ')}
-                </p>
-                {/* Sits with the customer's own details, because it's their copy
-                    of the document rather than another thing to consider. */}
+            {/*
+              ONE block, not a row of columns.
+
+              Two columns couldn't be made to work at this width: the pair of
+              them only ever held ~760px of content in a 1024px row, so ~260px
+              of slack had to land somewhere — inside the left column, in the
+              middle, or against an edge. Moving the rule around just moved the
+              hole. Collapsed to a single block the slack doesn't exist.
+
+              The two actions sit inline underneath, and as text links rather
+              than boxes: they're utilities next to the real decision, and a
+              white box on a light page reads as a small card competing with the
+              plan cards below.
+            */}
+            <div className="mb-8">
+              <Eyebrow>Prepared for</Eyebrow>
+              <p className="font-semibold text-[#0a1628]">{quote.customerName}</p>
+              {quote.customerAddress?.trim() && (
+                <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
+              )}
+              <p className="mt-0.5 text-sm text-[#6b7280]">
+                {[quote.customerEmail, quote.customerPhone]
+                  .map((v) => (v ?? '').trim())
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
+
+              <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-8">
                 <button
                   onClick={downloadPdf}
                   disabled={pdfState === 'working'}
-                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#dce7f2] bg-white px-3 py-2 text-sm font-semibold text-[#0f4d80] transition-colors hover:border-[#1669AE] hover:bg-[#f3f6fb] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center gap-2 py-1 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:no-underline"
                 >
                   {pdfState === 'working' ? (
                     <LoaderCircle className="h-4 w-4 animate-spin" />
                   ) : (
                     <Download className="h-4 w-4" />
                   )}
-                  {pdfState === 'working' ? 'Preparing…' : 'Download full proposal'}
+                  {pdfState === 'working' ? 'Preparing your PDF…' : 'Download full proposal'}
                 </button>
-                {pdfState === 'error' && (
-                  <p className="mt-1.5 text-xs text-[#c0392b]">
-                    Couldn’t build the PDF — it’s also attached to the email we sent you.
-                  </p>
-                )}
-              </div>
-              {/* Desktop only, and pushed to the right edge so the row is
-                  anchored at both ends instead of trailing off. Mirrors the
-                  download button opposite it: the left column offers the
-                  document, this one offers a person. Replaces the masthead pill
-                  above rather than joining it. */}
-              <div className="hidden md:block md:w-64 md:shrink-0 md:border-l md:border-[#dbe3ec] md:pl-10">
-                <Eyebrow>Questions?</Eyebrow>
-                <p className="text-sm leading-relaxed text-[#374151]">
-                  If anything here doesn’t match your pool, tell us and we’ll put it right before you
-                  accept.
-                </p>
+                {/* Desktop only — on a phone the masthead pill above carries
+                    this, with a proper tap target. */}
                 <a
                   href={PHONE_HREF}
-                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#dce7f2] bg-white px-3 py-2 text-sm font-semibold text-[#0f4d80] transition-colors hover:border-[#1669AE] hover:bg-[#f3f6fb]"
+                  className="hidden items-center gap-2 py-1 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline md:inline-flex"
                 >
-                  <Phone className="h-4 w-4 shrink-0 text-[#1669AE]" />
-                  {PHONE_DISPLAY}
+                  <Phone className="h-4 w-4" />
+                  Questions? {PHONE_DISPLAY}
                 </a>
               </div>
+              {pdfState === 'error' && (
+                <p className="mt-1.5 text-xs text-[#c0392b]">
+                  Couldn’t build the PDF — it’s also attached to the email we sent you.
+                </p>
+              )}
             </div>
             {/* A "Something not right? Call us" line lived here. Removed once
                 the header carried a phone number — two call-to-action phone
