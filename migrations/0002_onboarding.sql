@@ -1,7 +1,9 @@
 -- Onboarding captured when a customer accepts a quote.
 --
--- Apply with:
---   npx wrangler d1 execute suncoast --remote --file=migrations/0002_onboarding.sql
+-- APPLIED 2026-08-18 via the Cloudflare D1 console, not with wrangler. Confirm
+-- with: PRAGMA table_info(quotes);  -- expect onboarding_json and terms_version
+--
+-- (Already applied — see above.)
 --
 -- ONE column, not a dozen. The technicians' service app owns customer records;
 -- this is a handoff payload, so it doesn't need to be queryable field by field.
