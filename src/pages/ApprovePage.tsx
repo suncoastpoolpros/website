@@ -6,7 +6,6 @@ import {
   Phone,
   ArrowRight,
   ArrowLeft,
-  PenLine,
   ChevronDown,
   Download,
 } from 'lucide-react';
@@ -732,22 +731,46 @@ export const ApprovePage = () => {
                 </div>
               )}
 
-              <div className="mt-5 border-t border-[#e3e8ef] pt-5">
-                <label className="block text-sm font-semibold text-[#1f2937]">
-                  <span className="mb-1 flex items-center gap-2">
-                    <PenLine className="h-4 w-4 text-[#1669AE]" /> Type your full name to sign
-                  </span>
+              {/*
+                A ruled signature line, not another boxed form field.
+
+                Every signed document does it this way — the name sits ON a
+                rule, with "Signature" and the date captioned beneath — and it
+                makes "your typed name IS the signature" legible without a
+                caption explaining the concept. The previous version was a
+                labelled input with a pen icon next to it, which read as a form
+                asking for your name rather than a document being signed.
+
+                Caveat is the site's script face (already used on the homepage)
+                and is declared globally, so it swaps in when step 2 renders
+                rather than being preloaded for a page that may never reach it.
+              */}
+              <div className="mt-6 border-t border-[#e3e8ef] pt-6">
+                <label htmlFor="signature" className="block text-sm font-semibold text-[#1f2937]">
+                  Sign to accept
+                </label>
+                <div className="mt-4 border-b-2 border-[#9fb3c8] transition-colors focus-within:border-[#1669AE]">
                   <input
-                    className={`${field} font-display text-lg`}
+                    id="signature"
+                    className="w-full bg-transparent pb-1 text-3xl text-[#0a1628] placeholder-[#c3cedb] focus:outline-none"
+                    style={{ fontFamily: '"Caveat", cursive', fontWeight: 700 }}
                     value={signature}
                     onChange={(e) => setSignature(e.target.value)}
                     placeholder={quote.customerName}
                     autoComplete="name"
                   />
-                </label>
-                <p className="mt-2 max-w-3xl text-xs leading-relaxed text-[#6b7280]">
-                  Typing your name acts as your electronic signature. We record the date, time and IP address
-                  with it as proof of acceptance.
+                </div>
+                <div className="mt-2 flex items-baseline justify-between gap-4">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
+                    Signature
+                  </span>
+                  <span className="text-[11px] uppercase tracking-wider text-[#9aa4b2]">
+                    {proposalDateLabel()}
+                  </span>
+                </div>
+                <p className="mt-4 max-w-3xl text-xs leading-relaxed text-[#6b7280]">
+                  Typing your name is your electronic signature. We record it with the date, time and IP
+                  address as proof of acceptance.
                 </p>
               </div>
             </section>
