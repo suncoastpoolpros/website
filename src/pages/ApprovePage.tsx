@@ -540,6 +540,17 @@ export const ApprovePage = () => {
                         {tier.priceNote.trim()}
                       </p>
                     )}
+                    {/* "Everything in <base>, plus:" — the PDF and the email
+                        both print this, and without it the upgrade card reads
+                        as though those few bullets are ALL you get, with no
+                        mention of the pool service itself. Names the plan
+                        rather than a position, so it still reads correctly on a
+                        phone where this card is shown first. */}
+                    {i > 0 && tiers[i - 1]?.name?.trim() && (
+                      <p className="mt-4 text-sm font-bold text-[#0a1628]">
+                        Everything in {tiers[i - 1].name.trim()}, plus:
+                      </p>
+                    )}
                     <ul className="mt-4 space-y-2">
                       {tier.includes
                         .map((x) => x.trim())

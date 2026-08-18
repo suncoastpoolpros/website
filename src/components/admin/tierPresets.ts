@@ -59,7 +59,7 @@ export const ANNUAL_MONTHS_CHARGED = 11;
  * a stale preset from wording the admin edited on purpose, so it would nag
  * forever on any customised proposal.
  */
-export const PRESET_VERSION = 2;
+export const PRESET_VERSION = 3;
 
 /** Terms specific to prepaying for the year. */
 /**
@@ -138,12 +138,19 @@ export const syncFilterService = (tiers: Tier[], filter: FilterOption): Tier[] =
  * difference between them.
  */
 export const MONTHLY_INCLUDES = [
-  // "…above" on purpose avoided: these cards render in three places and the
-  // thing above them differs in each. In the PDF and the email it's the
-  // Suncoast Difference box; on the approve page there is nothing above them at
-  // all, and on a phone the recommended card sits in between. Self-contained
-  // wording works everywhere.
-  'Everything in your proposal, every week',
+  // Says what the customer GETS, not just how it's billed. The approve page has
+  // no "what's included" box above the cards — it was cut as a third copy of
+  // something already in the email and the PDF — so if these bullets only
+  // describe billing terms, that page never states the service at all.
+  //
+  // No "…above": these render in three places and the thing above them differs
+  // in each, and on a phone the recommended card sits in between.
+  //
+  // No frequency either. There is a bi-weekly scope template, so "every week"
+  // is a claim these presets can't actually check — the schedule lives in the
+  // scope, and that's the one place it's true by construction.
+  'The full service set out in your proposal',
+  'All chemicals and routine filter care included',
   'Billed monthly, in advance',
   'No long-term contract',
   'Cancel any time with 30 days notice',
