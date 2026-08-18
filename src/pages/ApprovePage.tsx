@@ -6,7 +6,6 @@ import {
   Phone,
   ArrowRight,
   ArrowLeft,
-  ChevronDown,
   Download,
 } from 'lucide-react';
 import { usePageMeta } from '@/lib/usePageMeta';

@@ -98,6 +98,19 @@ export const isQuoteStorageAvailable = (db: unknown): db is D1Like =>
  * proposal then sends exactly as it did before numbering, just without one. A
  * missing number must never block a send.
  */
+/**
+ * Coerce a proposal number for storage, or null.
+ *
+ * Number(null) and Number('') are both 0, and Number.isFinite(0) is true — so a
+ * naive isFinite check stores 0 for "no number", which is neither null nor a
+ * real proposal. A number is only real if it's a positive integer.
+ */
+export const proposalNumberOrNull = (v: unknown): number | null => {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  return Number.isInteger(n) && n > 0 ? n : null;
+};
+
 export async function reserveProposalNumber(db: unknown): Promise<number | null> {
   if (!isQuoteStorageAvailable(db)) return null;
   try {
@@ -149,7 +162,7 @@ export async function saveQuote(
         String(quote.customer?.phone ?? '').trim() || null,
         JSON.stringify(quote.pool ?? {}),
         JSON.stringify(quote.proposal ?? {}),
-        Number.isFinite(Number(quote.number)) ? Number(quote.number) : null,
+        proposalNumberOrNull(quote.number),
       )
       .run();
     return id;

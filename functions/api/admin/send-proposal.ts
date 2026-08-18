@@ -9,7 +9,7 @@
  * customer approves by replying "approved", so Reply-To points at the business
  * inbox, not the no-reply From address.
  */
-import { approveUrl, saveQuote } from '../_quotes';
+import { approveUrl, proposalNumberOrNull, saveQuote } from '../_quotes';
 import {
   type AdminContext,
   type AdminEnv,
@@ -124,9 +124,7 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
     // Trust the number the builder sent rather than reserving a second one:
     // it's already printed on the attached PDF, and a fresh reservation here
     // would store a number the customer's document doesn't show.
-    const proposalNumber = Number.isFinite(Number(payload.proposalNumber))
-      ? Number(payload.proposalNumber)
-      : null;
+    const proposalNumber = proposalNumberOrNull(payload.proposalNumber);
     const token = await saveQuote((env as { DB?: unknown }).DB, {
       customer,
       pool: payload.pool ?? {},
@@ -439,7 +437,7 @@ export const composeProposalEmail = (
   /** One-click accept URL. Empty when quote storage isn't available. */
   acceptLink = '',
 ): { html: string; text: string } => {
-  const proposalNumber = Number.isFinite(Number(p.proposalNumber)) ? Number(p.proposalNumber) : null;
+  const proposalNumber = proposalNumberOrNull(p.proposalNumber);
   const name = safe(String(p.customer?.name ?? '').trim(), 120);
   const greetingName = name ? name.split(/\s+/)[0] : 'there';
   const price = formatPrice(safe(String(p.proposal?.price ?? '').trim(), 40));
