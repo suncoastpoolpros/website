@@ -367,33 +367,36 @@ export const ApprovePage = () => {
                 told people what an address, an email and a phone number are —
                 and the fixed label column left a dead gutter on a phone. */}
             {/*
-              ONE block, not a row of columns.
+              Details left, actions right — one row, both edges anchored.
 
-              Two columns couldn't be made to work at this width: the pair of
-              them only ever held ~760px of content in a 1024px row, so ~260px
-              of slack had to land somewhere — inside the left column, in the
-              middle, or against an edge. Moving the rule around just moved the
-              hole. Collapsed to a single block the slack doesn't exist.
+              This took a few goes. Two columns of content left ~260px of slack
+              that moved around but never went away; one left-aligned block left
+              the whole right half empty instead. The fix is to stop trying to
+              fill the row with CONTENT and let the actions hold the right edge:
+              the row is now as wide as the plan cards below it, with nothing
+              stranded in between.
 
-              The two actions sit inline underneath, and as text links rather
-              than boxes: they're utilities next to the real decision, and a
-              white box on a light page reads as a small card competing with the
-              plan cards below.
+              The actions are text links, not boxes. On a light page a white box
+              reads as a small card, and these were competing with the plan
+              cards for the same "press me" — they're utilities beside the real
+              decision.
             */}
-            <div className="mb-8">
-              <Eyebrow>Prepared for</Eyebrow>
-              <p className="font-semibold text-[#0a1628]">{quote.customerName}</p>
-              {quote.customerAddress?.trim() && (
-                <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
-              )}
-              <p className="mt-0.5 text-sm text-[#6b7280]">
-                {[quote.customerEmail, quote.customerPhone]
-                  .map((v) => (v ?? '').trim())
-                  .filter(Boolean)
-                  .join(' · ')}
-              </p>
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
+              <div className="min-w-0">
+                <Eyebrow>Prepared for</Eyebrow>
+                <p className="font-semibold text-[#0a1628]">{quote.customerName}</p>
+                {quote.customerAddress?.trim() && (
+                  <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
+                )}
+                <p className="mt-0.5 text-sm text-[#6b7280]">
+                  {[quote.customerEmail, quote.customerPhone]
+                    .map((v) => (v ?? '').trim())
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
 
-              <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-8">
+              <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
                 <button
                   onClick={downloadPdf}
                   disabled={pdfState === 'working'}
@@ -415,12 +418,12 @@ export const ApprovePage = () => {
                   <Phone className="h-4 w-4" />
                   Questions? {PHONE_DISPLAY}
                 </a>
+                {pdfState === 'error' && (
+                  <p className="max-w-[16rem] text-xs text-[#c0392b] sm:text-right">
+                    Couldn’t build the PDF — it’s also attached to the email we sent you.
+                  </p>
+                )}
               </div>
-              {pdfState === 'error' && (
-                <p className="mt-1.5 text-xs text-[#c0392b]">
-                  Couldn’t build the PDF — it’s also attached to the email we sent you.
-                </p>
-              )}
             </div>
             {/* A "Something not right? Call us" line lived here. Removed once
                 the header carried a phone number — two call-to-action phone
