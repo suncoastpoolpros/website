@@ -186,16 +186,6 @@ export const ApprovePage = () => {
   const tiers = quote?.proposal.tiers ?? [];
   const chosen = tiers.find((t) => t.name === plan);
 
-  /** Scope lines, parsed the same way the PDF parses them. */
-  const scopeLines = useMemo(
-    () =>
-      (quote?.proposal.scope ?? '')
-        .split('\n')
-        .map((l) => l.trim())
-        .filter(Boolean),
-    [quote],
-  );
-
   /**
    * Today in the browser's own timezone, as the date input's `min`.
    *
@@ -561,46 +551,12 @@ export const ApprovePage = () => {
                 is here they've read it once already and come to accept, not to
                 be sold to again. */}
 
-            {/* Reference, not persuasion: the full week-by-week scope and each
-                plan's terms. Collapsed so it can be complete without pushing the
-                decision down the page. */}
-            {(scopeLines.length > 0 || tiers.some((t) => t.finePrint?.trim())) && (
-              <details className="group mt-4 rounded-2xl border border-[#e3e8ef] bg-white px-5 open:pb-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-4 text-sm font-semibold text-[#374151] hover:text-[#0a1628]">
-                  Everything in writing — the full scope of work and plan terms
-                  <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" />
-                </summary>
-                {scopeLines.length > 0 && (
-                  <div className="max-w-3xl border-t border-[#e3e8ef] pt-4">
-                    <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
-                      Scope of work
-                    </h3>
-                    {scopeLines.map((line, i) =>
-                      /^[•\-]/.test(line) ? (
-                        <p key={i} className="mb-3 flex gap-2 text-sm leading-relaxed text-[#374151]">
-                          <span className="text-[#1669AE]">•</span>
-                          <span>{line.replace(/^[•-]\s*/, '')}</span>
-                        </p>
-                      ) : (
-                        <p key={i} className="mb-3.5 text-sm leading-relaxed text-[#374151]">
-                          {line}
-                        </p>
-                      ),
-                    )}
-                  </div>
-                )}
-                {tiers
-                  .filter((t) => t.finePrint?.trim())
-                  .map((t, i) => (
-                    <div key={i} className="mt-4 max-w-3xl border-t border-[#e3e8ef] pt-4">
-                      <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
-                        {t.name} — terms
-                      </h3>
-                      <p className="text-sm leading-relaxed text-[#6b7280]">{t.finePrint?.trim()}</p>
-                    </div>
-                  ))}
-              </details>
-            )}
+            {/* The "Everything in writing" disclosure lived here. Removed: it
+                was the third copy of the scope (the email and the PDF both
+                carry it), and the PDF is now one click away at the top of this
+                page. Its terms have moved to step 2, next to the signature —
+                see below. On step 1 they sat on a screen nobody signs anything
+                on, which is the wrong place for fine print to earn its keep. */}
 
             {/*
               The confirm bar. Deliberately the LAST element on the step.
@@ -798,6 +754,23 @@ export const ApprovePage = () => {
                   </label>
                 ))}
               </div>
+
+              {/* The chosen plan's own terms, on the screen where the signature
+                  happens. They used to sit in a collapsed block on step 1 — a
+                  screen nobody signs anything on — which is the wrong place for
+                  fine print to earn its keep. Here they're in front of someone
+                  at the moment they tick "I've read and agree". */}
+              {chosen?.finePrint?.trim() && (
+                <div className="mt-4 rounded-xl border border-[#e3e8ef] bg-[#f7f9fc] p-4">
+                  <h3 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
+                    {plan} — terms
+                  </h3>
+                  <p className="text-sm leading-relaxed text-[#374151]">{chosen.finePrint.trim()}</p>
+                  <p className="mt-2 text-xs text-[#6b7280]">
+                    The full scope of work is in your proposal.
+                  </p>
+                </div>
+              )}
 
               <div className="mt-5 border-t border-[#e3e8ef] pt-5">
                 <label className="block text-sm font-semibold text-[#1f2937]">
