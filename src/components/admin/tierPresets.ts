@@ -138,7 +138,12 @@ export const syncFilterService = (tiers: Tier[], filter: FilterOption): Tier[] =
  * difference between them.
  */
 export const MONTHLY_INCLUDES = [
-  'The full service above, every week',
+  // "…above" on purpose avoided: these cards render in three places and the
+  // thing above them differs in each. In the PDF and the email it's the
+  // Suncoast Difference box; on the approve page there is nothing above them at
+  // all, and on a phone the recommended card sits in between. Self-contained
+  // wording works everywhere.
+  'Everything in your proposal, every week',
   'Billed monthly, in advance',
   'No long-term contract',
   'Cancel any time with 30 days notice',
@@ -202,7 +207,7 @@ export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', in
       // both plans carry the identical service — repeating all six bullets
       // inside a 250pt column was both redundant and, with longer wordings like
       // DE's, tall enough to push the whole comparison onto the next page.
-      tagline: 'Everything above, billed month to month.',
+      tagline: 'The full service, billed month to month.',
       priceNote: '',
       includes: [...MONTHLY_INCLUDES],
       recommended: false,
@@ -224,7 +229,7 @@ export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', in
       priceNote: monthly
         ? `$${formatAmount(monthly * ANNUAL_MONTHS_CHARGED)} billed once — $${formatAmount(monthly)} saved`
         : '',
-      tagline: 'The same service, with one month free.',
+      tagline: 'The full service, with one month free.',
       includes: [...ANNUAL_INCLUDES],
       recommended: true,
       // Answers the objection prepaying actually raises — being tied in.

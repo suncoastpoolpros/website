@@ -394,8 +394,13 @@ export const ApprovePage = () => {
             {/* An address block, not a table. "Service at / Email / Phone" labels
                 told people what an address, an email and a phone number are —
                 and the fixed label column left a dead gutter on a phone. */}
-            <div className="mb-8 grid grid-cols-1 gap-x-10 gap-y-5 sm:grid-cols-2">
-              <div>
+            {/* Flex, not a 2-col grid. A grid gave the pool its own half of the
+                page and stretched the divider to the full height of the left
+                column — so a two-fact pool sat at the top of a tall empty
+                column with a long rule pointing at the space. Sized to content,
+                the rule is only as tall as what it separates. */}
+            <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-10">
+              <div className="min-w-0">
                 <Eyebrow>Prepared for</Eyebrow>
                 <p className="font-semibold text-[#0a1628]">{quote.customerName}</p>
                 {quote.customerAddress?.trim() && (
