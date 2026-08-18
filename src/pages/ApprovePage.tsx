@@ -176,6 +176,13 @@ export const ApprovePage = () => {
   }, [token]);
 
   const quote = state.kind === 'ready' ? state.quote : null;
+  /**
+   * Whether the step-1 header row is carrying the desktop contact block. Only
+   * then does the masthead pill stand down on desktop — on step 2, and on the
+   * loading / accepted / error screens, that row isn't rendered and the pill is
+   * the only way to reach a person.
+   */
+  const contactInHeaderRow = !!quote && step === 1;
   const tiers = quote?.proposal.tiers ?? [];
   const chosen = tiers.find((t) => t.name === plan);
 
@@ -330,10 +337,13 @@ export const ApprovePage = () => {
             gray-500 under the address — the faintest thing on a page asking
             someone to commit to a year of service.
 
-            Corner on desktop, but NOT absolutely positioned until md: at 640px
-            the pill and a centred "Confirm and sign" collide. Below that it
-            sits under the title in normal flow, centred, with a taller tap
-            target — mobile is where it actually gets pressed.
+            BELOW md ONLY. On desktop the header row below carries a fuller
+            version of this in the space beside the pool, and stacking two phone
+            CTAs in the same corner is exactly the duplication that got the old
+            "Something not right? Call us" line deleted.
+
+            In normal flow under the title, centred, with a 46px tap target —
+            the phone is where it actually gets pressed.
 
             Hidden on the error state only, which already leads with a
             full-size phone button; two would just look like a mistake.
@@ -341,10 +351,12 @@ export const ApprovePage = () => {
           {state.kind !== 'error' && (
             <a
               href={PHONE_HREF}
-              className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#dce7f2] bg-white px-4 py-3 text-sm font-semibold text-[#0a1628] transition-colors hover:border-[#1669AE] hover:bg-[#f3f6fb] md:absolute md:right-0 md:top-0 md:mt-0 md:py-2"
+              className={`mt-4 inline-flex items-center gap-2 rounded-full border border-[#dce7f2] bg-white px-4 py-3 text-sm font-semibold text-[#0a1628] transition-colors hover:border-[#1669AE] hover:bg-[#f3f6fb] ${
+                contactInHeaderRow ? 'md:hidden' : 'md:absolute md:right-0 md:top-0 md:mt-0 md:py-2'
+              }`}
             >
               <Phone className="h-4 w-4 shrink-0 text-[#1669AE]" />
-              <span className="hidden lg:inline">Questions?</span>
+              {!contactInHeaderRow && <span className="hidden lg:inline">Questions?</span>}
               {PHONE_DISPLAY}
             </a>
           )}
@@ -441,6 +453,25 @@ export const ApprovePage = () => {
                   <p className="text-sm leading-relaxed text-[#374151]">{poolSummary}</p>
                 </div>
               )}
+              {/* Desktop only, and pushed to the right edge so the row is
+                  anchored at both ends instead of trailing off. Mirrors the
+                  download button opposite it: the left column offers the
+                  document, this one offers a person. Replaces the masthead pill
+                  above rather than joining it. */}
+              <div className="hidden md:ml-auto md:block md:max-w-[15rem] md:border-l md:border-[#dbe3ec] md:pl-10">
+                <Eyebrow>Questions?</Eyebrow>
+                <p className="text-sm leading-relaxed text-[#374151]">
+                  If anything here doesn’t match your pool, tell us and we’ll put it right before you
+                  accept.
+                </p>
+                <a
+                  href={PHONE_HREF}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[#dce7f2] bg-white px-3 py-2 text-sm font-semibold text-[#0f4d80] transition-colors hover:border-[#1669AE] hover:bg-[#f3f6fb]"
+                >
+                  <Phone className="h-4 w-4 shrink-0 text-[#1669AE]" />
+                  {PHONE_DISPLAY}
+                </a>
+              </div>
             </div>
             {/* A "Something not right? Call us" line lived here. Removed once
                 the header carried a phone number — two call-to-action phone
