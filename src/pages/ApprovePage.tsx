@@ -227,6 +227,12 @@ export const ApprovePage = () => {
     }
   }, [quote, pdfState]);
 
+  /** Move to the signing step. Used by the chosen card's button and the bar. */
+  const goToConfirm = useCallback(() => {
+    setStep(2);
+    window.scrollTo({ top: 0 });
+  }, []);
+
   const canSubmit =
     !!plan && agree.requirements && agree.service && agree.privacy && signature.trim().length >= 2;
 
@@ -445,11 +451,9 @@ export const ApprovePage = () => {
                  */
                 const promote = tier.recommended && !plan;
                 return (
-                  <button
+                  <div
                     key={i}
-                    onClick={() => setPlan(tier.name)}
-                    aria-pressed={on}
-                    className={`flex flex-col rounded-2xl border p-5 text-left transition-colors ${
+                    className={`relative flex flex-col rounded-2xl border p-5 text-left transition-colors ${
                       // Recommended leads on a phone: stacked, the upgrade would
                       // otherwise sit below the fold under the option it's meant
                       // to beat. Side by side on desktop, natural order reads
@@ -464,6 +468,18 @@ export const ApprovePage = () => {
                           : 'border-[#e3e8ef] bg-white hover:border-[#9fb3c8]'
                     }`}
                   >
+                    {/* Selection covers the whole card, as a stretched button
+                        rather than the card BEING one — the footer below is a
+                        real button now, and a button inside a button is invalid
+                        HTML. Everything non-interactive sits under this; the
+                        footer sits above it on z-10. */}
+                    <button
+                      onClick={() => setPlan(tier.name)}
+                      aria-pressed={on}
+                      className="absolute inset-0 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1669AE]"
+                    >
+                      <span className="sr-only">Choose {tier.name}</span>
+                    </button>
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         {tier.recommended && (
@@ -523,29 +539,33 @@ export const ApprovePage = () => {
                           {tier.valueNote.trim()}
                         </p>
                       )}
-                      {/* An explicit affordance — two faint circles in the
-                          corners were not one. */}
-                      <span className="block pt-4">
-                        <span
-                          className={`flex items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-bold transition-colors ${
+                      {/* One button, two jobs, and the label always says which:
+                          "Choose X" while unselected, "Continue with X" once it
+                          is. Putting the next step in the card means the
+                          decision and the action are in the same place — no
+                          hunting for a separate control after choosing. */}
+                      <span className="relative z-10 block pt-4">
+                        <button
+                          onClick={() => (on ? goToConfirm() : setPlan(tier.name))}
+                          className={`flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-bold transition-colors ${
                             on
-                              ? 'border-[#1669AE] bg-[#1669AE] text-white'
+                              ? 'border-[#1669AE] bg-gradient-to-r from-brand-blue to-brand-blue-dark text-white shadow-md shadow-[#1669AE]/25'
                               : promote
-                                ? 'border-[#1669AE]/60 text-[#0f4d80]'
-                                : 'border-[#dce7f2] text-[#374151]'
+                                ? 'border-[#1669AE]/60 text-[#0f4d80] hover:bg-[#f3f9fd]'
+                                : 'border-[#dce7f2] text-[#374151] hover:bg-[#f7f9fc]'
                           }`}
                         >
                           {on ? (
                             <>
-                              <Check className="h-4 w-4" strokeWidth={3} /> Selected
+                              Continue with {tier.name} <ArrowRight className="h-4 w-4" />
                             </>
                           ) : (
                             `Choose ${tier.name}`
                           )}
-                        </span>
+                        </button>
                       </span>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -563,52 +583,12 @@ export const ApprovePage = () => {
                 see below. On step 1 they sat on a screen nobody signs anything
                 on, which is the wrong place for fine print to earn its keep. */}
 
-            {/*
-              The confirm bar. Deliberately the LAST element on the step.
-
-              Pinned directly under the cards it was worse than useless: a
-              `sticky bottom` element rests at its own position in the flow, and
-              that position was exactly the cards' footers — so the bar sat on
-              top of "Selected" and "Choose Pay Annually" and hid the control for
-              switching plans. Last, it stays pinned across the whole step and
-              only settles at the very bottom, and the spacer below guarantees
-              every part of the page can be scrolled out from under it.
-
-              It restates the plan and the price rather than being a bare button,
-              because this is the click that commits and the customer should see
-              what they're committing to without scrolling back up. Opaque
-              background, not a blur — blur is banned below 768px (CLAUDE.md #10).
-            */}
-            {plan && (
-              <>
-                <div className="sticky bottom-4 z-10 mt-6">
-                  <div className="flex items-center justify-between gap-4 rounded-2xl border border-[#cfe3f2] bg-white p-3 pl-5 shadow-2xl shadow-[#0a1628]/15">
-                    <div className="min-w-0">
-                      <p className="truncate text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
-                        {plan}
-                      </p>
-                      {chosen?.price && (
-                        <p className="font-display text-lg font-bold leading-tight text-[#0a1628]">
-                          {formatPrice(chosen.price)}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => {
-                        setStep(2);
-                        window.scrollTo({ top: 0 });
-                      }}
-                      className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark px-5 py-3 text-base font-bold text-white shadow-lg shadow-brand-blue/25 sm:px-8"
-                    >
-                      Continue <ArrowRight className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-                {/* Scroll clearance, so the bar can never permanently cover the
-                    last thing on the page. */}
-                <div className="h-24" aria-hidden="true" />
-              </>
-            )}
+            {/* A sticky confirm bar lived here, restating the plan and price
+                with its own Continue. Removed once the chosen card grew a
+                "Continue with <plan>" button: two Continues on screen at the
+                same time is the duplication this page keeps shedding, and the
+                card's version is the better one — it names the plan and sits
+                where the decision was made. */}
           </>
         )}
 
