@@ -431,7 +431,7 @@ export const ApprovePage = () => {
                 decision, not the pitch. The download below keeps the full
                 document one click away. */}
 
-            <p className="mb-4 text-center text-[#6b7280]">Choose the plan you’d like.</p>
+            <p className="mb-4 text-center text-[#6b7280]">Choose the plan that works best for you.</p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {tiers.map((tier, i) => {
                 const on = plan === tier.name;
