@@ -182,7 +182,7 @@ export const ApprovePage = () => {
    * loading / accepted / error screens, that row isn't rendered and the pill is
    * the only way to reach a person.
    */
-  const contactInHeaderRow = !!quote && step === 1;
+  const contactInHeaderRow = !!quote;
   const tiers = quote?.proposal.tiers ?? [];
   const chosen = tiers.find((t) => t.name === plan);
 
@@ -273,6 +273,42 @@ export const ApprovePage = () => {
       setBusy(false);
     }
   }, [canSubmit, busy, token, plan, sameBilling, billing, preferredStart, accessNotes, agree, signature]);
+
+  /**
+   * The right-hand side of the header row: the document, then a person.
+   * Defined once because BOTH steps use it — step 1 beside "Prepared for",
+   * step 2 beside "Your plan" — and two copies would drift.
+   */
+  const headerActions = (
+    <div className="flex shrink-0 flex-col items-end gap-1">
+      <button
+        onClick={downloadPdf}
+        disabled={pdfState === 'working'}
+        className="inline-flex items-center gap-2 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:no-underline sm:py-1"
+      >
+        {pdfState === 'working' ? (
+          <LoaderCircle className="h-4 w-4 animate-spin" />
+        ) : (
+          <Download className="h-4 w-4" />
+        )}
+        {pdfState === 'working' ? 'Preparing your PDF…' : 'Download full proposal'}
+      </button>
+      <a
+        href={PHONE_HREF}
+        className="inline-flex items-center gap-2 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline sm:py-1"
+      >
+        <Phone className="h-4 w-4 shrink-0" />
+        {/* "Questions?" is the first thing to go when width is tight — the
+            number is the part that has to survive. */}
+        <span className="hidden sm:inline">Questions?</span> {PHONE_DISPLAY}
+      </a>
+      {pdfState === 'error' && (
+        <p className="max-w-[16rem] text-xs text-[#c0392b] sm:text-right">
+          Couldn’t build the PDF — it’s also attached to the email we sent you.
+        </p>
+      )}
+    </div>
+  );
 
   return (
     <main className="force-static-motion min-h-dvh bg-[#eef2f7] px-4 py-10 text-[#0a1628] sm:px-6">
@@ -395,36 +431,7 @@ export const ApprovePage = () => {
                 </p>
               </div>
 
-              <div className="flex shrink-0 flex-col items-end gap-1">
-                <button
-                  onClick={downloadPdf}
-                  disabled={pdfState === 'working'}
-                  className="inline-flex items-center gap-2 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:no-underline sm:py-1"
-                >
-                  {pdfState === 'working' ? (
-                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Download className="h-4 w-4" />
-                  )}
-                  {pdfState === 'working' ? 'Preparing your PDF…' : 'Download full proposal'}
-                </button>
-                {/* Desktop only — on a phone the masthead pill above carries
-                    this, with a proper tap target. */}
-                <a
-                  href={PHONE_HREF}
-                  className="inline-flex items-center gap-2 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline sm:py-1"
-                >
-                  <Phone className="h-4 w-4 shrink-0" />
-                  {/* "Questions?" is the first thing to go when width is tight —
-                      the number is the part that has to survive. */}
-                  <span className="hidden sm:inline">Questions?</span> {PHONE_DISPLAY}
-                </a>
-                {pdfState === 'error' && (
-                  <p className="max-w-[16rem] text-xs text-[#c0392b] sm:text-right">
-                    Couldn’t build the PDF — it’s also attached to the email we sent you.
-                  </p>
-                )}
-              </div>
+              {headerActions}
             </div>
             {/* A "Something not right? Call us" line lived here. Removed once
                 the header carried a phone number — two call-to-action phone
@@ -594,20 +601,26 @@ export const ApprovePage = () => {
 
         {quote && step === 2 && (
           <>
-            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-[#e3e8ef] bg-white p-4">
-              <div>
-                <p className="text-xs uppercase tracking-wider text-[#6b7280]">Your plan</p>
-                <p className="font-display text-lg font-bold">{plan}</p>
+            {/* Same header row as step 1 — eyebrow and details on the left,
+                the same two action links on the right — so moving between the
+                steps doesn't feel like moving between two designs. The plan was
+                in a bordered card here, which made it the only card above the
+                fold and read as another thing to act on. */}
+            <div className="mb-8 flex items-start justify-between gap-4 sm:gap-8">
+              <div className="min-w-0">
+                <Eyebrow>Your plan</Eyebrow>
+                <p className="font-display text-lg font-bold text-[#0a1628]">{plan}</p>
                 {chosen?.price && (
                   <p className="text-sm font-semibold text-[#0f4d80]">{formatPrice(chosen.price)}</p>
                 )}
+                <button
+                  onClick={() => setStep(1)}
+                  className="mt-1.5 inline-flex items-center gap-1.5 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline sm:py-1"
+                >
+                  <ArrowLeft className="h-4 w-4" /> Change plan
+                </button>
               </div>
-              <button
-                onClick={() => setStep(1)}
-                className="inline-flex items-center gap-1 rounded-lg border border-[#dce7f2] bg-white px-3 py-2 text-sm text-[#374151] hover:bg-[#f3f6fb]"
-              >
-                <ArrowLeft className="h-4 w-4" /> Change
-              </button>
+              {headerActions}
             </div>
 
             <section className="mb-5 rounded-2xl border border-[#e3e8ef] bg-white p-5">
