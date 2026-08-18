@@ -551,15 +551,19 @@ export const ApprovePage = () => {
                           </li>
                         ))}
                     </ul>
-                    {/* The note and the button are bottom-anchored TOGETHER. The
-                        two cards hold different amounts (only one has a price
-                        note), so the shorter one has slack to put somewhere;
-                        pushing this whole group down turns it into a gap above a
-                        divider — a section break — instead of ~150px of dead
-                        space trailing the card. */}
+                    {/* The note and the button are bottom-anchored TOGETHER, so
+                        they line up across both cards however much each one has
+                        to say — side by side the shorter card's slack lands
+                        above its note rather than under the button.
+
+                        There used to be a rule above the note to "close" that
+                        slack. Removed: the notes align across the cards anyway,
+                        and on mobile the cards stack and size to their own
+                        content, so the gap is zero and the rule was pure
+                        furniture. */}
                     <div className="mt-auto">
                       {tier.valueNote?.trim() && (
-                        <p className="border-t border-[#e3e8ef] pt-3 text-xs leading-relaxed text-[#6b7280]">
+                        <p className="pt-3 text-xs leading-relaxed text-[#6b7280]">
                           {tier.valueNote.trim()}
                         </p>
                       )}
