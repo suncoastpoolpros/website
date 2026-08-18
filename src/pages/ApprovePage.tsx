@@ -301,8 +301,11 @@ export const ApprovePage = () => {
           {state.kind !== 'error' && (
             <a
               href={PHONE_HREF}
-              className={`mt-4 inline-flex items-center gap-2 rounded-full border border-[#dce7f2] bg-white px-4 py-3 text-sm font-semibold text-[#0a1628] transition-colors hover:border-[#1669AE] hover:bg-[#f3f6fb] ${
-                contactInHeaderRow ? 'md:hidden' : 'md:absolute md:right-0 md:top-0 md:mt-0 md:py-2'
+              className={`mt-4 items-center gap-2 rounded-full border border-[#dce7f2] bg-white px-4 py-3 text-sm font-semibold text-[#0a1628] transition-colors hover:border-[#1669AE] hover:bg-[#f3f6fb] ${
+                // The header row carries the phone on every width now, so the
+                // pill only appears on the screens that have no header row:
+                // step 2, loading, accepted, error.
+                contactInHeaderRow ? 'hidden' : 'inline-flex md:absolute md:right-0 md:top-0 md:mt-0 md:py-2'
               }`}
             >
               <Phone className="h-4 w-4 shrink-0 text-[#1669AE]" />
@@ -371,7 +374,7 @@ export const ApprovePage = () => {
               cards for the same "press me" — they're utilities beside the real
               decision.
             */}
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
+            <div className="mb-8 flex items-start justify-between gap-4 sm:gap-8">
               <div className="min-w-0">
                 <Eyebrow>Prepared for</Eyebrow>
                 <p className="font-semibold text-[#0a1628]">{quote.customerName}</p>
@@ -386,11 +389,11 @@ export const ApprovePage = () => {
                 </p>
               </div>
 
-              <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
+              <div className="flex shrink-0 flex-col items-end gap-1">
                 <button
                   onClick={downloadPdf}
                   disabled={pdfState === 'working'}
-                  className="inline-flex items-center gap-2 py-1 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:no-underline"
+                  className="inline-flex items-center gap-2 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:no-underline sm:py-1"
                 >
                   {pdfState === 'working' ? (
                     <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -403,10 +406,12 @@ export const ApprovePage = () => {
                     this, with a proper tap target. */}
                 <a
                   href={PHONE_HREF}
-                  className="hidden items-center gap-2 py-1 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline md:inline-flex"
+                  className="inline-flex items-center gap-2 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline sm:py-1"
                 >
-                  <Phone className="h-4 w-4" />
-                  Questions? {PHONE_DISPLAY}
+                  <Phone className="h-4 w-4 shrink-0" />
+                  {/* "Questions?" is the first thing to go when width is tight —
+                      the number is the part that has to survive. */}
+                  <span className="hidden sm:inline">Questions?</span> {PHONE_DISPLAY}
                 </a>
                 {pdfState === 'error' && (
                   <p className="max-w-[16rem] text-xs text-[#c0392b] sm:text-right">
