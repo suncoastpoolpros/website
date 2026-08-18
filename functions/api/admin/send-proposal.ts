@@ -66,6 +66,8 @@ type SendProposalPayload = {
   customer?: Customer;
   pool?: Pool;
   proposal?: Proposal;
+  /** Reserved by the builder before it rendered the PDF, and printed on it. */
+  proposalNumber?: number | null;
   pdfBase64?: string;
   filename?: string;
 };
@@ -119,10 +121,17 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
     // Stored before sending so the email can carry a one-click accept link.
     // Returns null when D1 isn't bound or the write fails — the proposal then
     // sends exactly as it always has, minus the link.
+    // Trust the number the builder sent rather than reserving a second one:
+    // it's already printed on the attached PDF, and a fresh reservation here
+    // would store a number the customer's document doesn't show.
+    const proposalNumber = Number.isFinite(Number(payload.proposalNumber))
+      ? Number(payload.proposalNumber)
+      : null;
     const token = await saveQuote((env as { DB?: unknown }).DB, {
       customer,
       pool: payload.pool ?? {},
       proposal: payload.proposal ?? {},
+      number: proposalNumber,
     });
     const acceptLink = token ? approveUrl(new URL(request.url).origin, token) : '';
 
@@ -144,9 +153,11 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
         to: toEmail,
         replyTo: replyTo || undefined,
         bcc: bcc || undefined,
-        subject: hasTiers(payload)
-          ? 'Your Pool Service Plans — Suncoast Pool Pros'
-          : 'Your Pool Service Proposal — Suncoast Pool Pros',
+        subject: `${
+          hasTiers(payload)
+            ? 'Your Pool Service Plans'
+            : 'Your Pool Service Proposal'
+        }${proposalNumber ? ` — Proposal #${proposalNumber}` : ''} — Suncoast Pool Pros`,
         html,
         text,
         attachments,
@@ -428,6 +439,7 @@ export const composeProposalEmail = (
   /** One-click accept URL. Empty when quote storage isn't available. */
   acceptLink = '',
 ): { html: string; text: string } => {
+  const proposalNumber = Number.isFinite(Number(p.proposalNumber)) ? Number(p.proposalNumber) : null;
   const name = safe(String(p.customer?.name ?? '').trim(), 120);
   const greetingName = name ? name.split(/\s+/)[0] : 'there';
   const price = formatPrice(safe(String(p.proposal?.price ?? '').trim(), 40));
@@ -474,6 +486,7 @@ export const composeProposalEmail = (
   const text = [
     `Hi ${greetingName},`,
     ``,
+    ...(proposalNumber ? [`Proposal #${proposalNumber}`, ``] : []),
     ...(emailNote ? [emailNote, ``] : []),
     `Thank you for the opportunity to earn your business. Your proposal from`,
     `Suncoast Pool Pros is attached as a PDF.`,
@@ -547,7 +560,11 @@ export const composeProposalEmail = (
           <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#8ea2c0;">Suncoast Pool Pros</div>
           <div style="font-size:22px;font-weight:700;color:#ffffff;margin-top:6px;">${
             tiered ? 'Your Pool Service Plans' : 'Your Pool Service Proposal'
-          }</div>
+          }</div>${
+            proposalNumber
+              ? `<div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#8ea2c0;margin-top:8px;">Proposal #${proposalNumber}</div>`
+              : ''
+          }
         </td></tr>
         <!-- Brand accent bar -->
         <tr><td style="height:4px;background:#1669AE;line-height:4px;font-size:0;">&nbsp;</td></tr>

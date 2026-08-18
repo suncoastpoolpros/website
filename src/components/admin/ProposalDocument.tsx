@@ -341,11 +341,15 @@ export const ProposalDocument = ({
   data,
   photos = [],
   dateLabel,
+  proposalNumber,
 }: {
   data: ProposalData;
   /** Data-URL JPEGs (already downscaled by the builder) to embed in the PDF. */
   photos?: string[];
   dateLabel: string;
+  /** Reserved before this renders. Null on quotes sent before numbering, and
+   *  whenever storage is unavailable — the masthead then just omits it. */
+  proposalNumber?: number | null;
 }) => {
   const { customer, pool, proposal } = data;
   const hasPoolBasics = pool.gallons || dimensionsLine(pool) || pool.shape || pool.sanitization;
@@ -387,7 +391,15 @@ export const ProposalDocument = ({
               <Text style={styles.headerTitle}>Service Proposal</Text>
             </View>
             <View style={styles.metaCol}>
-              <Text style={styles.metaLabel}>Proposal Date</Text>
+              {proposalNumber ? (
+                <>
+                  <Text style={styles.metaLabel}>Proposal</Text>
+                  <Text style={styles.metaValue}>#{proposalNumber}</Text>
+                  <Text style={[styles.metaLabel, { marginTop: 7 }]}>Date</Text>
+                </>
+              ) : (
+                <Text style={styles.metaLabel}>Proposal Date</Text>
+              )}
               <Text style={styles.metaValue}>{dateLabel}</Text>
             </View>
           </View>

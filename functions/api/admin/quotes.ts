@@ -45,6 +45,7 @@ export const onRequestGet = async (ctx: AdminContext): Promise<Response> => {
 
       return {
         id: row.id,
+        number: row.number ?? null,
         name: row.customer_name,
         email: row.customer_email,
         phone: row.customer_phone,

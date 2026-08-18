@@ -51,6 +51,7 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
         ok: true,
         quote: {
           id: row.id,
+          number: row.number ?? null,
           createdAt: row.created_at,
           expiresAt: row.expires_at,
           customer: {

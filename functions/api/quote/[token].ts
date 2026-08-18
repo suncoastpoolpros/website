@@ -57,6 +57,9 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
         customerEmail: row.customer_email,
         customerPhone: row.customer_phone,
         customerAddress: row.customer_address,
+        // The proposal number, so the page and the PDF it regenerates say the
+        // same thing as the document already in their inbox.
+        number: row.number ?? null,
         createdAt: row.created_at,
         expiresAt: row.expires_at,
         pool,

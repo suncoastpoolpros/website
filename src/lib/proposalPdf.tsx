@@ -29,9 +29,12 @@ export const proposalDateLabel = (iso?: string): string => {
   return safe.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 };
 
-export const proposalFilename = (customerName: string): string => {
+export const proposalFilename = (customerName: string, proposalNumber?: number | null): string => {
   const name = customerName.trim().replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  return `Suncoast-Proposal${name ? '-' + name : ''}.pdf`;
+  // Number first when there is one: a folder of these sorts into send order,
+  // and it's the thing you'd search for.
+  const num = proposalNumber ? `-${proposalNumber}` : '';
+  return `Suncoast-Proposal${num}${name ? '-' + name : ''}.pdf`;
 };
 
 /** Render the proposal to a PDF blob. */
@@ -39,17 +42,28 @@ export const renderProposalPdf = async ({
   data,
   photos = [],
   dateLabel,
+  proposalNumber,
 }: {
   data: ProposalData;
   /** Data-URL JPEGs. Only the builder has these; a regenerated copy has none. */
   photos?: string[];
   dateLabel: string;
+  /** Must match the number the customer was emailed, or their download is a
+   *  different document from the one on record. */
+  proposalNumber?: number | null;
 }): Promise<Blob> => {
   const [{ pdf }, { ProposalDocument }] = await Promise.all([
     import('@react-pdf/renderer'),
     import('@/components/admin/ProposalDocument'),
   ]);
-  return pdf(<ProposalDocument data={data} photos={photos} dateLabel={dateLabel} />).toBlob();
+  return pdf(
+    <ProposalDocument
+      data={data}
+      photos={photos}
+      dateLabel={dateLabel}
+      proposalNumber={proposalNumber}
+    />,
+  ).toBlob();
 };
 
 /** Hand a blob to the browser as a download and clean up the object URL. */

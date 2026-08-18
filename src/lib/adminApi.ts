@@ -284,6 +284,23 @@ export const emptyInspection = (): InspectionData => ({
 });
 
 /** True when a valid admin session cookie is present. */
+/**
+ * Reserve the next proposal number, immediately before rendering the PDF.
+ *
+ * Never throws and never blocks a send: any failure resolves to null and the
+ * proposal goes out unnumbered, exactly as it did before numbering existed.
+ */
+export async function reserveProposalNumber(signal?: AbortSignal): Promise<number | null> {
+  try {
+    const res = await fetch('/api/admin/proposal-number', { method: 'POST', signal });
+    const data = (await res.json().catch(() => ({}))) as { number?: number | null };
+    const n = Number(data?.number);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function checkSession(): Promise<boolean> {
   try {
     const res = await fetch('/api/admin/session', { method: 'GET' });
@@ -326,6 +343,8 @@ export async function logout(): Promise<void> {
 }
 
 export type SendProposalArgs = ProposalData & {
+  /** The number reserved before the PDF was rendered, and printed on it. */
+  proposalNumber?: number | null;
   /** Base64 PDF (no data: prefix needed; server strips one if present). */
   pdfBase64: string;
   filename: string;
@@ -339,6 +358,7 @@ export async function sendProposal(args: SendProposalArgs, signal?: AbortSignal)
       customer: args.customer,
       pool: args.pool,
       proposal: args.proposal,
+      proposalNumber: args.proposalNumber ?? null,
       pdfBase64: args.pdfBase64,
       filename: args.filename,
     },

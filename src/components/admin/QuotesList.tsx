@@ -28,6 +28,7 @@ import { STATUS_META, type Status, ago, onDate, statusOf } from './quoteFormat';
 
 type Quote = {
   id: string;
+  number?: number | null;
   name: string;
   email: string;
   phone: string | null;
@@ -97,6 +98,7 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
         (q) =>
           !needle ||
           q.name.toLowerCase().includes(needle) ||
+          String(q.number ?? '').includes(needle) ||
           q.email.toLowerCase().includes(needle) ||
           (q.address ?? '').toLowerCase().includes(needle),
       )
@@ -269,7 +271,12 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                       <ChevronRight className="absolute right-3 top-1/2 hidden h-5 w-5 -translate-y-1/2 text-gray-600 transition-colors group-hover:text-gray-300 sm:block" />
                       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
                         <div className="min-w-0">
-                          <p className="font-semibold text-white">{q.name || '—'}</p>
+                          <p className="font-semibold text-white">
+                            {q.name || '—'}
+                            {q.number ? (
+                              <span className="ml-2 text-xs font-normal text-gray-500">#{q.number}</span>
+                            ) : null}
+                          </p>
                           <a
                             href={`mailto:${q.email}`}
                             className="relative z-10 block truncate text-sm text-gray-400 hover:text-white"

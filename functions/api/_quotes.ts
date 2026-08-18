@@ -56,6 +56,8 @@ export type QuoteRow = {
   accepted_ua: string | null;
   onboarding_json?: string | null;
   terms_version?: string | null;
+  /** Human-readable proposal number. Null on quotes sent before numbering. */
+  number?: number | null;
 };
 
 /**
@@ -85,6 +87,33 @@ export const isQuoteStorageAvailable = (db: unknown): db is D1Like =>
   !!db && typeof (db as D1Like).prepare === 'function';
 
 /**
+ * Reserve the next proposal number.
+ *
+ * Reserved rather than derived, because the number has to be ON the PDF, and
+ * the PDF is rendered in the admin's browser before the quote row exists.
+ * MAX(number)+1 over a table the row isn't in yet would hand the same number to
+ * two overlapping sends; a single atomic increment can't.
+ *
+ * Returns null when storage isn't available or the counter is missing — the
+ * proposal then sends exactly as it did before numbering, just without one. A
+ * missing number must never block a send.
+ */
+export async function reserveProposalNumber(db: unknown): Promise<number | null> {
+  if (!isQuoteStorageAvailable(db)) return null;
+  try {
+    const row = await db
+      .prepare("UPDATE counters SET value = value + 1 WHERE name = 'proposal_number' RETURNING value")
+      .bind()
+      .first<{ value?: number }>();
+    const n = Number(row?.value);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  } catch (err) {
+    console.log('[quotes] number_reserve_failed:', String(err).slice(0, 300));
+    return null;
+  }
+}
+
+/**
  * Persist a sent quote. Returns the token, or null when storage isn't available
  * or the write failed — callers then simply omit the approve link.
  */
@@ -94,6 +123,8 @@ export async function saveQuote(
     customer: { name?: string; email?: string; address?: string; phone?: string };
     pool: unknown;
     proposal: unknown;
+    /** The number already reserved and printed on the PDF, if any. */
+    number?: number | null;
   },
 ): Promise<string | null> {
   if (!isQuoteStorageAvailable(db)) return null;
@@ -105,8 +136,8 @@ export async function saveQuote(
       .prepare(
         `INSERT INTO quotes
            (id, created_at, expires_at, customer_name, customer_email,
-            customer_address, customer_phone, pool_json, proposal_json)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            customer_address, customer_phone, pool_json, proposal_json, number)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         id,
@@ -118,6 +149,7 @@ export async function saveQuote(
         String(quote.customer?.phone ?? '').trim() || null,
         JSON.stringify(quote.pool ?? {}),
         JSON.stringify(quote.proposal ?? {}),
+        Number.isFinite(Number(quote.number)) ? Number(quote.number) : null,
       )
       .run();
     return id;
@@ -221,7 +253,7 @@ export async function listQuotes(db: unknown, limit = 200): Promise<QuoteRow[] |
   try {
     const res = await db
       .prepare(
-        `SELECT id, created_at, expires_at, customer_name, customer_email,
+        `SELECT id, number, created_at, expires_at, customer_name, customer_email,
                 customer_address, customer_phone, proposal_json,
                 accepted_at, accepted_plan
            FROM quotes

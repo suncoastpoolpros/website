@@ -51,6 +51,7 @@ type Proposal = {
 type Onboarding = Record<string, unknown>;
 type Detail = {
   id: string;
+  number?: number | null;
   createdAt: string;
   expiresAt: string;
   customer: { name: string; email: string; phone: string | null; address: string | null };
@@ -287,6 +288,7 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
           <div className="min-w-0">
             <h1 className="font-display text-2xl font-bold text-white">{quote.customer.name || '—'}</h1>
             <p className="mt-1 text-sm text-gray-400">
+              {quote.number ? `Proposal #${quote.number} · ` : ''}
               Sent {onDate(quote.createdAt)} · {ago(quote.createdAt)}
             </p>
           </div>

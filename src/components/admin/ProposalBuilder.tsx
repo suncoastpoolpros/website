@@ -4,6 +4,7 @@ import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components
 import { useProposalDraft } from '@/lib/useAdminDraft';
 import {
   sendProposal,
+  reserveProposalNumber,
   logout,
   formatPrice,
   tierDelta,
@@ -246,15 +247,30 @@ export const ProposalBuilder = ({
     abortRef.current = controller;
     setStatus({ kind: 'sending' });
     try {
+      // Reserved BEFORE the PDF is built, because the number is printed on it.
+      // Resolves to null if storage is unavailable; the proposal then sends
+      // unnumbered rather than not at all.
+      const proposalNumber = await reserveProposalNumber(controller.signal);
+      if (cancelledRef.current) return;
       // renderProposalPdf keeps the engine a lazy chunk fetched on first send,
       // and is the same call the customer's approve page makes to build their
       // download — so the two copies can't drift.
-      const blob = await renderProposalPdf({ data, photos, dateLabel: proposalDateLabel() });
+      const blob = await renderProposalPdf({
+        data,
+        photos,
+        dateLabel: proposalDateLabel(),
+        proposalNumber,
+      });
       if (cancelledRef.current) return;
       const pdfBase64 = await blobToBase64(blob);
       if (cancelledRef.current) return;
       await sendProposal(
-        { ...data, pdfBase64, filename: proposalFilename(data.customer.name) },
+        {
+          ...data,
+          proposalNumber,
+          pdfBase64,
+          filename: proposalFilename(data.customer.name, proposalNumber),
+        },
         controller.signal,
       );
       setStatus({ kind: 'sent' });

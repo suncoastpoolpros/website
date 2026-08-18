@@ -67,6 +67,8 @@ type Pool = {
   equipmentNotes?: string;
 };
 type Quote = {
+  /** Proposal number. Null on quotes sent before numbering existed. */
+  number?: number | null;
   customerName: string;
   customerEmail?: string;
   customerPhone?: string | null;
@@ -214,8 +216,11 @@ export const ApprovePage = () => {
       const blob = await renderProposalPdf({
         data: proposalDataFromQuote(quote),
         dateLabel: proposalDateLabel(quote.createdAt),
+        // Same number as the emailed copy, or the download would be a different
+        // document from the one on record.
+        proposalNumber: quote.number,
       });
-      downloadBlob(blob, proposalFilename(quote.customerName));
+      downloadBlob(blob, proposalFilename(quote.customerName, quote.number));
       setPdfState('idle');
     } catch {
       // The PDF is attached to their email too, so this is a convenience
@@ -315,6 +320,14 @@ export const ApprovePage = () => {
           <h1 className="mt-1 font-display text-2xl font-bold sm:text-3xl">
             {state.kind === 'accepted' ? 'You’re all set' : step === 1 ? 'Your proposal' : 'Confirm and sign'}
           </h1>
+          {/* The same number that's on the PDF and in the email subject, so all
+              three surfaces are obviously one document. Absent on quotes sent
+              before numbering, rather than invented after the fact. */}
+          {quote?.number && (
+            <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-[#9aa4b2]">
+              Proposal #{quote.number}
+            </p>
+          )}
           {/*
             A reachable human. Every other word on this page argues for buying;
             without this the only route to a question was "Call us" in 12px
