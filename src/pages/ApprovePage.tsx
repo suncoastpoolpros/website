@@ -415,11 +415,28 @@ export const ApprovePage = () => {
                 {quote.customerAddress?.trim() && (
                   <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
                 )}
+                {/* Email and phone as separate elements, not one joined string.
+                    Joined, a wrap left the " · " stranded at the end of the
+                    first line — which is what it did on narrower phones. They
+                    stack on mobile with no separator at all, and only sit on one
+                    line with the dot once there's room for both. */}
                 <p className="mt-0.5 text-sm text-[#6b7280]">
-                  {[quote.customerEmail, quote.customerPhone]
-                    .map((v) => (v ?? '').trim())
-                    .filter(Boolean)
-                    .join(' · ')}
+                  {quote.customerEmail?.trim() && (
+                    // break-words so a long address wraps instead of pushing the
+                    // page sideways — an email is one unbreakable token.
+                    <span className="block break-words sm:inline">{quote.customerEmail.trim()}</span>
+                  )}
+                  {quote.customerPhone?.trim() && (
+                    // The separator lives INSIDE the phone's span, so it can
+                    // never be left stranded at the end of a wrapped line — it
+                    // travels with the number or isn't shown at all.
+                    <span className="block whitespace-nowrap sm:inline">
+                      {quote.customerEmail?.trim() && (
+                        <span className="hidden text-[#c3cedb] sm:inline">· </span>
+                      )}
+                      {quote.customerPhone.trim()}
+                    </span>
+                  )}
                 </p>
               </div>
 
