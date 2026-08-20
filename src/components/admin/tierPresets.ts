@@ -28,6 +28,7 @@ import {
   filterServiceLine,
   filterServiceTerms,
   filterServiceValueNote,
+  supportsFilterService,
 } from './filterService';
 
 /**
@@ -59,7 +60,7 @@ export const ANNUAL_MONTHS_CHARGED = 11;
  * a stale preset from wording the admin edited on purpose, so it would nag
  * forever on any customised proposal.
  */
-export const PRESET_VERSION = 3;
+export const PRESET_VERSION = 4;
 
 /** Terms specific to prepaying for the year. */
 /**
@@ -137,23 +138,29 @@ export const syncFilterService = (tiers: Tier[], filter: FilterOption): Tier[] =
  * place. Both cards now describe their payment terms, which is the actual
  * difference between them.
  */
-export const MONTHLY_INCLUDES = [
-  // Says what the customer GETS, not just how it's billed. The approve page has
-  // no "what's included" box above the cards — it was cut as a third copy of
-  // something already in the email and the PDF — so if these bullets only
-  // describe billing terms, that page never states the service at all.
-  //
-  // No "…above": these render in three places and the thing above them differs
-  // in each, and on a phone the recommended card sits in between.
-  //
-  // No frequency either. There is a bi-weekly scope template, so "every week"
-  // is a claim these presets can't actually check — the schedule lives in the
-  // scope, and that's the one place it's true by construction.
-  'The full service set out in your proposal',
-  'All chemicals and routine filter care included',
-  'Billed monthly, in advance',
-  'No long-term contract',
-  'Cancel any time with 30 days notice',
+export const monthlyIncludes = (filter: FilterOption): string[] => [
+  // The hidden-cost worry, first. Most companies bill chemicals on top, so this
+  // is the line a customer can actually price against the quote next to ours.
+  'All chemicals included in your set monthly rate',
+  // ONLY when this quote actually bundles it. filterServiceIncluded is asked per
+  // quote and is often 'no' — printing this on a pool where it wasn't sold
+  // promises a bill we'd then be expected to absorb.
+  ...(filter.included && supportsFilterService(filter.type)
+    ? ['Filter care included — never a separate invoice']
+    : []),
+  // Names the objection nobody says out loud: "fine, but what about August?"
+  // Under a usage-billing competitor that is a real, larger bill. "Flat rate"
+  // only means something once you say what it protects you from.
+  'One flat rate — it doesn’t rise in summer',
+  // Proof of visit, which is the whole anxiety for anyone not home when we come.
+  'A GPS-stamped photo report after every visit',
+  // Risk reversal, sitting directly above the Choose button rather than only in
+  // the Difference box further up the page. Backed by section 6 of the Service
+  // Agreement — see GUARANTEE_BENEFIT in proposalBenefits.ts before editing.
+  'Two-week 100% money-back guarantee',
+  // Was two bullets ("No long-term contract" and "Cancel any time with 30 days
+  // notice") saying one thing twice, in a list where only one line was selling.
+  'No contract — cancel any time with 30 days notice',
 ];
 
 export const ANNUAL_INCLUDES = [
@@ -216,7 +223,7 @@ export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', in
       // DE's, tall enough to push the whole comparison onto the next page.
       tagline: 'The full service, billed month to month.',
       priceNote: '',
-      includes: [...MONTHLY_INCLUDES],
+      includes: monthlyIncludes(filter),
       recommended: false,
       // Answers "why is this more than the quote down the road?" before the
       // customer asks it — the honest answer is that parts other companies
