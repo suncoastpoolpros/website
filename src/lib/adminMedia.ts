@@ -17,11 +17,25 @@ export const blobToBase64 = (blob: Blob): Promise<string> =>
   });
 
 /**
- * Shrink a phone photo to a sane size before it goes into the PDF — full-res
- * images would blow past the email attachment limit. Draws to a canvas capped
- * at 1400px on the long edge and re-encodes as JPEG.
+ * Shrink a phone photo before it goes into the PDF — full-res images would
+ * blow past the email attachment limit.
+ *
+ * 900px ON THE LONG EDGE IS DERIVED, not guessed. Both documents render photos
+ * in a 248 x 156pt box (ProposalDocument and InspectionDocument), which is
+ * 3.4 x 2.2 inches. 900px across that box is about 260 DPI — sharp even
+ * printed, and comfortably past the ~700px a retina screen needs to show it at
+ * 100% without softness.
+ *
+ * It was 1400px, which is roughly 400 DPI: more resolution than the box can
+ * ever display, at more than double the bytes. Each photo now costs ~120 KB
+ * instead of ~215 KB, and these travel THREE times — up to the send endpoint,
+ * out as part of the emailed PDF, and back down when a customer re-downloads.
+ *
+ * Going further hurts. At 450px the same box is ~130 DPI, which is visibly soft
+ * on any retina display and worse on paper — and this is a photograph of the
+ * customer's own property inside a document they may keep or print.
  */
-export const downscaleImage = (file: File, maxDim = 1400, quality = 0.72): Promise<string> =>
+export const downscaleImage = (file: File, maxDim = 900, quality = 0.7): Promise<string> =>
   new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
