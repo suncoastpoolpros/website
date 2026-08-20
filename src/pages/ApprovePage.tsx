@@ -17,6 +17,7 @@ import {
   renderProposalPdf,
 } from '@/lib/proposalPdf';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
+import { ProposalBreakdown } from '@/components/ProposalBreakdown';
 
 /**
  * /approve/?t=<token> — where an emailed "Review & accept your plan" link lands.
@@ -75,7 +76,14 @@ type Quote = {
   createdAt: string;
   expiresAt: string;
   pool: Pool;
-  proposal: { tiers?: Tier[]; price?: string; scope?: string; includeBenefits?: boolean };
+  proposal: {
+    tiers?: Tier[];
+    price?: string;
+    scope?: string;
+    includeBenefits?: boolean;
+    /** 'link' when the quote was never emailed — see the breakdown step. */
+    deliveredBy?: string;
+  };
   acceptedAt: string | null;
   acceptedPlan: string | null;
 };
@@ -108,7 +116,17 @@ export const ApprovePage = () => {
   });
 
   const [state, setState] = useState<State>({ kind: 'loading' });
-  const [step, setStep] = useState<1 | 2>(1);
+  /**
+   * Step 0 is the breakdown — what the service is and what it covers — and only
+   * exists for a customer who was sent a LINK rather than an email. They never
+   * got the PDF or the email, so without it the page opens on two priced cards
+   * explaining nothing. Someone who was emailed has read all of it twice and
+   * starts at the plans.
+   *
+   * ?full=1 forces it on for any quote, so the breakdown can be checked without
+   * creating a link-only one.
+   */
+  const [step, setStep] = useState<0 | 1 | 2>(1);
   const [plan, setPlan] = useState('');
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState('');
@@ -156,7 +174,15 @@ export const ApprovePage = () => {
         if (res.ok && data.ok && data.quote) {
           const q = data.quote;
           if (q.acceptedAt && q.acceptedPlan) setState({ kind: 'accepted', plan: q.acceptedPlan });
-          else setState({ kind: 'ready', quote: q });
+          else {
+            setState({ kind: 'ready', quote: q });
+            // Set here rather than in the initial useState: whether this quote
+            // was emailed isn't known until it has loaded.
+            const full =
+              q.proposal?.deliveredBy === 'link' ||
+              new URLSearchParams(window.location.search).get('full') === '1';
+            if (full) setStep(0);
+          }
           return;
         }
         setState({
@@ -174,6 +200,9 @@ export const ApprovePage = () => {
   }, [token]);
 
   const quote = state.kind === 'ready' ? state.quote : null;
+  const forceFull =
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('full') === '1';
+  const leadsWithBreakdown = !!quote && (quote.proposal.deliveredBy === 'link' || forceFull);
   /**
    * Whether the step-1 header row is carrying the desktop contact block. Only
    * then does the masthead pill stand down on desktop — on step 2, and on the
@@ -317,7 +346,11 @@ export const ApprovePage = () => {
         <div className="relative mb-8 text-center">
           <p className="text-[11px] uppercase tracking-[0.2em] text-[#6b7280]">Suncoast Pool Pros</p>
           <h1 className="mt-1 font-display text-2xl font-bold sm:text-3xl">
-            {state.kind === 'accepted' ? 'You’re all set' : step === 1 ? 'Your proposal' : 'Confirm and sign'}
+            {state.kind === 'accepted'
+              ? 'You’re all set'
+              : step === 2
+                ? 'Confirm and sign'
+                : 'Your proposal'}
           </h1>
           {/*
             A reachable human. Every other word on this page argues for buying;
@@ -388,6 +421,37 @@ export const ApprovePage = () => {
           </div>
         )}
 
+        {quote && step === 0 && (
+          <>
+            <div className="mb-8 flex items-start justify-between gap-4 sm:gap-8">
+              <div className="min-w-0">
+                <Eyebrow>{quote.number ? `Proposal #${quote.number}` : 'Prepared for'}</Eyebrow>
+                <p className="font-semibold text-[#0a1628]">{quote.customerName}</p>
+                {quote.customerAddress?.trim() && (
+                  <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
+                )}
+              </div>
+              {headerActions}
+            </div>
+
+            <ProposalBreakdown
+              pool={quote.pool}
+              scope={quote.proposal.scope}
+              includeBenefits={quote.proposal.includeBenefits !== false}
+            />
+
+            <button
+              onClick={() => {
+                setStep(1);
+                window.scrollTo({ top: 0 });
+              }}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark py-4 text-lg font-bold text-white shadow-lg shadow-brand-blue/25"
+            >
+              See your pricing <ArrowRight className="h-5 w-5" />
+            </button>
+          </>
+        )}
+
         {quote && step === 1 && (
           <>
             {/* Borderless and compact. These are reassurance — "yes, that's my
@@ -414,6 +478,20 @@ export const ApprovePage = () => {
             */}
             <div className="mb-8 flex items-start justify-between gap-4 sm:gap-8">
               <div className="min-w-0">
+                {/* Only offered to customers who actually started on the
+                    breakdown — for anyone else it would point at a step they
+                    have never seen. */}
+                {leadsWithBreakdown && (
+                  <button
+                    onClick={() => {
+                      setStep(0);
+                      window.scrollTo({ top: 0 });
+                    }}
+                    className="-mt-1 mb-1 inline-flex items-center gap-1.5 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline sm:py-1"
+                  >
+                    <ArrowLeft className="h-4 w-4" /> What&apos;s included
+                  </button>
+                )}
                 {/* The number takes this slot when there is one. It's the same
                     number on the PDF and in the email subject, so it identifies
                     the document; "Prepared for" only labelled a name that needs

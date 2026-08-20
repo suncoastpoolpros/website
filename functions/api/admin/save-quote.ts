@@ -60,10 +60,24 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
       return json({ ok: false, error: 'customer_name_required' }, 400);
     }
 
+    // Tagged so the approve page knows this customer never received the email
+    // or the PDF, and must therefore lead with the full breakdown rather than
+    // opening straight on two priced cards.
+    //
+    // Stored inside proposal_json rather than as a column: it needs no
+    // migration, it travels with the snapshot it describes, and it can't be
+    // stripped off the URL the way a query flag can. Deriving it from an empty
+    // customer_email wouldn't do — a link-only quote may still have an address
+    // typed in, and that customer got no email either.
+    const proposal = {
+      ...((payload.proposal ?? {}) as Record<string, unknown>),
+      deliveredBy: 'link',
+    };
+
     const token = await saveQuote((env as { DB?: unknown }).DB, {
       customer,
       pool: payload.pool ?? {},
-      proposal: payload.proposal ?? {},
+      proposal,
       number: proposalNumberOrNull(payload.proposalNumber),
     });
 
