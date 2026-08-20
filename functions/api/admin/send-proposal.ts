@@ -261,21 +261,9 @@ const includedExtras = (
   included: boolean,
   sanitization: string,
 ): Array<{ label: string; typical: string; basis: string }> => {
-  const rows = [
-    {
-      label: 'Algaecide & phosphate treatments',
-      typical: '$35–$400',
-      basis: 'depending on severity and pool size',
-    },
-  ];
-  // Matches "salt" loosely so older drafts ("Salt (chlorine generator)") resolve.
-  if (/salt/i.test(sanitization)) {
-    rows.push({
-      label: 'Salt cell acid wash',
-      typical: '$100',
-      basis: '$25 a wash, typically washed quarterly',
-    });
-  }
+  // Ordered most-specific-to-this-pool first: filter, then salt, then the
+  // universal rows. See the ordering note in src/components/admin/includedExtras.ts.
+  const rows: Array<{ label: string; typical: string; basis: string }> = [];
   const priced = included ? FILTER_SERVICE[type] : undefined;
   if (priced) {
     rows.push({
@@ -284,16 +272,29 @@ const includedExtras = (
       basis: type === 'DE' ? 'a year' : 'per replacement, every 8–18 months',
     });
   }
-  // DE only, separate from the annual split — the powder is lost on every
+  // DE only, directly under the annual split — the powder is lost on every
   // backwash and recharged every 4–8 weeks. See the sourcing note in
   // src/components/admin/includedExtras.ts before changing the figure.
-  if (included && type === 'DE') {
+  if (priced && type === 'DE') {
     rows.push({
       label: 'DE powder after every backwash',
       typical: '$50–$100',
       basis: 'a year in DE, recharged every 4–8 weeks',
     });
   }
+  // Matches "salt" loosely so older drafts ("Salt (chlorine generator)") resolve.
+  if (/salt/i.test(sanitization)) {
+    rows.push({
+      label: 'Salt cell acid wash',
+      typical: '$100',
+      basis: '$25 a wash, typically washed quarterly',
+    });
+  }
+  rows.push({
+    label: 'Algaecide & phosphate treatments',
+    typical: '$35–$400',
+    basis: 'depending on severity and pool size',
+  });
   return rows;
 };
 

@@ -44,6 +44,10 @@ export const EXTRAS_COL_THEIRS = 'Others charge';
 export const EXTRAS_COL_YOURS = 'Your cost';
 export const EXTRAS_INCLUDED_LABEL = 'Included';
 
+/**
+ * Universal rows — true of any pool, so they read as generic and sit LAST.
+ * See the ordering note on includedExtras().
+ */
 const BASE_EXTRAS: IncludedExtra[] = [
   {
     label: 'Algaecide & phosphate treatments',
@@ -53,22 +57,26 @@ const BASE_EXTRAS: IncludedExtra[] = [
 ];
 
 /**
- * The list with this pool's filter service appended, priced from the same map
- * the rest of the proposal uses. Sand is skipped: its media replacement isn't
- * costed, and a row with no number defeats the point of the section.
+ * The list with this pool's filter service and sanitization rows in front,
+ * priced from the same map the rest of the proposal uses. Sand is skipped: its
+ * media replacement isn't costed, and a row with no number defeats the point of
+ * the section.
+ *
+ * ORDER IS BY HOW SPECIFIC THE ROW IS TO THIS POOL, most specific first.
+ *
+ * The filter rows lead because they're the biggest numbers here and the ones a
+ * customer has most likely been invoiced for by name — a DE teardown or a
+ * cartridge replacement is a bill you remember. Salt follows, because a salt
+ * owner knows their cell is a consumable but a chlorine owner would read the
+ * row as padding. Algaecide anchors the bottom: every pool needs it, so it's
+ * the row that proves the least about THIS quote.
+ *
+ * The DE powder row sits directly under the DE split rather than at the end, so
+ * the two filter costs read as one story — the annual teardown plus the powder
+ * it burns through in between — instead of looking like the same charge twice.
  */
 export const includedExtras = (filter: FilterOption, sanitization = ''): IncludedExtra[] => {
-  const rows = [...BASE_EXTRAS];
-  if (isSaltwater(sanitization)) {
-    rows.push({
-      label: 'Salt cell acid wash',
-      // Annual figure, like every other row, with the derivation shown so the
-      // customer can check it: $25 a wash x 4 = $100. "Based on quarterly wash
-      // intervals" alone read as $100 PER wash, i.e. $400 a year.
-      typical: '$100',
-      basis: '$25 a wash, typically washed quarterly',
-    });
-  }
+  const rows: IncludedExtra[] = [];
   if (filter.included && supportsFilterService(filter.type)) {
     const priced = FILTER_SERVICE[filter.type];
     if (priced) {
@@ -103,7 +111,7 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
      * $50–$100 is the overlap, so it's the range a customer who has bought DE
      * themselves will recognise.
      */
-    if (filter.included && filter.type === 'DE') {
+    if (filter.type === 'DE') {
       rows.push({
         label: 'DE powder after every backwash',
         typical: '$50–$100',
@@ -111,5 +119,16 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
       });
     }
   }
+  if (isSaltwater(sanitization)) {
+    rows.push({
+      label: 'Salt cell acid wash',
+      // Annual figure, like every other row, with the derivation shown so the
+      // customer can check it: $25 a wash x 4 = $100. "Based on quarterly wash
+      // intervals" alone read as $100 PER wash, i.e. $400 a year.
+      typical: '$100',
+      basis: '$25 a wash, typically washed quarterly',
+    });
+  }
+  rows.push(...BASE_EXTRAS);
   return rows;
 };

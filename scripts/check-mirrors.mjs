@@ -123,10 +123,25 @@ for (const { type, included, sanitization } of COMBOS) {
   }
 
   // 3. Value-stack rows: label, price and basis all have to match.
-  for (const row of extrasMod.includedExtras({ type, included }, sanitization)) {
+  const extras = extrasMod.includedExtras({ type, included }, sanitization);
+  for (const row of extras) {
     check(html.includes(esc(row.label)), `extras label missing [${where}]: "${row.label}"`);
     check(html.includes(esc(row.typical)), `extras price missing [${where}]: "${row.typical}"`);
     check(html.includes(esc(row.basis)), `extras basis missing [${where}]: "${row.basis}"`);
+  }
+
+  // 3b. …and in the SAME ORDER. The rows run most-specific-to-this-pool first
+  // (filter, then salt, then universal), which is a sales decision, not an
+  // accident — a customer reading the PDF and the email should meet their
+  // biggest saving first in both. Presence alone can't catch the two lists
+  // drifting out of sequence, and that drift is silent and easy to introduce.
+  const at = extras.map((row) => html.indexOf(esc(row.label)));
+  for (let i = 1; i < at.length; i += 1) {
+    check(
+      at[i - 1] < at[i],
+      `extras out of order in email [${where}]: "${extras[i].label}" ` +
+        `should follow "${extras[i - 1].label}"`,
+    );
   }
 
   // 4. The "what's included" list.
