@@ -679,7 +679,6 @@ const PoolVolumeCalculatorInner = () => {
     description:
       'Free pool volume calculator — instantly get gallons or liters for rectangle, round, oval, kidney, freeform pools, plus spas. No email required.',
     canonicalPath: '/tools/pool-volume-calculator/',
-    ogImage: '/logo.svg',
   });
 
   const { open: openQuoteSheet } = useQuoteSheet();

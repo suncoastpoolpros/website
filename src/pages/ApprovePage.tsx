@@ -150,8 +150,26 @@ const leadsWithBreakdown = (
 
 export const ApprovePage = () => {
   usePageMeta({
-    title: 'Accept Your Pool Service Plan — Suncoast Pool Pros',
-    description: '',
+    title: 'Your Pool Service Proposal — Suncoast Pool Pros',
+    description: 'Your quote from Suncoast Pool Pros — what’s included, what it costs, and how to accept.',
+    // Points at itself rather than the homepage. Every quote URL rewrites here,
+    // so this is the honest canonical for all of them; it stays noindex, so
+    // naming it costs nothing and claiming "/" was simply wrong.
+    canonicalPath: '/approve/',
+    /**
+     * Its own share card, not the sitewide marketing banner.
+     *
+     * This link is TEXTED to one person who has just asked for a price, and the
+     * preview is the entire first impression — it arrives before they read a
+     * word. A generic "Flat-Rate Weekly Pool Service" banner is an advert; this
+     * says the thing waiting for them is their proposal.
+     *
+     * Versioned filename (-v1): /public is served immutable, so a changed card
+     * MUST get a new name or the edge keeps serving the old one. Never request
+     * a new image URL before it is deployed — a 404 gets cached too.
+     */
+    ogImage: 'https://suncoastpoolpros.com/og-quote-v1.jpg',
+    ogImageAlt: 'Your pool service proposal from Suncoast Pool Pros',
     noindex: true,
   });
 

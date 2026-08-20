@@ -145,15 +145,40 @@ function injectHead(html, meta) {
   // it bypasses the immutable /*.png edge cache when it changes (bump -vN). This
   // also fixes the orange iMessage tile: with no og:image, iOS fell back to the
   // app icon and tinted the card from its orange sun.
-  const OG_IMAGE = 'https://suncoastpoolpros.com/og-image-v1.png';
-  replacements.push(`<meta property="og:image" content="${OG_IMAGE}" />`);
+  const SITEWIDE_OG = 'https://suncoastpoolpros.com/og-image-v1.png';
+  const SITEWIDE_ALT = 'Suncoast Pool Pros — Flat-Rate Weekly Pool Service';
+  // A route may name its own card via usePageMeta({ ogImage }). Used by the
+  // approve page, whose link is texted to one person rather than shared
+  // publicly, so the generic marketing banner is the wrong picture there.
+  // Same versioned-filename rule applies to any override.
+  //
+  // An override MUST be an absolute https URL. Preview clients (iMessage,
+  // Facebook, Slack) do not reliably resolve a relative og:image, and several
+  // simply render no card at all — which is worse than the generic one. Eight
+  // pages carried relative values here from when this field was ignored; they
+  // were removed rather than silently downgraded, and this guard stops the next
+  // one being introduced quietly.
+  const override =
+    typeof meta.ogImage === 'string' && /^https:\/\//.test(meta.ogImage) ? meta.ogImage : '';
+  if (meta.ogImage && !override) {
+    // Identified by canonicalUrl, not `route` — injectHead(html, meta) has no
+    // route in scope, and referencing one would turn this warning into a
+    // ReferenceError exactly when it first fired.
+    console.warn(
+      `  ⚠ ogImage ignored for ${meta.canonicalUrl ?? 'a route'}: ` +
+        `"${meta.ogImage}" is not an absolute https URL.`,
+    );
+  }
+  const OG_IMAGE = override || SITEWIDE_OG;
+  const OG_ALT = (override && meta.ogImageAlt) || SITEWIDE_ALT;
+  replacements.push(`<meta property="og:image" content="${escapeHtml(OG_IMAGE)}" />`);
   replacements.push(`<meta property="og:image:width" content="1200" />`);
   replacements.push(`<meta property="og:image:height" content="630" />`);
-  replacements.push(`<meta property="og:image:alt" content="Suncoast Pool Pros — Flat-Rate Weekly Pool Service" />`);
+  replacements.push(`<meta property="og:image:alt" content="${escapeHtml(OG_ALT)}" />`);
   replacements.push(`<meta property="og:locale" content="en_US" />`);
   replacements.push(`<meta name="twitter:card" content="summary_large_image" />`);
-  replacements.push(`<meta name="twitter:image" content="${OG_IMAGE}" />`);
-  replacements.push(`<meta name="twitter:image:alt" content="Suncoast Pool Pros — Flat-Rate Weekly Pool Service" />`);
+  replacements.push(`<meta name="twitter:image" content="${escapeHtml(OG_IMAGE)}" />`);
+  replacements.push(`<meta name="twitter:image:alt" content="${escapeHtml(OG_ALT)}" />`);
   if (meta.title) replacements.push(`<meta name="twitter:title" content="${escapeHtml(meta.title)}" />`);
   if (meta.description) replacements.push(`<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`);
 

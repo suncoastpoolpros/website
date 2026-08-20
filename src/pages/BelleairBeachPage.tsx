@@ -189,7 +189,6 @@ export const BelleairBeachPage = () => {
     title: PAGE_TITLE,
     description: PAGE_DESC,
     canonicalPath: '/belleair-beach-fl/',
-    ogImage: '/belleair-beach-hero.jpg',
     // Belleair has its own hero image now (see hero-bg-belleair-* in
     // index.css), so preload those — they're what this page actually paints.
     heroPreload: {

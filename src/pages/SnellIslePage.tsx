@@ -201,7 +201,6 @@ export const SnellIslePage = () => {
     title: PAGE_TITLE,
     description: PAGE_DESC,
     canonicalPath: '/snell-isle-fl/',
-    ogImage: '/waterfront-pool-st-petersburg.jpg',
     heroPreload: {
       mobile: '/snell-isle-mobile-sunset.webp',
       desktop: '/waterfront-pool-st-petersburg.webp',

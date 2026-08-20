@@ -205,7 +205,6 @@ export const SeminolePage = () => {
     title: PAGE_TITLE,
     description: PAGE_DESC,
     canonicalPath: '/seminole-fl/',
-    ogImage: '/pool-service-st-petersburg-hero.jpg',
     // Placeholder photo (shared residential-pool hero) until a dedicated Seminole
     // image is uploaded — only the hero-bg-seminole-* url()s in index.css and
     // these heroPreload paths need to change when it is.

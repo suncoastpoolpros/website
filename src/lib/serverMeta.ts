@@ -10,7 +10,12 @@ export type SsrMeta = {
   title?: string;
   description?: string;
   canonicalUrl?: string;
+  /** Absolute URL of a per-route share image, overriding the sitewide one the
+   *  prerender injects. Path-only routes should still pass a full URL — link
+   *  preview clients do not resolve relative paths. */
   ogImage?: string;
+  /** Alt text for the above. Ignored unless ogImage is set. */
+  ogImageAlt?: string;
   /** Per-page LCP hero image to preload, responsive by viewport. The prerender
    *  writes these as <link rel="preload" as="image"> into the page's head so
    *  each route preloads its OWN hero instead of the global default. */

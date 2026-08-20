@@ -13,9 +13,21 @@ type PageMeta = {
   description: string;
   /** Path-only (e.g. "/treasure-island-fl/") or omit for homepage. */
   canonicalPath?: string;
-  /** Deprecated/ignored: link shares no longer emit og:image (no preview photo).
-   *  Kept so existing callers compile; the value is not used. */
+  /**
+   * A share image for THIS route, overriding the sitewide one.
+   *
+   * Was ignored — every page emitted the single sitewide card. That is still
+   * the right default (one recognisable image for the whole site), but a page
+   * whose whole job is a private, one-to-one link deserves its own: a quote
+   * link gets texted to one person who has just spoken to you, and a generic
+   * marketing banner is a worse answer there than a picture of the thing they
+   * are about to read.
+   *
+   * Must be an ABSOLUTE url — preview clients do not resolve relative paths.
+   */
   ogImage?: string;
+  /** Alt text for ogImage. Ignored unless ogImage is set. */
+  ogImageAlt?: string;
   /** Per-page LCP hero to preload (server-injected). Lets each route preload
    *  its own hero rather than the global default in index.html. */
   heroPreload?: { mobile: string; tablet?: string; desktop: string; wide?: string };
@@ -111,14 +123,25 @@ export function usePageMeta(metaOrTitle: PageMeta | string, maybeDesc?: string) 
       ? { title: metaOrTitle, description: maybeDesc ?? '' }
       : metaOrTitle;
 
-  const { title, description, canonicalPath, heroPreload, fontPreload, noindex, jsonLd } = meta;
+  const { title, description, canonicalPath, heroPreload, fontPreload, noindex, jsonLd, ogImage, ogImageAlt } =
+    meta;
   const canonicalUrl = `${SITE_ORIGIN}${canonicalPath ?? '/'}`;
 
   // Server: populate the SSR meta singleton during render. The prerender script
   // reads this after renderToString and writes it into the static HTML head.
-  // No og:image is emitted — link shares render as a plain card with no photo.
+  // og:image falls back to the sitewide card unless this route names its own.
   if (IS_SERVER) {
-    setSsrMeta({ title, description, canonicalUrl, heroPreload, fontPreload, noindex, jsonLd });
+    setSsrMeta({
+      title,
+      description,
+      canonicalUrl,
+      heroPreload,
+      fontPreload,
+      noindex,
+      jsonLd,
+      ogImage,
+      ogImageAlt,
+    });
   }
 
   useEffect(() => {
