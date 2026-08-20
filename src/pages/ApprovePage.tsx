@@ -819,32 +819,13 @@ export const ApprovePage = () => {
                 have none. */}
 
             <section className="mb-5 rounded-2xl border border-[#e3e8ef] bg-white p-5">
+              {/* Always "(optional)" now. The email field that used to sit in
+                  here was the one REQUIRED thing in an optional section; it has
+                  moved next to the signature. */}
               <h2 className="mb-3 font-display text-base font-bold">
                 Getting started{' '}
-                {!needsEmail && <span className="text-sm font-normal text-[#6b7280]">(optional)</span>}
+                <span className="text-sm font-normal text-[#6b7280]">(optional)</span>
               </h2>
-              {needsEmail && (
-                <div className="mb-4">
-                  <label className="text-sm text-[#6b7280]" htmlFor="contact-email">
-                    Your email — so we can send your confirmation
-                  </label>
-                  <input
-                    id="contact-email"
-                    className={`${field} mt-1`}
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                  />
-                  {contactEmail.trim() !== '' && !emailOk && (
-                    <p className="mt-1.5 text-xs text-[#c0392b]">
-                      That doesn&rsquo;t look like an email address.
-                    </p>
-                  )}
-                </div>
-              )}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {/* Asked as a question, and about how SOON rather than "preferred
                     start date" — a form label invites a form answer, and this is
@@ -949,6 +930,46 @@ export const ApprovePage = () => {
                 and is declared globally, so it swaps in when step 2 renders
                 rather than being preloaded for a page that may never reach it.
               */}
+              {/*
+                Shown only when the quote carries no email — a texted lead who
+                never gave one. It sits HERE, directly above the signature,
+                rather than up in "Getting started" where it used to live.
+
+                Two reasons. It is REQUIRED to submit, and that section is
+                headed "(optional)" — a required field inside an optional
+                section is a trap: you fill in what looks like it matters, press
+                the button and get bounced back up the page with no idea why.
+                And an address handed over at the moment of signing reads as
+                part of completing the document, which is what it is, rather
+                than as one more thing being collected.
+              */}
+              {needsEmail && (
+                <div className="mt-6 rounded-xl border border-[#dbe6f3] bg-[#f5f9fd] p-4">
+                  <label htmlFor="contact-email" className="block text-sm font-semibold text-[#1f2937]">
+                    Where should we send your signed copy?
+                  </label>
+                  <p className="mt-1 text-xs leading-relaxed text-[#6b7280]">
+                    We don&rsquo;t have an email address for you yet. Your confirmation and every
+                    service report after a visit go here.
+                  </p>
+                  <input
+                    id="contact-email"
+                    className={`${field} mt-2`}
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                  />
+                  {contactEmail.trim() !== '' && !emailOk && (
+                    <p className="mt-1.5 text-xs text-[#c0392b]">
+                      That doesn&rsquo;t look like an email address.
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="mt-6 border-t border-[#e3e8ef] pt-6">
                 <label htmlFor="signature" className="block text-sm font-semibold text-[#1f2937]">
                   Sign to accept
