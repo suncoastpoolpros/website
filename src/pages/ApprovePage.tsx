@@ -415,6 +415,82 @@ export const ApprovePage = () => {
   }, [canSubmit, busy, token, plan, preferredStart, accessNotes, agree, signature, needsEmail, emailOk, contactEmail]);
 
   /**
+   * Who the proposal is for: the number, the name or address, and how to reach
+   * them.
+   *
+   * Defined once because BOTH steps render it and the two copies HAD ALREADY
+   * DRIFTED — step 1 showed the customer's email and phone, step 0 showed only
+   * the name and address, so the same header said different things depending
+   * which screen you were on. That is exactly the failure headerActions below
+   * was written to avoid.
+   *
+   * Every part is conditional: a texted quote may have no name, no email, or
+   * neither, and nothing here may render an empty row.
+   */
+  const customerIdentity = quote ? (
+    <div className="min-w-0">
+    {/* Only offered to customers who actually started on the
+        breakdown — for anyone else it would point at a step they
+        have never seen. And only FROM step 1: on step 0 this is the
+        page you are already on, so it would point at itself. */}
+    {showsBreakdown && step === 1 && (
+      <button
+        onClick={() => {
+          setStep(0);
+          window.scrollTo({ top: 0 });
+        }}
+        className="-mt-1 mb-1 inline-flex items-center gap-1.5 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline sm:py-1"
+      >
+        <ArrowLeft className="h-4 w-4" /> What&apos;s included
+      </button>
+    )}
+    {/* The number takes this slot when there is one. It's the same
+        number on the PDF and in the email subject, so it identifies
+        the document; "Prepared for" only labelled a name that needs
+        no label. Falls back for quotes sent before numbering. */}
+    <Eyebrow>{quote.number ? `Proposal #${quote.number}` : 'Prepared for'}</Eyebrow>
+    {/* A quote can be saved with no name — a pool is quoted from
+        its address. When there isn't one the address is promoted to
+        the strong line rather than leaving an empty row above it. */}
+    {quote.customerName.trim() ? (
+      <>
+        <p className="font-semibold text-[#0a1628]">{quote.customerName.trim()}</p>
+        {quote.customerAddress?.trim() && (
+          <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
+        )}
+      </>
+    ) : (
+      quote.customerAddress?.trim() && (
+        <p className="font-semibold text-[#0a1628]">{quote.customerAddress.trim()}</p>
+      )
+    )}
+    {/* Email and phone as separate elements, not one joined string.
+        Joined, a wrap left the " · " stranded at the end of the
+        first line — which is what it did on narrower phones. They
+        stack on mobile with no separator at all, and only sit on one
+        line with the dot once there's room for both. */}
+    <p className="mt-0.5 text-sm text-[#6b7280]">
+      {quote.customerEmail?.trim() && (
+        // break-words so a long address wraps instead of pushing the
+        // page sideways — an email is one unbreakable token.
+        <span className="block break-words sm:inline">{quote.customerEmail.trim()}</span>
+      )}
+      {quote.customerPhone?.trim() && (
+        // The separator lives INSIDE the phone's span, so it can
+        // never be left stranded at the end of a wrapped line — it
+        // travels with the number or isn't shown at all.
+        <span className="block whitespace-nowrap sm:inline">
+          {quote.customerEmail?.trim() && (
+            <span className="hidden text-[#c3cedb] sm:inline">· </span>
+          )}
+          {quote.customerPhone.trim()}
+        </span>
+      )}
+    </p>
+              </div>
+  ) : null;
+
+  /**
    * The right-hand side of the header row: the document, then a person.
    * Defined once because BOTH steps use it — step 1 beside "Prepared for",
    * step 2 beside "Your plan" — and two copies would drift.
@@ -539,24 +615,7 @@ export const ApprovePage = () => {
         {quote && step === 0 && (
           <>
             <div className="mb-8 flex items-start justify-between gap-4 sm:gap-8">
-              <div className="min-w-0">
-                <Eyebrow>{quote.number ? `Proposal #${quote.number}` : 'Prepared for'}</Eyebrow>
-                {/* A quote can be saved with no name — a pool is quoted from
-                    its address. When there isn't one the address is promoted to
-                    the strong line rather than leaving an empty row above it. */}
-                {quote.customerName.trim() ? (
-                  <>
-                    <p className="font-semibold text-[#0a1628]">{quote.customerName.trim()}</p>
-                    {quote.customerAddress?.trim() && (
-                      <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
-                    )}
-                  </>
-                ) : (
-                  quote.customerAddress?.trim() && (
-                    <p className="font-semibold text-[#0a1628]">{quote.customerAddress.trim()}</p>
-                  )
-                )}
-              </div>
+              {customerIdentity}
               {headerActions}
             </div>
 
@@ -603,65 +662,7 @@ export const ApprovePage = () => {
               decision.
             */}
             <div className="mb-8 flex items-start justify-between gap-4 sm:gap-8">
-              <div className="min-w-0">
-                {/* Only offered to customers who actually started on the
-                    breakdown — for anyone else it would point at a step they
-                    have never seen. */}
-                {showsBreakdown && (
-                  <button
-                    onClick={() => {
-                      setStep(0);
-                      window.scrollTo({ top: 0 });
-                    }}
-                    className="-mt-1 mb-1 inline-flex items-center gap-1.5 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline sm:py-1"
-                  >
-                    <ArrowLeft className="h-4 w-4" /> What&apos;s included
-                  </button>
-                )}
-                {/* The number takes this slot when there is one. It's the same
-                    number on the PDF and in the email subject, so it identifies
-                    the document; "Prepared for" only labelled a name that needs
-                    no label. Falls back for quotes sent before numbering. */}
-                <Eyebrow>{quote.number ? `Proposal #${quote.number}` : 'Prepared for'}</Eyebrow>
-                {/* A quote can be saved with no name — a pool is quoted from
-                    its address. When there isn't one the address is promoted to
-                    the strong line rather than leaving an empty row above it. */}
-                {quote.customerName.trim() ? (
-                  <>
-                    <p className="font-semibold text-[#0a1628]">{quote.customerName.trim()}</p>
-                    {quote.customerAddress?.trim() && (
-                      <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
-                    )}
-                  </>
-                ) : (
-                  quote.customerAddress?.trim() && (
-                    <p className="font-semibold text-[#0a1628]">{quote.customerAddress.trim()}</p>
-                  )
-                )}
-                {/* Email and phone as separate elements, not one joined string.
-                    Joined, a wrap left the " · " stranded at the end of the
-                    first line — which is what it did on narrower phones. They
-                    stack on mobile with no separator at all, and only sit on one
-                    line with the dot once there's room for both. */}
-                <p className="mt-0.5 text-sm text-[#6b7280]">
-                  {quote.customerEmail?.trim() && (
-                    // break-words so a long address wraps instead of pushing the
-                    // page sideways — an email is one unbreakable token.
-                    <span className="block break-words sm:inline">{quote.customerEmail.trim()}</span>
-                  )}
-                  {quote.customerPhone?.trim() && (
-                    // The separator lives INSIDE the phone's span, so it can
-                    // never be left stranded at the end of a wrapped line — it
-                    // travels with the number or isn't shown at all.
-                    <span className="block whitespace-nowrap sm:inline">
-                      {quote.customerEmail?.trim() && (
-                        <span className="hidden text-[#c3cedb] sm:inline">· </span>
-                      )}
-                      {quote.customerPhone.trim()}
-                    </span>
-                  )}
-                </p>
-              </div>
+              {customerIdentity}
 
               {headerActions}
             </div>
