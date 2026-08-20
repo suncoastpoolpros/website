@@ -1,9 +1,10 @@
 import { useMemo, useRef, useState } from 'react';
-import { Send, LoaderCircle, CheckCircle, Check, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ChevronLeft, ChevronDown, X } from 'lucide-react';
+import { Send, LoaderCircle, CheckCircle, Check, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ChevronLeft, ChevronDown, X, Link2 } from 'lucide-react';
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
 import { useProposalDraft } from '@/lib/useAdminDraft';
 import {
   sendProposal,
+  saveQuoteOnly,
   reserveProposalNumber,
   logout,
   formatPrice,
@@ -40,7 +41,10 @@ const addonInput =
 type SendStatus =
   | { kind: 'idle' }
   | { kind: 'sending' }
+  | { kind: 'saving' }
   | { kind: 'sent' }
+  /** Saved without emailing — the link is the deliverable, so it's shown to copy. */
+  | { kind: 'saved'; url: string }
   | { kind: 'error'; message: string };
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -55,6 +59,7 @@ export const ProposalBuilder = ({
 }) => {
   const { data, setData, update, clearDraft } = useProposalDraft();
   const [status, setStatus] = useState<SendStatus>({ kind: 'idle' });
+  const [copied, setCopied] = useState(false);
   // Abort controller + a cancelled flag so Cancel actually stops the send:
   // the fetch is aborted via the signal, and the flag bails out of the
   // pre-fetch steps (dynamic import / PDF generation) that can't be aborted.
@@ -240,6 +245,47 @@ export const ProposalBuilder = ({
     [data.customer.name, data.customer.email, filterAnswered],
   );
 
+  /**
+   * Saving a link needs no email address — that's the whole reason it exists.
+   * A texted lead often hasn't given one, and demanding it was what made them
+   * unquotable.
+   */
+  const canSaveLink = useMemo(
+    () => data.customer.name.trim() !== '' && filterAnswered,
+    [data.customer.name, filterAnswered],
+  );
+
+  /**
+   * Record the quote and hand back its link, without emailing anyone.
+   *
+   * Reserves a number the same way sending does, so a texted quote is numbered
+   * like any other and its downloadable PDF carries the same number as the
+   * record. No PDF is rendered here — the approve page regenerates it on
+   * demand, so there's nothing to attach.
+   */
+  const handleSaveLink = async () => {
+    if (!canSaveLink || status.kind === 'saving' || status.kind === 'sending') return;
+    cancelledRef.current = false;
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setStatus({ kind: 'saving' });
+    try {
+      const proposalNumber = await reserveProposalNumber(controller.signal);
+      if (cancelledRef.current) return;
+      const { url } = await saveQuoteOnly({ ...data, proposalNumber }, controller.signal);
+      setStatus({ kind: 'saved', url });
+    } catch (err) {
+      if (cancelledRef.current || (err instanceof DOMException && err.name === 'AbortError')) return;
+      setStatus({
+        kind: 'error',
+        message:
+          String(err).includes('storage_unavailable')
+            ? 'Quote storage isn’t connected, so there’s no link to create. Check the D1 binding.'
+            : 'Couldn’t create the link. Please try again.',
+      });
+    }
+  };
+
   const handleSend = async () => {
     if (!canSend || status.kind === 'sending') return;
     cancelledRef.current = false;
@@ -305,6 +351,54 @@ export const ProposalBuilder = ({
     setPhotos([]);
     setStatus({ kind: 'idle' });
   };
+
+  if (status.kind === 'saved') {
+    return (
+      <div className="min-h-dvh flex items-center justify-center px-6 py-16">
+        <div className="w-full max-w-lg text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-brand-blue/40 bg-brand-blue/15">
+            <Link2 className="h-8 w-8 text-brand-blue-light" />
+          </div>
+          <h2 className="font-display text-2xl font-bold text-white">Link ready</h2>
+          <p className="mt-2 text-gray-300">
+            Nothing was emailed. Send this to {data.customer.name.trim() || 'them'} however you like — it
+            opens with the full breakdown of the service, then the plans.
+          </p>
+          <div className="mt-6 flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] p-2 pl-4 text-left">
+            <span className="min-w-0 flex-1 truncate font-mono text-xs text-gray-300">{status.url}</span>
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(status.url);
+                  setCopied(true);
+                  window.setTimeout(() => setCopied(false), 1800);
+                } catch {
+                  window.prompt('Copy the link:', status.url);
+                }
+              }}
+              className="shrink-0 rounded-lg bg-brand-blue px-3 py-2 text-sm font-semibold text-white hover:bg-brand-blue-light"
+            >
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+          </div>
+          <div className="mt-8 flex justify-center gap-3">
+            <button
+              onClick={startNew}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark px-5 py-3 font-semibold text-white"
+            >
+              <FilePlus2 className="h-5 w-5" /> New proposal
+            </button>
+            <button
+              onClick={() => setStatus({ kind: 'idle' })}
+              className="rounded-xl border border-white/15 px-5 py-3 font-semibold text-gray-200 hover:bg-white/5"
+            >
+              Back to this one
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (status.kind === 'sent') {
     return (
@@ -882,6 +976,32 @@ export const ProposalBuilder = ({
                 {!filterAnswered
                   ? `Answer “${inclusionQuestion(data.pool.filterType)}” to send.`
                   : 'Enter the customer\u2019s name and a valid email to send.'}
+              </p>
+            )}
+
+            {/* The second way out, for a lead who texted rather than emailed.
+                Deliberately quieter than Send — it's the exception, and it
+                needs no email address, which is the whole reason it exists. */}
+            <button
+              onClick={handleSaveLink}
+              disabled={!canSaveLink || status.kind === 'saving' || status.kind === 'sending'}
+              className="mt-3 shrink-0 flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 py-3 text-sm font-semibold text-gray-200 transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {status.kind === 'saving' ? (
+                <>
+                  <LoaderCircle className="h-4 w-4 animate-spin" /> Creating link…
+                </>
+              ) : (
+                <>
+                  <Link2 className="h-4 w-4" /> Create link only — don&apos;t email
+                </>
+              )}
+            </button>
+            {!canSaveLink && (
+              <p className="mt-2 shrink-0 text-center text-xs text-gray-500">
+                {!filterAnswered
+                  ? 'Answer the filter question to create a link.'
+                  : 'Enter the customer\u2019s name to create a link.'}
               </p>
             )}
           </div>

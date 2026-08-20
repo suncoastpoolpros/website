@@ -290,6 +290,40 @@ export const emptyInspection = (): InspectionData => ({
  * Never throws and never blocks a send: any failure resolves to null and the
  * proposal goes out unnumbered, exactly as it did before numbering existed.
  */
+/**
+ * Save a quote and get its approve link back, WITHOUT emailing anything.
+ *
+ * For a lead who texted rather than emailed. Throws on failure, because unlike
+ * sending there's no email going out to fall back on — the link is the whole
+ * deliverable, so a silent failure would leave you with nothing to paste.
+ */
+export async function saveQuoteOnly(
+  args: ProposalData & { proposalNumber?: number | null },
+  signal?: AbortSignal,
+): Promise<{ token: string; url: string }> {
+  const res = await fetch('/api/admin/save-quote', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal,
+    body: JSON.stringify({
+      customer: args.customer,
+      pool: args.pool,
+      proposal: args.proposal,
+      proposalNumber: args.proposalNumber ?? null,
+    }),
+  });
+  const data = (await res.json().catch(() => ({}))) as {
+    ok?: boolean;
+    token?: string;
+    url?: string;
+    error?: string;
+  };
+  if (!res.ok || !data.ok || !data.url || !data.token) {
+    throw new Error(data.error || 'save_quote_failed');
+  }
+  return { token: data.token, url: data.url };
+}
+
 export async function reserveProposalNumber(signal?: AbortSignal): Promise<number | null> {
   try {
     const res = await fetch('/api/admin/proposal-number', { method: 'POST', signal });
