@@ -36,8 +36,19 @@ export const EXTRAS_HEADING = 'What Others Charge Extra For';
 export const EXTRAS_INTRO =
   'We build our service to be all-inclusive on purpose. When something is a known maintenance item — a filter element, a treatment your pool needs every year — we price it into your monthly cost rather than invoicing it separately. Splitting those out only makes a monthly rate look cheaper than it really is, and it costs you time approving work your pool was always going to need.';
 
+/**
+ * The carve-out. Names storm and construction clean-up explicitly rather than
+ * leaving "major remediation" to be interpreted after a hurricane, which is the
+ * worst possible moment to be establishing what was included.
+ *
+ * Adds no exclusion: section 4 of the Service Agreement already excludes "heavy
+ * debris removal required due to storms, Acts of God, construction runoff, or
+ * pool neglect prior to start of service". This states it where the customer is
+ * reading about what IS included, so the two documents agree in plain sight.
+ * No TERMS_VERSION bump for the same reason — nothing new is being excluded.
+ */
 export const EXTRAS_NOTE =
-  'The figures above are what you would typically be quoted for these elsewhere. Routine treatments are included; major remediation such as a green-to-clean recovery is quoted separately.';
+  'The figures above are what you would typically be quoted for these elsewhere. Routine treatments are included. Heavy clean-ups outside routine service are quoted separately — a green-to-clean recovery, or debris left by a storm or nearby construction.';
 
 /** Column headings, so "$120" can't be mistaken for something being charged. */
 export const EXTRAS_COL_THEIRS = 'Others charge';

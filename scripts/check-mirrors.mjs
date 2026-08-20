@@ -131,12 +131,21 @@ for (const { type, included, sanitization } of COMBOS) {
     check(html.includes(esc(row.basis)), `extras basis missing [${where}]: "${row.basis}"`);
   }
 
+  // Each order check searches only from ITS OWN heading onward. Labels are not
+  // unique across the document — "Salt cell acid wash" is an extras row AND a
+  // substring of the benefits bullet "Salt cell acid washing and your salt",
+  // which sits earlier in the email. A bare indexOf found the benefits copy and
+  // reported the extras table as out of order, which was a bug in this check
+  // rather than in the page it checks.
+  const benefitsStart = Math.max(0, html.indexOf(esc(benefitsMod.BENEFITS_HEADING)));
+  const extrasStart = Math.max(0, html.indexOf(esc(extrasMod.EXTRAS_HEADING)));
+
   // 3b. …and in the SAME ORDER. The rows run most-specific-to-this-pool first
   // (filter, then salt, then universal), which is a sales decision, not an
   // accident — a customer reading the PDF and the email should meet their
   // biggest saving first in both. Presence alone can't catch the two lists
   // drifting out of sequence, and that drift is silent and easy to introduce.
-  const at = extras.map((row) => html.indexOf(esc(row.label)));
+  const at = extras.map((row) => html.indexOf(esc(row.label), extrasStart));
   for (let i = 1; i < at.length; i += 1) {
     check(
       at[i - 1] < at[i],
@@ -144,6 +153,20 @@ for (const { type, included, sanitization } of COMBOS) {
         `should follow "${extras[i - 1].label}"`,
     );
   }
+
+  // 3c. The prose around the table. EXTRAS_INTRO argues the all-inclusive case
+  // and EXTRAS_NOTE carries the carve-out — a green-to-clean, or storm and
+  // construction debris, is quoted separately. Both are hand-duplicated, and
+  // the note in particular is the sentence that decides an argument after a
+  // hurricane; the PDF and the email disagreeing on it is exactly the drift
+  // this script exists to prevent.
+  check(html.includes(esc(extrasMod.EXTRAS_HEADING)), `extras heading missing [${where}]`);
+  check(html.includes(esc(extrasMod.EXTRAS_INTRO)), `EXTRAS_INTRO differs from the email [${where}]`);
+  check(html.includes(esc(extrasMod.EXTRAS_NOTE)), `EXTRAS_NOTE differs from the email [${where}]`);
+  check(
+    html.includes(esc(benefitsMod.BENEFITS_HEADING)),
+    `benefits heading missing [${where}]`,
+  );
 
   // 4. The "what's included" list.
   const benefits = benefitsMod.includedBenefits({ type, included }, sanitization);
@@ -158,7 +181,7 @@ for (const { type, included, sanitization } of COMBOS) {
   // out of sequence.
   // Missing lines are already reported precisely above; including their -1 here
   // would add a confusing "out of order" for the same single fault.
-  const bAt = benefits.map((b) => html.indexOf(esc(b))).filter((i) => i >= 0);
+  const bAt = benefits.map((b) => html.indexOf(esc(b), benefitsStart)).filter((i) => i >= 0);
   for (let i = 1; i < bAt.length; i += 1) {
     check(
       bAt[i - 1] < bAt[i],

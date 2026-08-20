@@ -214,13 +214,15 @@ const BENEFITS_HEADING = 'The Suncoast Difference';
 // The chemicals bullet, named rather than summarised, and salt only on a salt
 // pool. Mirrors section 3 of the Service Agreement, which enumerates exactly
 // these — see the note in src/components/admin/proposalBenefits.ts.
-const chemicalsLine = (sanitization: string): string => {
-  const chems = ['chlorine', 'muriatic acid', 'shock'];
-  if (/salt/i.test(sanitization)) chems.push('salt');
-  chems.push('stabilizer', 'phosphate remover', 'algaecide');
-  const list = `${chems.slice(0, -1).join(', ')} and ${chems[chems.length - 1]}`;
-  return `All standard service chemicals included — ${list}`;
-};
+const CHEMICALS_LINE =
+  'All service chemicals included — chlorine, muriatic acid, shock, stabilizer, phosphate remover and algaecide';
+
+// Salt care on its own line, salt pools only. The acid wash is the item
+// competitors most reliably invoice for, so it is not buried in filter care.
+// The salt itself lives here rather than in the chemicals list — see
+// src/components/admin/proposalBenefits.ts.
+const saltCareLine = (sanitization: string): string | null =>
+  /salt/i.test(sanitization) ? 'Salt cell acid washing and your salt — both included' : null;
 
 const BASE_BENEFITS = [
   'A GPS-stamped photo service report in your inbox after every visit — so you know we were there, even when you weren’t',
@@ -230,13 +232,10 @@ const BASE_BENEFITS = [
 // The equipment-care bullet, built from what this pool actually has — a
 // cartridge filter is never backwashed and a chlorine pool has no salt cell.
 // See the note in src/components/admin/proposalBenefits.ts.
-const equipmentCareLine = (type: string, sanitization: string): string => {
-  const items = ['Filter cleaning'];
-  if (type === 'DE' || type === 'Sand') items.push('backwashing');
-  if (/salt/i.test(sanitization)) items.push('salt-cell cleaning');
-  if (items.length === 1) return 'Filter cleaning — included';
-  return `${items.slice(0, -1).join(', ')} & ${items[items.length - 1]} — all included`;
-};
+const equipmentCareLine = (type: string): string =>
+  type === 'DE' || type === 'Sand'
+    ? 'Filter cleaning and backwashing — both included'
+    : 'Filter cleaning — included';
 
 // Kept LAST, matching src/components/admin/proposalBenefits.ts. Backed by
 // section 6 of the Service Agreement — see the note there before editing.
@@ -275,10 +274,12 @@ const filterServiceLine = (type: string, included: boolean): string | null => {
 // promises, guarantee last. See src/components/admin/proposalBenefits.ts.
 const includedBenefits = (type: string, included: boolean, sanitization: string): string[] => {
   const filterLine = filterServiceLine(type, included);
+  const saltLine = saltCareLine(sanitization);
   return [
-    chemicalsLine(sanitization),
+    CHEMICALS_LINE,
     ...(filterLine ? [filterLine] : []),
-    equipmentCareLine(type, sanitization),
+    ...(saltLine ? [saltLine] : []),
+    equipmentCareLine(type),
     ...BASE_BENEFITS,
     GUARANTEE_BENEFIT,
   ];
@@ -300,7 +301,7 @@ const EXTRAS_HEADING = 'What Others Charge Extra For';
 const EXTRAS_INTRO =
   'We build our service to be all-inclusive on purpose. When something is a known maintenance item — a filter element, a treatment your pool needs every year — we price it into your monthly cost rather than invoicing it separately. Splitting those out only makes a monthly rate look cheaper than it really is, and it costs you time approving work your pool was always going to need.';
 const EXTRAS_NOTE =
-  'The figures above are what you would typically be quoted for these elsewhere. Routine treatments are included; major remediation such as a green-to-clean recovery is quoted separately.';
+  'The figures above are what you would typically be quoted for these elsewhere. Routine treatments are included. Heavy clean-ups outside routine service are quoted separately — a green-to-clean recovery, or debris left by a storm or nearby construction.';
 
 const includedExtras = (
   type: string,

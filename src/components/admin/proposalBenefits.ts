@@ -43,13 +43,24 @@ export const BENEFITS_HEADING = 'The Suncoast Difference';
  * chlorine owner who reads "salt" in their own inclusions has just been handed
  * a boilerplate list, and everything else on it becomes less believable.
  */
-const chemicalsLine = (sanitization: string): string => {
-  const chems = ['chlorine', 'muriatic acid', 'shock'];
-  if (isSaltwater(sanitization)) chems.push('salt');
-  chems.push('stabilizer', 'phosphate remover', 'algaecide');
-  const list = `${chems.slice(0, -1).join(', ')} and ${chems[chems.length - 1]}`;
-  return `All standard service chemicals included — ${list}`;
-};
+const CHEMICALS_LINE =
+  'All service chemicals included — chlorine, muriatic acid, shock, stabilizer, phosphate remover and algaecide';
+
+/**
+ * Salt care, on its own line and only for a salt pool.
+ *
+ * It used to be tacked onto the end of the filter-care bullet
+ * ("Filter cleaning, backwashing & salt-cell cleaning"), which buried it. The
+ * acid wash is the item competitors most reliably invoice separately — the
+ * value stack prices it at $100 a year — so grouping it with routine filter
+ * cleaning made the one chargeable thing read like housekeeping.
+ *
+ * The salt itself moved here from the chemicals list rather than being named in
+ * both. Two lines each promising salt is not twice the promise; it just makes a
+ * reader wonder which one is the real one.
+ */
+const saltCareLine = (sanitization: string): string | null =>
+  isSaltwater(sanitization) ? 'Salt cell acid washing and your salt — both included' : null;
 
 /**
  * True of every pool, so these are fixed — and they sit BELOW the costed
@@ -85,14 +96,10 @@ const BASE_BENEFITS = [
  * doesn't. An unknown or 'Other' filter is left out rather than guessed at, on
  * the same principle as the rest of this file: no claim we can't stand behind.
  */
-const equipmentCareLine = (filter: FilterOption, sanitization: string): string => {
-  const items = ['Filter cleaning'];
-  if (filter.type === 'DE' || filter.type === 'Sand') items.push('backwashing');
-  if (isSaltwater(sanitization)) items.push('salt-cell cleaning');
-  if (items.length === 1) return 'Filter cleaning — included';
-  const list = `${items.slice(0, -1).join(', ')} & ${items[items.length - 1]}`;
-  return `${list} — all included`;
-};
+const equipmentCareLine = (filter: FilterOption): string =>
+  filter.type === 'DE' || filter.type === 'Sand'
+    ? 'Filter cleaning and backwashing — both included'
+    : 'Filter cleaning — included';
 
 /**
  * A refund promise, not a feature — so it has to be honoured by section 6 of the
@@ -121,10 +128,14 @@ export const GUARANTEE_BENEFIT =
  */
 export const includedBenefits = (filter: FilterOption, sanitization = ''): string[] => {
   const filterLine = filterServiceLine(filter);
+  const saltLine = saltCareLine(sanitization);
   return [
-    chemicalsLine(sanitization),
+    CHEMICALS_LINE,
     ...(filterLine ? [filterLine] : []),
-    equipmentCareLine(filter, sanitization),
+    // Directly under the filter service: both are consumables a competitor
+    // bills for by name, and this is the pair that carries the most money.
+    ...(saltLine ? [saltLine] : []),
+    equipmentCareLine(filter),
     ...BASE_BENEFITS,
     GUARANTEE_BENEFIT,
   ];
