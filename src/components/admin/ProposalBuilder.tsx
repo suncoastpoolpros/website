@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Send, LoaderCircle, CheckCircle, Check, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ChevronLeft, ChevronDown, X, Link2 } from 'lucide-react';
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
 import { useProposalDraft } from '@/lib/useAdminDraft';
@@ -31,7 +31,13 @@ import {
   EXTRAS_NOTE,
   includedExtras,
 } from './includedExtras';
-import { PRESET_VERSION, buildTiers, syncFilterService, syncTierPrices } from './tierPresets';
+import {
+  PRESET_VERSION,
+  buildTiers,
+  syncFilterService,
+  syncTierPrices,
+  upgradeTierWording,
+} from './tierPresets';
 import { FILTER_TYPES, inclusionQuestion, supportsFilterService } from './filterService';
 
 // Plain input (no floating label) for the add-on rows.
@@ -59,6 +65,41 @@ export const ProposalBuilder = ({
   onBack: () => void;
 }) => {
   const { data, setData, update, clearDraft } = useProposalDraft();
+
+  /**
+   * Bring untouched preset wording up to date, once, when a draft is restored.
+   *
+   * A draft stores its plan cards, so improving a preset did nothing to a
+   * proposal already in progress. The only remedy was "Reset to preset", which
+   * replaces BOTH plans including anything typed by hand — too destructive to
+   * press casually, so it wasn't, and superseded wording went out on real
+   * quotes.
+   *
+   * upgradeTierWording only replaces text that still matches a previous preset
+   * EXACTLY, so a hand-edited line is never touched. That makes it safe to run
+   * without asking. The amber "reset" prompt stays for drafts that were edited
+   * and therefore can't be upgraded automatically.
+   *
+   * Runs on mount only: afterwards the admin is editing, and re-running would
+   * fight them.
+   */
+  const upgradedRef = useRef(false);
+  useEffect(() => {
+    if (upgradedRef.current) return;
+    upgradedRef.current = true;
+    setData((p) => {
+      if (p.proposal.pricingMode !== 'tiers' || p.proposal.tiers.length === 0) return p;
+      const tiers = upgradeTierWording(p.proposal.tiers, {
+        type: p.pool.filterType,
+        included: p.pool.filterServiceIncluded === 'yes',
+      });
+      // Reference-equal when nothing matched a legacy preset — skip the write so
+      // an untouched draft isn't marked dirty just by being opened.
+      const changed = tiers.some((t, i) => t !== p.proposal.tiers[i]);
+      if (!changed) return p;
+      return { ...p, proposal: { ...p.proposal, tiers, presetVersion: PRESET_VERSION } };
+    });
+  }, [setData]);
   const [status, setStatus] = useState<SendStatus>({ kind: 'idle' });
   const [copied, setCopied] = useState(false);
   // Abort controller + a cancelled flag so Cancel actually stops the send:

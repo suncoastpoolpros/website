@@ -182,6 +182,73 @@ export const ANNUAL_INCLUDES = [
  * replaced, so anything reworded for this customer survives — the same rule
  * syncFilterService follows.
  */
+/**
+ * Wording earlier presets produced, kept ONLY so it can be recognised.
+ *
+ * A draft stores its plan cards, so improving a preset does nothing to a
+ * proposal already in progress — the only remedy was "Reset to preset", which
+ * replaces both plans including anything typed by hand. That is a bad trade for
+ * boilerplate nobody touched, so it never got pressed and stale wording went out
+ * on real quotes.
+ *
+ * An EXACT match against one of these proves the line is untouched preset text
+ * and can be replaced safely. Anything edited, even by a character, no longer
+ * matches and is left exactly as written. This is the check the version flag
+ * cannot make on its own: a version says "old", it cannot say "unmodified".
+ *
+ * ADD A LINE HERE WHENEVER YOU CHANGE PRESET WORDING, or drafts holding the
+ * outgoing text stop being recognised and silently keep it.
+ */
+const LEGACY_MONTHLY_INCLUDES: string[][] = [
+  // v2 — claimed a weekly cadence the scope could not guarantee.
+  [
+    'The full service above, every week',
+    'Billed monthly, in advance',
+    'No long-term contract',
+    'Cancel any time with 30 days notice',
+  ],
+  // v3 — accurate, but only one line of the five was actually selling.
+  [
+    'The full service set out in your proposal',
+    'All chemicals and routine filter care included',
+    'Billed monthly, in advance',
+    'No long-term contract',
+    'Cancel any time with 30 days notice',
+  ],
+];
+
+const LEGACY_MONTHLY_TAGLINES = ['Everything above, billed month to month.'];
+const LEGACY_ANNUAL_TAGLINES = ['The same service, paid annually.', 'Everything above, paid annually.'];
+
+const sameList = (a: string[], b: string[]): boolean =>
+  a.length === b.length && a.every((x, i) => x === b[i]);
+
+/**
+ * Bring a draft's plan cards up to the current preset wording, replacing ONLY
+ * the parts still identical to a previous preset. Hand-edited text survives
+ * untouched, which is what makes this safe to run automatically.
+ *
+ * Deliberately limited to the bullets and taglines — the boilerplate. Prices,
+ * value notes and fine print are left to syncTierPrices and the filter sync,
+ * which already have their own carry-over rules.
+ */
+export const upgradeTierWording = (tiers: Tier[], filter: FilterOption): Tier[] => {
+  if (tiers.length === 0) return tiers;
+  const fresh = buildTiers('', filter);
+  return tiers.map((tier, i) => {
+    const next = fresh[i];
+    if (!next) return tier;
+    const isMonthly = i === 0;
+    const legacyLists = isMonthly ? LEGACY_MONTHLY_INCLUDES : [];
+    const legacyTaglines = isMonthly ? LEGACY_MONTHLY_TAGLINES : LEGACY_ANNUAL_TAGLINES;
+    return {
+      ...tier,
+      includes: legacyLists.some((old) => sameList(tier.includes, old)) ? next.includes : tier.includes,
+      tagline: legacyTaglines.includes(tier.tagline.trim()) ? next.tagline : tier.tagline,
+    };
+  });
+};
+
 export const syncTierPrices = (
   tiers: Tier[],
   oldBase: string,
