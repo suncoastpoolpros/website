@@ -541,9 +541,20 @@ export const ApprovePage = () => {
             <div className="mb-8 flex items-start justify-between gap-4 sm:gap-8">
               <div className="min-w-0">
                 <Eyebrow>{quote.number ? `Proposal #${quote.number}` : 'Prepared for'}</Eyebrow>
-                <p className="font-semibold text-[#0a1628]">{quote.customerName}</p>
-                {quote.customerAddress?.trim() && (
-                  <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
+                {/* A quote can be saved with no name — a pool is quoted from
+                    its address. When there isn't one the address is promoted to
+                    the strong line rather than leaving an empty row above it. */}
+                {quote.customerName.trim() ? (
+                  <>
+                    <p className="font-semibold text-[#0a1628]">{quote.customerName.trim()}</p>
+                    {quote.customerAddress?.trim() && (
+                      <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
+                    )}
+                  </>
+                ) : (
+                  quote.customerAddress?.trim() && (
+                    <p className="font-semibold text-[#0a1628]">{quote.customerAddress.trim()}</p>
+                  )
                 )}
               </div>
               {headerActions}
@@ -612,9 +623,20 @@ export const ApprovePage = () => {
                     the document; "Prepared for" only labelled a name that needs
                     no label. Falls back for quotes sent before numbering. */}
                 <Eyebrow>{quote.number ? `Proposal #${quote.number}` : 'Prepared for'}</Eyebrow>
-                <p className="font-semibold text-[#0a1628]">{quote.customerName}</p>
-                {quote.customerAddress?.trim() && (
-                  <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
+                {/* A quote can be saved with no name — a pool is quoted from
+                    its address. When there isn't one the address is promoted to
+                    the strong line rather than leaving an empty row above it. */}
+                {quote.customerName.trim() ? (
+                  <>
+                    <p className="font-semibold text-[#0a1628]">{quote.customerName.trim()}</p>
+                    {quote.customerAddress?.trim() && (
+                      <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
+                    )}
+                  </>
+                ) : (
+                  quote.customerAddress?.trim() && (
+                    <p className="font-semibold text-[#0a1628]">{quote.customerAddress.trim()}</p>
+                  )
                 )}
                 {/* Email and phone as separate elements, not one joined string.
                     Joined, a wrap left the " · " stranded at the end of the
@@ -1036,7 +1058,7 @@ export const ApprovePage = () => {
                     style={{ fontFamily: '"Caveat", cursive', fontWeight: 700 }}
                     value={signature}
                     onChange={(e) => setSignature(e.target.value)}
-                    placeholder={quote.customerName}
+                    placeholder={quote.customerName.trim() || 'Your full name'}
                     autoComplete="name"
                   />
                 </div>

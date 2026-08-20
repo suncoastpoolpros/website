@@ -461,6 +461,18 @@ export async function acceptQuote(
    * what the record says happened.
    */
   customerEmail = '',
+  /**
+   * The typed signature, used to FILL A BLANK NAME.
+   *
+   * A quote can now be saved with no name — a texted lead is quoted from the
+   * address — and the moment they accept, they type their name as the
+   * signature. That is the first time we actually learn it, so the record stops
+   * being nameless exactly when it matters: at handoff to the route.
+   *
+   * Only ever fills a blank, never overwrites the name a proposal was addressed
+   * to, on the same rule as customerEmail below.
+   */
+  signature = '',
 ): Promise<boolean> {
   if (!isQuoteStorageAvailable(db)) return false;
   try {
@@ -472,7 +484,8 @@ export async function acceptQuote(
         `UPDATE quotes
             SET accepted_at = ?, accepted_plan = ?, accepted_ip = ?, accepted_ua = ?,
                 onboarding_json = ?, terms_version = ?,
-                customer_email = COALESCE(NULLIF(customer_email, ''), ?)
+                customer_email = COALESCE(NULLIF(customer_email, ''), ?),
+                customer_name = COALESCE(NULLIF(customer_name, ''), ?)
           WHERE id = ? AND accepted_at IS NULL`,
       )
       .bind(
@@ -492,6 +505,8 @@ export async function acceptQuote(
         // because a contact field was missing. Exactly what this endpoint is
         // written to never do.
         customerEmail.trim().slice(0, 160),
+        // '' and not null, for the same NOT NULL reason as the email above.
+        signature.trim().slice(0, 120),
         id,
       )
       .run();

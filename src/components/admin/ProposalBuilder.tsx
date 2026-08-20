@@ -282,9 +282,19 @@ export const ProposalBuilder = ({
   const filterAnswered =
     !supportsFilterService(data.pool.filterType) || filterAnswer !== '';
 
+  /**
+   * A NAME IS NOT REQUIRED. A pool is quoted from its address, and the common
+   * case is a text message from a number you have never spoken to — insisting
+   * on a name there is what made those leads unquotable, which is the whole
+   * problem this builder was meant to solve.
+   *
+   * Every quote still needs ONE way to identify it: an email address to send
+   * to, or a service address to save against. Neither path can produce a row
+   * that is blank in the list.
+   */
   const canSend = useMemo(
-    () => data.customer.name.trim() !== '' && EMAIL_RE.test(data.customer.email.trim()) && filterAnswered,
-    [data.customer.name, data.customer.email, filterAnswered],
+    () => EMAIL_RE.test(data.customer.email.trim()) && filterAnswered,
+    [data.customer.email, filterAnswered],
   );
 
   /**
@@ -293,8 +303,8 @@ export const ProposalBuilder = ({
    * unquotable.
    */
   const canSaveLink = useMemo(
-    () => data.customer.name.trim() !== '' && filterAnswered,
-    [data.customer.name, filterAnswered],
+    () => data.customer.address.trim() !== '' && filterAnswered,
+    [data.customer.address, filterAnswered],
   );
 
   /**
@@ -1038,7 +1048,7 @@ export const ProposalBuilder = ({
               <p className="mt-2 shrink-0 text-center text-xs text-gray-500">
                 {!filterAnswered
                   ? `Answer “${inclusionQuestion(data.pool.filterType)}” to send.`
-                  : 'Enter the customer\u2019s name and a valid email to send.'}
+                  : 'Enter a valid email address to send.'}
               </p>
             )}
 
@@ -1064,7 +1074,7 @@ export const ProposalBuilder = ({
               <p className="mt-2 shrink-0 text-center text-xs text-gray-500">
                 {!filterAnswered
                   ? 'Answer the filter question to create a link.'
-                  : 'Enter the customer\u2019s name to create a link.'}
+                  : 'Enter the service address to create a link.'}
               </p>
             )}
           </div>

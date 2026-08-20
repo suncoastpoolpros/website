@@ -178,6 +178,8 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     ua,
     onboarding,
     usableEmail,
+    // Fills the name when the quote was saved without one — see acceptQuote.
+    signature,
   );
   if (!recorded) return json({ ok: false, error: 'accept_failed' }, 500);
 

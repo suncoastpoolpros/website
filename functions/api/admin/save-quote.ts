@@ -56,10 +56,21 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
     }
 
     const customer = payload.customer ?? {};
-    // A name is the one thing required: the quote is addressed to somebody, and
-    // "PREPARED FOR" with nothing after it is not a document you'd hand over.
-    if (!String(customer.name ?? '').trim()) {
-      return json({ ok: false, error: 'customer_name_required' }, 400);
+    /**
+     * The ADDRESS is what's required here, not the name.
+     *
+     * A pool is quoted from its address, and this endpoint exists for the text
+     * message from a number you've never spoken to — demanding a name is what
+     * made those leads unquotable. The PDF already omits the name line when
+     * there isn't one, and the customer types their name as the signature when
+     * they accept, which is when we actually learn it.
+     *
+     * Something must identify the quote, though, or the list fills with rows
+     * that can't be told apart. There is no email on this path by definition,
+     * so the address is it.
+     */
+    if (!String(customer.address ?? '').trim()) {
+      return json({ ok: false, error: 'customer_address_required' }, 400);
     }
 
     // Tagged so the approve page knows this customer never received the email

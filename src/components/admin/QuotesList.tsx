@@ -99,7 +99,7 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
       .filter(
         (q) =>
           !needle ||
-          q.name.toLowerCase().includes(needle) ||
+          (q.name ?? '').toLowerCase().includes(needle) ||
           String(q.number ?? '').includes(needle) ||
           q.email.toLowerCase().includes(needle) ||
           (q.address ?? '').toLowerCase().includes(needle),
@@ -286,7 +286,10 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
                         <div className="min-w-0">
                           <p className="font-semibold text-white">
-                            {q.name || '—'}
+                            {/* Nameless quotes are normal now — a texted lead is
+                                quoted from the address alone. Falling back to it
+                                keeps every row identifiable instead of a dash. */}
+                            {q.name?.trim() || q.address?.trim() || q.email?.trim() || '—'}
                             {q.number ? (
                               <span className="ml-2 text-xs font-normal text-gray-500">#{q.number}</span>
                             ) : null}
