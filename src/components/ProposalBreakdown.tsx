@@ -67,7 +67,7 @@ export const ProposalBreakdown = ({
   // means the question wasn't answered, and an unanswered question must not
   // become a promise.
   const filter = { type: str(pool.filterType), included: pool.filterServiceIncluded === 'yes' };
-  const benefits = includeBenefits ? includedBenefits(filter) : [];
+  const benefits = includeBenefits ? includedBenefits(filter, str(pool.sanitization)) : [];
   const extras = includeBenefits ? includedExtras(filter, str(pool.sanitization)) : [];
 
   const dims = [

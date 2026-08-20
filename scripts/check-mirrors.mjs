@@ -145,7 +145,7 @@ for (const { type, included, sanitization } of COMBOS) {
   }
 
   // 4. The "what's included" list.
-  for (const b of benefitsMod.includedBenefits({ type, included })) {
+  for (const b of benefitsMod.includedBenefits({ type, included }, sanitization)) {
     check(html.includes(esc(b)), `benefit missing from email [${where}]: "${b}"`);
   }
 }

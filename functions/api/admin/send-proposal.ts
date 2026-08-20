@@ -198,8 +198,18 @@ const BASE_BENEFITS = [
   'Vetted, consistent technicians — a familiar face, not a rotating crew',
   'A photo service report in your inbox after every visit',
   'All standard service chemicals included',
-  'Filter cleaning, backwashing & salt-cell cleaning — all included',
 ];
+
+// The equipment-care bullet, built from what this pool actually has — a
+// cartridge filter is never backwashed and a chlorine pool has no salt cell.
+// See the note in src/components/admin/proposalBenefits.ts.
+const equipmentCareLine = (type: string, sanitization: string): string => {
+  const items = ['Filter cleaning'];
+  if (type === 'DE' || type === 'Sand') items.push('backwashing');
+  if (/salt/i.test(sanitization)) items.push('salt-cell cleaning');
+  if (items.length === 1) return 'Filter cleaning — included';
+  return `${items.slice(0, -1).join(', ')} & ${items[items.length - 1]} — all included`;
+};
 
 // Kept LAST, matching src/components/admin/proposalBenefits.ts. Backed by
 // section 6 of the Service Agreement — see the note there before editing.
@@ -233,9 +243,10 @@ const filterServiceLine = (type: string, included: boolean): string | null => {
   }
 };
 
-const includedBenefits = (type: string, included: boolean): string[] => {
+const includedBenefits = (type: string, included: boolean, sanitization: string): string[] => {
   const line = filterServiceLine(type, included);
-  return line ? [...BASE_BENEFITS, line, GUARANTEE_BENEFIT] : [...BASE_BENEFITS, GUARANTEE_BENEFIT];
+  const base = [...BASE_BENEFITS, equipmentCareLine(type, sanitization)];
+  return line ? [...base, line, GUARANTEE_BENEFIT] : [...base, GUARANTEE_BENEFIT];
 };
 
 // benefitsNote removed — see src/components/admin/proposalBenefits.ts.
@@ -457,7 +468,7 @@ export const composeProposalEmail = (
   // Accepts the tri-state string and the boolean older drafts still send.
   const filterIncluded =
     p.pool?.filterServiceIncluded === true || p.pool?.filterServiceIncluded === 'yes';
-  const benefitsList = includedBenefits(filterType, filterIncluded);
+  const benefitsList = includedBenefits(filterType, filterIncluded, safe(String(p.pool?.sanitization ?? '').trim(), 60));
   const extras = includedExtras(filterType, filterIncluded, safe(String(p.pool?.sanitization ?? '').trim(), 60));
   const tiered = hasTiers(p);
   const tiers = tiered ? (p.proposal?.tiers ?? []) : [];

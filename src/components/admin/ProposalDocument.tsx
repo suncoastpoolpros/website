@@ -455,7 +455,7 @@ export const ProposalDocument = ({
         {proposal.includeBenefits || tiered ? (
           <View style={styles.includedBox} wrap={false}>
             <Text style={styles.includedHeading}>{BENEFITS_HEADING}</Text>
-            {includedBenefits(filterOption).map((b, i) => (
+            {includedBenefits(filterOption, pool.sanitization).map((b, i) => (
               <View key={i} style={styles.includedItem}>
                 <Text style={styles.includedCheck}>•</Text>
                 <Text style={styles.includedItemText}>{b}</Text>

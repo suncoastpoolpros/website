@@ -15,15 +15,39 @@
  * Pages Function can't import from the client src tree) — keep them in sync.
  */
 import { type FilterOption, filterServiceLine, filterServiceTerms } from './filterService';
+import { isSaltwater } from './sanitization';
 
 export const BENEFITS_HEADING = 'The Suncoast Difference';
 
+/** True of every pool, so these are fixed. */
 const BASE_BENEFITS = [
   'Vetted, consistent technicians — a familiar face, not a rotating crew',
   'A photo service report in your inbox after every visit',
   'All standard service chemicals included',
-  'Filter cleaning, backwashing & salt-cell cleaning — all included',
 ];
+
+/**
+ * The equipment-care bullet, built from what THIS pool actually has.
+ *
+ * It used to be fixed: "Filter cleaning, backwashing & salt-cell cleaning — all
+ * included", printed on every proposal. On a cartridge + chlorine pool two of
+ * those three are equipment the customer doesn't own — a cartridge element is
+ * rinsed and swapped, never backwashed, and a chlorine pool has no cell to
+ * clean. Promising care for equipment someone can see they don't have is the
+ * fastest way to make the rest of a costed page read as boilerplate.
+ *
+ * Backwashing needs a multiport valve, which DE and sand have and cartridge
+ * doesn't. An unknown or 'Other' filter is left out rather than guessed at, on
+ * the same principle as the rest of this file: no claim we can't stand behind.
+ */
+const equipmentCareLine = (filter: FilterOption, sanitization: string): string => {
+  const items = ['Filter cleaning'];
+  if (filter.type === 'DE' || filter.type === 'Sand') items.push('backwashing');
+  if (isSaltwater(sanitization)) items.push('salt-cell cleaning');
+  if (items.length === 1) return 'Filter cleaning — included';
+  const list = `${items.slice(0, -1).join(', ')} & ${items[items.length - 1]}`;
+  return `${list} — all included`;
+};
 
 /**
  * A refund promise, not a feature — so it has to be honoured by section 6 of the
@@ -39,15 +63,15 @@ export const GUARANTEE_BENEFIT =
   'A two-week money-back guarantee — not happy in your first two weeks and we refund every penny';
 
 /**
- * The list, with the filter-service line appended ONLY when this pool's filter
- * type actually has one bundled. A sand-filter customer must never be shown a
- * promise about cartridge elements.
+ * The list, with the equipment-care line built for this pool and the
+ * filter-service line appended ONLY when this pool's filter type actually has
+ * one bundled. A sand-filter customer must never be shown a promise about
+ * cartridge elements.
  */
-export const includedBenefits = (filter: FilterOption): string[] => {
+export const includedBenefits = (filter: FilterOption, sanitization = ''): string[] => {
   const line = filterServiceLine(filter);
-  return line
-    ? [...BASE_BENEFITS, line, GUARANTEE_BENEFIT]
-    : [...BASE_BENEFITS, GUARANTEE_BENEFIT];
+  const base = [...BASE_BENEFITS, equipmentCareLine(filter, sanitization)];
+  return line ? [...base, line, GUARANTEE_BENEFIT] : [...base, GUARANTEE_BENEFIT];
 };
 
 // A summary line ("It's all covered in your flat rate — …") used to close this
