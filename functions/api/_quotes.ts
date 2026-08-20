@@ -221,6 +221,13 @@ export async function acceptQuote(
   ip: string,
   ua: string,
   onboarding: unknown = null,
+  /**
+   * An address supplied at signing, for a quote that was texted rather than
+   * emailed and so has none on record. Only ever FILLS a blank — never
+   * overwrites the address a proposal was actually sent to, which is part of
+   * what the record says happened.
+   */
+  customerEmail = '',
 ): Promise<boolean> {
   if (!isQuoteStorageAvailable(db)) return false;
   try {
@@ -231,7 +238,8 @@ export async function acceptQuote(
       .prepare(
         `UPDATE quotes
             SET accepted_at = ?, accepted_plan = ?, accepted_ip = ?, accepted_ua = ?,
-                onboarding_json = ?, terms_version = ?
+                onboarding_json = ?, terms_version = ?,
+                customer_email = COALESCE(NULLIF(customer_email, ''), ?)
           WHERE id = ? AND accepted_at IS NULL`,
       )
       .bind(
@@ -241,6 +249,16 @@ export async function acceptQuote(
         ua.slice(0, 300),
         onboarding ? JSON.stringify(onboarding).slice(0, 8000) : null,
         TERMS_VERSION,
+        // NULLIF/COALESCE rather than a conditional query: the column only takes
+        // this value when it's currently blank, enforced by SQLite rather than
+        // by remembering to check first.
+        //
+        // '' and NOT null when there's nothing to write. customer_email is NOT
+        // NULL, so COALESCE(NULLIF('',''), NULL) resolves to NULL and the whole
+        // UPDATE fails the constraint — which would reject a SIGNED ACCEPTANCE
+        // because a contact field was missing. Exactly what this endpoint is
+        // written to never do.
+        customerEmail.trim().slice(0, 160),
         id,
       )
       .run();

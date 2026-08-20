@@ -52,6 +52,8 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     accessNotes?: string;
     /** Typed full name — the signature. */
     signature?: string;
+    /** Supplied at signing when the quote was texted and carries no address. */
+    customerEmail?: string;
     agreeRequirements?: boolean;
     agreeService?: boolean;
     agreePrivacy?: boolean;
@@ -101,6 +103,17 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   const acceptedPlan = offered.length ? match : plan || 'Proposal';
   if (offered.length && !match) return json({ ok: false, error: 'unknown_plan' }, 400);
 
+  /**
+   * An address given at signing, for a texted quote that has none on record.
+   *
+   * Validated but NOT required: the page asks for it, and that's the right
+   * place to insist. Rejecting a signed acceptance here because a contact field
+   * was malformed would throw away the one thing that matters — they agreed —
+   * over something that can be chased by phone.
+   */
+  const suppliedEmail = String(ob.customerEmail ?? '').trim().slice(0, 160);
+  const usableEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(suppliedEmail) ? suppliedEmail : '';
+
   const ip = request.headers.get('CF-Connecting-IP') ?? '';
   const ua = request.headers.get('User-Agent') ?? '';
   const clean = (v: unknown, max = 200): string => String(v ?? '').trim().slice(0, max);
@@ -132,7 +145,15 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     termsVersion: TERMS_VERSION,
   };
 
-  const recorded = await acceptQuote(env.DB, token, acceptedPlan ?? plan, ip, ua, onboarding);
+  const recorded = await acceptQuote(
+    env.DB,
+    token,
+    acceptedPlan ?? plan,
+    ip,
+    ua,
+    onboarding,
+    usableEmail,
+  );
   if (!recorded) return json({ ok: false, error: 'accept_failed' }, 500);
 
   const price =
@@ -172,7 +193,11 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
 
     const detail = [
       `Customer: ${row.customer_name}`,
-      `Email: ${row.customer_email}`,
+      row.customer_email.trim()
+        ? `Email: ${row.customer_email}`
+        : usableEmail
+          ? `Email: ${usableEmail} (given at signing)`
+          : 'Email: none — quote was sent as a link',
       row.customer_phone ? `Phone: ${row.customer_phone}` : '',
       row.customer_address ? `Service address: ${row.customer_address}` : '',
       ``,
@@ -197,7 +222,7 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
       await sendViaResend(apiKey, {
         from,
         to: owner,
-        replyTo: row.customer_email,
+        replyTo: row.customer_email.trim() || usableEmail || undefined,
         subject: `ACCEPTED: ${row.customer_name} — ${acceptedPlan}`,
         text: `${detail}\n\nSet them up in the service app.`,
         html: `<pre style="font:14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;white-space:pre-wrap;margin:0;">${esc(detail)}</pre><p style="font:14px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">Set them up in the service app.</p>`,
@@ -211,10 +236,13 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     // failed request and a logged error on every one of those acceptances.
     // The owner handoff above still goes out either way, which is the one that
     // has to.
-    if (row.customer_email.trim()) {
+    // The row was read BEFORE the accept wrote this address in, so prefer the
+    // one just supplied.
+    const customerEmail = row.customer_email.trim() || usableEmail;
+    if (customerEmail) {
     await sendViaResend(apiKey, {
       from,
-      to: row.customer_email,
+      to: customerEmail,
       replyTo,
       subject: `You're all set — ${BIZ.name}`,
       text: `Hi ${row.customer_name.split(/\s+/)[0] || 'there'},\n\nThanks for accepting the ${acceptedPlan} plan${price ? ` at ${price}` : ''}.\n\nYou'll receive your first invoice on your first scheduled service date. We'll reach out to confirm that date, and with any questions we have.\n\nQuestions in the meantime? Just reply to this email.\n\n${BIZ.name}\n${BIZ.phoneDisplay} · ${BIZ.websiteDisplay}`,

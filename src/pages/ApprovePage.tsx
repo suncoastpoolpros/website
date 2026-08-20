@@ -136,6 +136,8 @@ export const ApprovePage = () => {
   const [accessNotes, setAccessNotes] = useState('');
   const [agree, setAgree] = useState({ requirements: false, service: false, privacy: false });
   const [signature, setSignature] = useState('');
+  /** Only asked for when the quote carries no address — i.e. it was texted. */
+  const [contactEmail, setContactEmail] = useState('');
 
   const token = typeof window === 'undefined' ? '' : new URLSearchParams(window.location.search).get('t') ?? '';
 
@@ -263,8 +265,22 @@ export const ApprovePage = () => {
     window.scrollTo({ top: 0 });
   }, []);
 
+  /**
+   * A texted quote has no email on record, so the confirmation would have
+   * nowhere to go and there'd be no address to invoice from. Asked for here —
+   * one field, at the moment they're already committing — rather than up front,
+   * where demanding it is what made these leads unquotable in the first place.
+   */
+  const needsEmail = !!quote && !quote.customerEmail?.trim();
+  const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail.trim());
+
   const canSubmit =
-    !!plan && agree.requirements && agree.service && agree.privacy && signature.trim().length >= 2;
+    !!plan &&
+    agree.requirements &&
+    agree.service &&
+    agree.privacy &&
+    signature.trim().length >= 2 &&
+    (!needsEmail || emailOk);
 
   const submit = useCallback(async () => {
     if (!canSubmit || busy) return;
@@ -280,6 +296,9 @@ export const ApprovePage = () => {
           onboarding: {
             // No billing fields: this page no longer asks. The endpoint records
             // "not collected" rather than defaulting to "same as service".
+            // The email is only sent when it was asked for; the endpoint fills a
+            // blank address and never overwrites one a proposal was sent to.
+            ...(needsEmail && emailOk ? { customerEmail: contactEmail.trim() } : {}),
             preferredStart,
             accessNotes,
             agreeRequirements: agree.requirements,
@@ -297,7 +316,7 @@ export const ApprovePage = () => {
     } finally {
       setBusy(false);
     }
-  }, [canSubmit, busy, token, plan, preferredStart, accessNotes, agree, signature]);
+  }, [canSubmit, busy, token, plan, preferredStart, accessNotes, agree, signature, needsEmail, emailOk, contactEmail]);
 
   /**
    * The right-hand side of the header row: the document, then a person.
@@ -760,8 +779,31 @@ export const ApprovePage = () => {
 
             <section className="mb-5 rounded-2xl border border-[#e3e8ef] bg-white p-5">
               <h2 className="mb-3 font-display text-base font-bold">
-                Getting started <span className="text-sm font-normal text-[#6b7280]">(optional)</span>
+                Getting started{' '}
+                {!needsEmail && <span className="text-sm font-normal text-[#6b7280]">(optional)</span>}
               </h2>
+              {needsEmail && (
+                <div className="mb-4">
+                  <label className="text-sm text-[#6b7280]" htmlFor="contact-email">
+                    Your email — so we can send your confirmation
+                  </label>
+                  <input
+                    id="contact-email"
+                    className={`${field} mt-1`}
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                  />
+                  {contactEmail.trim() !== '' && !emailOk && (
+                    <p className="mt-1.5 text-xs text-[#c0392b]">
+                      That doesn&rsquo;t look like an email address.
+                    </p>
+                  )}
+                </div>
+              )}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {/* Asked as a question, and about how SOON rather than "preferred
                     start date" — a form label invites a form answer, and this is
@@ -913,7 +955,9 @@ export const ApprovePage = () => {
             </button>
             {!canSubmit && (
               <p className="mt-2 text-center text-xs text-[#6b7280]">
-                Tick all three boxes and type your name to continue.
+                {needsEmail && !emailOk
+                  ? 'Add your email, tick all three boxes and type your name to continue.'
+                  : 'Tick all three boxes and type your name to continue.'}
               </p>
             )}
           </>
