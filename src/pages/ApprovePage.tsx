@@ -794,11 +794,20 @@ export const ApprovePage = () => {
                           {tier.valueNote.trim()}
                         </p>
                       )}
-                      {/* One button, two jobs, and the label always says which:
-                          "Choose X" while unselected, "Continue with X" once it
-                          is. Putting the next step in the card means the
-                          decision and the action are in the same place — no
-                          hunting for a separate control after choosing. */}
+                      {/* One button, two jobs: "Choose" while unselected,
+                          "Continue" once it is. Putting the next step in the
+                          card means the decision and the action are in the same
+                          place — no hunting for a separate control after
+                          choosing.
+
+                          The plan name is SR-ONLY, not dropped. It read
+                          "Choose Pay Annually", which is a lot of words for a
+                          button sitting directly under a heading that already
+                          says Pay Annually. But a screen-reader user listing
+                          the buttons on this page would otherwise hear "Choose"
+                          twice with nothing to tell them apart, so the name is
+                          still in the accessible name even though it is no
+                          longer on screen. */}
                       <span className="relative z-10 block pt-4">
                         <button
                           onClick={() => (on ? goToConfirm() : setPlan(tier.name))}
@@ -812,10 +821,15 @@ export const ApprovePage = () => {
                         >
                           {on ? (
                             <>
-                              Continue with {tier.name} <ArrowRight className="h-4 w-4" />
+                              Continue
+                              <span className="sr-only"> with {tier.name}</span>
+                              <ArrowRight className="h-4 w-4" />
                             </>
                           ) : (
-                            `Choose ${tier.name}`
+                            <>
+                              Choose
+                              <span className="sr-only"> {tier.name}</span>
+                            </>
                           )}
                         </button>
                       </span>
