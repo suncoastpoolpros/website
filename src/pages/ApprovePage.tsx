@@ -10,6 +10,10 @@ import {
 } from 'lucide-react';
 import { usePageMeta } from '@/lib/usePageMeta';
 import { type ParsedQuoteLink, parseQuoteLink } from '@/lib/quoteLinks';
+
+/** Matches MAX_PHOTOS in the builder's PhotoPicker — the ceiling on how far
+ *  the fetch loop below will walk before giving up. */
+const MAX_PROPOSAL_PHOTOS = 8;
 import {
   downloadBlob,
   proposalDataFromQuote,
@@ -280,6 +284,35 @@ export const ApprovePage = () => {
    * The engine is ~1.4MB and only fetched on this click, so it costs nothing to
    * anyone who doesn't press it.
    */
+  /**
+   * The photos that were attached to this proposal, fetched only now.
+   *
+   * Walks indexes from 0 and stops at the first empty answer, so nothing has to
+   * be told how many there are and page load pays nothing — these are 2–3 MB
+   * for a full set, and the approve page is the one thing a customer must load
+   * to accept. One request per photo keeps each response small; eight of them
+   * in a single body risks D1's result limit and stalls on a phone.
+   *
+   * Any failure returns what it has. The emailed PDF is the copy of record and
+   * still has every photo; a download missing one is worth far less than a
+   * download that refuses to happen.
+   */
+  const fetchPhotos = useCallback(async (t: string): Promise<string[]> => {
+    const out: string[] = [];
+    for (let i = 0; i < MAX_PROPOSAL_PHOTOS; i += 1) {
+      try {
+        const res = await fetch(`/api/quote/photo?t=${encodeURIComponent(t)}&i=${i}`);
+        if (!res.ok) break;
+        const data = (await res.json()) as { dataUrl?: string | null };
+        if (!data.dataUrl) break;
+        out.push(data.dataUrl);
+      } catch {
+        break;
+      }
+    }
+    return out;
+  }, []);
+
   const downloadPdf = useCallback(async () => {
     if (!quote || pdfState === 'working') return;
     setPdfState('working');
@@ -287,6 +320,10 @@ export const ApprovePage = () => {
       const blob = await renderProposalPdf({
         data: proposalDataFromQuote(quote),
         dateLabel: proposalDateLabel(quote.createdAt),
+        // Without these the customer's download was the emailed proposal with
+        // the photographs silently missing — the same document by number and
+        // by wording, quietly not the same document.
+        photos: await fetchPhotos(token),
         // Same number as the emailed copy, or the download would be a different
         // document from the one on record.
         proposalNumber: quote.number,
@@ -298,7 +335,7 @@ export const ApprovePage = () => {
       // failing, not a dead end — the message below says so.
       setPdfState('error');
     }
-  }, [quote, pdfState]);
+  }, [quote, pdfState, token, fetchPhotos]);
 
   /** Move to the signing step. Used by the chosen card's button and the bar. */
   const goToConfirm = useCallback(() => {

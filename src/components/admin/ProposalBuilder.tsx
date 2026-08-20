@@ -273,7 +273,7 @@ export const ProposalBuilder = ({
     try {
       const proposalNumber = await reserveProposalNumber(controller.signal);
       if (cancelledRef.current) return;
-      const { url } = await saveQuoteOnly({ ...data, proposalNumber }, controller.signal);
+      const { url } = await saveQuoteOnly({ ...data, proposalNumber, photos }, controller.signal);
       setStatus({ kind: 'saved', url });
     } catch (err) {
       if (cancelledRef.current || (err instanceof DOMException && err.name === 'AbortError')) return;
@@ -316,6 +316,9 @@ export const ProposalBuilder = ({
           ...data,
           proposalNumber,
           pdfBase64,
+          // Stored alongside the quote so the customer's own re-download is the
+          // same document, not a version with the photographs missing.
+          photos,
           filename: proposalFilename(data.customer.name, proposalNumber),
         },
         controller.signal,

@@ -9,7 +9,7 @@
  * customer approves by replying "approved", so Reply-To points at the business
  * inbox, not the no-reply From address.
  */
-import { approveUrl, proposalNumberOrNull, saveQuote } from '../_quotes';
+import { approveUrl, proposalNumberOrNull, saveQuote, saveQuotePhotos } from '../_quotes';
 import {
   type AdminContext,
   type AdminEnv,
@@ -69,6 +69,8 @@ type SendProposalPayload = {
   /** Reserved by the builder before it rendered the PDF, and printed on it. */
   proposalNumber?: number | null;
   pdfBase64?: string;
+  /** Downscaled data URLs, stored so the customer's own download matches. */
+  photos?: string[];
   filename?: string;
 };
 
@@ -132,6 +134,13 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
       number: proposalNumber,
     });
     const acceptLink = token ? approveUrl(new URL(request.url).origin, token, proposalNumber) : '';
+    // After the response, never before it. The photos are already inside the
+    // PDF being attached, so this is purely the archival copy for a later
+    // re-download — it must not add seconds to the send the operator is
+    // waiting on, and it must not be able to fail it.
+    if (token && Array.isArray(payload.photos) && payload.photos.length > 0) {
+      ctx.waitUntil?.(saveQuotePhotos((env as { DB?: unknown }).DB, token, payload.photos));
+    }
 
     const { html, text } = composeProposalEmail(payload, env, acceptLink);
     const attachments =

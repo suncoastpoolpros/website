@@ -298,7 +298,7 @@ export const emptyInspection = (): InspectionData => ({
  * deliverable, so a silent failure would leave you with nothing to paste.
  */
 export async function saveQuoteOnly(
-  args: ProposalData & { proposalNumber?: number | null },
+  args: ProposalData & { proposalNumber?: number | null; photos?: string[] },
   signal?: AbortSignal,
 ): Promise<{ token: string; url: string }> {
   const res = await fetch('/api/admin/save-quote', {
@@ -310,6 +310,7 @@ export async function saveQuoteOnly(
       pool: args.pool,
       proposal: args.proposal,
       proposalNumber: args.proposalNumber ?? null,
+      photos: args.photos ?? [],
     }),
   });
   const data = (await res.json().catch(() => ({}))) as {
@@ -382,6 +383,8 @@ export type SendProposalArgs = ProposalData & {
   /** Base64 PDF (no data: prefix needed; server strips one if present). */
   pdfBase64: string;
   filename: string;
+  /** Downscaled data URLs. Stored so a later re-download matches this PDF. */
+  photos?: string[];
 };
 
 /** POST the proposal + PDF to be emailed. Throws on failure (or AbortError if cancelled). */
@@ -400,6 +403,7 @@ export async function sendProposal(
       pool: args.pool,
       proposal: args.proposal,
       proposalNumber: args.proposalNumber ?? null,
+      photos: args.photos ?? [],
       pdfBase64: args.pdfBase64,
       filename: args.filename,
     },

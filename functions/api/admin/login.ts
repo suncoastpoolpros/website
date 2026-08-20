@@ -10,6 +10,7 @@
  * The PIN is only ever checked here, server-side. It is never shipped to the
  * browser, so the /admin bundle being public is harmless.
  */
+import { isThrottled, recordLookupFailure } from '../_quotes';
 import {
   type AdminContext,
   json,
@@ -21,11 +22,15 @@ import {
   serializeSessionCookie,
 } from './_shared';
 
-// --- TEMPORARY: Turnstile bot-check is bypassed on the admin login. ----------
-// Set this back to `true` (and mount the widget in AdminKeypad.tsx) to restore
-// brute-force protection before this goes to real production use. While false,
-// a 6-digit PIN has no per-attempt friction, so keep ADMIN_PIN private and the
-// /admin URL unadvertised.
+// --- Turnstile bot-check is bypassed on the admin login. --------------------
+// Still false, and deliberately so: the widget was never mounted in
+// AdminKeypad.tsx, so flipping this to true would send no token and lock the
+// owner out of their own admin the moment TURNSTILE_SECRET_KEY is set.
+//
+// Brute-force protection no longer depends on it. Failed PINs are now rate
+// limited per IP (see below), which is what the note here used to promise
+// Turnstile would provide — and unlike a captcha it needs no widget, no env
+// var and no user-visible friction on a correct PIN.
 const REQUIRE_TURNSTILE = false;
 // -----------------------------------------------------------------------------
 
@@ -68,8 +73,35 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
       return json({ ok: false, error: 'auth_not_configured' }, 500);
     }
 
+    /**
+     * Rate limit the PIN, because nothing else does.
+     *
+     * ADMIN_PIN is six digits — a million combinations. Unthrottled, at a
+     * modest 50 requests a second, the whole space falls in under six hours,
+     * and /admin is a known URL (it is named in robots.txt). What is behind it
+     * is every customer's name, address, phone and pricing, the ability to send
+     * mail from the business domain, and the ability to delete signed
+     * acceptances. That is the highest-value door on the site and it had no
+     * lock beyond the PIN itself.
+     *
+     * Ten failures per IP per fifteen minutes puts a million combinations at
+     * roughly 2,800 years, while leaving an owner who fat-fingers their PIN a
+     * few times entirely unaffected. Counted on FAILURE only, so a correct PIN
+     * never spends budget, and scoped separately from quote-token guessing so
+     * neither can lock out the other.
+     *
+     * Degrades open like the rest of the storage layer: if D1 is unavailable
+     * this does nothing rather than locking the owner out of their own tools.
+     */
+    const ip = request.headers.get('CF-Connecting-IP') ?? '';
+    const db = (env as unknown as { DB?: unknown }).DB;
+    if (await isThrottled(db, ip, 'login')) {
+      return json({ ok: false, error: 'too_many_attempts' }, 429);
+    }
+
     const submitted = typeof payload.pin === 'string' ? payload.pin : '';
     if (!timingSafeEqual(submitted, expected)) {
+      ctx.waitUntil?.(recordLookupFailure(db, ip, 'login'));
       return json({ ok: false, error: 'invalid_pin' }, 401);
     }
 

@@ -224,6 +224,64 @@ export async function saveQuote(
   return null;
 }
 
+/**
+ * Photos attached to a proposal.
+ *
+ * Written alongside the quote and read only when the customer presses
+ * "Download full proposal" — never on page load. See migrations/0005 for why
+ * they are not folded into proposal_json.
+ *
+ * Best-effort by the same rule as everything else here: a photo that fails to
+ * store must not fail the send. The customer's emailed PDF already has them;
+ * losing the archival copy costs a re-download some pictures, not the sale.
+ */
+export async function saveQuotePhotos(
+  db: unknown,
+  quoteId: string,
+  photos: string[],
+): Promise<void> {
+  if (!isQuoteStorageAvailable(db) || !quoteId || photos.length === 0) return;
+  try {
+    for (let i = 0; i < photos.length; i += 1) {
+      const src = photos[i];
+      // Only ever our own downscaled JPEG data URLs. Anything else is either a
+      // remote reference we should not be fetching or something malformed, and
+      // storing it would put unvalidated content in front of a customer later.
+      if (typeof src !== 'string' || !src.startsWith('data:image/')) continue;
+      await db
+        .prepare('INSERT OR REPLACE INTO quote_photos (quote_id, idx, data_url) VALUES (?, ?, ?)')
+        .bind(quoteId, i, src)
+        .run();
+    }
+  } catch (err) {
+    console.log('[quotes] photo_save_failed:', String(err).slice(0, 300));
+  }
+}
+
+/**
+ * One photo, by position. Fetched one at a time rather than as an array: eight
+ * of them is 2–3 MB, and a single response that large risks D1's result limit
+ * and stalls on a phone. One request per photo keeps each one small and lets
+ * the download show progress.
+ */
+export async function getQuotePhoto(
+  db: unknown,
+  quoteId: string,
+  idx: number,
+): Promise<string | null> {
+  if (!isQuoteStorageAvailable(db) || !quoteId || !Number.isInteger(idx) || idx < 0) return null;
+  try {
+    const row = await db
+      .prepare('SELECT data_url FROM quote_photos WHERE quote_id = ? AND idx = ?')
+      .bind(quoteId, idx)
+      .first<{ data_url?: string }>();
+    return row?.data_url ?? null;
+  } catch (err) {
+    console.log('[quotes] photo_read_failed:', String(err).slice(0, 300));
+    return null;
+  }
+}
+
 export async function getQuote(db: unknown, id: string): Promise<QuoteRow | null> {
   if (!isQuoteStorageAvailable(db) || !id) return null;
   try {
@@ -261,6 +319,12 @@ export async function getQuote(db: unknown, id: string): Promise<QuoteRow | null
 export async function deleteQuote(db: unknown, id: string): Promise<boolean> {
   if (!isQuoteStorageAvailable(db) || !id) return false;
   try {
+    // Photos first, and explicitly. The schema declares ON DELETE CASCADE, but
+    // that only fires when `PRAGMA foreign_keys = ON` for the connection, which
+    // is not something to assume per-request in D1. Deleting the parent and
+    // trusting the cascade would silently leave photographs of a customer's
+    // property in the database after the record they belong to is gone.
+    await db.prepare('DELETE FROM quote_photos WHERE quote_id = ?').bind(id).run();
     await db.prepare('DELETE FROM quotes WHERE id = ?').bind(id).run();
     return true;
   } catch (err) {
@@ -285,33 +349,61 @@ export async function deleteQuote(db: unknown, id: string): Promise<boolean> {
  * database hiccup into "no customer can accept their quote", which is a worse
  * outcome than the thing it prevents. The token is still 34 billion wide.
  */
-const THROTTLE_MAX = 30;
-const THROTTLE_WINDOW_MS = 10 * 60 * 1000;
+/**
+ * Scopes keep separate budgets in one table.
+ *
+ * 'quote' — guessing quote tokens. 'login' — guessing the admin PIN, which is
+ * far more valuable and far smaller (a 6-digit PIN is a million combinations),
+ * so it gets a much tighter limit.
+ *
+ * They MUST NOT share a counter: a flood of quote-token guesses would otherwise
+ * lock the owner out of their own admin, turning a nuisance into a denial of
+ * service against the person running the business.
+ */
+export type ThrottleScope = 'quote' | 'login';
 
-/** True when this IP has burned through its failed lookups and should be told to wait. */
-export async function isThrottled(db: unknown, ip: string): Promise<boolean> {
+const THROTTLE: Record<ThrottleScope, { max: number; windowMs: number }> = {
+  quote: { max: 30, windowMs: 10 * 60 * 1000 },
+  // Ten wrong PINs in fifteen minutes is already far more than someone
+  // mistyping their own. A million combinations at this rate is ~2,800 years.
+  login: { max: 10, windowMs: 15 * 60 * 1000 },
+};
+
+const key = (scope: ThrottleScope, ip: string): string => `${scope}:${ip.slice(0, 60)}`;
+
+/** True when this IP has burned through its failed attempts and should wait. */
+export async function isThrottled(
+  db: unknown,
+  ip: string,
+  scope: ThrottleScope = 'quote',
+): Promise<boolean> {
   if (!isQuoteStorageAvailable(db) || !ip) return false;
   try {
+    const limit = THROTTLE[scope];
     const row = await db
       .prepare('SELECT count, window_start FROM lookup_failures WHERE ip = ?')
-      .bind(ip)
+      .bind(key(scope, ip))
       .first<{ count?: number; window_start?: string }>();
     if (!row) return false;
     const started = new Date(String(row.window_start)).getTime();
     // An unparseable or expired window is not a block: recordLookupFailure will
     // start a fresh one on the next miss.
-    if (!Number.isFinite(started) || Date.now() - started > THROTTLE_WINDOW_MS) return false;
-    return Number(row.count) >= THROTTLE_MAX;
+    if (!Number.isFinite(started) || Date.now() - started > limit.windowMs) return false;
+    return Number(row.count) >= limit.max;
   } catch (err) {
     console.log('[quotes] throttle_read_failed:', String(err).slice(0, 300));
     return false;
   }
 }
 
-/** Count one failed lookup against this IP, starting a new window when due. */
-export async function recordLookupFailure(db: unknown, ip: string): Promise<void> {
+/** Count one failed attempt against this IP, starting a new window when due. */
+export async function recordLookupFailure(
+  db: unknown,
+  ip: string,
+  scope: ThrottleScope = 'quote',
+): Promise<void> {
   if (!isQuoteStorageAvailable(db) || !ip) return;
-  const cutoff = new Date(Date.now() - THROTTLE_WINDOW_MS).toISOString();
+  const cutoff = new Date(Date.now() - THROTTLE[scope].windowMs).toISOString();
   try {
     // One statement, so two simultaneous misses can't each read 5 and write 6.
     // ON CONFLICT resets the window when the stored one has expired and
@@ -326,7 +418,7 @@ export async function recordLookupFailure(db: unknown, ip: string): Promise<void
            count = CASE WHEN lookup_failures.window_start < ? THEN 1 ELSE lookup_failures.count + 1 END,
            window_start = CASE WHEN lookup_failures.window_start < ? THEN ? ELSE lookup_failures.window_start END`,
       )
-      .bind(ip.slice(0, 60), now, cutoff, cutoff, now)
+      .bind(key(scope, ip), now, cutoff, cutoff, now)
       .run();
     // Sweep expired windows. Without this the table only ever grows: an IP that
     // fails once is remembered forever, and a burst of guesses from a botnet
@@ -334,7 +426,15 @@ export async function recordLookupFailure(db: unknown, ip: string): Promise<void
     // because this is the only code that writes the table — if nothing is
     // failing there is nothing to clean up. Uses idx_lookup_failures_window,
     // which migration 0004 creates for exactly this scan.
-    await db.prepare('DELETE FROM lookup_failures WHERE window_start < ?').bind(cutoff).run();
+    // Swept with the LONGEST window of any scope, not this call's cutoff — the
+    // login window is longer than the quote one, so sweeping on a quote miss
+    // with the quote cutoff would delete live login counters and hand an
+    // attacker a fresh budget by simply making a quote request.
+    const longest = Math.max(...Object.values(THROTTLE).map((t) => t.windowMs));
+    await db
+      .prepare('DELETE FROM lookup_failures WHERE window_start < ?')
+      .bind(new Date(Date.now() - longest).toISOString())
+      .run();
   } catch (err) {
     console.log('[quotes] throttle_write_failed:', String(err).slice(0, 300));
   }

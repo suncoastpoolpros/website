@@ -355,7 +355,15 @@ const SignupPageInner = () => {
                       'Customers consult Suncoast Pool Pros before adding chemicals or salt',
                       'A working garden hose remains accessible during service visits',
                       'Pool equipment is operational for proper service and water balance',
-                      'Worn filter media — cartridges, DE grids, or sand — is replaced as needed and billed separately from the flat rate',
+                      // Was: "…is replaced as needed and billed separately from
+                      // the flat rate", stated flatly. That contradicted both the
+                      // Service Agreement (§4 excludes filter media "except where
+                      // your Service Proposal states that an annual filter service
+                      // is included") and the proposals themselves, which sell an
+                      // included cartridge replacement or DE split as a headline
+                      // benefit. A customer reading both would find the site
+                      // taking back the thing the quote just promised.
+                      'Worn filter media — cartridges, DE grids, or sand — is replaced as needed; it is covered when your proposal includes filter service, and quoted separately when it does not',
                       'Clear, safe access to the pool and equipment area is provided',
                       'Pets are secured during service visits',
                       'Repairs, scheduling, or other service concerns are communicated promptly',

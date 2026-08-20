@@ -20,7 +20,7 @@
  * '' — and the acceptance flow already treats a blank address as "no customer
  * copy to send" without failing the acceptance.
  */
-import { proposalNumberOrNull, quoteUrl, saveQuote } from '../_quotes';
+import { proposalNumberOrNull, quoteUrl, saveQuote, saveQuotePhotos } from '../_quotes';
 import {
   type AdminContext,
   json,
@@ -37,6 +37,8 @@ type Payload = {
   pool?: unknown;
   proposal?: unknown;
   proposalNumber?: number | null;
+  /** Downscaled data URLs, stored so the customer's own download matches. */
+  photos?: string[];
 };
 
 export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
@@ -84,6 +86,11 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
     // Unlike send-proposal, a failed save here is a hard failure: the link IS
     // the deliverable. There's no email going out to fall back on.
     if (!token) return json({ ok: false, error: 'storage_unavailable' }, 503);
+
+    // Same as send-proposal: archival only, and never on the critical path.
+    if (Array.isArray(payload.photos) && payload.photos.length > 0) {
+      ctx.waitUntil?.(saveQuotePhotos((env as { DB?: unknown }).DB, token, payload.photos));
+    }
 
     // The texting link, not the approve link: this endpoint exists for quotes
     // that are TEXTED rather than emailed, so the customer has read nothing and
