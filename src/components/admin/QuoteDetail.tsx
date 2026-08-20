@@ -25,6 +25,7 @@ import {
   Check,
   ShieldCheck,
   Trash2,
+  MessageSquare,
 } from 'lucide-react';
 import { formatPrice } from '@/lib/adminApi';
 import { STATUS_META, ago, onDate, onDateTime, statusOf } from './quoteFormat';
@@ -102,7 +103,7 @@ const RowList = ({ items }: { items: Rows }) => (
 
 export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) => {
   const [load, setLoad] = useState<Load>({ kind: 'loading' });
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<'' | 'plain' | 'full'>('');
   /** Two-step delete: arming shows what will actually be lost before the verb. */
   const [armed, setArmed] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -204,14 +205,22 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
     ]);
   }, [quote]);
 
-  const copyLink = async () => {
-    const url = `${window.location.origin}/approve/?t=${encodeURIComponent(id)}`;
+  /**
+   * Same quote, two entry points. The plain link opens on the plans — it's what
+   * an emailed customer got, and they've already read the breakdown. `full=1`
+   * reopens on the breakdown, for texting a follow-up to someone who has gone
+   * quiet, or to anyone who never had the email in the first place.
+   */
+  const copyLink = async (withBreakdown = false) => {
+    const url = `${window.location.origin}/approve/?t=${encodeURIComponent(id)}${
+      withBreakdown ? '&full=1' : ''
+    }`;
     try {
       await navigator.clipboard.writeText(url);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
+      setCopied(withBreakdown ? 'full' : 'plain');
+      window.setTimeout(() => setCopied(''), 1800);
     } catch {
-      window.prompt('Copy the approve link:', url);
+      window.prompt('Copy the link:', url);
     }
   };
 
@@ -452,12 +461,28 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
                   : `Live until ${onDate(quote.expiresAt)}.`}
             </p>
             {status !== 'expired' && (
-              <button
-                onClick={copyLink}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-brand-blue-light hover:bg-white/5 hover:text-white"
-              >
-                <Link2 className="h-4 w-4" /> {copied ? 'Link copied' : 'Copy approve link'}
-              </button>
+              <>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => copyLink(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-brand-blue-light hover:bg-white/5 hover:text-white"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    {copied === 'full' ? 'Copied' : 'Copy text link'}
+                  </button>
+                  <button
+                    onClick={() => copyLink(false)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-2 text-sm font-semibold text-brand-blue-light hover:bg-white/5 hover:text-white"
+                  >
+                    <Link2 className="h-4 w-4" />
+                    {copied === 'plain' ? 'Copied' : 'Copy approve link'}
+                  </button>
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                  The text link opens with the full breakdown of the service before the pricing. The
+                  approve link goes straight to the plans — it&apos;s what an emailed customer received.
+                </p>
+              </>
             )}
           </Card>
 

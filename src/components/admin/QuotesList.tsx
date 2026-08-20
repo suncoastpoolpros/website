@@ -21,6 +21,7 @@ import {
   AlertCircle,
   Mail,
   Phone,
+  MessageSquare,
 } from 'lucide-react';
 import { formatPrice } from '@/lib/adminApi';
 import { QuoteDetail } from './QuoteDetail';
@@ -109,14 +110,26 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
       });
   }, [quotes, filter, query]);
 
-  const copyLink = async (id: string) => {
-    const url = `${window.location.origin}/approve/?t=${encodeURIComponent(id)}`;
+  /**
+   * Two links to the same quote, differing in where they open.
+   *
+   * A quote created as a link already leads with the breakdown — it's tagged,
+   * so its plain URL does the right thing. This second form is for a quote that
+   * WAS emailed: that customer has read the breakdown, so their link goes
+   * straight to the plans, but if they've gone quiet and you want to text a
+   * follow-up, `full=1` reopens it on the full case for the service.
+   */
+  const copyLink = async (id: string, withBreakdown = false) => {
+    const url = `${window.location.origin}/approve/?t=${encodeURIComponent(id)}${
+      withBreakdown ? '&full=1' : ''
+    }`;
+    const key = withBreakdown ? `${id}:full` : id;
     try {
       await navigator.clipboard.writeText(url);
-      setCopied(id);
-      window.setTimeout(() => setCopied((c) => (c === id ? null : c)), 1800);
+      setCopied(key);
+      window.setTimeout(() => setCopied((c) => (c === key ? null : c)), 1800);
     } catch {
-      window.prompt('Copy the approve link:', url);
+      window.prompt('Copy the link:', url);
     }
   };
 
@@ -327,13 +340,24 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                           </a>
                         )}
                         {status === 'awaiting' && (
-                          <button
-                            onClick={() => copyLink(q.id)}
-                            className="relative z-10 ml-auto inline-flex items-center gap-1 font-semibold text-brand-blue-light hover:text-white"
-                          >
-                            <Link2 className="h-3.5 w-3.5" />
-                            {copied === q.id ? 'Link copied' : 'Copy approve link'}
-                          </button>
+                          <span className="relative z-10 ml-auto inline-flex items-center gap-4">
+                            <button
+                              onClick={() => copyLink(q.id, true)}
+                              title="Opens with the full breakdown before the pricing — for texting"
+                              className="inline-flex items-center gap-1 font-semibold text-brand-blue-light hover:text-white"
+                            >
+                              <MessageSquare className="h-3.5 w-3.5" />
+                              {copied === `${q.id}:full` ? 'Copied' : 'Copy text link'}
+                            </button>
+                            <button
+                              onClick={() => copyLink(q.id)}
+                              title="Opens straight on the plans — the link that was emailed"
+                              className="inline-flex items-center gap-1 font-semibold text-brand-blue-light hover:text-white"
+                            >
+                              <Link2 className="h-3.5 w-3.5" />
+                              {copied === q.id ? 'Copied' : 'Copy approve link'}
+                            </button>
+                          </span>
                         )}
                       </div>
                     </li>
