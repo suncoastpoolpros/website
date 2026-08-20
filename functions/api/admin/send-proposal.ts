@@ -166,7 +166,15 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
       return json({ ok: false, error: 'delivery_failed', detail: String(err).slice(0, 300) }, 502);
     }
 
-    return json({ ok: true }, 200);
+    /**
+     * `stored` is the honest half of this response. A storage failure
+     * deliberately does NOT fail the send — the customer still gets their
+     * proposal and PDF — but it means the email went out WITHOUT an accept
+     * link and the quote is in no list anywhere. Reporting only `ok: true`
+     * made that indistinguishable from a clean send, so the one case that
+     * needs the operator's attention was the one case they never saw.
+     */
+    return json({ ok: true, stored: !!token, url: acceptLink || null }, 200);
   } catch (err) {
     console.log('[admin/send-proposal] server_error:', String(err).slice(0, 300));
     return json({ ok: false, error: 'server_error' }, 500);

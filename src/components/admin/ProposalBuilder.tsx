@@ -42,7 +42,8 @@ type SendStatus =
   | { kind: 'idle' }
   | { kind: 'sending' }
   | { kind: 'saving' }
-  | { kind: 'sent' }
+  /** `stored: false` = emailed, but the quote was NOT saved. See the sent screen. */
+  | { kind: 'sent'; stored: boolean }
   /** Saved without emailing — the link is the deliverable, so it's shown to copy. */
   | { kind: 'saved'; url: string }
   | { kind: 'error'; message: string };
@@ -310,7 +311,7 @@ export const ProposalBuilder = ({
       if (cancelledRef.current) return;
       const pdfBase64 = await blobToBase64(blob);
       if (cancelledRef.current) return;
-      await sendProposal(
+      const result = await sendProposal(
         {
           ...data,
           proposalNumber,
@@ -319,7 +320,7 @@ export const ProposalBuilder = ({
         },
         controller.signal,
       );
-      setStatus({ kind: 'sent' });
+      setStatus({ kind: 'sent', stored: result.stored });
     } catch (err) {
       // A cancel (flag set, or the fetch aborted) is not an error — stay idle.
       if (cancelledRef.current || (err instanceof DOMException && err.name === 'AbortError')) {
@@ -412,6 +413,24 @@ export const ProposalBuilder = ({
             Emailed to <span className="text-white">{data.customer.email}</span> with the PDF attached.
             A copy was BCC&apos;d to your inbox.
           </p>
+          {/*
+            The send succeeded and the quote did NOT save. Deliberately loud:
+            the customer has a proposal you can't see, their email has no accept
+            link, and nothing in Sent Quotes will ever show it. Before this the
+            screen said "Proposal sent" and stopped, so the only failure worth
+            acting on was the only one that looked identical to success.
+          */}
+          {!status.stored && (
+            <div className="mt-6 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-left">
+              <p className="font-semibold text-amber-200">Sent, but not saved.</p>
+              <p className="mt-1 text-sm leading-relaxed text-amber-100/90">
+                Storage was unavailable, so this proposal went out{' '}
+                <strong>without an accept link</strong> and it will not appear in Sent Quotes. The
+                customer has the PDF and can still reply. Check the D1 binding, then send again to
+                give them a link they can accept from.
+              </p>
+            </div>
+          )}
           <div className="mt-8 flex justify-center gap-3">
             <button
               onClick={startNew}

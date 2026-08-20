@@ -385,8 +385,15 @@ export type SendProposalArgs = ProposalData & {
 };
 
 /** POST the proposal + PDF to be emailed. Throws on failure (or AbortError if cancelled). */
-export async function sendProposal(args: SendProposalArgs, signal?: AbortSignal): Promise<void> {
-  await postDocument(
+/** Result of a send. `stored: false` means it was EMAILED BUT NOT SAVED — the
+ *  customer got the PDF, but with no accept link and no row in Sent Quotes. */
+export type SendProposalResult = { stored: boolean; url: string | null };
+
+export async function sendProposal(
+  args: SendProposalArgs,
+  signal?: AbortSignal,
+): Promise<SendProposalResult> {
+  const res = await postDocument<{ stored?: boolean; url?: string | null }>(
     '/api/admin/send-proposal',
     {
       customer: args.customer,
@@ -399,6 +406,9 @@ export async function sendProposal(args: SendProposalArgs, signal?: AbortSignal)
     'send_proposal_failed',
     signal,
   );
+  // Defaults to "stored" only when the field is absent entirely, which means an
+  // older worker — never when it is explicitly false.
+  return { stored: res.stored !== false, url: res.url ?? null };
 }
 
 export type SendInspectionArgs = InspectionData & {
@@ -426,12 +436,12 @@ export async function sendInspection(args: SendInspectionArgs, signal?: AbortSig
   );
 }
 
-async function postDocument(
+async function postDocument<T = Record<string, unknown>>(
   url: string,
   body: unknown,
   errorTag: string,
   signal?: AbortSignal,
-): Promise<void> {
+): Promise<T> {
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -447,4 +457,7 @@ async function postDocument(
     }
     throw new Error(`${errorTag} (${res.status}): ${detail.slice(0, 200)}`);
   }
+  // The body carries what the send could NOT do — see `stored` on
+  // /api/admin/send-proposal. Discarding it hid a silent failure.
+  return (await res.json().catch(() => ({}))) as T;
 }
