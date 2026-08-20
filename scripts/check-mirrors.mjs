@@ -24,6 +24,7 @@
  * Run: `npm run check:mirrors` (also runs as part of `npm run build`).
  */
 import { readFile, mkdir, rm } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -185,6 +186,43 @@ for (const [token, number] of [
 const legacy = linksMod.parseQuoteLink('/approve/', '?t=kQ7-vZ2x9AbCdEf');
 check(legacy?.token === 'kQ7-vZ2x9AbCdEf', 'legacy ?t= link no longer parses');
 check(legacy?.lead === 'unspecified', 'legacy ?t= link should carry no lead opinion');
+
+// 5b. The token alphabet and length, compared straight from source. These are
+// duplicated because the generator must run in the worker and the parser in the
+// browser. Drift here is silent and total: widen the alphabet in one copy and
+// the page stops recognising tokens the worker issues, so every new link 404s
+// with nothing in the logs to explain it.
+const tokenConsts = (file) => {
+  const src = readFileSync(path.join(ROOT, file), 'utf8');
+  return {
+    alphabet: (/TOKEN_ALPHABET = '([^']*)'/.exec(src) || [])[1],
+    length: (/TOKEN_LENGTH = (\d+)/.exec(src) || [])[1],
+  };
+};
+const clientTok = tokenConsts('src/lib/quoteLinks.ts');
+const workerTok = tokenConsts('functions/api/_quotes.ts');
+check(!!clientTok.alphabet && !!clientTok.length, 'token constants not found in src/lib/quoteLinks.ts');
+check(!!workerTok.alphabet && !!workerTok.length, 'token constants not found in functions/api/_quotes.ts');
+check(
+  clientTok.alphabet === workerTok.alphabet,
+  `TOKEN_ALPHABET differs: client "${clientTok.alphabet}" vs worker "${workerTok.alphabet}"`,
+);
+check(
+  clientTok.length === workerTok.length,
+  `TOKEN_LENGTH differs: client ${clientTok.length} vs worker ${workerTok.length}`,
+);
+// A duplicate character would silently bias the generator toward it.
+check(
+  new Set(clientTok.alphabet ?? '').size === (clientTok.alphabet ?? '').length,
+  'TOKEN_ALPHABET contains a duplicate character',
+);
+// 256 % alphabet.length must be 0, or `byte % length` in newQuoteToken is
+// biased toward the first (256 % length) characters and the token is weaker
+// than its length suggests.
+check(
+  256 % (clientTok.alphabet ?? ' ').length === 0,
+  `TOKEN_ALPHABET length ${clientTok.alphabet?.length} does not divide 256 — the modulo in newQuoteToken would be biased`,
+);
 
 // 6. Literal NAP constants, compared straight from source.
 const contact = await readFile(path.join(ROOT, 'src/lib/contact.ts'), 'utf8');

@@ -317,6 +317,7 @@ export async function recordLookupFailure(db: unknown, ip: string): Promise<void
     // ON CONFLICT resets the window when the stored one has expired and
     // increments when it hasn't — the CASE is what makes it a fixed window
     // rather than a counter that only ever grows.
+    const now = new Date().toISOString();
     await db
       .prepare(
         `INSERT INTO lookup_failures (ip, count, window_start)
@@ -325,8 +326,15 @@ export async function recordLookupFailure(db: unknown, ip: string): Promise<void
            count = CASE WHEN lookup_failures.window_start < ? THEN 1 ELSE lookup_failures.count + 1 END,
            window_start = CASE WHEN lookup_failures.window_start < ? THEN ? ELSE lookup_failures.window_start END`,
       )
-      .bind(ip.slice(0, 60), new Date().toISOString(), cutoff, cutoff, new Date().toISOString())
+      .bind(ip.slice(0, 60), now, cutoff, cutoff, now)
       .run();
+    // Sweep expired windows. Without this the table only ever grows: an IP that
+    // fails once is remembered forever, and a burst of guesses from a botnet
+    // leaves a row per address for good. Run here rather than on a schedule
+    // because this is the only code that writes the table — if nothing is
+    // failing there is nothing to clean up. Uses idx_lookup_failures_window,
+    // which migration 0004 creates for exactly this scan.
+    await db.prepare('DELETE FROM lookup_failures WHERE window_start < ?').bind(cutoff).run();
   } catch (err) {
     console.log('[quotes] throttle_write_failed:', String(err).slice(0, 300));
   }

@@ -27,6 +27,16 @@ let initialized = false;
 export function initAnalytics(): void {
   if (initialized || !GA_ID || typeof window === 'undefined') return;
   if (!PROD_HOSTS.includes(window.location.hostname)) return;
+  /**
+   * Not on a quote link. gtag is never loaded on a page whose URL is a
+   * credential — see the note in ScrollToTop (src/App.tsx). Skipping
+   * trackPageView alone would not be enough: this function ends by sending a
+   * page_view of its own, and page_location carries the full href.
+   *
+   * Matched on the path prefix rather than by importing the parser, so this
+   * file stays dependency-free and cannot be defeated by a parse edge case.
+   */
+  if (/^\/(quote|approve)[-/]/.test(window.location.pathname)) return;
   initialized = true;
 
   const s = document.createElement('script');

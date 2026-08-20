@@ -83,7 +83,20 @@ export const parseQuoteLink = (pathname: string, search: string): ParsedQuoteLin
   if (!m) return null;
   const lead: LinkLead = m[1] === 'quote' ? 'breakdown' : 'plans';
 
-  let rest = decodeURIComponent(m[2]);
+  /**
+   * decodeURIComponent throws URIError on a malformed escape ("/quote-%"), and
+   * this function is called DURING RENDER — in App.tsx's catch-all and again in
+   * ApprovePage. An uncaught throw there blanks the page completely, which any
+   * passer-by could trigger by mangling a URL. A malformed escape is not a token
+   * we would ever issue, so falling back to the raw text simply lands on the
+   * honest "we couldn't find that quote" screen.
+   */
+  let rest: string;
+  try {
+    rest = decodeURIComponent(m[2]);
+  } catch {
+    rest = m[2];
+  }
   const numbered = /^(\d+)-(.+)$/.exec(rest);
   if (numbered && isShortToken(numbered[2].toLowerCase())) rest = numbered[2];
 

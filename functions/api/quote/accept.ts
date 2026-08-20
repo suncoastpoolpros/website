@@ -9,7 +9,14 @@
  * Live customers live in the technicians' service app — this endpoint's job
  * ends at notifying that a plan was accepted.
  */
-import { TERMS_VERSION, acceptQuote, getQuote, isExpired } from '../_quotes';
+import {
+  TERMS_VERSION,
+  acceptQuote,
+  getQuote,
+  isExpired,
+  isThrottled,
+  recordLookupFailure,
+} from '../_quotes';
 import { sendViaResend } from '../admin/_shared';
 
 type Ctx = {
@@ -21,6 +28,8 @@ type Ctx = {
     PROPOSAL_REPLY_TO?: string;
     CONTACT_TO_EMAIL?: string;
   };
+  /** Pages keeps the worker alive for this after the response is sent. */
+  waitUntil?: (p: Promise<unknown>) => void;
 };
 
 const BIZ = {
@@ -81,8 +90,25 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   const signature = String(ob.signature ?? '').trim();
   if (signature.length < 2) return json({ ok: false, error: 'signature_required' }, 400);
 
+  /**
+   * Throttled for the SAME reason as GET /api/quote/:token, and this is the
+   * more important of the two: it tells an attacker just as clearly whether a
+   * token exists (404 vs 410 vs 200), so leaving it open would have made the
+   * limit on the GET decorative — you would simply guess here instead.
+   *
+   * Checked after the body validation above so a malformed request costs an
+   * attacker a round trip without buying them a lookup, and counted only when
+   * the TOKEN misses. A real customer with a valid link never touches it.
+   */
+  // Also recorded as acceptance evidence further down — read once, used twice.
+  const ip = request.headers.get('CF-Connecting-IP') ?? '';
+  if (await isThrottled(env.DB, ip)) return json({ ok: false, error: 'not_found' }, 429);
+
   const row = await getQuote(env.DB, token);
-  if (!row) return json({ ok: false, error: 'not_found' }, 404);
+  if (!row) {
+    ctx.waitUntil?.(recordLookupFailure(env.DB, ip));
+    return json({ ok: false, error: 'not_found' }, 404);
+  }
   if (isExpired(row)) return json({ ok: false, error: 'expired' }, 410);
   // Already accepted: report the ORIGINAL decision rather than recording a new
   // one. The first acceptance is the agreement; a later click is just a click.
@@ -114,7 +140,6 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   const suppliedEmail = String(ob.customerEmail ?? '').trim().slice(0, 160);
   const usableEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(suppliedEmail) ? suppliedEmail : '';
 
-  const ip = request.headers.get('CF-Connecting-IP') ?? '';
   const ua = request.headers.get('User-Agent') ?? '';
   const clean = (v: unknown, max = 200): string => String(v ?? '').trim().slice(0, max);
   // NULL means the customer was never asked — the approve page stopped

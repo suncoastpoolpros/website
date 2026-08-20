@@ -63,13 +63,28 @@ const NotFoundPage = lazyRoute(() => import('@/pages/NotFoundPage').then((m) => 
 // send a GA4 page_view (SPA nav isn't auto-tracked). Runs on the initial route
 // too, so the first load is counted once.
 const ScrollToTop = () => {
-  const { pathname, hash } = useLocation();
+  const { pathname, hash, search } = useLocation();
   useEffect(() => {
     if (!hash) window.scrollTo(0, 0);
   }, [pathname, hash]);
   useEffect(() => {
+    /**
+     * NEVER on a quote link. The token in /quote-1042-k7m2p9x is a CREDENTIAL —
+     * it opens a customer's name, address, phone and pricing, and it can sign
+     * their acceptance. page_path would carry it and page_location carries the
+     * whole href, so a page_view would park live credentials in a third-party
+     * analytics property, readable by anyone with access to it and outside our
+     * control to revoke.
+     *
+     * This also covered the legacy ?t= form, where page_location leaked the
+     * token even though page_path was only "/approve".
+     *
+     * These pages are one customer each and have no analytic value anyway, so
+     * there is nothing to trade off — they are simply not tracked.
+     */
+    if (parseQuoteLink(pathname, search)) return;
     trackPageView(pathname + (hash || ''));
-  }, [pathname, hash]);
+  }, [pathname, hash, search]);
   return null;
 };
 
