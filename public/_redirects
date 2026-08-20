@@ -14,6 +14,22 @@
 # — prerender them and keep them out of search with noindex, as /admin does.
 /api/*  /api/:splat  200
 
+# Quote links. Both rewrite (200, URL unchanged in the bar) to the prerendered
+# approve page, which reads the token and the leading word out of the path:
+#   /quote-1001-k7m2p9x    texted  — opens on the breakdown
+#   /approve-1001-k7m2p9x  emailed — opens on the plans
+# Same secret in both; the word only chooses the first screen.
+#
+# These need rules because they are not real routes — there is no
+# dist/quote-1001-k7m2p9x/index.html and never could be, one per quote. This is
+# the ONE case the "add it to PRERENDER_ROUTES" instruction above cannot cover.
+#
+# /approve-* does not collide with the prerendered /approve/ (the next character
+# differs), and unmatched paths still fall through to a real 404 — both verified
+# with `wrangler pages dev dist`.
+/quote-*    /approve/  200
+/approve-*  /approve/  200
+
 # Retired URLs → 301 to a live page. These must come BEFORE the /* catch-all
 # (Cloudflare matches top-down, first hit wins); otherwise the catch-all would
 # serve the homepage at 200 and the old URL would linger as a soft-404 in Search

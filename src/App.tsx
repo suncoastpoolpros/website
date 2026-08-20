@@ -5,6 +5,7 @@ import { QuoteSheetProvider } from '@/components/QuoteSheet';
 import { ChunkErrorBoundary, clearChunkReloadFlag } from '@/components/ChunkErrorBoundary';
 import { initAnalytics, trackPageView } from '@/lib/analytics';
 import { lazyRoute, type PreloadableComponent } from '@/lib/lazyRoute';
+import { parseQuoteLink } from '@/lib/quoteLinks';
 
 // Routes are lazy-loaded so the homepage hydration only has to parse
 // LandingPage code (~36 KB gz), not every page on the site. On real iPhone
@@ -133,6 +134,26 @@ export const ROUTE_COMPONENTS: Record<string, PreloadableComponent> = {
   '/approve': ApprovePage,
 };
 
+/**
+ * The catch-all, which is also how quote links resolve.
+ *
+ * /quote-1042-k7m2p9x and /approve-1042-k7m2p9x are rewritten to the
+ * prerendered approve page by public/_redirects — but the URL in the bar stays
+ * as it was, and React Router still has to decide what to render for it. It
+ * cannot be a route: partial-segment params ("/quote-:slug") were removed in
+ * React Router v6 and are still unsupported in v7, and there can be no static
+ * route per quote. Without this the client would render the 404 page over
+ * server-rendered approve-page HTML — a hydration mismatch (React #418) that
+ * blanks the page a customer was sent.
+ *
+ * Everything that ISN'T a quote link still gets the real 404, so the soft-404
+ * problem public/_redirects warns about stays solved.
+ */
+const QuoteLinkOrNotFound = () => {
+  const { pathname, search } = useLocation();
+  return parseQuoteLink(pathname, search) ? <ApprovePage /> : <NotFoundPage />;
+};
+
 export default function App() {
   const isMobile = useIsMobile();
 
@@ -227,7 +248,7 @@ export default function App() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/approve" element={<ApprovePage />} />
           {/* Catch-all 404 — must be last. */}
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<QuoteLinkOrNotFound />} />
         </Routes>
         <ChunkReloadReset />
       </Suspense>

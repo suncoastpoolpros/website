@@ -23,6 +23,7 @@ import {
   Phone,
   MessageSquare,
 } from 'lucide-react';
+import { approveUrl, quoteUrl } from '@/lib/quoteLinks';
 import { formatPrice } from '@/lib/adminApi';
 import { QuoteDetail } from './QuoteDetail';
 import { STATUS_META, type Status, ago, onDate, statusOf } from './quoteFormat';
@@ -113,16 +114,16 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
   /**
    * Two links to the same quote, differing in where they open.
    *
-   * A quote created as a link already leads with the breakdown — it's tagged,
-   * so its plain URL does the right thing. This second form is for a quote that
-   * WAS emailed: that customer has read the breakdown, so their link goes
-   * straight to the plans, but if they've gone quiet and you want to text a
-   * follow-up, `full=1` reopens it on the full case for the service.
+   * The two links carry the SAME secret and differ only by the word in the
+   * path — /quote-… opens on the breakdown, /approve-… opens on the plans. Text
+   * the first to a lead who has read nothing; the second is what an emailed
+   * customer already received, and is the one to resend when they've read the
+   * proposal and just need to sign.
    */
-  const copyLink = async (id: string, withBreakdown = false) => {
-    const url = `${window.location.origin}/approve/?t=${encodeURIComponent(id)}${
-      withBreakdown ? '&full=1' : ''
-    }`;
+  const copyLink = async (id: string, number: number | null | undefined, withBreakdown = false) => {
+    const url = withBreakdown
+      ? quoteUrl(window.location.origin, id, number)
+      : approveUrl(window.location.origin, id, number);
     const key = withBreakdown ? `${id}:full` : id;
     try {
       await navigator.clipboard.writeText(url);
@@ -342,7 +343,7 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                         {status === 'awaiting' && (
                           <span className="relative z-10 ml-auto inline-flex items-center gap-4">
                             <button
-                              onClick={() => copyLink(q.id, true)}
+                              onClick={() => copyLink(q.id, q.number, true)}
                               title="Opens with the full breakdown before the pricing — for texting"
                               className="inline-flex items-center gap-1 font-semibold text-brand-blue-light hover:text-white"
                             >
@@ -350,7 +351,7 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                               {copied === `${q.id}:full` ? 'Copied' : 'Copy text link'}
                             </button>
                             <button
-                              onClick={() => copyLink(q.id)}
+                              onClick={() => copyLink(q.id, q.number)}
                               title="Opens straight on the plans — the link that was emailed"
                               className="inline-flex items-center gap-1 font-semibold text-brand-blue-light hover:text-white"
                             >

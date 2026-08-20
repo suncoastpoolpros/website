@@ -131,7 +131,7 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
       proposal: payload.proposal ?? {},
       number: proposalNumber,
     });
-    const acceptLink = token ? approveUrl(new URL(request.url).origin, token) : '';
+    const acceptLink = token ? approveUrl(new URL(request.url).origin, token, proposalNumber) : '';
 
     const { html, text } = composeProposalEmail(payload, env, acceptLink);
     const attachments =

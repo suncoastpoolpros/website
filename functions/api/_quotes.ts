@@ -71,16 +71,49 @@ export const TERMS_VERSION = '08-17-2026';
 export const QUOTE_TTL_DAYS = 30;
 
 /**
- * A URL-safe token with 256 bits of entropy. Emailed links are the only thing
- * protecting a quote, so this has to be unguessable — not a counter, not
- * anything derived from the customer.
+ * Crockford base32, lowercase: the digits and letters minus i, l, o and u.
+ * Excluding those means no 0/O or 1/l ambiguity when a link is read aloud or
+ * retyped, and dropping u makes an accidental word in a customer-facing URL
+ * far less likely.
+ */
+const TOKEN_ALPHABET = '0123456789abcdefghjkmnpqrstvwxyz';
+
+/** Kept short deliberately — these links are texted, and a 75-character URL
+ *  wraps onto three lines in a message. See the entropy note on newQuoteToken. */
+export const TOKEN_LENGTH = 7;
+
+/** Whether a string is one of our short tokens (vs. a legacy 43-char one). */
+export const isShortToken = (s: string): boolean =>
+  s.length === TOKEN_LENGTH && [...s].every((c) => TOKEN_ALPHABET.includes(c));
+
+/**
+ * The secret in a quote link.
+ *
+ * 7 characters of Crockford base32 — 32^7, about 34 billion. That is a
+ * DELIBERATE step down from the 256-bit base64 token this replaced, traded for
+ * a URL short enough to text, and it only holds up because failed lookups are
+ * rate limited (see functions/api/quote/[token].ts). Without that limit, 34
+ * billion is roughly 200 days of sustained guessing against one known quote —
+ * with it, the same attack needs thousands of IP-years.
+ *
+ * So: if the rate limiting is ever removed, this MUST get longer. The two
+ * decisions are load-bearing for each other and neither is safe alone.
+ *
+ * Note the proposal number travels in the URL beside this (/quote-1001-k7m2p9x)
+ * and is NOT a secret — it's printed on the PDF. It also tells an attacker the
+ * quote exists, which is exactly why the random part carries the whole lock.
+ *
+ * Legacy 43-character base64url tokens stay valid forever; they are simply
+ * longer strings in the same column, and their links keep working.
  */
 export const newQuoteToken = (): string => {
-  const bytes = new Uint8Array(32);
+  const bytes = new Uint8Array(TOKEN_LENGTH);
   crypto.getRandomValues(bytes);
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  let out = '';
+  // 256 is an exact multiple of 32, so a plain modulo is unbiased here and
+  // needs no rejection sampling.
+  for (const b of bytes) out += TOKEN_ALPHABET[b % 32];
+  return out;
 };
 
 export const isQuoteStorageAvailable = (db: unknown): db is D1Like =>
@@ -141,43 +174,72 @@ export async function saveQuote(
   },
 ): Promise<string | null> {
   if (!isQuoteStorageAvailable(db)) return null;
-  const id = newQuoteToken();
   const now = new Date();
   const expires = new Date(now.getTime() + QUOTE_TTL_DAYS * 24 * 60 * 60 * 1000);
-  try {
-    await db
-      .prepare(
-        `INSERT INTO quotes
-           (id, created_at, expires_at, customer_name, customer_email,
-            customer_address, customer_phone, pool_json, proposal_json, number)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .bind(
-        id,
-        now.toISOString(),
-        expires.toISOString(),
-        String(quote.customer?.name ?? '').trim(),
-        String(quote.customer?.email ?? '').trim(),
-        String(quote.customer?.address ?? '').trim() || null,
-        String(quote.customer?.phone ?? '').trim() || null,
-        JSON.stringify(quote.pool ?? {}),
-        JSON.stringify(quote.proposal ?? {}),
-        proposalNumberOrNull(quote.number),
-      )
-      .run();
-    return id;
-  } catch (err) {
-    // A storage failure must not fail the send — the customer still gets the
-    // proposal, just without a one-click accept.
-    console.log('[quotes] save_failed:', String(err).slice(0, 300));
-    return null;
+  /**
+   * Retried because the token is now 7 characters, not 43. A collision is still
+   * vanishingly unlikely — but "unlikely" was ~1 in 10^70 before and is ~1 in
+   * 10^8 per insert now, which is close enough to real that silently returning
+   * "no link" for it would be the wrong call. A fresh token on the next attempt
+   * costs nothing.
+   */
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const id = newQuoteToken();
+    try {
+      await db
+        .prepare(
+          `INSERT INTO quotes
+             (id, created_at, expires_at, customer_name, customer_email,
+              customer_address, customer_phone, pool_json, proposal_json, number)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          id,
+          now.toISOString(),
+          expires.toISOString(),
+          String(quote.customer?.name ?? '').trim(),
+          String(quote.customer?.email ?? '').trim(),
+          String(quote.customer?.address ?? '').trim() || null,
+          String(quote.customer?.phone ?? '').trim() || null,
+          JSON.stringify(quote.pool ?? {}),
+          JSON.stringify(quote.proposal ?? {}),
+          proposalNumberOrNull(quote.number),
+        )
+        .run();
+      return id;
+    } catch (err) {
+      const msg = String(err);
+      // Only a primary-key clash is worth another go. Anything else (no table,
+      // no binding, a constraint on a real column) will fail identically three
+      // times, and retrying it just delays the send.
+      if (!/UNIQUE|PRIMARY KEY|constraint/i.test(msg) || attempt === 2) {
+        // A storage failure must not fail the send — the customer still gets the
+        // proposal, just without a one-click accept.
+        console.log('[quotes] save_failed:', msg.slice(0, 300));
+        return null;
+      }
+      console.log('[quotes] token_collision, retrying');
+    }
   }
+  return null;
 }
 
 export async function getQuote(db: unknown, id: string): Promise<QuoteRow | null> {
   if (!isQuoteStorageAvailable(db) || !id) return null;
   try {
-    return await db.prepare('SELECT * FROM quotes WHERE id = ?').bind(id).first<QuoteRow>();
+    const sql = 'SELECT * FROM quotes WHERE id = ?';
+    const hit = await db.prepare(sql).bind(id).first<QuoteRow>();
+    if (hit) return hit;
+    // Short tokens are generated lowercase, so a link that came back capitalised
+    // — read over the phone, or mangled by a keyboard that autocapitalises —
+    // should still resolve. Only retried for SHORT tokens: legacy 43-character
+    // base64url tokens are genuinely case-sensitive, and lowercasing one would
+    // turn a valid link into a miss.
+    const lower = id.toLowerCase();
+    if (lower !== id && isShortToken(lower)) {
+      return await db.prepare(sql).bind(lower).first<QuoteRow>();
+    }
+    return null;
   } catch (err) {
     console.log('[quotes] read_failed:', String(err).slice(0, 300));
     return null;
@@ -204,6 +266,69 @@ export async function deleteQuote(db: unknown, id: string): Promise<boolean> {
   } catch (err) {
     console.log('[quotes] delete_failed:', String(err).slice(0, 300));
     return false;
+  }
+}
+
+/**
+ * Failed-lookup throttle.
+ *
+ * The other half of the short-token decision. A 7-character token is ~34 billion
+ * combinations, which is only safe because guesses are limited — see the note on
+ * newQuoteToken. Remove this and the token must get longer.
+ *
+ * Deliberately counts FAILURES ONLY. A successful lookup is a customer opening
+ * their own link; it writes nothing and the normal path stays a single read.
+ * A row is written only when someone asks for a token that does not exist.
+ *
+ * DEGRADES OPEN, like everything else here: if the table is missing or the write
+ * fails, the lookup proceeds. A throttle that 500s the page would turn a
+ * database hiccup into "no customer can accept their quote", which is a worse
+ * outcome than the thing it prevents. The token is still 34 billion wide.
+ */
+const THROTTLE_MAX = 30;
+const THROTTLE_WINDOW_MS = 10 * 60 * 1000;
+
+/** True when this IP has burned through its failed lookups and should be told to wait. */
+export async function isThrottled(db: unknown, ip: string): Promise<boolean> {
+  if (!isQuoteStorageAvailable(db) || !ip) return false;
+  try {
+    const row = await db
+      .prepare('SELECT count, window_start FROM lookup_failures WHERE ip = ?')
+      .bind(ip)
+      .first<{ count?: number; window_start?: string }>();
+    if (!row) return false;
+    const started = new Date(String(row.window_start)).getTime();
+    // An unparseable or expired window is not a block: recordLookupFailure will
+    // start a fresh one on the next miss.
+    if (!Number.isFinite(started) || Date.now() - started > THROTTLE_WINDOW_MS) return false;
+    return Number(row.count) >= THROTTLE_MAX;
+  } catch (err) {
+    console.log('[quotes] throttle_read_failed:', String(err).slice(0, 300));
+    return false;
+  }
+}
+
+/** Count one failed lookup against this IP, starting a new window when due. */
+export async function recordLookupFailure(db: unknown, ip: string): Promise<void> {
+  if (!isQuoteStorageAvailable(db) || !ip) return;
+  const cutoff = new Date(Date.now() - THROTTLE_WINDOW_MS).toISOString();
+  try {
+    // One statement, so two simultaneous misses can't each read 5 and write 6.
+    // ON CONFLICT resets the window when the stored one has expired and
+    // increments when it hasn't — the CASE is what makes it a fixed window
+    // rather than a counter that only ever grows.
+    await db
+      .prepare(
+        `INSERT INTO lookup_failures (ip, count, window_start)
+         VALUES (?, 1, ?)
+         ON CONFLICT(ip) DO UPDATE SET
+           count = CASE WHEN lookup_failures.window_start < ? THEN 1 ELSE lookup_failures.count + 1 END,
+           window_start = CASE WHEN lookup_failures.window_start < ? THEN ? ELSE lookup_failures.window_start END`,
+      )
+      .bind(ip.slice(0, 60), new Date().toISOString(), cutoff, cutoff, new Date().toISOString())
+      .run();
+  } catch (err) {
+    console.log('[quotes] throttle_write_failed:', String(err).slice(0, 300));
   }
 }
 
@@ -299,6 +424,39 @@ export async function listQuotes(db: unknown, limit = 200): Promise<QuoteRow[] |
   }
 }
 
-/** The link that goes in the email. */
-export const approveUrl = (origin: string, token: string): string =>
-  `${origin.replace(/\/$/, '')}/approve/?t=${encodeURIComponent(token)}`;
+/**
+ * The two shapes a quote link comes in.
+ *
+ *   /quote-1001-k7m2p9x    texted  — opens with the full breakdown, then pricing
+ *   /approve-1001-k7m2p9x  emailed — opens straight on the plans
+ *
+ * SAME SECRET behind both. The leading word is a routing instruction, not a
+ * credential, so there is no second token to store and nothing to keep in sync.
+ * They differ by a WORD rather than by length or a marker character on purpose:
+ * two URLs that differ by one character look identical at a glance, and pasting
+ * the wrong one fails silently — the customer just lands on the wrong screen and
+ * nobody ever finds out.
+ *
+ * The proposal number is included for the sender's benefit (you can tell which
+ * quote a link is without opening it) and is omitted entirely when the quote
+ * has none, rather than leaving an empty `--` in the URL.
+ *
+ * Legacy /approve/?t=<token> links are still honoured by the page and always
+ * will be: they are sitting in customers' inboxes and cannot be reissued.
+ */
+const quoteLink = (origin: string, word: string, token: string, number?: number | null): string => {
+  const n = proposalNumberOrNull(number);
+  // Short tokens only — a legacy 43-character token can contain dashes and begin
+  // with digits, which would make "1000-kQ7-vZ2x…" ambiguous to the parser. See
+  // the note in src/lib/quoteLinks.ts.
+  const prefix = n === null || !isShortToken(token) ? '' : `${n}-`;
+  return `${origin.replace(/\/$/, '')}/${word}-${prefix}${encodeURIComponent(token)}`;
+};
+
+/** The texting link: leads with the breakdown, for a lead who has read nothing. */
+export const quoteUrl = (origin: string, token: string, number?: number | null): string =>
+  quoteLink(origin, 'quote', token, number);
+
+/** The link that goes in the email, alongside the PDF that explains it. */
+export const approveUrl = (origin: string, token: string, number?: number | null): string =>
+  quoteLink(origin, 'approve', token, number);

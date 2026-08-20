@@ -150,7 +150,43 @@ for (const { type, included, sanitization } of COMBOS) {
   }
 }
 
-// 5. Literal NAP constants, compared straight from source.
+// 5. Quote-link builders. The admin copies these URLs and the worker emails
+// them; if the two ever disagree, one of them sends customers to a 404 — and it
+// would be the emailed one, which is the copy you can't correct after the fact.
+// The parser is only checked for round-tripping, since it lives in src/ alone.
+const linksMod = await bundle('src/lib/quoteLinks.ts', 'links.mjs');
+const quotesMod = await bundle('functions/api/_quotes.ts', 'quotes.mjs');
+const ORIGIN = 'https://suncoastpoolpros.com';
+for (const [token, number] of [
+  ['k7m2p9x', 1001],
+  ['k7m2p9x', null],
+  ['0123456', 9],
+  ['kQ7-vZ2x9AbCdEfGhIjKlMnOpQrStUvWxYz0123456', 1000], // a legacy token
+]) {
+  const where = `${token.slice(0, 10)}/${number}`;
+  for (const fn of ['quoteUrl', 'approveUrl']) {
+    const client = linksMod[fn](ORIGIN, token, number);
+    const worker = quotesMod[fn](ORIGIN, token, number);
+    check(client === worker, `${fn} differs [${where}]: client "${client}" vs worker "${worker}"`);
+    // …and the page must be able to read back what either one produced.
+    const url = new URL(client);
+    const parsed = linksMod.parseQuoteLink(url.pathname, url.search);
+    check(
+      parsed?.token === token,
+      `${fn} does not round-trip [${where}]: "${client}" parsed to "${parsed?.token}"`,
+    );
+    check(
+      parsed?.lead === (fn === 'quoteUrl' ? 'breakdown' : 'plans'),
+      `${fn} lost its lead [${where}]: got "${parsed?.lead}"`,
+    );
+  }
+}
+// Legacy ?t= links are in customers' inboxes and can never be reissued.
+const legacy = linksMod.parseQuoteLink('/approve/', '?t=kQ7-vZ2x9AbCdEf');
+check(legacy?.token === 'kQ7-vZ2x9AbCdEf', 'legacy ?t= link no longer parses');
+check(legacy?.lead === 'unspecified', 'legacy ?t= link should carry no lead opinion');
+
+// 6. Literal NAP constants, compared straight from source.
 const contact = await readFile(path.join(ROOT, 'src/lib/contact.ts'), 'utf8');
 const literal = (src, name) => (new RegExp(`${name}\\s*=\\s*'([^']*)'`).exec(src) || [])[1];
 const nap = {

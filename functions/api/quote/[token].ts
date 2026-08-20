@@ -7,12 +7,14 @@
  * exposes nothing they weren't sent — but it must not expose anything MORE, so
  * the acceptance evidence columns (IP, user agent) are never returned.
  */
-import { getQuote, isExpired } from '../_quotes';
+import { getQuote, isExpired, isThrottled, recordLookupFailure } from '../_quotes';
 
 type Ctx = {
   request: Request;
   env: { DB?: unknown };
   params: { token?: string | string[] };
+  /** Pages keeps the worker alive for this after the response is sent. */
+  waitUntil?: (p: Promise<unknown>) => void;
 };
 
 const json = (body: unknown, status: number): Response =>
@@ -30,10 +32,30 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
   const token = (Array.isArray(raw) ? raw[0] : raw) ?? '';
   if (!token) return json({ ok: false, error: 'not_found' }, 404);
 
+  /**
+   * The token is 7 characters — short enough to text, and only safe because
+   * guessing is limited here. See newQuoteToken in ../_quotes.ts: the length and
+   * this throttle are load-bearing for each other.
+   *
+   * Only MISSES are counted, so a customer refreshing their own quote is never
+   * affected. The limit is 30 failures in 10 minutes per IP, far above anything
+   * a person following a broken link produces, and the whole thing degrades open
+   * if storage is unavailable.
+   */
+  const ip = ctx.request.headers.get('cf-connecting-ip') ?? '';
+  if (await isThrottled(ctx.env.DB, ip)) {
+    return json({ ok: false, error: 'not_found' }, 429);
+  }
+
   const row = await getQuote(ctx.env.DB, token);
   // Same response for "no such token" and "storage unavailable": a probe
   // shouldn't be able to tell the difference.
-  if (!row) return json({ ok: false, error: 'not_found' }, 404);
+  if (!row) {
+    // Not awaited on the response path — the customer's 404 shouldn't wait on a
+    // bookkeeping write, and Pages keeps the worker alive for it.
+    ctx.waitUntil?.(recordLookupFailure(ctx.env.DB, ip));
+    return json({ ok: false, error: 'not_found' }, 404);
+  }
   if (isExpired(row)) return json({ ok: false, error: 'expired' }, 410);
 
   let pool: unknown = {};

@@ -1,10 +1,19 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /quote-
+Disallow: /approve
 
 # /signup is kept out of search via a per-page noindex meta tag (it must stay
 # crawlable for Google to read that tag), not a Disallow rule.
 # /admin is the private proposal builder — Disallow-ed (it's client-only, never
 # prerendered, and carries a noindex meta tag too).
+#
+# /quote-* and /approve* are individual customers' quote links. Unlike /signup
+# these must not be crawled AT ALL, not merely kept out of the index: each URL
+# is one customer's name, address, phone and pricing, and the page also accepts
+# a signature. They already carry noindex, and Disallow is the belt to that
+# braces — safe here precisely because there is nothing to de-index (these URLs
+# have never been public, and a crawler that never fetches one can't leak it).
 
 Sitemap: https://suncoastpoolpros.com/sitemap.xml

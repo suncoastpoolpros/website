@@ -9,6 +9,7 @@ import {
   Download,
 } from 'lucide-react';
 import { usePageMeta } from '@/lib/usePageMeta';
+import { type ParsedQuoteLink, parseQuoteLink } from '@/lib/quoteLinks';
 import {
   downloadBlob,
   proposalDataFromQuote,
@@ -20,9 +21,20 @@ import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { ProposalBreakdown } from '@/components/ProposalBreakdown';
 
 /**
- * /approve/?t=<token> — where an emailed "Review & accept your plan" link lands.
+ * Where a quote link lands. Three URL shapes, one page — see @/lib/quoteLinks:
  *
- * Two steps in one route:
+ *   /quote-1042-k7m2p9x     texted  — opens on the breakdown (step 0)
+ *   /approve-1042-k7m2p9x   emailed — opens on the plans
+ *   /approve/?t=<token>     legacy, and permanent: these are sitting in
+ *                           customers' inboxes and cannot be reissued
+ *
+ * The last two are prerendered routes; the first two reach here via a rewrite in
+ * public/_redirects plus the catch-all in App.tsx, because there can be no
+ * static route per quote.
+ *
+ * Three steps in one route:
+ *   0. The breakdown — what the service actually is. Only shown to someone who
+ *      never got the PDF; see leadsWithBreakdown below.
  *   1. What we quoted — their details, their pool, the plans. Selecting a plan
  *      selects it; it does not accept anything.
  *   2. Confirm — billing address if different, then the service agreement with
@@ -108,6 +120,30 @@ const Eyebrow = ({ children }: { children: string }) => (
   <h2 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">{children}</h2>
 );
 
+/**
+ * Whether this customer should meet the breakdown before the pricing.
+ *
+ * Order matters. ?full=1 is the manual override and wins outright — it exists so
+ * the breakdown can be checked without creating a link-only quote. Otherwise an
+ * explicit link wins: /quote-… and /approve-… say which screen they open, and a
+ * link that says what it does should not be second-guessed by a stored field.
+ * Only the legacy ?t= form, which predates the distinction, falls back to how
+ * the quote was delivered.
+ */
+const leadsWithBreakdown = (
+  quote: { proposal?: { deliveredBy?: string } },
+  link: ParsedQuoteLink | null,
+): boolean => {
+  if (
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('full') === '1'
+  )
+    return true;
+  if (link?.lead === 'breakdown') return true;
+  if (link?.lead === 'plans') return false;
+  return quote.proposal?.deliveredBy === 'link';
+};
+
 export const ApprovePage = () => {
   usePageMeta({
     title: 'Accept Your Pool Service Plan — Suncoast Pool Pros',
@@ -139,7 +175,17 @@ export const ApprovePage = () => {
   /** Only asked for when the quote carries no address — i.e. it was texted. */
   const [contactEmail, setContactEmail] = useState('');
 
-  const token = typeof window === 'undefined' ? '' : new URLSearchParams(window.location.search).get('t') ?? '';
+  /**
+   * The link the customer arrived on. Three shapes are honoured — see
+   * parseQuoteLink — and the word in the path decides which screen opens first:
+   * /quote-… leads with the breakdown, /approve-… and legacy ?t= links lead with
+   * the plans.
+   */
+  const link =
+    typeof window === 'undefined'
+      ? null
+      : parseQuoteLink(window.location.pathname, window.location.search);
+  const token = link?.token ?? '';
 
   /**
    * This is the one light page on a dark site, and `html, body { background:
@@ -180,10 +226,7 @@ export const ApprovePage = () => {
             setState({ kind: 'ready', quote: q });
             // Set here rather than in the initial useState: whether this quote
             // was emailed isn't known until it has loaded.
-            const full =
-              q.proposal?.deliveredBy === 'link' ||
-              new URLSearchParams(window.location.search).get('full') === '1';
-            if (full) setStep(0);
+            if (leadsWithBreakdown(q, link)) setStep(0);
           }
           return;
         }
@@ -202,9 +245,7 @@ export const ApprovePage = () => {
   }, [token]);
 
   const quote = state.kind === 'ready' ? state.quote : null;
-  const forceFull =
-    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('full') === '1';
-  const leadsWithBreakdown = !!quote && (quote.proposal.deliveredBy === 'link' || forceFull);
+  const showsBreakdown = !!quote && leadsWithBreakdown(quote, link);
   /**
    * Whether the step-1 header row is carrying the desktop contact block. Only
    * then does the masthead pill stand down on desktop — on step 2, and on the
@@ -500,7 +541,7 @@ export const ApprovePage = () => {
                 {/* Only offered to customers who actually started on the
                     breakdown — for anyone else it would point at a step they
                     have never seen. */}
-                {leadsWithBreakdown && (
+                {showsBreakdown && (
                   <button
                     onClick={() => {
                       setStep(0);

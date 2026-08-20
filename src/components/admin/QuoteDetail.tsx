@@ -27,6 +27,7 @@ import {
   Trash2,
   MessageSquare,
 } from 'lucide-react';
+import { approveUrl, quoteUrl } from '@/lib/quoteLinks';
 import { formatPrice } from '@/lib/adminApi';
 import { STATUS_META, ago, onDate, onDateTime, statusOf } from './quoteFormat';
 
@@ -206,15 +207,16 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
   }, [quote]);
 
   /**
-   * Same quote, two entry points. The plain link opens on the plans — it's what
-   * an emailed customer got, and they've already read the breakdown. `full=1`
-   * reopens on the breakdown, for texting a follow-up to someone who has gone
-   * quiet, or to anyone who never had the email in the first place.
+   * Same quote, same secret, two entry points — they differ only by the word in
+   * the path. /approve-… opens on the plans, which is what an emailed customer
+   * received; /quote-… opens on the breakdown, for texting someone who never
+   * had the email, or who has gone quiet and needs the case for the service
+   * rather than the price again.
    */
   const copyLink = async (withBreakdown = false) => {
-    const url = `${window.location.origin}/approve/?t=${encodeURIComponent(id)}${
-      withBreakdown ? '&full=1' : ''
-    }`;
+    const url = withBreakdown
+      ? quoteUrl(window.location.origin, id, quote?.number)
+      : approveUrl(window.location.origin, id, quote?.number);
     try {
       await navigator.clipboard.writeText(url);
       setCopied(withBreakdown ? 'full' : 'plain');

@@ -20,7 +20,7 @@
  * '' — and the acceptance flow already treats a blank address as "no customer
  * copy to send" without failing the acceptance.
  */
-import { approveUrl, proposalNumberOrNull, saveQuote } from '../_quotes';
+import { proposalNumberOrNull, quoteUrl, saveQuote } from '../_quotes';
 import {
   type AdminContext,
   json,
@@ -85,8 +85,15 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
     // the deliverable. There's no email going out to fall back on.
     if (!token) return json({ ok: false, error: 'storage_unavailable' }, 503);
 
+    // The texting link, not the approve link: this endpoint exists for quotes
+    // that are TEXTED rather than emailed, so the customer has read nothing and
+    // must meet the breakdown before the pricing.
     return json(
-      { ok: true, token, url: approveUrl(new URL(request.url).origin, token) },
+      {
+        ok: true,
+        token,
+        url: quoteUrl(new URL(request.url).origin, token, proposalNumberOrNull(payload.proposalNumber)),
+      },
       200,
       { 'cache-control': 'no-store' },
     );
