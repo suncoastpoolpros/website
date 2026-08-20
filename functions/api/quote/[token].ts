@@ -7,11 +7,12 @@
  * exposes nothing they weren't sent — but it must not expose anything MORE, so
  * the acceptance evidence columns (IP, user agent) are never returned.
  */
-import { getQuote, isExpired, isThrottled, recordLookupFailure } from '../_quotes';
+import { getQuote, isExpired, isThrottled, recordLookupFailure, recordQuoteOpen } from '../_quotes';
+import { hasAdminSession } from '../admin/_shared';
 
 type Ctx = {
   request: Request;
-  env: { DB?: unknown };
+  env: { DB?: unknown; ADMIN_SESSION_SECRET?: string };
   params: { token?: string | string[] };
   /** Pages keeps the worker alive for this after the response is sent. */
   waitUntil?: (p: Promise<unknown>) => void;
@@ -57,6 +58,21 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
     return json({ ok: false, error: 'not_found' }, 404);
   }
   if (isExpired(row)) return json({ ok: false, error: 'expired' }, 410);
+
+  /**
+   * Note that the customer looked.
+   *
+   * After the expiry check, so opening a dead link isn't logged as interest,
+   * and skipped entirely when the request carries a valid admin session — the
+   * owner previewing their own quote is not a customer opening it, and that
+   * cookie IS sent here (same-site, __Host-, SameSite=Strict).
+   *
+   * waitUntil, never awaited: the customer's quote must load whether or not we
+   * manage to record that they loaded it.
+   */
+  if (!(await hasAdminSession(ctx.request, ctx.env))) {
+    ctx.waitUntil?.(recordQuoteOpen(ctx.env.DB, token));
+  }
 
   let pool: unknown = {};
   let proposal: unknown = {};

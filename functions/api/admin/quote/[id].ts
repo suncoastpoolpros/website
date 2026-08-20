@@ -62,6 +62,11 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
           },
           pool: parse(row.pool_json) ?? {},
           proposal: parse(row.proposal_json) ?? {},
+          opened: {
+            first: row.first_opened_at ?? null,
+            last: row.last_opened_at ?? null,
+            count: Number(row.open_count ?? 0),
+          },
           accepted: row.accepted_at
             ? {
                 at: row.accepted_at,

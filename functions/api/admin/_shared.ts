@@ -200,6 +200,21 @@ const readCookie = (request: Request, name: string): string | null => {
  * Gate helper for protected endpoints. Returns a 401 Response when the request
  * has no valid session cookie, or null when the session is good (caller proceeds).
  */
+/**
+ * Is this request coming from the owner's own browser?
+ *
+ * Not a gate — a question. The public quote endpoint uses it to avoid counting
+ * the owner's own previews as customer opens: the session cookie is `__Host-`
+ * and SameSite=Strict, and /approve is same-site, so opening a quote link to
+ * check it DOES send the cookie. Without this every quote would show opens that
+ * were only ever you, which is worse than no tracking at all.
+ */
+export const hasAdminSession = async (request: Request, env: AdminEnv): Promise<boolean> => {
+  const secret = env.ADMIN_SESSION_SECRET;
+  if (!secret) return false;
+  return verifySession(readCookie(request, SESSION_COOKIE), secret);
+};
+
 export const requireSession = async (request: Request, env: AdminEnv): Promise<Response | null> => {
   const secret = env.ADMIN_SESSION_SECRET;
   if (!secret) return json({ ok: false, error: 'auth_not_configured' }, 500);

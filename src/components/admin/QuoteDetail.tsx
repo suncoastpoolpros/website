@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { approveUrl, quoteUrl } from '@/lib/quoteLinks';
 import { formatPrice } from '@/lib/adminApi';
-import { STATUS_META, ago, onDate, onDateTime, statusOf } from './quoteFormat';
+import { STATUS_META, ago, onDate, onDateTime, openSummary, statusOf } from './quoteFormat';
 
 type Pool = Record<string, unknown>;
 type Tier = {
@@ -59,6 +59,8 @@ type Detail = {
   customer: { name: string; email: string; phone: string | null; address: string | null };
   pool: Pool;
   proposal: Proposal;
+  /** Activity — see openSummary. Absent on quotes sent before opens were tracked. */
+  opened?: { first: string | null; last: string | null; count: number };
   accepted: {
     at: string;
     plan: string | null;
@@ -453,6 +455,36 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-200">{emailNote}</p>
             </Card>
           )}
+
+          {/* Activity, immediately above the link that produced it. Shown on
+              every status, unlike the list: once a quote is accepted or dead
+              the line stops being a prompt to act and becomes part of its
+              history, which is what this view is for. */}
+          <Card title="Activity">
+            {(() => {
+              const o = openSummary({
+                openCount: quote.opened?.count,
+                lastOpenedAt: quote.opened?.last,
+              });
+              return (
+                <>
+                  <p className={`text-sm font-semibold ${o.opened ? 'text-brand-blue-light' : 'text-gray-400'}`}>
+                    {o.opened ? '◉' : '○'} {o.text}
+                  </p>
+                  {quote.opened?.first && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      First opened {onDateTime(quote.opened.first)}
+                    </p>
+                  )}
+                  <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                    {o.opened
+                      ? 'Counts distinct visits — repeat loads within half an hour are one. Your own previews are not counted.'
+                      : 'Nothing recorded yet. Quotes sent before this was tracked also read as not opened.'}
+                  </p>
+                </>
+              );
+            })()}
+          </Card>
 
           <Card title="The approve link">
             <p className="text-sm text-gray-300">

@@ -26,7 +26,7 @@ import {
 import { approveUrl, quoteUrl } from '@/lib/quoteLinks';
 import { formatPrice } from '@/lib/adminApi';
 import { QuoteDetail } from './QuoteDetail';
-import { STATUS_META, type Status, ago, onDate, statusOf } from './quoteFormat';
+import { STATUS_META, ago, onDate, openSummary, statusOf, type Status } from './quoteFormat';
 
 type Quote = {
   id: string;
@@ -39,6 +39,10 @@ type Quote = {
   expiresAt: string;
   acceptedAt: string | null;
   acceptedPlan: string | null;
+  /** Activity — see openSummary. Absent on older rows, which read as unopened. */
+  firstOpenedAt?: string | null;
+  lastOpenedAt?: string | null;
+  openCount?: number | null;
   price: string;
   planNames: string[];
 };
@@ -335,6 +339,19 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                           <span>No answer yet</span>
                         )}
                         <span>Sent {onDate(q.createdAt)}</span>
+                        {/* Only while it's still live. On an accepted quote the
+                            answer is already in; on an expired one it's history.
+                            This line exists to tell you what to do next, and
+                            only an awaiting quote has a next. */}
+                        {status === 'awaiting' &&
+                          (() => {
+                            const o = openSummary(q);
+                            return (
+                              <span className={o.opened ? 'text-brand-blue-light' : 'text-gray-500'}>
+                                {o.opened ? '◉' : '○'} {o.text}
+                              </span>
+                            );
+                          })()}
                         {q.phone && (
                           <a
                             href={`tel:${q.phone}`}

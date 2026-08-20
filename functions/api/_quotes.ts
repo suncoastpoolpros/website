@@ -58,6 +58,10 @@ export type QuoteRow = {
   terms_version?: string | null;
   /** Human-readable proposal number. Null on quotes sent before numbering. */
   number?: number | null;
+  /** Activity. Null / 0 until the customer opens the link — see recordQuoteOpen. */
+  first_opened_at?: string | null;
+  last_opened_at?: string | null;
+  open_count?: number | null;
 };
 
 /**
@@ -440,6 +444,52 @@ export async function recordLookupFailure(
   }
 }
 
+/**
+ * Repeat hits inside this window are ONE visit.
+ *
+ * Without it, "opened 4 times" could be one person reloading, or coming back
+ * from the PDF, or a flaky connection retrying — and the number that is supposed
+ * to mean renewed interest would mean nothing at all. Thirty minutes is longer
+ * than any single sitting with a quote and shorter than a considered return.
+ */
+const OPEN_DEDUPE_MS = 30 * 60 * 1000;
+
+/**
+ * Record that the customer looked at their quote.
+ *
+ * Called from the public GET, which the approve page hits exactly once per
+ * load. Deliberately NOT hooked to the page itself: link preview bots fetch the
+ * HTML to build their card and never run the JavaScript, so hooking the API
+ * excludes them for free — otherwise every texted quote would show an open
+ * seconds after it was sent.
+ *
+ * Best-effort, and never on the response path. A customer's quote must load
+ * whether or not we manage to note that they loaded it.
+ */
+export async function recordQuoteOpen(db: unknown, id: string): Promise<void> {
+  if (!isQuoteStorageAvailable(db) || !id) return;
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - OPEN_DEDUPE_MS).toISOString();
+  try {
+    // One statement, so two tabs opened together can't both read 2 and write 3.
+    // COALESCE on first_opened_at makes it write-once; the count only advances
+    // when the previous open is outside the dedupe window (or there wasn't one).
+    await db
+      .prepare(
+        `UPDATE quotes
+            SET first_opened_at = COALESCE(first_opened_at, ?),
+                last_opened_at = ?,
+                open_count = open_count
+                  + CASE WHEN last_opened_at IS NULL OR last_opened_at < ? THEN 1 ELSE 0 END
+          WHERE id = ?`,
+      )
+      .bind(now.toISOString(), now.toISOString(), cutoff, id)
+      .run();
+  } catch (err) {
+    console.log('[quotes] open_record_failed:', String(err).slice(0, 300));
+  }
+}
+
 export const isExpired = (row: QuoteRow): boolean => new Date(row.expires_at).getTime() < Date.now();
 
 /**
@@ -534,7 +584,8 @@ export async function listQuotes(db: unknown, limit = 200): Promise<QuoteRow[] |
       .prepare(
         `SELECT id, number, created_at, expires_at, customer_name, customer_email,
                 customer_address, customer_phone, proposal_json,
-                accepted_at, accepted_plan
+                accepted_at, accepted_plan,
+                first_opened_at, last_opened_at, open_count
            FROM quotes
           ORDER BY created_at DESC
           LIMIT ${Math.max(1, Math.min(limit, 500))}`,

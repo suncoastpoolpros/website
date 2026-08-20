@@ -54,6 +54,12 @@ export const onRequestGet = async (ctx: AdminContext): Promise<Response> => {
         expiresAt: row.expires_at,
         acceptedAt: row.accepted_at,
         acceptedPlan: row.accepted_plan,
+        // Activity. Null / 0 on quotes sent before opens were tracked, which
+        // reads the same as "never opened" — honest, since we genuinely
+        // don't know.
+        firstOpenedAt: row.first_opened_at ?? null,
+        lastOpenedAt: row.last_opened_at ?? null,
+        openCount: Number(row.open_count ?? 0),
         price,
         planNames: tiers.map((t) => (t.name ?? '').trim()).filter(Boolean),
       };

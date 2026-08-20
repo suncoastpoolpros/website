@@ -71,3 +71,25 @@ export const STATUS_META: Record<
     Icon: CircleSlash,
   },
 };
+
+/**
+ * How a quote's open activity reads in one line.
+ *
+ * The three cases want three different actions, which is the whole point of
+ * tracking it: never opened means resend or text them; opened once, a while
+ * ago, means it went cold; opened several times recently means they are
+ * circling it and it is worth a call.
+ *
+ * A quote sent before opens were tracked has count 0 and reads as "not opened
+ * yet" — we genuinely don't know, and inventing a softer phrase for it would
+ * just make the real never-openeds harder to spot.
+ */
+export const openSummary = (q: {
+  openCount?: number | null;
+  lastOpenedAt?: string | null;
+}): { text: string; opened: boolean } => {
+  const count = Number(q.openCount ?? 0);
+  if (!count || !q.lastOpenedAt) return { text: 'Not opened yet', opened: false };
+  const times = count === 1 ? 'Opened once' : `Opened ${count} times`;
+  return { text: `${times} · last ${ago(q.lastOpenedAt)}`, opened: true };
+};
