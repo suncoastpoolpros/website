@@ -205,6 +205,13 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
       }).catch((err) => console.log('[quote/accept] owner_notify_failed:', String(err).slice(0, 200)));
     }
 
+    // A link-only quote can have no address at all — it was texted, not
+    // emailed. Calling Resend with an empty `to` is a guaranteed 4xx: harmless,
+    // because the catch below keeps it away from the acceptance, but it's a
+    // failed request and a logged error on every one of those acceptances.
+    // The owner handoff above still goes out either way, which is the one that
+    // has to.
+    if (row.customer_email.trim()) {
     await sendViaResend(apiKey, {
       from,
       to: row.customer_email,
@@ -220,6 +227,7 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
       </div>`,
       tags: [{ name: 'source', value: 'quote_accepted_customer' }],
     }).catch((err) => console.log('[quote/accept] customer_notify_failed:', String(err).slice(0, 200)));
+    }
   }
 
   return json({ ok: true, plan: acceptedPlan, at: when }, 200);

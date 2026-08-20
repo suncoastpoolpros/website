@@ -277,12 +277,18 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                               <span className="ml-2 text-xs font-normal text-gray-500">#{q.number}</span>
                             ) : null}
                           </p>
-                          <a
-                            href={`mailto:${q.email}`}
-                            className="relative z-10 block truncate text-sm text-gray-400 hover:text-white"
-                          >
-                            {q.email}
-                          </a>
+                          {q.email ? (
+                            <a
+                              href={`mailto:${q.email}`}
+                              className="relative z-10 block truncate text-sm text-gray-400 hover:text-white"
+                            >
+                              {q.email}
+                            </a>
+                          ) : (
+                            // A texted quote may have no address. Say so rather
+                            // than rendering an empty mailto: link.
+                            <span className="block text-sm italic text-gray-500">No email — sent as a link</span>
+                          )}
                           {q.address && <p className="truncate text-xs text-gray-500">{q.address}</p>}
                         </div>
                         <div className="flex flex-col items-end gap-1.5">
