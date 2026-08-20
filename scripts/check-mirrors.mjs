@@ -146,8 +146,24 @@ for (const { type, included, sanitization } of COMBOS) {
   }
 
   // 4. The "what's included" list.
-  for (const b of benefitsMod.includedBenefits({ type, included }, sanitization)) {
+  const benefits = benefitsMod.includedBenefits({ type, included }, sanitization);
+  for (const b of benefits) {
     check(html.includes(esc(b)), `benefit missing from email [${where}]: "${b}"`);
+  }
+
+  // 4b. …in the SAME ORDER. The list runs most-differentiating first — the
+  // chemicals line leads because it is the one a customer can price against a
+  // rival quote — and the guarantee is deliberately last. That is a sales
+  // decision, and presence alone cannot catch the PDF and the email drifting
+  // out of sequence.
+  // Missing lines are already reported precisely above; including their -1 here
+  // would add a confusing "out of order" for the same single fault.
+  const bAt = benefits.map((b) => html.indexOf(esc(b))).filter((i) => i >= 0);
+  for (let i = 1; i < bAt.length; i += 1) {
+    check(
+      bAt[i - 1] < bAt[i],
+      `benefits out of order in email [${where}]: "${benefits[i]}" should follow "${benefits[i - 1]}"`,
+    );
   }
 }
 

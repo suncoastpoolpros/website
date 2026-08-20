@@ -211,10 +211,20 @@ const BIZ = {
 
 // "What's included" highlight — mirrors src/components/admin/proposalBenefits.ts.
 const BENEFITS_HEADING = 'The Suncoast Difference';
+// The chemicals bullet, named rather than summarised, and salt only on a salt
+// pool. Mirrors section 3 of the Service Agreement, which enumerates exactly
+// these — see the note in src/components/admin/proposalBenefits.ts.
+const chemicalsLine = (sanitization: string): string => {
+  const chems = ['chlorine', 'muriatic acid', 'shock'];
+  if (/salt/i.test(sanitization)) chems.push('salt');
+  chems.push('stabilizer', 'phosphate remover', 'algaecide');
+  const list = `${chems.slice(0, -1).join(', ')} and ${chems[chems.length - 1]}`;
+  return `All standard service chemicals included — ${list}`;
+};
+
 const BASE_BENEFITS = [
+  'A GPS-stamped photo service report in your inbox after every visit — so you know we were there, even when you weren’t',
   'Vetted, consistent technicians — a familiar face, not a rotating crew',
-  'A photo service report in your inbox after every visit',
-  'All standard service chemicals included',
 ];
 
 // The equipment-care bullet, built from what this pool actually has — a
@@ -260,10 +270,18 @@ const filterServiceLine = (type: string, included: boolean): string | null => {
   }
 };
 
+// Ordered by what a competitor is LEAST likely to also be doing: chemicals,
+// this pool's filter service, routine equipment care, then the general
+// promises, guarantee last. See src/components/admin/proposalBenefits.ts.
 const includedBenefits = (type: string, included: boolean, sanitization: string): string[] => {
-  const line = filterServiceLine(type, included);
-  const base = [...BASE_BENEFITS, equipmentCareLine(type, sanitization)];
-  return line ? [...base, line, GUARANTEE_BENEFIT] : [...base, GUARANTEE_BENEFIT];
+  const filterLine = filterServiceLine(type, included);
+  return [
+    chemicalsLine(sanitization),
+    ...(filterLine ? [filterLine] : []),
+    equipmentCareLine(type, sanitization),
+    ...BASE_BENEFITS,
+    GUARANTEE_BENEFIT,
+  ];
 };
 
 // benefitsNote removed — see src/components/admin/proposalBenefits.ts.

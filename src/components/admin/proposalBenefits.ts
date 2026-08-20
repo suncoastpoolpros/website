@@ -19,11 +19,56 @@ import { isSaltwater } from './sanitization';
 
 export const BENEFITS_HEADING = 'The Suncoast Difference';
 
-/** True of every pool, so these are fixed. */
+/**
+ * The chemicals bullet — named, not summarised.
+ *
+ * This is the one line on the list a customer can price against another quote,
+ * and including them is genuinely not standard: plenty of companies bill
+ * chemicals on top, or include chlorine and little else. So it LEADS.
+ *
+ * Naming them is what makes it checkable. "All standard service chemicals
+ * included" reads as a hedge until you say which ones — someone who has bought
+ * a bottle of algaecide or a bag of shock knows exactly what those cost, and
+ * recognising the list is what turns the claim into arithmetic. It also lines
+ * up with the "$35–$400 algaecide & phosphate treatments" row further down the
+ * proposal, so the two halves of the page reinforce each other instead of one
+ * vaguely gesturing at the other.
+ *
+ * The list mirrors section 3 of the Service Agreement, which already
+ * enumerates exactly these. Nothing new is promised here and no TERMS_VERSION
+ * bump is needed — it surfaces a promise that was already made somewhere nobody
+ * reads.
+ *
+ * Salt only on a salt pool, for the same reason as equipmentCareLine: a
+ * chlorine owner who reads "salt" in their own inclusions has just been handed
+ * a boilerplate list, and everything else on it becomes less believable.
+ */
+const chemicalsLine = (sanitization: string): string => {
+  const chems = ['chlorine', 'muriatic acid', 'shock'];
+  if (isSaltwater(sanitization)) chems.push('salt');
+  chems.push('stabilizer', 'phosphate remover', 'algaecide');
+  const list = `${chems.slice(0, -1).join(', ')} and ${chems[chems.length - 1]}`;
+  return `All standard service chemicals included — ${list}`;
+};
+
+/**
+ * True of every pool, so these are fixed — and they sit BELOW the costed
+ * inclusions above them.
+ *
+ * The photo report comes first of the two: it is a concrete thing that either
+ * arrives in your inbox or doesn't. "Vetted, consistent technicians" is real,
+ * but it is also what every company on the coast says about itself, so leading
+ * the whole list with it (as this used to) opened on the least checkable claim
+ * we make.
+ */
 const BASE_BENEFITS = [
+  // GPS-stamped is the part that makes this checkable rather than a nicety.
+  // A photo proves work was done somewhere; a location proves it was done at
+  // YOUR pool, on the day it says. That is the whole anxiety for anyone who
+  // isn't home when the tech comes — which on this coast is a large share of
+  // customers — so the line names what it settles rather than the feature.
+  'A GPS-stamped photo service report in your inbox after every visit — so you know we were there, even when you weren’t',
   'Vetted, consistent technicians — a familiar face, not a rotating crew',
-  'A photo service report in your inbox after every visit',
-  'All standard service chemicals included',
 ];
 
 /**
@@ -63,15 +108,26 @@ export const GUARANTEE_BENEFIT =
   'A two-week money-back guarantee — not happy in your first two weeks and we refund every penny';
 
 /**
- * The list, with the equipment-care line built for this pool and the
- * filter-service line appended ONLY when this pool's filter type actually has
- * one bundled. A sand-filter customer must never be shown a promise about
+ * The list, ordered by what a competitor is LEAST likely to also be doing.
+ *
+ * Chemicals, then this pool's filter service, then routine equipment care —
+ * the three things that are actually priced into the rate and would appear as
+ * separate invoices elsewhere. The general promises follow, and the guarantee
+ * stays last (see GUARANTEE_BENEFIT).
+ *
+ * The filter-service line appears ONLY when this pool's filter type actually
+ * has one bundled — a sand-filter customer must never be shown a promise about
  * cartridge elements.
  */
 export const includedBenefits = (filter: FilterOption, sanitization = ''): string[] => {
-  const line = filterServiceLine(filter);
-  const base = [...BASE_BENEFITS, equipmentCareLine(filter, sanitization)];
-  return line ? [...base, line, GUARANTEE_BENEFIT] : [...base, GUARANTEE_BENEFIT];
+  const filterLine = filterServiceLine(filter);
+  return [
+    chemicalsLine(sanitization),
+    ...(filterLine ? [filterLine] : []),
+    equipmentCareLine(filter, sanitization),
+    ...BASE_BENEFITS,
+    GUARANTEE_BENEFIT,
+  ];
 };
 
 // A summary line ("It's all covered in your flat rate — …") used to close this
