@@ -30,7 +30,16 @@ import {
 } from './_shared';
 
 // No PDF in this payload, so it's small — but a bound is still a bound.
-const MAX_BODY_BYTES = 256 * 1024;
+/**
+ * Sized for the PHOTOS, which travel in this body.
+ *
+ * It was 256 KB, which was right when this payload was only JSON — then photos
+ * were added to it and a single downscaled phone photo is 200–400 KB of base64,
+ * so attaching one overflowed the limit and the save failed with a generic
+ * bad_request. Eight photos (the picker's cap) is roughly 3 MB; 8 MB leaves
+ * headroom without being an open door.
+ */
+const MAX_BODY_BYTES = 8 * 1024 * 1024;
 
 type Payload = {
   customer?: { name?: string; address?: string; email?: string; phone?: string };
@@ -51,8 +60,15 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
     let payload: Payload;
     try {
       payload = JSON.parse(await readBoundedText(request, MAX_BODY_BYTES)) as Payload;
-    } catch {
-      return json({ ok: false, error: 'bad_request' }, 400);
+    } catch (err) {
+      // Distinguish "too big" from "malformed". They need opposite responses —
+      // remove a photo vs. a real bug — and collapsing both into bad_request is
+      // what made an oversized body look like nothing in particular.
+      const tooLarge = String(err).includes('body too large');
+      return json(
+        { ok: false, error: tooLarge ? 'payload_too_large' : 'bad_request' },
+        tooLarge ? 413 : 400,
+      );
     }
 
     const customer = payload.customer ?? {};

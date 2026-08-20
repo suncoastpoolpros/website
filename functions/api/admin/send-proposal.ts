@@ -22,7 +22,13 @@ import {
 
 // PDFs are small one-pagers, but base64 inflates ~33%. 6 MB covers a generous
 // proposal with a logo while still rejecting obvious abuse.
-const MAX_BODY_BYTES = 6 * 1024 * 1024;
+/**
+ * Carries the rendered PDF **and** the photos that went into it, so it needs
+ * room for both. 6 MB was sized for the PDF alone; with eight photos also on
+ * the payload the two together can pass it, and the send would fail after the
+ * PDF had already been rendered.
+ */
+const MAX_BODY_BYTES = 14 * 1024 * 1024;
 const FIELD_MAX = 4000;
 
 type Customer = { name?: string; address?: string; email?: string; phone?: string };

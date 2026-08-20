@@ -328,12 +328,22 @@ export const ProposalBuilder = ({
       setStatus({ kind: 'saved', url });
     } catch (err) {
       if (cancelledRef.current || (err instanceof DOMException && err.name === 'AbortError')) return;
+      /**
+       * Name the reason. saveQuoteOnly throws the server's error code, and
+       * every branch here is a different action for the operator — remove a
+       * photo, type an address, check a binding. "Please try again" told them
+       * none of that, and retrying an oversized payload just fails again.
+       */
+      const reason = String(err);
       setStatus({
         kind: 'error',
-        message:
-          String(err).includes('storage_unavailable')
-            ? 'Quote storage isn’t connected, so there’s no link to create. Check the D1 binding.'
-            : 'Couldn’t create the link. Please try again.',
+        message: reason.includes('storage_unavailable')
+          ? 'Quote storage isn’t connected, so there’s no link to create. Check the D1 binding.'
+          : reason.includes('payload_too_large')
+            ? 'Those photos are too large to save. Remove one or two and try again.'
+            : reason.includes('customer_address_required')
+              ? 'Add the service address — a quote needs it to be saved without a name.'
+              : 'Couldn’t create the link. Please try again.',
       });
     }
   };
