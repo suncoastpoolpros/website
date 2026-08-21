@@ -345,7 +345,26 @@ const includedExtras = (
       typical: '$100',
       basis: '$25 a wash, typically washed quarterly',
     });
+    // The salt itself — topped up, not consumed. See the note in
+    // src/components/admin/includedExtras.ts before changing the figure.
+    rows.push({
+      label: 'Replacement salt',
+      typical: '$20–$60',
+      basis: 'a year, topped up after backwashing and heavy rain',
+    });
   }
+  // Every pool: liquid chlorine and salt cells add no CYA of their own, so
+  // stabilizer is replaced as it dilutes out. The basis names only the
+  // equipment THIS pool has — see src/components/admin/includedExtras.ts.
+  rows.push({
+    label: 'Stabilizer (cyanuric acid)',
+    typical: '$20–$40',
+    basis: /salt/i.test(sanitization)
+      ? 'a year, since a salt cell adds none of its own'
+      : /chlorine/i.test(sanitization)
+        ? 'a year, since liquid chlorine adds none of its own'
+        : 'a year, replaced as it dilutes out',
+  });
   rows.push({
     label: 'Algaecide & phosphate treatments',
     typical: '$35–$400',

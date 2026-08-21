@@ -139,7 +139,47 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
       typical: '$100',
       basis: '$25 a wash, typically washed quarterly',
     });
+    /**
+     * The salt ITSELF, which is not the cell wash above and not a chemical most
+     * companies fold into a rate. Salt doesn't degrade — it leaves with the
+     * water, through backwashing, splash-out and the rain overflow a Florida
+     * summer guarantees — so it is topped up, not consumed.
+     *
+     * Priced from retail (a 40 lb bag runs $7–$10, a few bags a season), which
+     * UNDERSTATES what a company billing it would charge. Understating is the
+     * safe direction here: every figure in this table is one a customer can
+     * check, and the section only works while all of them survive checking.
+     */
+    rows.push({
+      label: 'Replacement salt',
+      typical: '$20–$60',
+      basis: 'a year, topped up after backwashing and heavy rain',
+    });
   }
+  /**
+   * EVERY pool needs stabilizer added, and that is a consequence of how this
+   * service runs. Liquid chlorine and a salt cell both add none of their own,
+   * so cyanuric acid has to be replaced as it dilutes out. A tab-fed pool is
+   * the opposite case — stabilised tabs push CYA UP every week, which is why
+   * those pools end up needing dilution rather than dosing.
+   *
+   * The BASIS names only the equipment this pool actually has: telling a
+   * chlorine customer about salt cells is the same error as promising them a
+   * cell wash. Bromine and Unknown get the plain version, since neither the
+   * sanitizer nor the claim is settled.
+   *
+   * Retail-anchored at $20–$40 for a season, so it understates what a company
+   * billing it as a "specialty chemical" would charge.
+   */
+  rows.push({
+    label: 'Stabilizer (cyanuric acid)',
+    typical: '$20–$40',
+    basis: isSaltwater(sanitization)
+      ? 'a year, since a salt cell adds none of its own'
+      : /chlorine/i.test(sanitization)
+        ? 'a year, since liquid chlorine adds none of its own'
+        : 'a year, replaced as it dilutes out',
+  });
   rows.push(...BASE_EXTRAS);
   return rows;
 };
