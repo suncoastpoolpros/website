@@ -274,7 +274,37 @@ export const composeProposalEmail = (
 ): { html: string; text: string } => {
   const proposalNumber = proposalNumberOrNull(p.proposalNumber);
   const name = safe(String(p.customer?.name ?? '').trim(), 120);
-  const greetingName = name ? name.split(/\s+/)[0] : 'there';
+  /**
+   * "Hello Jonathan," when we know a first name; "Hello," when we don't.
+   *
+   * The no-name case is common now, not an edge: a quote can be saved from an
+   * address alone, which is the whole point of the texted-lead flow. It used to
+   * read "Hi there," — a stranger's cheeriness where a business letter should
+   * simply open.
+   *
+   * A COMPANY NAME IS NOT SPLIT FOR A FIRST NAME. "Sunset Cove HOA" would greet
+   * "Hello Sunset," which reads like a mail-merge misfire, and commercial
+   * accounts are a real part of the book. Anything carrying a company marker
+   * gets the plain greeting instead — the cost of being wrong is a slightly
+   * formal opening, against addressing a condo association by its first word.
+   */
+  const COMPANY_MARKER =
+    /\b(llc|inc|incorporated|corp|corporation|company|ltd|limited|lp|llp|hoa|coa|condo|condominium|association|properties|property|management|apartments|realty|resort|trust|group|holdings|rentals|villas|estates)\b/i;
+  const firstNameOf = (full: string): string => {
+    const t = full.trim();
+    if (!t || COMPANY_MARKER.test(t)) return '';
+    // "Timms, Jonathan" is surname-first, so the given name is after the comma.
+    // Splitting on whitespace alone would greet the customer by their surname.
+    const source = t.includes(',') ? t.slice(t.indexOf(',') + 1).trim() : t;
+    const first = source.split(/\s+/)[0].replace(/[,.]+$/, '');
+    // A single initial ("J Timms") is not a name to greet someone by.
+    if (first.length < 2) return '';
+    // Capitalise the first letter only. Lower-casing the rest would turn
+    // McDonald into Mcdonald, and a name typed in a hurry shouldn't reach the
+    // customer as "Hello maria,".
+    return first.charAt(0).toUpperCase() + first.slice(1);
+  };
+  const greeting = firstNameOf(name) ? `Hello ${firstNameOf(name)},` : 'Hello,';
   // Email only — deliberately absent from the PDF, which is the formal document.
   const emailNote = safe(String(p.proposal?.emailNote ?? '').trim(), FIELD_MAX);
   const emailNoteParas = emailNote.split(/\n{2,}/).map((x) => x.trim()).filter(Boolean);
@@ -295,7 +325,7 @@ export const composeProposalEmail = (
   const choose = hasTiers(p) ? 'choose your plan and ' : '';
 
   const text = [
-    `Hi ${greetingName},`,
+    greeting,
     ``,
     ...(emailNoteParas.length ? [...emailNoteParas, ``] : []),
     `We appreciate the opportunity to quote your pool service.`,
@@ -362,7 +392,7 @@ export const composeProposalEmail = (
           <div style="font-size:22px;font-weight:800;color:#ffffff;margin-top:6px;">${escapeHtml(numberLabel)}</div>
         </td></tr>
         <tr><td style="padding:26px 28px 4px 28px;">
-          <p style="margin:0 0 14px 0;font-size:16px;line-height:1.6;color:#0a1628;">Hi ${escapeHtml(greetingName)},</p>
+          <p style="margin:0 0 14px 0;font-size:16px;line-height:1.6;color:#0a1628;">${escapeHtml(greeting)}</p>
           ${emailNoteParas
             .map(
               (para) =>
