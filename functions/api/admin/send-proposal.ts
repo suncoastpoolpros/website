@@ -302,6 +302,27 @@ export const composeProposalEmail = (
     .filter((line) => line !== '')
     .join('\n');
 
+  /**
+   * The one control in the email, in brand blue #1669AE — the same solid the
+   * site's buttons use.
+   *
+   * SOLID, not the site's blue gradient. Gradients are unreliable across mail
+   * clients and Outlook drops them to a bare background colour, so the single
+   * thing this email exists to get clicked would render differently per inbox.
+   *
+   * The <td> repeats the colour as a fallback for clients that strip background
+   * off an <a>, and this is built OUTSIDE the html template so the reasoning
+   * lives in a TypeScript comment rather than an HTML one — an HTML comment
+   * here would be sent to every customer.
+   */
+  const button = hasLink
+    ? `<tr><td style="padding:0 28px 6px 28px;" align="center">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:10px;background:#1669AE;">
+            <a href="${escapeHtml(acceptLink)}" style="display:inline-block;background:#1669AE;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 30px;border-radius:10px;">Read your proposal</a>
+          </td></tr></table>
+        </td></tr>`
+    : '';
+
   const html = `
 <!doctype html>
 <html>
@@ -332,15 +353,7 @@ export const composeProposalEmail = (
               : 'Your proposal is attached to this email as a PDF — what your pool needs, what is included, and what it costs.'
           }</p>
         </td></tr>
-        ${
-          hasLink
-            ? `<tr><td style="padding:0 28px 6px 28px;" align="center">
-          <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:10px;background:#1d7a33;">
-            <a href="${escapeHtml(acceptLink)}" style="display:inline-block;background:#1d7a33;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 30px;border-radius:10px;">Read your proposal</a>
-          </td></tr></table>
-        </td></tr>`
-            : ''
-        }
+        ${button}
         <tr><td style="padding:18px 28px 26px 28px;">
           <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;text-align:center;">
             <span style="font-size:15px;">📎</span>&nbsp;&nbsp;${
