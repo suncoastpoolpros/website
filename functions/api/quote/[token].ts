@@ -7,7 +7,7 @@
  * exposes nothing they weren't sent — but it must not expose anything MORE, so
  * the acceptance evidence columns (IP, user agent) are never returned.
  */
-import { getQuote, isExpired, isThrottled, recordLookupFailure, recordQuoteOpen } from '../_quotes';
+import { getQuote, isPricingStale, isThrottled, recordLookupFailure, recordQuoteOpen } from '../_quotes';
 import { hasAdminSession } from '../admin/_shared';
 
 type Ctx = {
@@ -57,7 +57,13 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
     ctx.waitUntil?.(recordLookupFailure(ctx.env.DB, ip));
     return json({ ok: false, error: 'not_found' }, 404);
   }
-  if (isExpired(row)) return json({ ok: false, error: 'expired' }, 410);
+  /**
+   * A stale quote still loads. It used to 410 here, which meant a customer who
+   * saved the link, or was forwarded it, met "this quote has expired" instead
+   * of the proposal they were sent — losing the sale to protect a price. The
+   * page now shows everything and asks them to call before accepting.
+   */
+  const pricingStale = isPricingStale(row);
 
   /**
    * Note that the customer looked.
@@ -102,6 +108,8 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
         number: row.number ?? null,
         createdAt: row.created_at,
         expiresAt: row.expires_at,
+        // The price has a shelf life; the link does not. See isPricingStale.
+        pricingStale,
         pool,
         proposal,
         // Enough for the page to show "already accepted" without leaking who or

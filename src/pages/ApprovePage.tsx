@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { usePageMeta } from '@/lib/usePageMeta';
 import { type ParsedQuoteLink, parseQuoteLink } from '@/lib/quoteLinks';
+import { PRICING_CONDITION_TERM } from '@/components/admin/proposalTerms';
 
 /** Matches MAX_PHOTOS in the builder's PhotoPicker — the ceiling on how far
  *  the fetch loop below will walk before giving up. */
@@ -91,6 +92,8 @@ type Quote = {
   customerAddress?: string | null;
   createdAt: string;
   expiresAt: string;
+  /** The PRICE has passed its validity window. The link itself never dies. */
+  pricingStale?: boolean;
   pool: Pool;
   proposal: {
     tiers?: Tier[];
@@ -268,6 +271,13 @@ export const ApprovePage = () => {
 
   const quote = state.kind === 'ready' ? state.quote : null;
   const showsBreakdown = !!quote && leadsWithBreakdown(quote, link);
+  /**
+   * Old pricing: readable, not signable. The proposal still renders in full —
+   * they were sent it and may have saved or forwarded the link — but accepting
+   * would lock in a figure that may no longer hold, so the last step routes to
+   * a phone call instead of a signature.
+   */
+  const pricingStale = !!quote?.pricingStale;
   /**
    * Whether the step-1 header row is carrying the desktop contact block. Only
    * then does the masthead pill stand down on desktop — on step 2, and on the
@@ -996,17 +1006,23 @@ export const ApprovePage = () => {
                   screen nobody signs anything on — which is the wrong place for
                   fine print to earn its keep. Here they're in front of someone
                   at the moment they tick "I've read and agree". */}
-              {chosen?.finePrint?.trim() && (
-                <div className="mt-4 rounded-xl border border-[#e3e8ef] bg-[#f7f9fc] p-4">
-                  <h3 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
-                    {plan} — terms
-                  </h3>
+              {/* Renders whether or not the plan carries terms of its own: the
+                  condition the PRICE assumes is always worth stating, and this
+                  is the last thing read before a signature. */}
+              <div className="mt-4 rounded-xl border border-[#e3e8ef] bg-[#f7f9fc] p-4">
+                <h3 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
+                  {plan ? `${plan} — terms` : 'Terms'}
+                </h3>
+                {chosen?.finePrint?.trim() && (
                   <p className="text-sm leading-relaxed text-[#374151]">{chosen.finePrint.trim()}</p>
-                  <p className="mt-2 text-xs text-[#6b7280]">
-                    The full scope of work is in your proposal.
-                  </p>
-                </div>
-              )}
+                )}
+                <p className={`text-sm leading-relaxed text-[#374151] ${chosen?.finePrint?.trim() ? 'mt-2' : ''}`}>
+                  {PRICING_CONDITION_TERM}
+                </p>
+                <p className="mt-2 text-xs text-[#6b7280]">
+                The full scope of work is in your proposal.
+                </p>
+              </div>
 
               {/*
                 A ruled signature line, not another boxed form field.
@@ -1099,15 +1115,33 @@ export const ApprovePage = () => {
               </div>
             )}
 
-            <button
-              onClick={submit}
-              disabled={!canSubmit || busy}
-              className="flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark py-4 text-lg font-bold text-white shadow-lg shadow-brand-blue/25 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {busy ? <LoaderCircle className="h-5 w-5 animate-spin" /> : null}
-              {busy ? 'Confirming…' : `Accept and start service`}
-            </button>
-            {!canSubmit && (
+            {pricingStale ? (
+              <div className="rounded-xl border border-[#e0c9a0] bg-[#fdf6e9] p-5 text-center">
+                <p className="font-semibold text-[#0a1628]">
+                  This pricing is from {proposalDateLabel(quote.createdAt)}.
+                </p>
+                <p className="mt-1.5 text-sm leading-relaxed text-[#6b5836]">
+                  Give us a call and we&rsquo;ll confirm it still stands, or send you a fresh quote
+                  — it only takes a minute.
+                </p>
+                <a
+                  href={PHONE_HREF}
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark px-6 py-3.5 text-lg font-bold text-white shadow-lg shadow-brand-blue/25"
+                >
+                  <Phone className="h-5 w-5" /> {PHONE_DISPLAY}
+                </a>
+              </div>
+            ) : (
+              <button
+                onClick={submit}
+                disabled={!canSubmit || busy}
+                className="flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark py-4 text-lg font-bold text-white shadow-lg shadow-brand-blue/25 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {busy ? <LoaderCircle className="h-5 w-5 animate-spin" /> : null}
+                {busy ? 'Confirming…' : `Accept and start service`}
+              </button>
+            )}
+            {!pricingStale && !canSubmit && (
               <p className="mt-2 text-center text-xs text-[#6b7280]">
                 {needsEmail && !emailOk
                   ? 'Add your email, tick all three boxes and type your name to continue.'

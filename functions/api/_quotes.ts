@@ -520,7 +520,21 @@ export async function recordQuoteOpen(db: unknown, id: string, isAdmin = false):
   }
 }
 
-export const isExpired = (row: QuoteRow): boolean => new Date(row.expires_at).getTime() < Date.now();
+/**
+ * Whether the PRICE has passed its validity window. NOT whether the link works.
+ *
+ * These were one clock and are now two, deliberately. A link that dies is a bad
+ * experience for no gain — a customer who saved it, or forwarded it to a
+ * partner, hits a wall instead of the proposal they were sent. Stale PRICING is
+ * the real risk, and it is a different problem with a different answer: show
+ * them everything, and ask them to call before it is accepted at a figure that
+ * may no longer hold.
+ *
+ * The column is still expires_at, so no migration was needed; what changed is
+ * what it governs.
+ */
+export const isPricingStale = (row: QuoteRow): boolean =>
+  new Date(row.expires_at).getTime() < Date.now();
 
 /**
  * Record an acceptance. Returns false when the quote is already accepted, so a

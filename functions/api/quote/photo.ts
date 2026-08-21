@@ -18,7 +18,7 @@
  * are photographs of the customer's own property, taken to produce the proposal
  * they were sent. Nothing here is returned that was not already in their inbox.
  */
-import { getQuote, getQuotePhoto, isExpired, isThrottled, recordLookupFailure } from '../_quotes';
+import { getQuote, getQuotePhoto, isThrottled, recordLookupFailure } from '../_quotes';
 
 type Ctx = {
   request: Request;
@@ -56,7 +56,8 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
       ctx.waitUntil?.(recordLookupFailure(env.DB, ip));
       return json({ ok: false, error: 'not_found' }, 404);
     }
-    if (isExpired(row)) return json({ ok: false, error: 'expired' }, 410);
+    // No staleness gate: the page still renders a stale proposal, so its
+    // photos have to render with it.
 
     // A real token asking for an index past the end is the caller's normal
     // stop signal, not a miss — it must never count toward the throttle, or a

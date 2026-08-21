@@ -13,6 +13,7 @@ import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/render
 import { type ProposalData, type Tier, formatPrice, tierDelta } from '@/lib/adminApi';
 import { BENEFITS_HEADING, includedBenefits } from './proposalBenefits';
 import { sanitizationLabel } from './sanitization';
+import { PRICING_CONDITION_TERM_SHORT } from './proposalTerms';
 import { filterTypeLabel } from './filterService';
 import {
   EXTRAS_COL_THEIRS,
@@ -553,16 +554,14 @@ export const ProposalDocument = ({
                 ))}
               </View>
             </View>
-            {finePrints.length ? (
-              <View style={styles.finePrintBlock}>
-                {finePrints.map((f, i) => (
-                  <Text key={i} style={styles.finePrintLine}>
-                    {finePrints.length > 1 ? <Text style={styles.finePrintName}>{f.name}: </Text> : null}
-                    {f.text}
-                  </Text>
-                ))}
-              </View>
-            ) : null}
+            <View style={styles.finePrintBlock}>
+              {finePrints.map((f, i) => (
+                <Text key={i} style={styles.finePrintLine}>
+                  {finePrints.length > 1 ? <Text style={styles.finePrintName}>{f.name}: </Text> : null}
+                  {f.text}
+                </Text>
+              ))}
+            </View>
             {/* Every plan's note renders, in card order: the base plan explains
                 what the all-in rate covers, the recommended one sells the offer. */}
             {tiers.map((tier, i) =>
@@ -601,6 +600,15 @@ export const ProposalDocument = ({
             ))}
           </View>
         ) : null}
+
+        {/* The condition the PRICE assumes, outside the tiered/single branch so
+            it renders on every proposal. It was first put with the plan terms,
+            which meant a single-price proposal — a one-time recovery, a deep
+            clean — carried no such line at all, and that is the case where the
+            pool's starting condition matters most. */}
+        <View style={styles.finePrintBlock}>
+          <Text style={styles.finePrintLine}>{PRICING_CONDITION_TERM_SHORT}</Text>
+        </View>
 
         <View style={styles.acceptBox} wrap={false}>
           <Text style={styles.acceptText}>

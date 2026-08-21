@@ -13,7 +13,7 @@ import {
   TERMS_VERSION,
   acceptQuote,
   getQuote,
-  isExpired,
+  isPricingStale,
   isThrottled,
   recordLookupFailure,
 } from '../_quotes';
@@ -109,7 +109,9 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     ctx.waitUntil?.(recordLookupFailure(env.DB, ip));
     return json({ ok: false, error: 'not_found' }, 404);
   }
-  if (isExpired(row)) return json({ ok: false, error: 'expired' }, 410);
+  // Reading a stale proposal is fine; ACCEPTING one is not. This is the point
+  // the price would otherwise be locked in at a figure that may no longer hold.
+  if (isPricingStale(row)) return json({ ok: false, error: 'expired' }, 410);
   // Already accepted: report the ORIGINAL decision rather than recording a new
   // one. The first acceptance is the agreement; a later click is just a click.
   if (row.accepted_at) {
