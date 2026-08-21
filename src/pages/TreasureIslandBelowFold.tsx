@@ -24,9 +24,9 @@ import { treasureIslandFaqs } from '@/pages/treasureIslandFaqs';
 const absenteeCare = [
   {
     icon: KeyRound,
-    title: 'One technician who knows your property',
+    title: 'Familiar faces who know your property',
     body:
-      "The same background-checked tech every week — they learn your gate code, your equipment quirks, where the cleaner leaves the spare key. Remote ownership only works when the people on the ground are consistent.",
+      "Background-checked techs on a consistent route — they learn your gate code, your equipment quirks, where the cleaner leaves the spare key. Remote ownership only works when the people on the ground are consistent.",
   },
   {
     icon: Camera,
@@ -284,7 +284,7 @@ const RentalFailurePillars = () => (
       >
         <FlaskConical className="w-5 h-5 text-brand-orange-light shrink-0" />
         <p className="text-gray-400 text-[15px]">
-          One technician, one weekly visit —
+          A familiar tech, one weekly visit —
           <span className="text-white"> closing both gaps before they cost you.</span>
         </p>
       </m.div>

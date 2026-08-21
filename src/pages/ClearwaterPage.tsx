@@ -97,7 +97,7 @@ const HeroSection = () => {
           <p className="text-shadow-city-body hidden md:block text-base text-white/85 max-w-[36rem] mx-auto leading-[1.65] mb-8">
             Clearwater is really two towns sharing a name — the barrier-island beach world and the big
             established mainland. We keep both kinds of pool clear:{' '}
-            <span className="text-white font-medium">the same dedicated tech every week</span>, all
+            <span className="text-white font-medium">familiar faces on a locked-in day</span>, all
             standard chemicals in one flat rate, your equipment checked every visit, and a photo
             report when we leave.
           </p>

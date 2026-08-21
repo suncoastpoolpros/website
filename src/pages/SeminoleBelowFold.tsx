@@ -237,7 +237,7 @@ const InlandSection = () => (
           <div className="inline-flex items-center gap-2.5 rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3">
             <Sun className="w-5 h-5 text-brand-orange-light shrink-0" />
             <span className="text-gray-300 text-[14px]">
-              Same dedicated tech who learns your screen, your trees, your water.
+              A familiar tech who learns your screen, your trees, your water.
             </span>
           </div>
         </m.div>

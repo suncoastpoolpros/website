@@ -17,7 +17,7 @@ import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 const PAGE_TITLE = 'Snell Isle Pool Service — Estate-Grade, Every Week';
 const PAGE_DESC =
-  'Estate-grade weekly pool service for Snell Isle, St. Petersburg — finish-safe chemistry, mature-canopy debris handled, same dedicated tech every visit.';
+  'Estate-grade weekly pool service for Snell Isle, St. Petersburg — finish-safe chemistry, mature-canopy debris handled, a familiar tech every visit.';
 const PAGE_URL = 'https://suncoastpoolpros.com/snell-isle-fl/';
 
 const HeroSection = () => {

@@ -535,7 +535,7 @@ const steps = [
   {
     title: 'You land on a route',
     body:
-      "We slot you onto one of our Clearwater routes: a dedicated tech, a locked-in day of the week. Leaving another company? We coordinate the handoff so the pool never misses a visit — and if the chemistry needs rescuing first, we rescue it.",
+      "We slot you onto one of our Clearwater routes: familiar faces, a locked-in day of the week. Leaving another company? We coordinate the handoff so the pool never misses a visit — and if the chemistry needs rescuing first, we rescue it.",
   },
   {
     title: 'The water stays clear',
