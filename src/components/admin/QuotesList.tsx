@@ -43,6 +43,7 @@ type Quote = {
   firstOpenedAt?: string | null;
   lastOpenedAt?: string | null;
   openCount?: number | null;
+  adminOpenCount?: number | null;
   price: string;
   planNames: string[];
 };

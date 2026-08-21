@@ -70,9 +70,11 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
    * waitUntil, never awaited: the customer's quote must load whether or not we
    * manage to record that they loaded it.
    */
-  if (!(await hasAdminSession(ctx.request, ctx.env))) {
-    ctx.waitUntil?.(recordQuoteOpen(ctx.env.DB, token));
-  }
+  // row.id, not the request token: getQuote resolves a short token
+  // case-insensitively, so a link that came back capitalised would otherwise
+  // update zero rows and record nothing at all.
+  const isOwner = await hasAdminSession(ctx.request, ctx.env);
+  ctx.waitUntil?.(recordQuoteOpen(ctx.env.DB, row.id, isOwner));
 
   let pool: unknown = {};
   let proposal: unknown = {};

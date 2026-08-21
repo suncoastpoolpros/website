@@ -87,9 +87,19 @@ export const STATUS_META: Record<
 export const openSummary = (q: {
   openCount?: number | null;
   lastOpenedAt?: string | null;
+  adminOpenCount?: number | null;
 }): { text: string; opened: boolean } => {
   const count = Number(q.openCount ?? 0);
-  if (!count || !q.lastOpenedAt) return { text: 'Not opened yet', opened: false };
+  if (!count || !q.lastOpenedAt) {
+    // Your own previews are excluded from the count on purpose, and saying so
+    // HERE is the point: "Not opened yet" on a link you just opened yourself
+    // reads as broken, and that is the first thing anyone tries.
+    const mine = Number(q.adminOpenCount ?? 0);
+    return {
+      text: mine ? `Not opened yet · ${mine} preview${mine === 1 ? '' : 's'} by you` : 'Not opened yet',
+      opened: false,
+    };
+  }
   const times = count === 1 ? 'Opened once' : `Opened ${count} times`;
   return { text: `${times} · last ${ago(q.lastOpenedAt)}`, opened: true };
 };

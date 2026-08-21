@@ -62,6 +62,9 @@ export type QuoteRow = {
   first_opened_at?: string | null;
   last_opened_at?: string | null;
   open_count?: number | null;
+  /** The owner's own previews, kept out of open_count. See recordQuoteOpen. */
+  admin_open_count?: number | null;
+  admin_last_opened_at?: string | null;
 };
 
 /**
@@ -466,11 +469,38 @@ const OPEN_DEDUPE_MS = 30 * 60 * 1000;
  * Best-effort, and never on the response path. A customer's quote must load
  * whether or not we manage to note that they loaded it.
  */
-export async function recordQuoteOpen(db: unknown, id: string): Promise<void> {
+export async function recordQuoteOpen(db: unknown, id: string, isAdmin = false): Promise<void> {
   if (!isQuoteStorageAvailable(db) || !id) return;
   const now = new Date();
   const cutoff = new Date(now.getTime() - OPEN_DEDUPE_MS).toISOString();
   try {
+    /**
+     * The owner's own previews are counted, just SEPARATELY.
+     *
+     * They must not touch open_count — checking your own link is not customer
+     * interest — but silently recording nothing was worse: opening your own
+     * quote and seeing "Not opened yet" is indistinguishable from the feature
+     * being broken, and testing it on yourself is the first thing anyone does.
+     * Same dedupe window, so a preview and a refresh are one look.
+     */
+    if (isAdmin) {
+      // Deliberately does NOT touch last_opened_at: that is the CUSTOMER's
+      // freshness signal, and letting a preview advance it would make a quote
+      // they read on Monday claim "last opened just now" because you glanced
+      // at it — the exact thing this feature exists to get right.
+      await db
+        .prepare(
+          `UPDATE quotes
+              SET admin_open_count = admin_open_count
+                    + CASE WHEN admin_last_opened_at IS NULL OR admin_last_opened_at < ?
+                           THEN 1 ELSE 0 END,
+                  admin_last_opened_at = ?
+            WHERE id = ?`,
+        )
+        .bind(cutoff, now.toISOString(), id)
+        .run();
+      return;
+    }
     // One statement, so two tabs opened together can't both read 2 and write 3.
     // COALESCE on first_opened_at makes it write-once; the count only advances
     // when the previous open is outside the dedupe window (or there wasn't one).
@@ -585,7 +615,7 @@ export async function listQuotes(db: unknown, limit = 200): Promise<QuoteRow[] |
         `SELECT id, number, created_at, expires_at, customer_name, customer_email,
                 customer_address, customer_phone, proposal_json,
                 accepted_at, accepted_plan,
-                first_opened_at, last_opened_at, open_count
+                first_opened_at, last_opened_at, open_count, admin_open_count
            FROM quotes
           ORDER BY created_at DESC
           LIMIT ${Math.max(1, Math.min(limit, 500))}`,

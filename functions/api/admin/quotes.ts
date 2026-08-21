@@ -60,6 +60,7 @@ export const onRequestGet = async (ctx: AdminContext): Promise<Response> => {
         firstOpenedAt: row.first_opened_at ?? null,
         lastOpenedAt: row.last_opened_at ?? null,
         openCount: Number(row.open_count ?? 0),
+        adminOpenCount: Number(row.admin_open_count ?? 0),
         price,
         planNames: tiers.map((t) => (t.name ?? '').trim()).filter(Boolean),
       };

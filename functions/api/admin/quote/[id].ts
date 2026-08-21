@@ -66,6 +66,7 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
             first: row.first_opened_at ?? null,
             last: row.last_opened_at ?? null,
             count: Number(row.open_count ?? 0),
+            adminCount: Number(row.admin_open_count ?? 0),
           },
           accepted: row.accepted_at
             ? {

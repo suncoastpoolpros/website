@@ -60,7 +60,7 @@ type Detail = {
   pool: Pool;
   proposal: Proposal;
   /** Activity — see openSummary. Absent on quotes sent before opens were tracked. */
-  opened?: { first: string | null; last: string | null; count: number };
+  opened?: { first: string | null; last: string | null; count: number; adminCount?: number };
   accepted: {
     at: string;
     plan: string | null;
@@ -465,6 +465,7 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
               const o = openSummary({
                 openCount: quote.opened?.count,
                 lastOpenedAt: quote.opened?.last,
+                adminOpenCount: quote.opened?.adminCount,
               });
               return (
                 <>
@@ -478,7 +479,7 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
                   )}
                   <p className="mt-2 text-xs leading-relaxed text-gray-500">
                     {o.opened
-                      ? 'Counts distinct visits — repeat loads within half an hour are one. Your own previews are not counted.'
+                      ? 'Counts distinct visits by the customer — repeat loads within half an hour are one. Your own previews are counted separately and never in this number.'
                       : 'Nothing recorded yet. Quotes sent before this was tracked also read as not opened.'}
                   </p>
                 </>
