@@ -8,8 +8,10 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  type CommercialData,
   type InspectionData,
   type ProposalData,
+  emptyCommercial,
   emptyInspection,
   emptyProposal,
 } from './adminApi';
@@ -89,3 +91,16 @@ export const useProposalDraft = () =>
 
 export const useInspectionDraft = () =>
   useAdminDraft<InspectionData>('scpp_inspection_draft', emptyInspection);
+
+/**
+ * Its own key, so a commercial bid in progress and a residential quote for a
+ * different customer never disturb each other.
+ *
+ * NOTE for mergeDraft: `bodies` is an ARRAY, so a saved draft replaces the
+ * default row wholesale rather than being merged field by field. That is the
+ * behaviour we want — merging a list of water bodies index by index would
+ * resurrect a deleted spa — but it does mean a body saved before a field was
+ * added comes back without it. Every consumer reads these fields defensively.
+ */
+export const useCommercialDraft = () =>
+  useAdminDraft<CommercialData>('scpp_commercial_draft', emptyCommercial);

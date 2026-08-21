@@ -3,16 +3,26 @@
  * Each builder keeps its own autosaved draft, so switching between them here
  * never disturbs work in progress on the other one.
  */
-import { ClipboardList, FileText, ListChecks, LogOut, ArrowRight } from 'lucide-react';
+import { Building2, ClipboardList, FileText, ListChecks, LogOut, ArrowRight } from 'lucide-react';
 import type { DocKind } from './docKinds';
 
 const CARDS: Array<{ kind: DocKind; title: string; blurb: string; Icon: typeof FileText }> = [
   {
     kind: 'proposal',
     title: 'Service Proposal',
+    // Accepting has not been "reply APPROVED" since the quote moved to a link
+    // with a typed signature — this blurb was describing a flow that no longer
+    // exists, on the card you press to start it.
     blurb:
-      'Quote a customer. Scope of work, pricing and optional add-on services — they reply “APPROVED” to accept.',
+      'Quote a homeowner. Scope of work, pricing and optional add-ons — they open a link and sign to accept.',
     Icon: FileText,
+  },
+  {
+    kind: 'commercial',
+    title: 'Commercial Bid',
+    blurb:
+      'Quote an HOA, condo or property manager. Each body of water priced by frequency, with the scope and terms a board reads before the price.',
+    Icon: Building2,
   },
   {
     kind: 'inspection',

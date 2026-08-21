@@ -242,6 +242,145 @@ export const emptyProposal = (): ProposalData => ({
   },
 });
 
+// ---------------------------------------------------------------------------
+// Commercial proposal
+//
+// A separate shape from ProposalData rather than a mode on it. The two
+// documents share only the idea of "somebody is being quoted": a commercial bid
+// has many bodies of water instead of one pool, a statutory classification, a
+// price per frequency rather than per plan, and a page of contract terms a
+// homeowner never sees. Folding it in would have put an `if commercial` branch
+// through every field of a builder that is already long.
+// ---------------------------------------------------------------------------
+
+/**
+ * One body of water. A property is quoted as a list of these, because that is
+ * how the work actually scales and how a board adds or drops the spa from
+ * scope without renegotiating the whole bid.
+ */
+export type WaterBody = {
+  /** Stable list key. Never printed. */
+  id: string;
+  /** "Main pool", "Spa", "Kiddie pool", "Fountain". */
+  label: string;
+  /** pool | spa | wading | feature — drives nothing but the printed line. */
+  kind: string;
+  gallons: string;
+  /** DOH permit number, where the property holds one. */
+  permitNumber: string;
+  filterType: string;
+  /** Free text make and model. */
+  filter: string;
+  /** "Two peristaltic feeders, chlorine and acid" — the pad, in one line. */
+  feeders: string;
+  /** Permitted flow in GPM. Flow outside ~10% of this is a closure condition. */
+  permittedGpm: string;
+  notes: string;
+  /** Monthly rate at each frequency. Blank means "not offered for this body". */
+  price2x: string;
+  price3x: string;
+  price5x: string;
+  /** The daily-service comparison, printed beside the audited-log option. */
+  price7x: string;
+};
+
+export type CommercialProperty = {
+  /** The entity being quoted and, later, contracting — not a person. */
+  name: string;
+  address: string;
+  /** Managing agent, where there is one. Often who actually reads this. */
+  managementCompany: string;
+  /** The human. Kept separate from the entity so the email can greet them. */
+  contactName: string;
+  contactTitle: string;
+  email: string;
+  phone: string;
+  /** Key from commercialClassification.ts. Decides the compliance section. */
+  classification: string;
+  unitCount: string;
+};
+
+export type CommercialData = {
+  property: CommercialProperty;
+  bodies: WaterBody[];
+  bid: {
+    /** Which log model this property is being sold. Both are printed; this is
+     *  the one recommended, and the one the total reflects. */
+    logModel: string;
+    /** Extra scope specific to this property, above the standard scope. */
+    scopeNotes: string;
+    /** Seeded from COMMERCIAL_EXCLUSIONS, then edited per property. */
+    exclusions: string[];
+    repairThreshold: string;
+    afterHoursMultiplier: string;
+    termMonths: string;
+    noticeDays: string;
+    escalatorPct: string;
+    chemicalBandPct: string;
+    paymentTerms: string;
+    bidValidDays: string;
+    /** Email only, never on the PDF — same rule as the residential proposal. */
+    emailNote: string;
+  };
+};
+
+/** Ids only need to be unique within one draft, never across drafts. */
+let bodySeq = 0;
+export const newWaterBody = (label = ''): WaterBody => ({
+  id: `wb${++bodySeq}`,
+  label,
+  kind: 'pool',
+  gallons: '',
+  permitNumber: '',
+  filterType: '',
+  filter: '',
+  feeders: '',
+  permittedGpm: '',
+  notes: '',
+  price2x: '',
+  price3x: '',
+  price5x: '',
+  price7x: '',
+});
+
+export const emptyCommercial = (): CommercialData => ({
+  property: {
+    name: '',
+    address: '',
+    managementCompany: '',
+    contactName: '',
+    contactTitle: '',
+    email: '',
+    phone: '',
+    classification: '',
+    unitCount: '',
+  },
+  // Every property has at least one, so the builder opens on a row to fill in
+  // rather than on an empty state with a button.
+  bodies: [newWaterBody('Main pool')],
+  bid: {
+    logModel: 'audited',
+    scopeNotes: '',
+    exclusions: [],
+    repairThreshold: '',
+    afterHoursMultiplier: '',
+    termMonths: '',
+    noticeDays: '',
+    escalatorPct: '',
+    chemicalBandPct: '',
+    paymentTerms: '',
+    bidValidDays: '',
+    emailNote: '',
+  },
+});
+
+/** Sum of one frequency column across every body priced for it. */
+export const commercialTotal = (bodies: WaterBody[], field: keyof WaterBody): number =>
+  bodies.reduce((sum, b) => {
+    const n = Number(String(b[field]).replace(/[^0-9.]/g, ''));
+    return Number.isFinite(n) ? sum + n : sum;
+  }, 0);
+
 /** Local yyyy-mm-dd (NOT toISOString, which shifts to UTC and can go back a day). */
 export const todayIso = (): string => {
   const d = new Date();

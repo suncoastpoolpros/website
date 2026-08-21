@@ -5,6 +5,7 @@ import { checkSession } from '@/lib/adminApi';
 import { AdminKeypad } from '@/components/admin/AdminKeypad';
 import { AdminHome } from '@/components/admin/AdminHome';
 import { ProposalBuilder } from '@/components/admin/ProposalBuilder';
+import { CommercialBuilder } from '@/components/admin/CommercialBuilder';
 import { InspectionBuilder } from '@/components/admin/InspectionBuilder';
 import { QuotesList } from '@/components/admin/QuotesList';
 import { LAST_DOC_KEY, type DocKind } from '@/components/admin/docKinds';
@@ -15,7 +16,9 @@ const readLastDoc = (): DocKind | null => {
   if (typeof window === 'undefined') return null;
   try {
     const v = window.localStorage.getItem(LAST_DOC_KEY);
-    return v === 'proposal' || v === 'inspection' || v === 'quotes' ? v : null;
+    return v === 'proposal' || v === 'commercial' || v === 'inspection' || v === 'quotes'
+      ? v
+      : null;
   } catch {
     return null;
   }
@@ -28,7 +31,8 @@ const readLastDoc = (): DocKind | null => {
  * holds no secrets — the PIN is checked server-side — so it's safe that the
  * bundle is reachable.
  *
- * Once unlocked the admin picks a document (proposal or first-service report);
+ * Once unlocked the admin picks a document (residential proposal, commercial bid,
+ * or first-service report);
  * each builder owns its own autosaved draft.
  */
 export const AdminPage = () => {
@@ -70,6 +74,9 @@ export const AdminPage = () => {
       {auth === 'unlocked' && doc === null && <AdminHome onPick={pickDoc} onLogout={lock} />}
       {auth === 'unlocked' && doc === 'proposal' && (
         <ProposalBuilder onLogout={lock} onBack={backToHome} />
+      )}
+      {auth === 'unlocked' && doc === 'commercial' && (
+        <CommercialBuilder onLogout={lock} onBack={backToHome} />
       )}
       {auth === 'unlocked' && doc === 'inspection' && (
         <InspectionBuilder onLogout={lock} onBack={backToHome} />
