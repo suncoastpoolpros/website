@@ -12,6 +12,8 @@
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import { type ProposalData, type Tier, formatPrice, tierDelta } from '@/lib/adminApi';
 import { BENEFITS_HEADING, includedBenefits } from './proposalBenefits';
+import { sanitizationLabel } from './sanitization';
+import { filterTypeLabel } from './filterService';
 import {
   EXTRAS_COL_THEIRS,
   EXTRAS_INTRO,
@@ -421,7 +423,7 @@ export const ProposalDocument = ({
                   <Row label="Volume" value={pool.gallons ? `${pool.gallons} gallons` : ''} labelWidth={88} />
                   <Row label="Dimensions" value={dimensionsLine(pool)} labelWidth={88} />
                   <Row label="Shape" value={pool.shape} labelWidth={88} />
-                  <Row label="Sanitization" value={pool.sanitization} labelWidth={88} />
+                  <Row label="Sanitization" value={sanitizationLabel(pool.sanitization)} labelWidth={88} />
                 </View>
               ) : null}
               {hasEquipment ? (
@@ -430,7 +432,9 @@ export const ProposalDocument = ({
                   <Row label="Pump" value={pool.pump} labelWidth={88} />
                   <Row
                     label="Filter"
-                    value={[pool.filterType, pool.filter].filter((v) => v.trim()).join(' — ')}
+                    value={[filterTypeLabel(pool.filterType), pool.filter]
+                      .filter((v) => v.trim())
+                      .join(' — ')}
                     labelWidth={88}
                   />
                   <Row label="Heater" value={pool.heater} labelWidth={88} />

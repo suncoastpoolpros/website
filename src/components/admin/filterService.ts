@@ -143,3 +143,19 @@ export const ALL_FILTER_TERMS: string[] = [
   filterServiceTerms({ type: '', included: false }),
   ...FILTER_TYPES.map((type) => filterServiceTerms({ type, included: true })),
 ].filter(Boolean);
+
+/**
+ * How the filter type reads on a CUSTOMER-FACING document.
+ *
+ * "Cartridge" is the name of a part; "Cartridge Filter" is the name of a thing
+ * they own and can point at. Same for DE and Sand, both of which are just
+ * materials until the noun is attached.
+ *
+ * Stored casing is preserved, so DE stays capitalised. Anything outside the
+ * three known types — including 'Other' and hand-typed values — is left alone
+ * rather than having a noun bolted onto something that may not be one.
+ */
+export const filterTypeLabel = (type: string): string => {
+  const t = type.trim();
+  return /^(de|cartridge|sand)$/i.test(t) ? `${t} Filter` : t;
+};

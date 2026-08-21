@@ -29,6 +29,8 @@ import {
   EXTRAS_NOTE,
   includedExtras,
 } from '@/components/admin/includedExtras';
+import { sanitizationLabel } from '@/components/admin/sanitization';
+import { filterTypeLabel } from '@/components/admin/filterService';
 
 type Pool = {
   gallons?: string;
@@ -82,8 +84,11 @@ export const ProposalBreakdown = ({
   // nobody filled in prints nothing rather than an em-dash.
   const poolRows: Array<[string, string]> = (
     [
-      ['Sanitization', str(pool.sanitization)],
-      ['Filter', [str(pool.filterType), str(pool.filter)].filter(Boolean).join(' — ')],
+      ['Sanitization', sanitizationLabel(str(pool.sanitization))],
+      [
+        'Filter',
+        [filterTypeLabel(str(pool.filterType)), str(pool.filter)].filter(Boolean).join(' — '),
+      ],
       ['Volume', str(pool.gallons) && `${str(pool.gallons)} gallons`],
       ['Dimensions', dims],
       ['Shape', str(pool.shape)],
