@@ -52,6 +52,10 @@ const SECTIONS: Section[] = [
                 text: 'This Agreement applies to customers who enroll directly with Suncoast Pool Pros — by submitting our onboarding form, approving an estimate, or providing written or electronic acceptance.',
               },
               {
+                lead: 'Service Without a Signed Agreement:',
+                text: 'Where we service a pool without a signed agreement or an accepted Service Proposal — for example where service began informally, or has continued from an earlier arrangement — your request for service and your continued acceptance of it constitute your agreement to these terms, and they bind you in the same way. Acceptance by conduct does not, by itself, entitle you to any particular service inclusion: the flat-rate chemical coverage, the annual filter service, and the "Always Blue" guarantee apply only where they are set out in a Service Proposal you accepted, or have otherwise been confirmed to you in writing.',
+              },
+              {
                 lead: 'Acquired or Transferred Accounts:',
                 text: 'Accounts we take over from another service provider are not automatically bound by this Agreement. Until the customer affirmatively accepts it, the account is serviced on a month-to-month transitional basis, and the flat-rate chemical inclusions and "Always Blue" guarantee in this Agreement do not apply. Service inclusions we introduce after an account transfers — such as an annual filter service — apply to that account only where set out in a Service Proposal the customer accepted, or otherwise confirmed to them in writing.',
               },
@@ -84,7 +88,7 @@ const SECTIONS: Section[] = [
         blocks: [
           {
             type: 'p',
-            text: 'What your flat rate covers is set out in the Service Proposal you accepted, and where this Agreement and that Proposal differ, your Service Proposal governs. If you did not receive a Service Proposal — for example where your account transferred to us with a route acquired from another provider — the services described in this section apply as written, and any inclusion beyond them applies only where we have confirmed it to you in writing.',
+            text: 'What your flat rate covers is set out in the Service Proposal you accepted, and where this Agreement and that Proposal differ, your Service Proposal governs. If you did not receive a Service Proposal — for example where your account transferred to us with a route acquired from another provider, or where service began informally — this section describes our recurring service in general terms only and does not by itself add an inclusion to your account. The chemical, salt-system and filter-service coverage described below applies only where it is set out in a Service Proposal you accepted, or has otherwise been confirmed to you in writing; where it has not, those items are not included in your rate.',
           },
           { type: 'subheading', text: 'Recurring service generally includes:' },
           {
@@ -267,7 +271,7 @@ const SECTIONS: Section[] = [
             // weekly service but NOT on bi-weekly, where the third visit falls
             // at day 28. Stating the visit count as the rule would silently
             // double the window for every bi-weekly customer.
-            text: 'New customers have a two-week money-back guarantee. If you are not happy with the service, tell us within fourteen days of your first service visit — on weekly service, any time before your third visit — and we will cancel and refund everything you have paid us, in full, including an annual prepayment in its entirety. The 30-day notice requirement below does not apply within that period, and you are not charged for the visits already completed.',
+            text: 'New customers who have accepted this Agreement have a two-week money-back guarantee. If you are not happy with the service, tell us within fourteen days of your first service visit — on weekly service, any time before your third visit — and we will cancel and refund everything you have paid us, in full, including an annual prepayment in its entirety. The 30-day notice requirement below does not apply within that period, and you are not charged for the visits already completed.',
           },
           {
             type: 'p',
