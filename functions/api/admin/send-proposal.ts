@@ -9,7 +9,7 @@
  * customer approves by replying "approved", so Reply-To points at the business
  * inbox, not the no-reply From address.
  */
-import { approveUrl, proposalNumberOrNull, saveQuote, saveQuotePhotos } from '../_quotes';
+import { proposalNumberOrNull, quoteUrl, saveQuote, saveQuotePhotos } from '../_quotes';
 import {
   type AdminContext,
   type AdminEnv,
@@ -139,7 +139,17 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
       proposal: payload.proposal ?? {},
       number: proposalNumber,
     });
-    const acceptLink = token ? approveUrl(new URL(request.url).origin, token, proposalNumber) : '';
+    /**
+     * The BREAKDOWN-first link, not the plans-first one.
+     *
+     * /approve-… exists for a customer who has already read the proposal and
+     * only needs to sign. That used to describe every emailed customer, because
+     * the email itself carried the Difference box, the value stack and the
+     * plans. It no longer does — so dropping them straight onto two priced
+     * cards would be asking them to choose between numbers they have not been
+     * given a reason for.
+     */
+    const acceptLink = token ? quoteUrl(new URL(request.url).origin, token, proposalNumber) : '';
     // After the response, never before it. The photos are already inside the
     // PDF being attached, so this is purely the archival copy for a later
     // re-download — it must not add seconds to the send the operator is
@@ -215,391 +225,74 @@ const BIZ = {
   serviceAgreementDisplay: 'suncoastpoolpros.com/service-agreement',
 };
 
-// "What's included" highlight — mirrors src/components/admin/proposalBenefits.ts.
-const BENEFITS_HEADING = 'The Suncoast Difference';
-// The chemicals bullet, named rather than summarised, and salt only on a salt
-// pool. Mirrors section 3 of the Service Agreement, which enumerates exactly
-// these — see the note in src/components/admin/proposalBenefits.ts.
-const CHEMICALS_LINE =
-  'All service chemicals included — chlorine, muriatic acid, shock, stabilizer, phosphate remover and algaecide';
+// The Suncoast Difference, the value stack and the plan cards used to be
+// duplicated here so the EMAIL could render them beside the PDF. The email no
+// longer renders the proposal — it carries a note and a link — so the copies
+// are gone rather than left to rot. They live once, in src/components/admin/,
+// and reach the customer through the PDF and the approve page.
 
-// Salt care on its own line, salt pools only. The acid wash is the item
-// competitors most reliably invoice for, so it is not buried in filter care.
-// The salt itself lives here rather than in the chemicals list — see
-// src/components/admin/proposalBenefits.ts.
-const saltCareLine = (sanitization: string): string | null =>
-  /salt/i.test(sanitization) ? 'Salt cell acid washing and your salt — both included' : null;
-
-const BASE_BENEFITS = [
-  'A GPS-stamped photo service report in your inbox after every visit — so you know we were there, even when you weren’t',
-  // Inferred from chemistry, not measured — see the note in
-  // src/components/admin/proposalBenefits.ts before changing this wording.
-  'Chemistry tracked visit to visit — a steady drop in stabilizer or calcium hardness flags a possible leak while the water still looks fine',
-  'Vetted, consistent technicians — a familiar face, not a rotating crew',
-];
-
-// The equipment-care bullet, built from what this pool actually has — a
-// cartridge filter is never backwashed and a chlorine pool has no salt cell.
-// See the note in src/components/admin/proposalBenefits.ts.
-const equipmentCareLine = (type: string): string =>
-  type === 'DE' || type === 'Sand'
-    ? 'Filter cleaning and backwashing — both included'
-    : 'Filter cleaning — included';
-
-// Kept LAST, matching src/components/admin/proposalBenefits.ts. Backed by
-// section 6 of the Service Agreement — see the note there before editing.
-const GUARANTEE_BENEFIT =
-  'A two-week money-back guarantee — not happy in your first two weeks and we refund every penny';
-
-// Mirrors filterServiceLine in src/components/admin/filterService.ts — the email
-// must name the SAME filter the PDF does, or the two documents contradict each
-// other in the same message.
-const FILTER_SERVICE: Record<string, { value: number; basis: string }> = {
-  Cartridge: { value: 120, basis: 'based on an 8–18 month element life' },
-  DE: { value: 150, basis: 'based on an annual split cadence' },
-};
-
-const valueClause = (type: string): string => {
-  const v = FILTER_SERVICE[type];
-  return v ? ` — a $${v.value} value, ${v.basis}` : '';
-};
-
-const filterServiceLine = (type: string, included: boolean): string | null => {
-  if (!included) return null;
-  switch (type) {
-    case 'Cartridge':
-      return `Cartridge filter replacement included in your monthly cost${valueClause(type)}`;
-    case 'DE':
-      return `DE filter split, clean and recharge included in your monthly cost${valueClause(type)}`;
-    case 'Sand':
-      return `Sand media replacement included in your monthly cost${valueClause(type)}`;
-    default:
-      return null;
-  }
-};
-
-// Ordered by what a competitor is LEAST likely to also be doing: chemicals,
-// this pool's filter service, routine equipment care, then the general
-// promises, guarantee last. See src/components/admin/proposalBenefits.ts.
-const includedBenefits = (type: string, included: boolean, sanitization: string): string[] => {
-  const filterLine = filterServiceLine(type, included);
-  const saltLine = saltCareLine(sanitization);
-  return [
-    CHEMICALS_LINE,
-    ...(filterLine ? [filterLine] : []),
-    ...(saltLine ? [saltLine] : []),
-    equipmentCareLine(type),
-    ...BASE_BENEFITS,
-    GUARANTEE_BENEFIT,
-  ];
-};
-
-// benefitsNote removed — see src/components/admin/proposalBenefits.ts.
-
-// Prefix a bare number with "$" (425 → $425, 185/mo → $185/mo) while leaving
-// values that already start with a symbol/word untouched ($425, "Call for price").
-const formatPrice = (raw: string): string => {
-  const s = raw.trim();
-  if (!s) return '';
-  return /^[0-9]/.test(s) ? `$${s}` : s;
-};
-
-// Mirrors src/components/admin/includedExtras.ts — the value stack: work that
-// routinely arrives as a separate invoice elsewhere, priced and struck through.
-const EXTRAS_HEADING = 'What Others Charge Extra For';
-const EXTRAS_INTRO =
-  'We build our service to be all-inclusive on purpose. When something is a known maintenance item — a filter element, a treatment your pool needs every year — we price it into your monthly cost rather than invoicing it separately. Splitting those out only makes a monthly rate look cheaper than it really is, and it costs you time approving work your pool was always going to need.';
-const EXTRAS_NOTE =
-  'The figures above are what you would typically be quoted for these elsewhere. Routine treatments are included. Heavy clean-ups outside routine service are quoted separately — a green-to-clean recovery, or debris left by a storm or nearby construction.';
-
-const includedExtras = (
-  type: string,
-  included: boolean,
-  sanitization: string,
-): Array<{ label: string; typical: string; basis: string }> => {
-  // Ordered most-specific-to-this-pool first: filter, then salt, then the
-  // universal rows. See the ordering note in src/components/admin/includedExtras.ts.
-  const rows: Array<{ label: string; typical: string; basis: string }> = [];
-  const priced = included ? FILTER_SERVICE[type] : undefined;
-  if (priced) {
-    rows.push({
-      label: type === 'DE' ? 'DE filter split, clean & recharge' : 'Cartridge filter replacement',
-      typical: `$${priced.value}`,
-      basis: type === 'DE' ? 'a year' : 'per replacement, every 8–18 months',
-    });
-  }
-  // DE only, directly under the annual split — the powder is lost on every
-  // backwash and recharged every 4–8 weeks. See the sourcing note in
-  // src/components/admin/includedExtras.ts before changing the figure.
-  if (priced && type === 'DE') {
-    rows.push({
-      label: 'DE powder after every backwash',
-      typical: '$50–$100',
-      basis: 'a year in DE, recharged every 4–8 weeks',
-    });
-  }
-  // Matches "salt" loosely so older drafts ("Salt (chlorine generator)") resolve.
-  if (/salt/i.test(sanitization)) {
-    rows.push({
-      label: 'Salt cell acid wash',
-      typical: '$100',
-      basis: '$25 a wash, typically washed quarterly',
-    });
-    // The salt itself — topped up, not consumed. See the note in
-    // src/components/admin/includedExtras.ts before changing the figure.
-    rows.push({
-      label: 'Replacement salt',
-      typical: '$20–$60',
-      basis: 'a year, topped up after backwashing and heavy rain',
-    });
-  }
-  // Every pool needs it topped up — see src/components/admin/includedExtras.ts.
-  rows.push({
-    label: 'Stabilizer (cyanuric acid)',
-    typical: '$20–$40',
-    basis: 'typically topped up once or twice a year',
-  });
-  rows.push({
-    label: 'Algaecide & phosphate treatments',
-    typical: '$35–$400',
-    basis: 'depending on severity and pool size',
-  });
-  return rows;
-};
-
-const renderExtras = (rows: Array<{ label: string; typical: string; basis: string }>): string =>
-  rows.length
-    ? `<div style="margin:0 0 20px;">
-            <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa4b2;font-weight:700;margin-bottom:8px;">${escapeHtml(EXTRAS_HEADING)}</div>
-            <p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">${escapeHtml(EXTRAS_INTRO)}</p>
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #cfe3f2;border-radius:12px;">
-              <tr>
-                <td style="padding:8px 16px 4px;"></td>
-                <td align="right" style="padding:8px 16px 4px;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#9aa4b2;white-space:nowrap;">Others charge</td>
-                <td align="right" style="padding:8px 16px 4px;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#9aa4b2;white-space:nowrap;">Your cost</td>
-              </tr>
-              ${rows
-                .map(
-                  (r) => `<tr>
-                <td style="padding:9px 16px;border-top:1px solid #eef1f5;">
-                  <div style="font-size:14px;font-weight:600;color:#0a1628;">${escapeHtml(r.label)}</div>
-                  <div style="font-size:12px;color:#9aa4b2;margin-top:2px;line-height:1.45;">${escapeHtml(r.basis)}</div>
-                </td>
-                <td align="right" style="padding:9px 16px;border-top:1px solid #eef1f5;white-space:nowrap;font-size:14px;color:#6b7280;text-decoration:line-through;">${escapeHtml(r.typical)}</td>
-                <td align="right" style="padding:9px 16px;border-top:1px solid #eef1f5;white-space:nowrap;font-size:13px;font-weight:700;color:#1d7a33;">Included</td>
-              </tr>`,
-                )
-                .join('')}
-              <tr><td colspan="3" style="padding:0 16px 12px;font-size:12px;font-style:italic;color:#9aa4b2;line-height:1.55;">${escapeHtml(EXTRAS_NOTE)}</td></tr>
-            </table>
-          </div>`
-    : '';
 
 const hasTiers = (p: SendProposalPayload): boolean =>
   p.proposal?.pricingMode === 'tiers' && (p.proposal?.tiers?.length ?? 0) > 0;
 
-/**
- * Upgrade cost as a headline ("+$12/mo"). Mirrors tierDelta in src/lib/adminApi.ts
- * (functions can't import from the client tree). Selling the delta rather than
- * the total is the whole point — "+$12" reads as trivial, "$177" reads as a
- * price rise. Blank when either price isn't numeric.
- */
-const pricePeriod = (raw: string): string => {
-  if (/\/\s*(mo|month)/i.test(raw)) return '/mo';
-  if (/\/\s*(yr|year|annually)/i.test(raw)) return '/yr';
-  return '';
-};
-
-const deltaLabel = (a: string, b: string): string => {
-  // Different periods can't be subtracted: $1,980/yr minus $165/mo is not
-  // "+$1,815" of anything. This is exactly the annual-prepay case.
-  const period = pricePeriod(b);
-  if (period !== pricePeriod(a)) return '';
-  const num = (raw: string): number | null => {
-    const m = /-?\d[\d,]*(\.\d+)?/.exec(raw.replace(/\s/g, ''));
-    if (!m) return null;
-    const n = Number(m[0].replace(/,/g, ''));
-    return Number.isFinite(n) ? n : null;
-  };
-  const x = num(a);
-  const y = num(b);
-  if (x === null || y === null || y <= x) return '';
-  const diff = y - x;
-  return `+$${Number.isInteger(diff) ? diff : diff.toFixed(2)}${period}`;
-};
-
-/**
- * The plan comparison, as nested tables — Gmail and Outlook strip flexbox and
- * grid, so the two cards are cells in a single row. The upgrade lists only what
- * it ADDS, under "Everything in <base>, plus:", so the base plan is never
- * presented as the stripped-down option.
- */
-const renderTiers = (tiers: Tier[]): string => {
-  const clean = tiers.map((t) => ({
-    name: safe(String(t?.name ?? '').trim(), 60),
-    price: formatPrice(safe(String(t?.price ?? '').trim(), 40)),
-    rawPrice: safe(String(t?.price ?? '').trim(), 40),
-    tagline: safe(String(t?.tagline ?? '').trim(), 200),
-    priceNote: safe(String(t?.priceNote ?? '').trim(), 200),
-    includes: (t?.includes ?? []).map((i) => safe(String(i ?? '').trim(), 200)).filter(Boolean),
-    recommended: t?.recommended === true,
-    finePrint: safe(String(t?.finePrint ?? '').trim(), 600),
-  }));
-  const width = Math.floor(100 / Math.max(clean.length, 1));
-
-  const cells = clean
-    .map((t, i) => {
-      const prev = clean[i - 1];
-      const delta = prev ? deltaLabel(prev.rawPrice, t.rawPrice) : '';
-      const border = t.recommended ? '#1669AE' : '#e3e8ef';
-      const bg = t.recommended ? '#f1f7fc' : '#ffffff';
-      return `<td width="${width}%" valign="top" style="padding:0 4px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${border};border-radius:12px;background:${bg};">
-          <tr><td style="padding:14px 16px;">
-            ${t.recommended ? '<div style="display:inline-block;background:#1669AE;color:#ffffff;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 7px;border-radius:4px;margin-bottom:8px;">Recommended</div>' : ''}
-            <div style="font-size:17px;font-weight:700;color:#0a1628;">${escapeHtml(t.name)}</div>
-            ${t.tagline ? `<div style="font-size:13.5px;color:#6b7280;margin-top:3px;line-height:1.5;">${escapeHtml(t.tagline)}</div>` : ''}
-            ${t.price ? `<div style="font-size:24px;font-weight:800;color:#0f4d80;margin-top:8px;">${escapeHtml(t.price)}</div>` : ''}
-            ${
-              t.priceNote
-                ? `<div style="font-size:13.5px;font-weight:700;color:#1669AE;margin-top:4px;">${escapeHtml(t.priceNote)}</div>`
-                : delta
-                  ? `<div style="font-size:13.5px;font-weight:700;color:#1669AE;margin-top:4px;">${escapeHtml(delta)} more than ${escapeHtml(prev.name)}</div>`
-                  : ''
-            }
-            <div style="border-top:1px solid #e3e8ef;margin:10px 0;"></div>
-            ${prev ? `<div style="font-size:13.5px;font-weight:700;color:#0a1628;margin-bottom:8px;">Everything in ${escapeHtml(prev.name)}, plus:</div>` : ''}
-            ${t.includes
-              .map(
-                (item) =>
-                  `<div style="font-size:14px;color:#374151;line-height:1.55;margin-bottom:8px;"><span style="color:#1d7a33;">&bull;</span>&nbsp;&nbsp;${escapeHtml(item)}</div>`,
-              )
-              .join('')}
-          </td></tr>
-        </table>
-      </td>`;
-    })
-    .join('');
-
-  // Terms go FULL WIDTH under the comparison, not inside the cards — the same
-  // sentence is a couple of lines across the page but many inside a column.
-  const terms = clean.filter((t) => t.finePrint);
-  const termsHtml = terms.length
-    ? `<div style="margin:0 0 18px;">${terms
-        .map(
-          (t) =>
-            `<div style="font-size:11.5px;color:#9aa4b2;line-height:1.5;margin-bottom:5px;">${
-              terms.length > 1 ? `<strong style="color:#6b7280;">${escapeHtml(t.name)}:</strong> ` : ''
-            }${escapeHtml(t.finePrint)}</div>`,
-        )
-        .join('')}</div>`
-    : '';
-
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 10px;"><tr>${cells}</tr></table>${termsHtml}`;
-};
-
 // Exported (not just module-local) so the email can be rendered and eyeballed
 // offline — it's a pure function of the payload, and it's customer-facing HTML
 // that no test would otherwise cover.
+/**
+ * The covering email — a short note and a way in, NOT the proposal itself.
+ *
+ * It used to render the whole thing: the Difference box, the value stack, both
+ * plan cards and the scope. Two problems with that, and the second is the one
+ * that decided it.
+ *
+ * It duplicated the PDF, which is why scripts/check-mirrors.mjs had to exist —
+ * every promise and every price written twice, in two languages, drifting
+ * quietly apart.
+ *
+ * And it let a customer read the entire proposal, decide, and reply without
+ * ever opening the link. Quote activity then showed "Not opened yet" on a quote
+ * that had been read twice, which is worse than no signal at all: it reads as
+ * cold and invites chasing someone who is already sold, or writing off someone
+ * who is still deciding.
+ *
+ * So the body carries the customer's own note, the number, and one button. The
+ * proposal lives in two places the customer must actually open — the attached
+ * PDF, and the link — and both are things we can see them do.
+ */
 export const composeProposalEmail = (
   p: SendProposalPayload,
   _env: AdminEnv,
-  /** One-click accept URL. Empty when quote storage isn't available. */
+  /** Where the proposal is read and accepted. Empty when storage is down. */
   acceptLink = '',
 ): { html: string; text: string } => {
   const proposalNumber = proposalNumberOrNull(p.proposalNumber);
   const name = safe(String(p.customer?.name ?? '').trim(), 120);
   const greetingName = name ? name.split(/\s+/)[0] : 'there';
-  const price = formatPrice(safe(String(p.proposal?.price ?? '').trim(), 40));
-  const scope = safe(String(p.proposal?.scope ?? '').trim(), FIELD_MAX);
-  // One block per line rather than one blob joined by <br>. Blank lines in the
-  // source were only there to create spacing; as real margins they aren't
-  // needed, and a <br> can't carry a margin anyway.
-  const scopeLines = scope
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean);
   // Email only — deliberately absent from the PDF, which is the formal document.
   const emailNote = safe(String(p.proposal?.emailNote ?? '').trim(), FIELD_MAX);
   const emailNoteParas = emailNote.split(/\n{2,}/).map((x) => x.trim()).filter(Boolean);
-  const filterType = safe(String(p.pool?.filterType ?? '').trim(), 40);
-  // Accepts the tri-state string and the boolean older drafts still send.
-  const filterIncluded =
-    p.pool?.filterServiceIncluded === true || p.pool?.filterServiceIncluded === 'yes';
-  const benefitsList = includedBenefits(filterType, filterIncluded, safe(String(p.pool?.sanitization ?? '').trim(), 60));
-  const extras = includedExtras(filterType, filterIncluded, safe(String(p.pool?.sanitization ?? '').trim(), 60));
-  const tiered = hasTiers(p);
-  const tiers = tiered ? (p.proposal?.tiers ?? []) : [];
-  // In tier mode the box IS the service definition (both plans include the same
-  // service), so it always renders there regardless of the toggle.
-  const includeBenefits = p.proposal?.includeBenefits !== false || tiered;
-  const recommendedTier = tiers.find((t) => t?.recommended === true) ?? tiers[tiers.length - 1];
-  // The reply words. Recommended first: the first option named is the one most
-  // people repeat back.
-  const acceptWords = tiers
-    .map((t) => safe(String(t?.name ?? '').trim(), 60).toUpperCase())
-    .filter(Boolean)
-    .sort((a, b) => {
-      const rec = safe(String(recommendedTier?.name ?? '').trim(), 60).toUpperCase();
-      return a === rec ? -1 : b === rec ? 1 : 0;
-    });
-  // Each plan's valueNote is deliberately NOT rendered here. It lives in the
-  // proposal PDF (verified: both notes land on page 2, under the plan cards),
-  // and the email had grown into a second copy of the document rather than a
-  // covering note for it. The field is still carried on the payload and stored
-  // with the quote — this is a rendering decision, not a data one.
-  // A single price alongside a plan comparison is a contradiction — suppress it.
-  const showSinglePrice = !tiered && price !== '';
+  const numberLabel = proposalNumber ? `Proposal #${proposalNumber}` : 'Your proposal';
+
+  /**
+   * Without a link there is no way in but the attachment, so the email has to
+   * fall back to the reply-to-accept route it always had. Storage being down
+   * must never cost the customer a way to say yes.
+   */
+  const hasLink = acceptLink !== '';
 
   const text = [
     `Hi ${greetingName},`,
     ``,
-    ...(proposalNumber ? [`Proposal #${proposalNumber}`, ``] : []),
-    ...(emailNote ? [emailNote, ``] : []),
-    `Thank you for the opportunity to earn your business. Your proposal from`,
-    `Suncoast Pool Pros is attached as a PDF.`,
+    ...(emailNoteParas.length ? [...emailNoteParas, ``] : []),
+    `${numberLabel} is ready.`,
     ``,
-    ...(includeBenefits
-      ? [`${BENEFITS_HEADING}:`, ...benefitsList.map((b) => `  - ${b}`), ``]
-      : []),
-    // Same order as the HTML: value stack before the prices. The plain-text
-    // part used to omit this section entirely and put the scope ahead of the
-    // plans, so the two halves of the same message argued in a different order.
-    ...(includeBenefits && extras.length
-      ? [
-          `${EXTRAS_HEADING}:`,
-          ...extras.map((x) => `  - ${x.label} — others charge ${x.typical}, included for you`),
-          ``,
-        ]
-      : []),
-    ...(tiered
-      ? tiers.flatMap((t) => {
-          const name = safe(String(t?.name ?? '').trim(), 60);
-          const tp = formatPrice(safe(String(t?.price ?? '').trim(), 40));
-          return [
-            ``,
-            `${name}${tp ? ` — ${tp}` : ''}${t?.recommended ? '  (recommended)' : ''}`,
-            ...(t?.includes ?? [])
-              .map((i) => safe(String(i ?? '').trim(), 200))
-              .filter(Boolean)
-              .map((i) => `  - ${i}`),
-          ];
-        })
-      : []),
-    scope ? `` : '',
-    scope ? `Scope of work: ${scope}` : '',
-    showSinglePrice ? `Total: ${price}` : '',
+    hasLink
+      ? `Read it and accept here: ${acceptLink}`
+      : `The full proposal is attached to this email as a PDF.`,
     ``,
-    acceptLink ? `To accept, choose your plan here: ${acceptLink}` : '',
-    acceptLink
-      ? `Prefer email? ${
-          acceptWords.length > 1
-            ? `Just reply with ${acceptWords.join(' or ')}.`
-            : 'Just reply "APPROVED".'
-        }`
-      : acceptWords.length > 1
-        ? `To accept, reply to this email with the plan you'd like — ${acceptWords.join(' or ')} — and we'll get you scheduled.`
-        : `To accept, simply reply "APPROVED" to this email and we'll get you scheduled.`,
+    hasLink
+      ? `It's attached as a PDF too, if you'd rather read it that way.`
+      : `To accept, simply reply "APPROVED" to this email and we'll get you scheduled.`,
     ``,
     `Questions? Just reply to this message.`,
     ``,
@@ -615,145 +308,61 @@ export const composeProposalEmail = (
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#eef2f7;">
   <!-- Hidden inbox-preview line -->
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#eef2f7;">${
-    tiered
-      ? `Two plan options from Suncoast Pool Pros — PDF attached. Reply ${escapeHtml(acceptWords[0] ?? '')} to accept.`
-      : 'Your pool service proposal from Suncoast Pool Pros — PDF attached. Reply APPROVED to accept.'
-  }</div>
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#eef2f7;">${escapeHtml(
+    numberLabel,
+  )} from Suncoast Pool Pros — everything included, ready to read.</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f7;padding:28px 12px;">
     <tr><td align="center">
       <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e3e8ef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
-        <!-- Header -->
-        <tr><td style="background:#0a1628;padding:26px 32px;">
-          <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#8ea2c0;">Suncoast Pool Pros</div>
-          <div style="font-size:22px;font-weight:700;color:#ffffff;margin-top:6px;">${
-            tiered ? 'Your Pool Service Plans' : 'Your Pool Service Proposal'
-          }</div>${
-            proposalNumber
-              ? `<div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#8ea2c0;margin-top:8px;">Proposal #${proposalNumber}</div>`
-              : ''
-          }
+        <tr><td style="background:#0a1628;padding:22px 28px;">
+          <div style="font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:#9fb3c8;font-weight:700;">Suncoast Pool Pros</div>
+          <div style="font-size:22px;font-weight:800;color:#ffffff;margin-top:6px;">${escapeHtml(numberLabel)}</div>
         </td></tr>
-        <!-- Brand accent bar -->
-        <tr><td style="height:4px;background:#1669AE;line-height:4px;font-size:0;">&nbsp;</td></tr>
-        <!-- Body -->
-        <tr><td style="padding:28px 32px;color:#111827;font-size:15px;line-height:1.6;">
-          <p style="margin:0 0 14px;">Hi ${escapeHtml(greetingName)},</p>
-          ${
-            /* The personal note opens the message — it's the human sentence, so
-               the boilerplate below it reads as the handoff into the content. */
-            emailNoteParas
-              .map(
-                (para) =>
-                  `<p style="margin:0 0 14px;color:#374151;">${escapeHtml(para).replace(/\n/g, '<br>')}</p>`,
-              )
-              .join('')
-          }
-          <p style="margin:0 0 18px;color:#374151;">Thank you for the opportunity to earn your business. ${
-            tiered
-              ? 'Here are your two plan options — the full details are attached as a PDF.'
-              : 'Your full proposal is attached to this email as a PDF.'
+        <tr><td style="padding:26px 28px 4px 28px;">
+          <p style="margin:0 0 14px 0;font-size:16px;line-height:1.6;color:#0a1628;">Hi ${escapeHtml(greetingName)},</p>
+          ${emailNoteParas
+            .map(
+              (para) =>
+                `<p style="margin:0 0 14px 0;font-size:15px;line-height:1.65;color:#374151;">${escapeHtml(para)}</p>`,
+            )
+            .join('')}
+          <p style="margin:0 0 20px 0;font-size:15px;line-height:1.65;color:#374151;">${
+            hasLink
+              ? 'Your proposal is ready — what your pool needs, what is included, and what it costs.'
+              : 'Your proposal is attached to this email as a PDF — what your pool needs, what is included, and what it costs.'
           }</p>
-
-          ${includeBenefits ? `
-          <!-- What's included highlight -->
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
-            <tr><td style="padding:16px 20px;background:#eef6fb;border:1px solid #cfe3f2;border-radius:12px;">
-              <div style="font-size:15px;font-weight:700;color:#0f4d80;margin-bottom:8px;">${BENEFITS_HEADING}</div>
-              ${benefitsList.map((b) => `<div style="font-size:14px;color:#1f2937;font-weight:600;line-height:1.55;margin:10px 0;"><span style="color:#1d7a33;">&#10003;</span>&nbsp;&nbsp;${escapeHtml(b)}</div>`).join('')}
-            </td></tr>
-          </table>` : ''}
-
-          ${/* The value stack comes BEFORE the prices in the email — the
-                opposite of the approve page, and deliberately so. Here is where
-                the customer meets the number for the first time, so every
-                reason it is what it is should already be read. On the approve
-                page they have seen all of this once and arrived to accept. */ ''}
-          ${includeBenefits ? renderExtras(extras) : ''}
-
-          ${tiered ? renderTiers(tiers) : ''}
-
-          <!-- Attachment chip. Says what's IN the PDF, not just that one
-               exists: the pool survey and each plan's full terms are only in
-               there, so this is the reason to open it. -->
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
-            <tr><td style="padding:14px 18px;background:#f3f6fb;border:1px solid #dce7f2;border-radius:10px;">
-              <div style="font-size:14px;color:#0f4d80;">
-                <span style="font-size:16px;">📎</span>&nbsp;&nbsp;<strong>Your proposal is attached as a PDF</strong>
-              </div>
-              <div style="font-size:13px;color:#5b7590;line-height:1.55;margin-top:6px;">
-                The full document &mdash; your pool&rsquo;s details as we surveyed them, the scope of work, and the
-                complete terms for each plan. Worth keeping for your records.
-              </div>
-            </td></tr>
-          </table>
-
-          ${scope ? `
-          <div style="margin:0 0 18px;">
-            <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#9aa4b2;font-weight:700;margin-bottom:6px;">Scope of Work</div>
-            ${scopeLines
-              .map(
-                (line) =>
-                  // Margin between items only — line-height stays 1.6, so a
-                  // bullet that wraps is still tight within itself and the gap
-                  // reads as separation between points.
-                  `<div style="font-size:15px;color:#374151;line-height:1.6;margin:0 0 ${
-                    /^[•-]/.test(line) ? '11px' : '14px'
-                  };">${escapeHtml(line)}</div>`,
-              )
-              .join('')}
-          </div>` : ''}
-
-          ${showSinglePrice ? `
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
-            <tr><td style="padding:16px 20px;background:#f1f6fb;border:1px solid #d6e6f3;border-radius:12px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-                <td style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;">Total</td>
-                <td align="right" style="font-size:24px;font-weight:800;color:#0f4d80;">${escapeHtml(price)}</td>
-              </tr></table>
-            </td></tr>
-          </table>` : ''}
-
-          <!-- Accept callout -->
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 6px;">
-            <tr><td style="padding:16px 20px;background:#eefaf0;border:1px solid #bfe7c6;border-radius:12px;font-size:15px;color:#176a2c;line-height:1.55;">
-              ${
-                acceptLink
-                  ? `<strong style="color:#1d7a33;">To accept:</strong> choose your plan below and we&rsquo;ll get you on the schedule.
-                     <div style="margin-top:14px;">
-                       <a href="${escapeHtml(acceptLink)}" style="display:inline-block;background:#1d7a33;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:13px 26px;border-radius:10px;">Review &amp; accept your plan</a>
-                     </div>
-                     <div style="margin-top:10px;font-size:13px;color:#3f7a4f;">Prefer email? ${
-                       acceptWords.length > 1
-                         ? `Just reply with ${acceptWords.map((w) => `<strong>${escapeHtml(w)}</strong>`).join(' or ')}.`
-                         : 'Just reply <strong>&ldquo;APPROVED&rdquo;</strong>.'
-                     }</div>`
-                  : acceptWords.length > 1
-                    ? `<strong style="color:#1d7a33;">To accept:</strong> reply to this email with the plan you&rsquo;d like &mdash; ${acceptWords
-                        .map((w) => `<strong>${escapeHtml(w)}</strong>`)
-                        .join(' or ')} &mdash; and we&rsquo;ll get you on the schedule.`
-                    : `<strong style="color:#1d7a33;">To accept:</strong> just reply <strong>&ldquo;APPROVED&rdquo;</strong> to this email and we&rsquo;ll get you on the schedule.`
-              }
-            </td></tr>
-          </table>
-
-          <p style="margin:14px 0 0;color:#6b7280;font-size:13px;">Questions about anything? Simply reply to this message.</p>
         </td></tr>
-        <!-- Footer — navy so the logo's white wordmark stays visible. -->
-        <tr><td style="padding:24px 32px;background:#0a1628;">
-          <img src="${BIZ.logo}" alt="Suncoast Pool Pros" width="118" height="84" style="display:block;border:0;outline:none;width:118px;height:auto;margin-bottom:14px;">
-          <div style="font-size:13px;line-height:1.7;color:#aab8cc;">
-            <a href="${BIZ.phoneHref}" style="color:#7fb4e0;text-decoration:none;font-weight:600;">${BIZ.phoneDisplay}</a>
-            &nbsp;&middot;&nbsp;
-            <a href="${BIZ.websiteHref}" style="color:#7fb4e0;text-decoration:none;font-weight:600;">${BIZ.websiteDisplay}</a><br>
-            <span style="color:#aab8cc;">${BIZ.address}</span><br>
-            <span style="color:#7e8ea6;">${BIZ.hours}</span>
-          </div>
+        ${
+          hasLink
+            ? `<tr><td style="padding:0 28px 6px 28px;" align="center">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:10px;background:#1d7a33;">
+            <a href="${escapeHtml(acceptLink)}" style="display:inline-block;background:#1d7a33;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 30px;border-radius:10px;">Read your proposal</a>
+          </td></tr></table>
+        </td></tr>`
+            : ''
+        }
+        <tr><td style="padding:18px 28px 26px 28px;">
+          <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;text-align:center;">
+            <span style="font-size:15px;">📎</span>&nbsp;&nbsp;${
+              hasLink
+                ? 'It&rsquo;s attached as a PDF too, if you&rsquo;d rather read it that way.'
+                : 'To accept, simply reply &ldquo;APPROVED&rdquo; to this email.'
+            }
+          </p>
+        </td></tr>
+        <tr><td style="padding:16px 28px 22px 28px;border-top:1px solid #eef2f7;">
+          <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;">Questions? Just reply to this message, or call us on ${escapeHtml(
+            BIZ.phoneDisplay,
+          )}.</p>
         </td></tr>
       </table>
+      <div style="font-size:12px;color:#9aa4b2;margin-top:14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+        Suncoast Pool Pros &middot; ${escapeHtml(BIZ.phoneDisplay)} &middot; ${escapeHtml(BIZ.websiteDisplay)}
+      </div>
     </td></tr>
   </table>
-</body></html>`.trim();
+</body>
+</html>`.trim();
 
   return { html, text };
 };

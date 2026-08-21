@@ -1,27 +1,32 @@
 /**
- * Fails the build when the proposal PDF and the proposal EMAIL stop agreeing.
+ * Fails the build when a value that HAS to exist in two places stops agreeing.
  *
  * WHY THIS EXISTS
- * Cloudflare Pages Functions can't import from the client `src/` tree, so
- * `functions/api/admin/send-proposal.ts` carries hand-copied duplicates of the
- * business NAP, the "what's included" benefits, the filter-service wording and
- * its prices, and the value-stack rows. Every one of those is a number or a
- * promise the customer reads TWICE — once in the attached PDF and once in the
- * email covering it.
+ * Cloudflare Pages Functions can't import from the client `src/` tree, so a few
+ * things are hand-copied into functions/. Every copy is a chance for the two to
+ * drift silently: both compile, both run, and only a customer sees the
+ * difference.
  *
- * Change $120 in one copy and not the other and the two documents in a single
- * message quote different figures. That destroys exactly the credibility the
- * proposal is built on ("$120, based on an 8–18 month element life" only works
- * if a customer can check it), and nothing else would catch it: both files
- * compile, both render, and the drift is only visible to the customer.
+ * WHAT IT USED TO CHECK, AND WHY IT NO LONGER DOES
+ * The bulk of this script compared the proposal EMAIL against the PDF across
+ * forty filter/sanitization combinations, because the email rendered the whole
+ * proposal — the Suncoast Difference, the value stack, the plan cards — from
+ * its own duplicated copies of every promise and every price. It earned its
+ * keep repeatedly: a straight apostrophe against a typographic one, rows in a
+ * different order, a label that was a substring of another line.
  *
- * HOW
- * Bundles the client modules and the worker with esbuild, then renders the real
- * email for every filter/sanitization combination and asserts the client's
- * generated strings appear in it verbatim. Literal constants (phone, address)
- * are compared straight from source.
+ * The email no longer renders the proposal. It carries a note and a link, and
+ * the duplicated constants behind it were deleted with it, so there is nothing
+ * left to compare. That is the better fix: the check existed to survive the
+ * duplication, and the duplication is gone.
+ *
+ * WHAT REMAINS DUPLICATED, AND IS CHECKED HERE
+ *   - the quote-link builders, in src/lib/quoteLinks.ts and functions/api/_quotes.ts
+ *   - the token alphabet and length, in the same two files
+ *   - the business NAP, in src/lib/contact.ts and the two send-* workers
  *
  * Run: `npm run check:mirrors` (also runs as part of `npm run build`).
+
  */
 import { readFile, mkdir, rm } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
@@ -74,121 +79,6 @@ const check = (ok, label) => {
 
 await mkdir(OUT, { recursive: true });
 
-const filterMod = await bundle('src/components/admin/filterService.ts', 'filter.mjs');
-const extrasMod = await bundle('src/components/admin/includedExtras.ts', 'extras.mjs');
-const benefitsMod = await bundle('src/components/admin/proposalBenefits.ts', 'benefits.mjs');
-const emailMod = await bundle('functions/api/admin/send-proposal.ts', 'email.mjs');
-
-const payload = (filterType, included, sanitization) => ({
-  customer: { name: 'Check', email: 'check@example.com' },
-  pool: { filterType, filterServiceIncluded: included ? 'yes' : 'no', sanitization },
-  proposal: {
-    scope: 'Weekly service.',
-    price: '200',
-    pricingMode: 'single',
-    tiers: [],
-    addOns: [],
-    includeBenefits: true,
-    emailNote: '',
-  },
-});
-
-// The email escapes for HTML; compare on the same footing.
-const esc = (s) =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-
-const COMBOS = [];
-for (const type of ['Cartridge', 'DE', 'Sand', 'Other', '']) {
-  for (const included of [true, false]) {
-    for (const sanitization of ['Saltwater', 'Chlorine', 'Bromine', 'Unknown']) {
-      COMBOS.push({ type, included, sanitization });
-    }
-  }
-}
-
-for (const { type, included, sanitization } of COMBOS) {
-  const where = `${type || '(blank)'}/${included ? 'incl' : 'excl'}/${sanitization}`;
-  const { html } = emailMod.composeProposalEmail(payload(type, included, sanitization), {});
-
-  // 1. The filter-service line the PDF prints must be in the email verbatim.
-  const line = filterMod.filterServiceLine({ type, included });
-  if (line) check(html.includes(esc(line)), `filter line missing from email [${where}]: "${line}"`);
-
-  // 2. …and no OTHER filter type's wording may appear.
-  for (const other of ['Cartridge', 'DE', 'Sand']) {
-    if (other === type) continue;
-    const otherLine = filterMod.filterServiceLine({ type: other, included: true });
-    if (otherLine && (!line || otherLine !== line)) {
-      check(!html.includes(esc(otherLine)), `wrong filter type quoted [${where}]: "${otherLine}"`);
-    }
-  }
-
-  // 3. Value-stack rows: label, price and basis all have to match.
-  const extras = extrasMod.includedExtras({ type, included }, sanitization);
-  for (const row of extras) {
-    check(html.includes(esc(row.label)), `extras label missing [${where}]: "${row.label}"`);
-    check(html.includes(esc(row.typical)), `extras price missing [${where}]: "${row.typical}"`);
-    check(html.includes(esc(row.basis)), `extras basis missing [${where}]: "${row.basis}"`);
-  }
-
-  // Each order check searches only from ITS OWN heading onward. Labels are not
-  // unique across the document — "Salt cell acid wash" is an extras row AND a
-  // substring of the benefits bullet "Salt cell acid washing and your salt",
-  // which sits earlier in the email. A bare indexOf found the benefits copy and
-  // reported the extras table as out of order, which was a bug in this check
-  // rather than in the page it checks.
-  const benefitsStart = Math.max(0, html.indexOf(esc(benefitsMod.BENEFITS_HEADING)));
-  const extrasStart = Math.max(0, html.indexOf(esc(extrasMod.EXTRAS_HEADING)));
-
-  // 3b. …and in the SAME ORDER. The rows run most-specific-to-this-pool first
-  // (filter, then salt, then universal), which is a sales decision, not an
-  // accident — a customer reading the PDF and the email should meet their
-  // biggest saving first in both. Presence alone can't catch the two lists
-  // drifting out of sequence, and that drift is silent and easy to introduce.
-  const at = extras.map((row) => html.indexOf(esc(row.label), extrasStart));
-  for (let i = 1; i < at.length; i += 1) {
-    check(
-      at[i - 1] < at[i],
-      `extras out of order in email [${where}]: "${extras[i].label}" ` +
-        `should follow "${extras[i - 1].label}"`,
-    );
-  }
-
-  // 3c. The prose around the table. EXTRAS_INTRO argues the all-inclusive case
-  // and EXTRAS_NOTE carries the carve-out — a green-to-clean, or storm and
-  // construction debris, is quoted separately. Both are hand-duplicated, and
-  // the note in particular is the sentence that decides an argument after a
-  // hurricane; the PDF and the email disagreeing on it is exactly the drift
-  // this script exists to prevent.
-  check(html.includes(esc(extrasMod.EXTRAS_HEADING)), `extras heading missing [${where}]`);
-  check(html.includes(esc(extrasMod.EXTRAS_INTRO)), `EXTRAS_INTRO differs from the email [${where}]`);
-  check(html.includes(esc(extrasMod.EXTRAS_NOTE)), `EXTRAS_NOTE differs from the email [${where}]`);
-  check(
-    html.includes(esc(benefitsMod.BENEFITS_HEADING)),
-    `benefits heading missing [${where}]`,
-  );
-
-  // 4. The "what's included" list.
-  const benefits = benefitsMod.includedBenefits({ type, included }, sanitization);
-  for (const b of benefits) {
-    check(html.includes(esc(b)), `benefit missing from email [${where}]: "${b}"`);
-  }
-
-  // 4b. …in the SAME ORDER. The list runs most-differentiating first — the
-  // chemicals line leads because it is the one a customer can price against a
-  // rival quote — and the guarantee is deliberately last. That is a sales
-  // decision, and presence alone cannot catch the PDF and the email drifting
-  // out of sequence.
-  // Missing lines are already reported precisely above; including their -1 here
-  // would add a confusing "out of order" for the same single fault.
-  const bAt = benefits.map((b) => html.indexOf(esc(b), benefitsStart)).filter((i) => i >= 0);
-  for (let i = 1; i < bAt.length; i += 1) {
-    check(
-      bAt[i - 1] < bAt[i],
-      `benefits out of order in email [${where}]: "${benefits[i]}" should follow "${benefits[i - 1]}"`,
-    );
-  }
-}
 
 // 5. Quote-link builders. The admin copies these URLs and the worker emails
 // them; if the two ever disagree, one of them sends customers to a 404 — and it
@@ -282,7 +172,7 @@ for (const worker of ['functions/api/admin/send-proposal.ts', 'functions/api/adm
 await rm(OUT, { recursive: true, force: true });
 
 if (failures.length) {
-  console.error(`\n✗ PDF and email have drifted apart (${failures.length} problem(s)):\n`);
+  console.error(`\n✗ Duplicated values have drifted apart (${failures.length} problem(s)):\n`);
   for (const f of failures) console.error(`   - ${f}`);
   console.error(
     '\n  These are duplicated by necessity: Pages Functions cannot import from src/.',
@@ -291,4 +181,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`✓ Mirror check: PDF and email agree across ${COMBOS.length} filter/sanitization combinations.`);
+console.log('✓ Mirror check: quote links, token constants and NAP agree across src/ and functions/.');
