@@ -163,25 +163,25 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
    * the opposite case — stabilised tabs push CYA UP every week, which is why
    * those pools end up needing dilution rather than dosing.
    *
-   * The basis gives the UNIT and the FREQUENCY, not a justification. It briefly
-   * explained why stabilizer is needed at all; that reads as an argument, and
-   * every other row here just states what a thing costs and how often. This one
-   * now does the same, and the arithmetic checks out in the customer's head: a
-   * 4 lb container is roughly what a 15,000 gallon pool takes to move CYA about
-   * 30 ppm and retails near $20, so one to two a year IS the $20–$40.
+   * The basis states the FREQUENCY and nothing else. Earlier versions explained
+   * why stabilizer is needed, then quoted the container size to make the range
+   * add up; both were dropped as the row was tightened. What is left is the
+   * shape every other row here has — a figure and how often.
    *
    * "Topped up" rather than "replaced", matching the salt row above, because
-   * that is what actually happens — stabilizer is not consumed, it dilutes out
+   * that is what actually happens: stabilizer is not consumed, it dilutes out
    * with the water and gets brought back to range. "Typically" is doing real
-   * work too: a pool that gets drained or takes a wet summer needs more.
+   * work too — a pool that gets drained or takes a wet summer needs more.
    *
-   * Retail-anchored, so it understates what a company billing this as a
-   * "specialty chemical" would charge.
+   * The $20–$40 is retail-anchored (a 4 lb container is roughly what a 15,000
+   * gallon pool takes to move CYA about 30 ppm, and retails near $20), so it
+   * understates what a company billing this as a "specialty chemical" would
+   * charge. That reasoning stays here now that the row no longer shows it.
    */
   rows.push({
     label: 'Stabilizer (cyanuric acid)',
     typical: '$20–$40',
-    basis: 'a 4 lb container, typically topped up once or twice a year',
+    basis: 'typically topped up once or twice a year',
   });
   rows.push(...BASE_EXTRAS);
   return rows;
