@@ -357,7 +357,7 @@ const includedExtras = (
   rows.push({
     label: 'Stabilizer (cyanuric acid)',
     typical: '$20–$40',
-    basis: 'a year',
+    basis: 'a 4 lb container, once or twice a year',
   });
   rows.push({
     label: 'Algaecide & phosphate treatments',

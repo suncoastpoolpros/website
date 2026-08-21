@@ -163,19 +163,20 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
    * the opposite case — stabilised tabs push CYA UP every week, which is why
    * those pools end up needing dilution rather than dosing.
    *
-   * The basis is just "a year", matching the DE row. It briefly explained WHY
-   * ("since liquid chlorine adds none of its own") — true, but this table is a
-   * price list, and every other row states a period and a figure and lets them
-   * speak. The reasoning belongs in a conversation, not in six point type under
-   * a number.
+   * The basis gives the UNIT and the FREQUENCY, not a justification. It briefly
+   * explained why stabilizer is needed at all; that reads as an argument, and
+   * every other row here just states what a thing costs and how often. This one
+   * now does the same, and the arithmetic checks out in the customer's head: a
+   * 4 lb container is roughly what a 15,000 gallon pool takes to move CYA about
+   * 30 ppm and retails near $20, so one to two a year IS the $20–$40.
    *
-   * Retail-anchored at $20–$40 for a season, so it understates what a company
-   * billing it as a "specialty chemical" would charge.
+   * Retail-anchored, so it understates what a company billing this as a
+   * "specialty chemical" would charge.
    */
   rows.push({
     label: 'Stabilizer (cyanuric acid)',
     typical: '$20–$40',
-    basis: 'a year',
+    basis: 'a 4 lb container, once or twice a year',
   });
   rows.push(...BASE_EXTRAS);
   return rows;
