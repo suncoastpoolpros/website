@@ -176,11 +176,18 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
         to: toEmail,
         replyTo: replyTo || undefined,
         bcc: bcc || undefined,
-        subject: `${
-          hasTiers(payload)
-            ? 'Your Pool Service Plans'
-            : 'Your Pool Service Proposal'
-        }${proposalNumber ? ` — Proposal #${proposalNumber}` : ''} — Suncoast Pool Pros`,
+        /**
+         * Short, and it does NOT repeat the sender. The From name already
+         * displays "Suncoast Pool Pros" beside the subject, so the 22
+         * characters this used to spend saying it again bought nothing — and
+         * phone inboxes truncate around 35–40, which put the proposal NUMBER,
+         * the one part worth reading, at risk of being cut.
+         *
+         * One wording for both pricing modes. It used to say "Plans" or
+         * "Proposal", which on a single-price send read "Your Pool Service
+         * Proposal — Proposal #1042": the same word twice in six.
+         */
+        subject: `Your pool service proposal${proposalNumber ? ` — #${proposalNumber}` : ''}`,
         html,
         text,
         attachments,
