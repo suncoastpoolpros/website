@@ -279,20 +279,31 @@ export const composeProposalEmail = (
    * must never cost the customer a way to say yes.
    */
   const hasLink = acceptLink !== '';
+  /**
+   * "Choose your plan" is only true when the proposal offers more than one. On
+   * a single-price proposal there is nothing to choose, and telling someone to
+   * pick a plan they were never given is the same class of error as promising a
+   * salt cell to a chlorine pool.
+   */
+  const choose = hasTiers(p) ? 'choose your plan and ' : '';
 
   const text = [
     `Hi ${greetingName},`,
     ``,
     ...(emailNoteParas.length ? [...emailNoteParas, ``] : []),
-    `${numberLabel} is ready.`,
+    `We appreciate the opportunity to quote your pool service.`,
     ``,
     hasLink
-      ? `Read it and accept here: ${acceptLink}`
-      : `The full proposal is attached to this email as a PDF.`,
+      ? `Your proposal is ready. Read it here: ${acceptLink}`
+      : `Your proposal is attached to this email as a PDF.`,
     ``,
     hasLink
-      ? `It's attached as a PDF too, if you'd rather read it that way.`
-      : `To accept, simply reply "APPROVED" to this email and we'll get you scheduled.`,
+      ? `It's attached as a PDF too. Both set out the scope of the work, what's included in your rate, and what it costs.`
+      : `It sets out the scope of the work, what's included in your rate, and what it costs.`,
+    ``,
+    hasLink
+      ? `When you're ready to move forward, you can ${choose}approve it from the same link, and we'll be in touch to schedule.`
+      : `To accept, simply reply "APPROVED" to this email and we'll be in touch to schedule.`,
     ``,
     `Questions? Just reply to this message.`,
     ``,
@@ -347,20 +358,22 @@ export const composeProposalEmail = (
                 `<p style="margin:0 0 14px 0;font-size:15px;line-height:1.65;color:#374151;">${escapeHtml(para)}</p>`,
             )
             .join('')}
+          <p style="margin:0 0 14px 0;font-size:15px;line-height:1.65;color:#374151;">We appreciate the opportunity to quote your pool service.</p>
           <p style="margin:0 0 20px 0;font-size:15px;line-height:1.65;color:#374151;">${
             hasLink
-              ? 'Your proposal is ready — what your pool needs, what is included, and what it costs.'
-              : 'Your proposal is attached to this email as a PDF — what your pool needs, what is included, and what it costs.'
+              ? 'Your proposal is ready. Open it with the button below, or read the PDF attached to this email &mdash; both set out the scope of the work, what&rsquo;s included in your rate, and what it costs.'
+              : 'Your proposal is attached to this email as a PDF. It sets out the scope of the work, what&rsquo;s included in your rate, and what it costs.'
           }</p>
         </td></tr>
         ${button}
         <tr><td style="padding:18px 28px 26px 28px;">
-          <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;text-align:center;">
-            <span style="font-size:15px;">📎</span>&nbsp;&nbsp;${
-              hasLink
-                ? 'It&rsquo;s attached as a PDF too, if you&rsquo;d rather read it that way.'
-                : 'To accept, simply reply &ldquo;APPROVED&rdquo; to this email.'
-            }
+          <p style="margin:0 0 12px 0;font-size:15px;line-height:1.65;color:#374151;">${
+            hasLink
+              ? `When you&rsquo;re ready to move forward, you can ${choose}approve it from the same link, and we&rsquo;ll be in touch to schedule.`
+              : 'To accept, simply reply &ldquo;APPROVED&rdquo; to this email and we&rsquo;ll be in touch to schedule.'
+          }</p>
+          <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;">
+            <span style="font-size:15px;">📎</span>&nbsp;&nbsp;A copy is attached to this email as a PDF.
           </p>
         </td></tr>
         <tr><td style="padding:16px 28px 22px 28px;border-top:1px solid #eef2f7;">
