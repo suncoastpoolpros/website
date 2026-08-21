@@ -5,12 +5,15 @@ import { useProposalDraft } from '@/lib/useAdminDraft';
 import {
   sendProposal,
   saveQuoteOnly,
+  previewProposal,
   reserveProposalNumber,
   logout,
   formatPrice,
   tierDelta,
+  type EmailOverrides,
   type PricingMode,
   type ProposalData,
+  type ProposalPreview,
   type Tier,
 } from '@/lib/adminApi';
 import { blobToBase64 } from '@/lib/adminMedia';
@@ -18,6 +21,7 @@ import { proposalDateLabel, proposalFilename, renderProposalPdf } from '@/lib/pr
 import { toTitleCase, formatUsPhone } from '@/lib/textFormat';
 import { Section, PreviewBlock, PreviewRow } from './adminUi';
 import { PhotoPicker } from './PhotoPicker';
+import { EmailReview } from './EmailReview';
 import { SANITIZATION_TYPES } from './sanitization';
 import { SCOPE_TEMPLATES } from './scopeTemplates';
 import { ADDON_PRESETS } from './addonPresets';
@@ -46,6 +50,10 @@ const addonInput =
 
 type SendStatus =
   | { kind: 'idle' }
+  /** Reserving the number and rendering the email for the review step. */
+  | { kind: 'preparing' }
+  /** The review step is open. Nothing has been sent; nothing is saved. */
+  | { kind: 'review' }
   | { kind: 'sending' }
   | { kind: 'saving' }
   /** `stored: false` = emailed, but the quote was NOT saved. See the sent screen. */
@@ -107,6 +115,27 @@ export const ProposalBuilder = ({
   // pre-fetch steps (dynamic import / PDF generation) that can't be aborted.
   const abortRef = useRef<AbortController | null>(null);
   const cancelledRef = useRef(false);
+  /**
+   * The review step's state. The email as the sender composes it, the two lines
+   * the operator may have reworded, and a flag for the re-render behind an edit.
+   */
+  const [preview, setPreview] = useState<ProposalPreview | null>(null);
+  const [overrides, setOverrides] = useState<EmailOverrides>({});
+  const [refreshing, setRefreshing] = useState(false);
+  /** A failed send, shown inside the review dialog where the retry button is. */
+  const [sendError, setSendError] = useState('');
+  /**
+   * The number reserved when the review opened, HELD across a cancel.
+   *
+   * Reserving is a counter bump with no undo, so re-reading the email twice
+   * before sending would otherwise burn a number per look and leave gaps in a
+   * sequence whose whole job is to be a reliable reference. Reserved here
+   * rather than at send time because the review shows the subject line, and
+   * "#1042" is most of what that line says.
+   */
+  const reservedNumberRef = useRef<number | null>(null);
+  /** The in-flight re-render, so the next edit can abandon it. */
+  const refreshAbortRef = useRef<AbortController | null>(null);
   // Photos live in component state only (not the localStorage draft) — base64
   // images would quickly exceed the storage quota. They're optional and baked
   // straight into the generated PDF.
@@ -348,18 +377,104 @@ export const ProposalBuilder = ({
     }
   };
 
+  /**
+   * Step one of sending: show the operator the email.
+   *
+   * The builder's live preview is the PDF, so until this existed the covering
+   * message was the one thing you posted to a customer without having read it —
+   * and its two most wrong-able lines, the greeting and the subject, were the
+   * two with no field on the form.
+   *
+   * NOTHING IS COMMITTED HERE. No quote row, no PDF, no email; the PDF is built
+   * after the operator says yes, because it's the slow part and rendering it to
+   * proofread a paragraph would make every send wait on work that a reword
+   * throws away. The one thing this does take is the proposal number, and it
+   * keeps it (see reservedNumberRef).
+   */
+  const openReview = async (nextOverrides: EmailOverrides = overrides) => {
+    if (!canSend || status.kind === 'sending' || status.kind === 'preparing') return;
+    cancelledRef.current = false;
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setSendError('');
+    setStatus({ kind: 'preparing' });
+    try {
+      if (reservedNumberRef.current == null) {
+        reservedNumberRef.current = await reserveProposalNumber(controller.signal);
+        if (cancelledRef.current) return;
+      }
+      const next = await previewProposal(
+        { ...data, proposalNumber: reservedNumberRef.current, overrides: nextOverrides },
+        controller.signal,
+      );
+      if (cancelledRef.current) return;
+      setPreview(next);
+      setStatus({ kind: 'review' });
+    } catch (err) {
+      if (cancelledRef.current || (err instanceof DOMException && err.name === 'AbortError')) return;
+      setStatus({
+        kind: 'error',
+        message: 'Could not render the email to review. Check the connection and try again.',
+      });
+      console.error('preview proposal failed', err);
+    } finally {
+      abortRef.current = null;
+    }
+  };
+
+  /**
+   * Re-render the open review after an edit.
+   *
+   * Separate from openReview because it must NOT drop the operator back out of
+   * the dialog while it works: it leaves `status` on 'review' and shows a small
+   * "Updating" badge instead. A failed re-render leaves the last good email on
+   * screen rather than an empty frame — the wording shown is then stale, but
+   * the fields it came from are right there to compare against.
+   */
+  const refreshPreview = async (nextOverrides: EmailOverrides) => {
+    // Its OWN controller, and the previous one is abandoned first: two edits in
+    // quick succession would otherwise race, and a slow first response landing
+    // after a fast second would put the wording you just replaced back on
+    // screen. Also kept off abortRef, which belongs to the send.
+    refreshAbortRef.current?.abort();
+    const controller = new AbortController();
+    refreshAbortRef.current = controller;
+    setRefreshing(true);
+    try {
+      const next = await previewProposal(
+        { ...data, proposalNumber: reservedNumberRef.current, overrides: nextOverrides },
+        controller.signal,
+      );
+      setPreview(next);
+    } catch (err) {
+      if (!(err instanceof DOMException && err.name === 'AbortError')) {
+        console.error('refresh preview failed', err);
+      }
+    } finally {
+      // Only the newest request owns the spinner — an aborted one clearing it
+      // would say "up to date" while a re-render is still in flight.
+      if (refreshAbortRef.current === controller) {
+        refreshAbortRef.current = null;
+        setRefreshing(false);
+      }
+    }
+  };
+
+  /**
+   * Step two: the operator has read it. Build the PDF and send.
+   *
+   * Uses the number reserved for the review rather than reserving another —
+   * that number is already printed in the subject line they just approved.
+   */
   const handleSend = async () => {
     if (!canSend || status.kind === 'sending') return;
     cancelledRef.current = false;
     const controller = new AbortController();
     abortRef.current = controller;
+    setSendError('');
     setStatus({ kind: 'sending' });
     try {
-      // Reserved BEFORE the PDF is built, because the number is printed on it.
-      // Resolves to null if storage is unavailable; the proposal then sends
-      // unnumbered rather than not at all.
-      const proposalNumber = await reserveProposalNumber(controller.signal);
-      if (cancelledRef.current) return;
+      const proposalNumber = reservedNumberRef.current;
       // renderProposalPdf keeps the engine a lazy chunk fetched on first send,
       // and is the same call the customer's approve page makes to build their
       // download — so the two copies can't drift.
@@ -381,29 +496,46 @@ export const ProposalBuilder = ({
           // same document, not a version with the photographs missing.
           photos,
           filename: proposalFilename(data.customer.name, proposalNumber),
+          // The same two lines the operator just approved. Without these the
+          // review would be a preview of an email that then goes out reworded.
+          overrides,
         },
         controller.signal,
       );
+      reservedNumberRef.current = null;
+      setPreview(null);
+      setOverrides({});
       setStatus({ kind: 'sent', stored: result.stored });
     } catch (err) {
       // A cancel (flag set, or the fetch aborted) is not an error — stay idle.
       if (cancelledRef.current || (err instanceof DOMException && err.name === 'AbortError')) {
         return;
       }
-      setStatus({
-        kind: 'error',
-        message: 'Could not send the proposal. Check the connection and try again.',
-      });
+      // Back to the review, not out to the form: the email is still correct and
+      // still approved, so the recovery is one more press of Send it.
+      setStatus({ kind: 'review' });
+      setSendError('Could not send the proposal. Check the connection and try again.');
       console.error('send proposal failed', err);
     } finally {
       abortRef.current = null;
     }
   };
 
+  /** Close the review without sending. The email, the overrides and the
+   *  reserved number all survive, so re-opening is instant and costs nothing. */
+  const closeReview = () => {
+    if (status.kind === 'sending') return;
+    setSendError('');
+    setStatus({ kind: 'idle' });
+  };
+
+  /** Abort an in-flight send. Back to the review rather than the form: the
+   *  email was already approved, so the operator is one press from retrying. */
   const handleCancelSend = () => {
     cancelledRef.current = true;
     abortRef.current?.abort();
-    setStatus({ kind: 'idle' });
+    setSendError('');
+    setStatus(preview ? { kind: 'review' } : { kind: 'idle' });
   };
 
   const handleLogout = async () => {
@@ -414,6 +546,13 @@ export const ProposalBuilder = ({
   const startNew = () => {
     clearDraft();
     setPhotos([]);
+    // A new proposal gets a new number and a freshly composed email — carrying
+    // the last one's reworded greeting into the next customer's inbox is
+    // exactly the mistake the review step exists to prevent.
+    reservedNumberRef.current = null;
+    setPreview(null);
+    setOverrides({});
+    setSendError('');
     setStatus({ kind: 'idle' });
   };
 
@@ -516,32 +655,23 @@ export const ProposalBuilder = ({
 
   return (
     <div className="min-h-dvh px-4 py-6 md:px-8 md:py-10">
-      {/* Sending overlay — a loading wheel that also locks out the form (the
-          backdrop blocks all interaction) so the proposal can't be double-sent.
-          Cancel aborts the in-flight request and returns to the builder. */}
-      {status.kind === 'sending' && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-6"
-          role="alertdialog"
-          aria-busy="true"
-          aria-label="Sending proposal"
-        >
-          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-navy-light p-8 text-center">
-            <LoaderCircle className="mx-auto h-12 w-12 animate-spin text-brand-blue-light" />
-            <h2 className="mt-5 font-display text-lg font-bold text-white">Sending proposal…</h2>
-            <p className="mt-1 text-sm text-gray-400">
-              Generating the PDF and emailing it to{' '}
-              <span className="text-gray-200">{data.customer.email || 'the customer'}</span>.
-            </p>
-            <button
-              type="button"
-              onClick={handleCancelSend}
-              className="mt-6 rounded-xl border border-white/15 px-5 py-2.5 text-sm font-semibold text-gray-200 transition-colors hover:bg-white/5"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+      {/* The email, before it goes anywhere. Stays mounted through the send so
+          the spinner and the Cancel sit where the operator is already looking,
+          rather than under a second overlay that hides what they just read. */}
+      {preview && (status.kind === 'review' || status.kind === 'sending') && (
+        <EmailReview
+          preview={preview}
+          overrides={overrides}
+          onOverridesChange={setOverrides}
+          refreshing={refreshing}
+          onRequestRerender={refreshPreview}
+          toEmail={data.customer.email || 'the customer'}
+          attachmentName={proposalFilename(data.customer.name, reservedNumberRef.current)}
+          sending={status.kind === 'sending'}
+          error={sendError}
+          onSend={handleSend}
+          onCancel={status.kind === 'sending' ? handleCancelSend : closeReview}
+        />
       )}
 
       <div className="mx-auto max-w-6xl">
@@ -1040,17 +1170,17 @@ export const ProposalBuilder = ({
             )}
 
             <button
-              onClick={handleSend}
-              disabled={!canSend || status.kind === 'sending'}
+              onClick={() => openReview()}
+              disabled={!canSend || status.kind === 'preparing' || status.kind === 'sending'}
               className="mt-4 shrink-0 flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark py-4 text-lg font-bold text-white shadow-lg shadow-brand-blue/20 transition-all hover:from-brand-blue-light hover:to-brand-blue disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {status.kind === 'sending' ? (
+              {status.kind === 'preparing' ? (
                 <>
-                  <LoaderCircle className="h-5 w-5 animate-spin" /> Generating &amp; sending…
+                  <LoaderCircle className="h-5 w-5 animate-spin" /> Preparing the email…
                 </>
               ) : (
                 <>
-                  Send proposal to customer <Send className="h-5 w-5" />
+                  Review &amp; send <Send className="h-5 w-5" />
                 </>
               )}
             </button>
@@ -1067,7 +1197,7 @@ export const ProposalBuilder = ({
                 needs no email address, which is the whole reason it exists. */}
             <button
               onClick={handleSaveLink}
-              disabled={!canSaveLink || status.kind === 'saving' || status.kind === 'sending'}
+              disabled={!canSaveLink || status.kind === 'saving' || status.kind === 'preparing' || status.kind === 'sending'}
               className="mt-3 shrink-0 flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 py-3 text-sm font-semibold text-gray-200 transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {status.kind === 'saving' ? (

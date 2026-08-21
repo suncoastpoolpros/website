@@ -68,10 +68,28 @@ type Proposal = {
   tiers?: Tier[];
 };
 
-type SendProposalPayload = {
+/**
+ * The two lines of the email that are NOT derived from a form field.
+ *
+ * The greeting is computed from the customer's name and the subject from the
+ * proposal number, which is right nearly every time and occasionally isn't:
+ * an HOA quote addressed to the association has no first name to greet, a
+ * property manager wants their own name rather than the entity's, a follow-up
+ * send wants a subject that says so. Everything else in the email — the note,
+ * the prices, the scope — is already an editable field somewhere in the
+ * builder, so these are the only two that needed a way in.
+ *
+ * Absent or blank means "use the computed default", NOT "send an empty
+ * greeting". The review step seeds its inputs with the defaults and only sends
+ * back what the operator actually changed.
+ */
+type EmailOverrides = { subject?: string; greeting?: string };
+
+export type SendProposalPayload = {
   customer?: Customer;
   pool?: Pool;
   proposal?: Proposal;
+  overrides?: EmailOverrides;
   /** Reserved by the builder before it rendered the PDF, and printed on it. */
   proposalNumber?: number | null;
   pdfBase64?: string;
@@ -176,18 +194,7 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
         to: toEmail,
         replyTo: replyTo || undefined,
         bcc: bcc || undefined,
-        /**
-         * Short, and it does NOT repeat the sender. The From name already
-         * displays "Suncoast Pool Pros" beside the subject, so the 22
-         * characters this used to spend saying it again bought nothing — and
-         * phone inboxes truncate around 35–40, which put the proposal NUMBER,
-         * the one part worth reading, at risk of being cut.
-         *
-         * One wording for both pricing modes. It used to say "Plans" or
-         * "Proposal", which on a single-price send read "Your Pool Service
-         * Proposal — Proposal #1042": the same word twice in six.
-         */
-        subject: `Your pool service proposal${proposalNumber ? ` — #${proposalNumber}` : ''}`,
+        subject: proposalSubject(payload),
         html,
         text,
         attachments,
@@ -242,6 +249,29 @@ const BIZ = {
 const hasTiers = (p: SendProposalPayload): boolean =>
   p.proposal?.pricingMode === 'tiers' && (p.proposal?.tiers?.length ?? 0) > 0;
 
+/**
+ * The subject line.
+ *
+ * Short, and it does NOT repeat the sender. The From name already displays
+ * "Suncoast Pool Pros" beside the subject, so the 22 characters this used to
+ * spend saying it again bought nothing — and phone inboxes truncate around
+ * 35–40, which put the proposal NUMBER, the one part worth reading, at risk of
+ * being cut.
+ *
+ * One wording for both pricing modes. It used to say "Plans" or "Proposal",
+ * which on a single-price send read "Your Pool Service Proposal — Proposal
+ * #1042": the same word twice in six.
+ *
+ * Shared by the send and the review step so what the operator approves is the
+ * subject that goes out, rather than a second copy of this sentence.
+ */
+export const proposalSubject = (p: SendProposalPayload): string => {
+  const override = safe(String(p.overrides?.subject ?? '').trim(), 160);
+  if (override) return override;
+  const n = proposalNumberOrNull(p.proposalNumber);
+  return `Your pool service proposal${n ? ` — #${n}` : ''}`;
+};
+
 // Exported (not just module-local) so the email can be rendered and eyeballed
 // offline — it's a pure function of the payload, and it's customer-facing HTML
 // that no test would otherwise cover.
@@ -271,7 +301,9 @@ export const composeProposalEmail = (
   _env: AdminEnv,
   /** Where the proposal is read and accepted. Empty when storage is down. */
   acceptLink = '',
-): { html: string; text: string } => {
+  /** `defaultGreeting` is what the composer WOULD have used, so the review step
+   *  can seed its input and offer "use the default" after an edit. */
+): { html: string; text: string; defaultGreeting: string } => {
   const proposalNumber = proposalNumberOrNull(p.proposalNumber);
   const name = safe(String(p.customer?.name ?? '').trim(), 120);
   /**
@@ -304,7 +336,10 @@ export const composeProposalEmail = (
     // customer as "Hello maria,".
     return first.charAt(0).toUpperCase() + first.slice(1);
   };
-  const greeting = firstNameOf(name) ? `Hello ${firstNameOf(name)},` : 'Hello,';
+  const defaultGreeting = firstNameOf(name) ? `Hello ${firstNameOf(name)},` : 'Hello,';
+  // A blank override means "nothing typed", not "no greeting" — an email that
+  // opens on the customer's own note with no salutation reads as a fragment.
+  const greeting = safe(String(p.overrides?.greeting ?? '').trim(), 120) || defaultGreeting;
   // Email only — deliberately absent from the PDF, which is the formal document.
   const emailNote = safe(String(p.proposal?.emailNote ?? '').trim(), FIELD_MAX);
   const emailNoteParas = emailNote.split(/\n{2,}/).map((x) => x.trim()).filter(Boolean);
@@ -435,7 +470,7 @@ export const composeProposalEmail = (
 </body>
 </html>`.trim();
 
-  return { html, text };
+  return { html, text, defaultGreeting };
 };
 
 const sanitizeFilename = (name: unknown): string =>

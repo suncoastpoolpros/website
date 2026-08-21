@@ -377,6 +377,14 @@ export async function logout(): Promise<void> {
   }
 }
 
+/**
+ * The two lines of the email that aren't a form field anywhere else: the
+ * greeting (computed from the customer's name) and the subject (from the
+ * proposal number). Set by the review step, and only for the ones the operator
+ * actually edited — an absent or blank value means "use the computed default".
+ */
+export type EmailOverrides = { subject?: string; greeting?: string };
+
 export type SendProposalArgs = ProposalData & {
   /** The number reserved before the PDF was rendered, and printed on it. */
   proposalNumber?: number | null;
@@ -385,7 +393,49 @@ export type SendProposalArgs = ProposalData & {
   filename: string;
   /** Downscaled data URLs. Stored so a later re-download matches this PDF. */
   photos?: string[];
+  overrides?: EmailOverrides;
 };
+
+/** What the review step shows: the email exactly as the sender would compose it. */
+export type ProposalPreview = {
+  subject: string;
+  html: string;
+  text: string;
+  /** What the composer WOULD greet with, so the field can offer it back. */
+  defaultGreeting: string;
+};
+
+/**
+ * Render the covering email without sending it.
+ *
+ * Deliberately does NOT send the PDF or the photos: neither appears in the
+ * email body, and uploading megabytes to proof a few hundred words would make
+ * the review step slower than the send it precedes.
+ */
+export async function previewProposal(
+  args: ProposalData & { proposalNumber?: number | null; overrides?: EmailOverrides },
+  signal?: AbortSignal,
+): Promise<ProposalPreview> {
+  const res = await postDocument<Partial<ProposalPreview>>(
+    '/api/admin/preview-proposal',
+    {
+      customer: args.customer,
+      pool: args.pool,
+      proposal: args.proposal,
+      proposalNumber: args.proposalNumber ?? null,
+      overrides: args.overrides ?? {},
+    },
+    'preview_proposal_failed',
+    signal,
+  );
+  if (!res.html || !res.subject) throw new Error('preview_proposal_failed');
+  return {
+    subject: res.subject,
+    html: res.html,
+    text: res.text ?? '',
+    defaultGreeting: res.defaultGreeting ?? '',
+  };
+}
 
 /** POST the proposal + PDF to be emailed. Throws on failure (or AbortError if cancelled). */
 /** Result of a send. `stored: false` means it was EMAILED BUT NOT SAVED — the
@@ -406,6 +456,7 @@ export async function sendProposal(
       photos: args.photos ?? [],
       pdfBase64: args.pdfBase64,
       filename: args.filename,
+      overrides: args.overrides ?? {},
     },
     'send_proposal_failed',
     signal,
