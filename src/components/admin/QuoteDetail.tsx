@@ -299,7 +299,16 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
 
         <div className="mb-6 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
           <div className="min-w-0">
-            <h1 className="font-display text-2xl font-bold text-white">{quote.customer.name || '—'}</h1>
+            {/* Nameless quotes are normal now — a texted lead is quoted from
+                the address. The list already falls back to it; this showed a
+                bare em-dash, which reads as missing data rather than as the
+                address being the identity. */}
+            <h1 className="font-display text-2xl font-bold text-white">
+              {quote.customer.name?.trim() ||
+                quote.customer.address?.trim() ||
+                quote.customer.email?.trim() ||
+                '—'}
+            </h1>
             <p className="mt-1 text-sm text-gray-400">
               {quote.number ? `Proposal #${quote.number} · ` : ''}
               Sent {onDate(quote.createdAt)} · {ago(quote.createdAt)}
@@ -328,6 +337,40 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
               </p>
             </section>
           )}
+
+          {/* First thing on the page, under the acceptance record when there is
+              one. It answers "is this worth chasing today?" — the question you
+              opened the quote to ask — and it was at the BOTTOM, below the pool
+              and the pricing, where you had already stopped reading. Shown on
+              every status, unlike the list: once a quote is accepted or dead
+              the line stops being a prompt and becomes history, which is what
+              this view is for. */}
+          <Card title="Activity">
+            {(() => {
+              const o = openSummary({
+                openCount: quote.opened?.count,
+                lastOpenedAt: quote.opened?.last,
+                adminOpenCount: quote.opened?.adminCount,
+              });
+              return (
+                <>
+                  <p className={`text-sm font-semibold ${o.opened ? 'text-brand-blue-light' : 'text-gray-400'}`}>
+                    {o.opened ? '◉' : '○'} {o.text}
+                  </p>
+                  {quote.opened?.first && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      First opened {onDateTime(quote.opened.first)}
+                    </p>
+                  )}
+                  <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                    {o.opened
+                      ? 'Counts distinct visits by the customer — repeat loads within half an hour are one. Your own previews are counted separately and never in this number.'
+                      : 'Nothing recorded yet. Quotes sent before this was tracked also read as not opened.'}
+                  </p>
+                </>
+              );
+            })()}
+          </Card>
 
           {contactRows.length > 0 && (
             <Card title="Customer">
@@ -455,37 +498,6 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-200">{emailNote}</p>
             </Card>
           )}
-
-          {/* Activity, immediately above the link that produced it. Shown on
-              every status, unlike the list: once a quote is accepted or dead
-              the line stops being a prompt to act and becomes part of its
-              history, which is what this view is for. */}
-          <Card title="Activity">
-            {(() => {
-              const o = openSummary({
-                openCount: quote.opened?.count,
-                lastOpenedAt: quote.opened?.last,
-                adminOpenCount: quote.opened?.adminCount,
-              });
-              return (
-                <>
-                  <p className={`text-sm font-semibold ${o.opened ? 'text-brand-blue-light' : 'text-gray-400'}`}>
-                    {o.opened ? '◉' : '○'} {o.text}
-                  </p>
-                  {quote.opened?.first && (
-                    <p className="mt-1 text-xs text-gray-500">
-                      First opened {onDateTime(quote.opened.first)}
-                    </p>
-                  )}
-                  <p className="mt-2 text-xs leading-relaxed text-gray-500">
-                    {o.opened
-                      ? 'Counts distinct visits by the customer — repeat loads within half an hour are one. Your own previews are counted separately and never in this number.'
-                      : 'Nothing recorded yet. Quotes sent before this was tracked also read as not opened.'}
-                  </p>
-                </>
-              );
-            })()}
-          </Card>
 
           <Card title="The approve link">
             <p className="text-sm text-gray-300">
