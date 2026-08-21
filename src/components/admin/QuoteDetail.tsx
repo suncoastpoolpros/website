@@ -354,8 +354,19 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
               });
               return (
                 <>
-                  <p className={`text-sm font-semibold ${o.opened ? 'text-brand-blue-light' : 'text-gray-400'}`}>
-                    {o.opened ? '◉' : '○'} {o.text}
+                  <p
+                    className={`flex items-center gap-2 text-sm font-semibold ${
+                      o.opened ? 'text-green-300' : 'text-gray-400'
+                    }`}
+                  >
+                    {/* Matches the dot in the quotes list — see the note there. */}
+                    <span
+                      aria-hidden
+                      className={`h-2.5 w-2.5 shrink-0 rounded-full ${
+                        o.opened ? 'bg-green-400 ring-2 ring-green-400/25' : 'border border-gray-600'
+                      }`}
+                    />
+                    {o.text}
                   </p>
                   {quote.opened?.first && (
                     <p className="mt-1 text-xs text-gray-500">

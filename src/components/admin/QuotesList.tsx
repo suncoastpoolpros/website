@@ -348,8 +348,27 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                           (() => {
                             const o = openSummary(q);
                             return (
-                              <span className={o.opened ? 'text-brand-blue-light' : 'text-gray-500'}>
-                                {o.opened ? '◉' : '○'} {o.text}
+                              <span
+                                className={`inline-flex items-center gap-1.5 ${
+                                  o.opened ? 'text-green-300' : 'text-gray-500'
+                                }`}
+                              >
+                                {/* A real dot, not a glyph: ◉ and ○ sat on the
+                                    text baseline at text size and read as
+                                    punctuation. Green because an open is good
+                                    news — the same green "Chose <plan>" uses,
+                                    which never appears on the same row since
+                                    this line only shows while awaiting.
+                                    aria-hidden: the text carries the meaning. */}
+                                <span
+                                  aria-hidden
+                                  className={`h-2 w-2 shrink-0 rounded-full ${
+                                    o.opened
+                                      ? 'bg-green-400 ring-2 ring-green-400/25'
+                                      : 'border border-gray-600'
+                                  }`}
+                                />
+                                {o.text}
                               </span>
                             );
                           })()}
