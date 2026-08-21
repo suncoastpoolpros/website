@@ -163,10 +163,11 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
    * the opposite case — stabilised tabs push CYA UP every week, which is why
    * those pools end up needing dilution rather than dosing.
    *
-   * The BASIS names only the equipment this pool actually has: telling a
-   * chlorine customer about salt cells is the same error as promising them a
-   * cell wash. Bromine and Unknown get the plain version, since neither the
-   * sanitizer nor the claim is settled.
+   * The basis is just "a year", matching the DE row. It briefly explained WHY
+   * ("since liquid chlorine adds none of its own") — true, but this table is a
+   * price list, and every other row states a period and a figure and lets them
+   * speak. The reasoning belongs in a conversation, not in six point type under
+   * a number.
    *
    * Retail-anchored at $20–$40 for a season, so it understates what a company
    * billing it as a "specialty chemical" would charge.
@@ -174,11 +175,7 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
   rows.push({
     label: 'Stabilizer (cyanuric acid)',
     typical: '$20–$40',
-    basis: isSaltwater(sanitization)
-      ? 'a year, since a salt cell adds none of its own'
-      : /chlorine/i.test(sanitization)
-        ? 'a year, since liquid chlorine adds none of its own'
-        : 'a year, replaced as it dilutes out',
+    basis: 'a year',
   });
   rows.push(...BASE_EXTRAS);
   return rows;

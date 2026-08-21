@@ -353,17 +353,11 @@ const includedExtras = (
       basis: 'a year, topped up after backwashing and heavy rain',
     });
   }
-  // Every pool: liquid chlorine and salt cells add no CYA of their own, so
-  // stabilizer is replaced as it dilutes out. The basis names only the
-  // equipment THIS pool has — see src/components/admin/includedExtras.ts.
+  // Every pool needs it topped up — see src/components/admin/includedExtras.ts.
   rows.push({
     label: 'Stabilizer (cyanuric acid)',
     typical: '$20–$40',
-    basis: /salt/i.test(sanitization)
-      ? 'a year, since a salt cell adds none of its own'
-      : /chlorine/i.test(sanitization)
-        ? 'a year, since liquid chlorine adds none of its own'
-        : 'a year, replaced as it dilutes out',
+    basis: 'a year',
   });
   rows.push({
     label: 'Algaecide & phosphate treatments',
