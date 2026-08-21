@@ -9,6 +9,10 @@
  * filters, which aren't backwashed at all — you pull and rinse the elements.
  * Wrong detail in a scope of work is worse than no detail: it tells the
  * customer the quote wasn't written for their pool.
+ *
+ * The same rule applies to FREQUENCY, not just to equipment — see filterLine.
+ * A recurring template lists what happens on a visit, so anything in it is a
+ * promise about every visit.
  */
 import { isSaltwater } from './sanitization';
 
@@ -21,21 +25,35 @@ export type ScopeContext = {
 
 export type ScopeTemplate = { label: string; build: (ctx: ScopeContext) => string };
 
-/** How the filter is actually serviced on this pool. */
+/**
+ * How the filter is actually serviced on this pool.
+ *
+ * SPLIT INTO WHAT HAPPENS EVERY VISIT AND WHAT HAPPENS WHEN IT IS DUE. Both of
+ * these templates describe a recurring visit, so listing "pull and rinse the
+ * cartridge elements" as a bullet promised that on every single visit — and
+ * that is not the job. The pressure reading is checked every time; the filter
+ * is opened when that reading says it needs opening.
+ *
+ * It was wrong for all four types, not just cartridge: a DE filter is
+ * backwashed and recharged every four to eight weeks (the value stack prices it
+ * that way), and sand is the same. Promising any of them weekly is a service
+ * nobody performs and a customer could reasonably expect to see.
+ */
 const filterLine = ({ filterType }: ScopeContext, detailed: boolean): string => {
-  const baseline = detailed
-    ? ', and compare filter pressure against its clean baseline so a rising reading is caught before flow drops off'
-    : '';
-  switch (filterType) {
-    case 'Cartridge':
-      return `• Pull and rinse the cartridge elements, inspecting them for tears or collapse${baseline}.`;
-    case 'DE':
-      return `• Backwash the DE filter and recharge it with fresh DE${baseline}.`;
-    case 'Sand':
-      return `• Backwash the sand filter and check the media${baseline}.`;
-    default:
-      return `• Empty and inspect the filter, backwashing or cleaning to suit the system${baseline}.`;
-  }
+  const service = (() => {
+    switch (filterType) {
+      case 'Cartridge':
+        return 'pulling, rinsing and inspecting the cartridge elements for tears or collapse';
+      case 'DE':
+        return 'backwashing it and recharging with fresh DE';
+      case 'Sand':
+        return 'backwashing it and checking the media';
+      default:
+        return 'opening, cleaning and inspecting it to suit the system';
+    }
+  })();
+  const why = detailed ? ', so a rising reading is caught before flow drops off' : '';
+  return `• Check filter pressure against its clean baseline every visit${why}, and service the filter when that reading says it is due — ${service}.`;
 };
 
 /** Only on a salt pool — a chlorine pool has no cell to check. */
