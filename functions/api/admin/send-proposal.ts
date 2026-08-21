@@ -293,17 +293,21 @@ export const composeProposalEmail = (
     ...(emailNoteParas.length ? [...emailNoteParas, ``] : []),
     `We appreciate the opportunity to quote your pool service.`,
     ``,
-    hasLink
-      ? `Your proposal is ready. Read it here: ${acceptLink}`
-      : `Your proposal is attached to this email as a PDF.`,
+    `Your proposal is ready — the scope of the work, what's included in your rate, and what it costs.`,
     ``,
-    hasLink
-      ? `It's attached as a PDF too. Both set out the scope of the work, what's included in your rate, and what it costs.`
-      : `It sets out the scope of the work, what's included in your rate, and what it costs.`,
-    ``,
-    hasLink
-      ? `When you're ready to move forward, you can ${choose}approve it from the same link, and we'll be in touch to schedule.`
-      : `To accept, simply reply "APPROVED" to this email and we'll be in touch to schedule.`,
+    ...(hasLink
+      ? [
+          `When you're ready to move forward, you can ${choose}approve it from the same link, and we'll be in touch to schedule.`,
+          ``,
+          `Read it here: ${acceptLink}`,
+          ``,
+          `A copy is attached to this email as a PDF.`,
+        ]
+      : [
+          `It's attached to this email as a PDF.`,
+          ``,
+          `To accept, simply reply "APPROVED" to this email and we'll be in touch to schedule.`,
+        ]),
     ``,
     `Questions? Just reply to this message.`,
     ``,
@@ -361,20 +365,21 @@ export const composeProposalEmail = (
           <p style="margin:0 0 14px 0;font-size:15px;line-height:1.65;color:#374151;">We appreciate the opportunity to quote your pool service.</p>
           <p style="margin:0 0 20px 0;font-size:15px;line-height:1.65;color:#374151;">${
             hasLink
-              ? 'Your proposal is ready. Open it with the button below, or read the PDF attached to this email &mdash; both set out the scope of the work, what&rsquo;s included in your rate, and what it costs.'
-              : 'Your proposal is attached to this email as a PDF. It sets out the scope of the work, what&rsquo;s included in your rate, and what it costs.'
+              ? `Your proposal is ready &mdash; the scope of the work, what&rsquo;s included in your rate, and what it costs. When you&rsquo;re ready to move forward, you can ${choose}approve it from the same link, and we&rsquo;ll be in touch to schedule.`
+              : `Your proposal is attached to this email as a PDF &mdash; the scope of the work, what&rsquo;s included in your rate, and what it costs.`
           }</p>
         </td></tr>
         ${button}
         <tr><td style="padding:18px 28px 26px 28px;">
-          <p style="margin:0 0 12px 0;font-size:15px;line-height:1.65;color:#374151;">${
+          <!-- Centred, and one line: this is a caption to the button above it,
+               offering the other way in. Body copy stays left-aligned — centring
+               a multi-line paragraph costs the reader the left edge their eye
+               returns to on every line. -->
+          <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;text-align:center;">${
             hasLink
-              ? `When you&rsquo;re ready to move forward, you can ${choose}approve it from the same link, and we&rsquo;ll be in touch to schedule.`
+              ? '<span style="font-size:15px;">📎</span>&nbsp;&nbsp;A copy is attached to this email as a PDF.'
               : 'To accept, simply reply &ldquo;APPROVED&rdquo; to this email and we&rsquo;ll be in touch to schedule.'
           }</p>
-          <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;">
-            <span style="font-size:15px;">📎</span>&nbsp;&nbsp;A copy is attached to this email as a PDF.
-          </p>
         </td></tr>
         <tr><td style="padding:16px 28px 22px 28px;border-top:1px solid #eef2f7;">
           <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;">Questions? Just reply to this message, or call us on ${escapeHtml(
