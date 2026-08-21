@@ -381,10 +381,13 @@ export const composeProposalEmail = (
               : 'To accept, simply reply &ldquo;APPROVED&rdquo; to this email and we&rsquo;ll be in touch to schedule.'
           }</p>
         </td></tr>
+        <!-- Centred, and short enough to hold one line on a phone. It was
+             left-aligned and carried the phone number: the odd element in a
+             column where the button, the attachment caption and the sign-off
+             below are all centred, and the second place the same number
+             appeared within two lines. The sign-off keeps the number. -->
         <tr><td style="padding:16px 28px 22px 28px;border-top:1px solid #eef2f7;">
-          <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;">Questions? Just reply to this message, or call us on ${escapeHtml(
-            BIZ.phoneDisplay,
-          )}.</p>
+          <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;text-align:center;">Questions? Just reply to this message.</p>
         </td></tr>
       </table>
       <div style="font-size:12px;color:#9aa4b2;margin-top:14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
