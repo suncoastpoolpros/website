@@ -170,13 +170,18 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
    * 4 lb container is roughly what a 15,000 gallon pool takes to move CYA about
    * 30 ppm and retails near $20, so one to two a year IS the $20–$40.
    *
+   * "Topped up" rather than "replaced", matching the salt row above, because
+   * that is what actually happens — stabilizer is not consumed, it dilutes out
+   * with the water and gets brought back to range. "Typically" is doing real
+   * work too: a pool that gets drained or takes a wet summer needs more.
+   *
    * Retail-anchored, so it understates what a company billing this as a
    * "specialty chemical" would charge.
    */
   rows.push({
     label: 'Stabilizer (cyanuric acid)',
     typical: '$20–$40',
-    basis: 'a 4 lb container, once or twice a year',
+    basis: 'a 4 lb container, typically topped up once or twice a year',
   });
   rows.push(...BASE_EXTRAS);
   return rows;
