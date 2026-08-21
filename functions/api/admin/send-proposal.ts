@@ -232,6 +232,9 @@ const saltCareLine = (sanitization: string): string | null =>
 
 const BASE_BENEFITS = [
   'A GPS-stamped photo service report in your inbox after every visit — so you know we were there, even when you weren’t',
+  // Inferred from chemistry, not measured — see the note in
+  // src/components/admin/proposalBenefits.ts before changing this wording.
+  'Chemistry tracked visit to visit — a steady drop in stabilizer or calcium hardness flags a possible leak while the water still looks fine',
   'Vetted, consistent technicians — a familiar face, not a rotating crew',
 ];
 

@@ -79,6 +79,22 @@ const BASE_BENEFITS = [
   // isn't home when the tech comes — which on this coast is a large share of
   // customers — so the line names what it settles rather than the feature.
   'A GPS-stamped photo service report in your inbox after every visit — so you know we were there, even when you weren’t',
+  /**
+   * Sits with the GPS report because they are the same argument: the work is
+   * recorded, and the record is worth something to you.
+   *
+   * INFERRED FROM CHEMISTRY, and the wording has to stay that way — this is not
+   * a sensor and it does not detect leaks, it flags a pattern that often means
+   * one. The mechanism is real: evaporation removes pure water and leaves the
+   * dissolved solids behind, so it does not move these numbers, but water
+   * leaving through a crack carries stabilizer and calcium out with it. Topped
+   * up automatically, the level looks fine and only the readings fall.
+   *
+   * "flags a possible leak" is the honest claim. Anything stronger promises a
+   * diagnosis, and section 4 of the Service Agreement excludes leak repair —
+   * finding it early is the value here, not fixing it.
+   */
+  'Chemistry tracked visit to visit — a steady drop in stabilizer or calcium hardness flags a possible leak while the water still looks fine',
   'Vetted, consistent technicians — a familiar face, not a rotating crew',
 ];
 
