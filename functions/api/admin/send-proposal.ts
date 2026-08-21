@@ -333,7 +333,7 @@ export const composeProposalEmail = (
   const button = hasLink
     ? `<tr><td style="padding:0 28px 6px 28px;" align="center">
           <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:10px;background:#1669AE;">
-            <a href="${escapeHtml(acceptLink)}" style="display:inline-block;background:#1669AE;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 30px;border-radius:10px;">Read your proposal</a>
+            <a href="${escapeHtml(acceptLink)}" style="display:inline-block;background:#1669AE;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 30px;border-radius:10px;">View your proposal</a>
           </td></tr></table>
         </td></tr>`
     : '';
