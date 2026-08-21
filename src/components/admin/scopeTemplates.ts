@@ -43,17 +43,31 @@ const filterLine = ({ filterType }: ScopeContext, detailed: boolean): string => 
   const service = (() => {
     switch (filterType) {
       case 'Cartridge':
-        return 'pulling, rinsing and inspecting the cartridge elements for tears or collapse';
+        return 'pull, rinse and inspect the cartridge elements for tears or collapse';
       case 'DE':
-        return 'backwashing it and recharging with fresh DE';
+        return 'backwash it and recharge with fresh DE';
       case 'Sand':
-        return 'backwashing it and checking the media';
+        return 'backwash it and check the media';
       default:
-        return 'opening, cleaning and inspecting it to suit the system';
+        return 'open, clean and inspect it to suit the system';
     }
   })();
+  /**
+   * The cartridge trigger is a REAL NUMBER because we have one: 8–12 psi over
+   * clean is when the elements come out. Naming it does the same work as
+   * quoting "$120, based on an 8–18 month element life" in the value stack — a
+   * customer who knows their own gauge can check it, and a threshold they can
+   * check is the difference between a schedule and a claim.
+   *
+   * NOT applied to DE or sand. No threshold has been given for those, and
+   * inventing a plausible one is exactly the error this file exists to prevent.
+   */
+  const trigger =
+    filterType === 'Cartridge'
+      ? 'when pressure climbs 8–12 psi over that baseline'
+      : 'when that reading says it is due';
   const why = detailed ? ', so a rising reading is caught before flow drops off' : '';
-  return `• Check filter pressure against its clean baseline every visit${why}, and service the filter when that reading says it is due — ${service}.`;
+  return `• Check filter pressure against its clean baseline every visit${why}, and ${service} ${trigger}.`;
 };
 
 /** Only on a salt pool — a chlorine pool has no cell to check. */
