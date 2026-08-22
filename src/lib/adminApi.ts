@@ -374,6 +374,43 @@ export const emptyCommercial = (): CommercialData => ({
   },
 });
 
+/**
+ * The facts about US that are identical on every commercial bid.
+ *
+ * Kept OUT of the draft on purpose. A draft is wiped between customers, and
+ * nobody should be retyping their insurance limits per proposal — so this has
+ * its own store and its own lifetime, and "Clear" never touches it.
+ *
+ * Every field is omitted from the document while blank, so an unfilled value
+ * can never reach a board as an empty label or, worse, a limit we do not carry.
+ * A management company's insurance reviewer checks these against the
+ * certificate, and a mismatch loses the bid on the spot.
+ */
+export type BusinessProfile = {
+  /** General liability per occurrence, e.g. '1,000,000'. */
+  glPerOccurrence: string;
+  glAggregate: string;
+  /** '' unanswered | 'carried' | 'exempt' — never implied. */
+  workersComp: string;
+  /** Florida licence number, if a licensed contractor. */
+  licenseNumber: string;
+  /** Public Pool Service Technician certification, per 64E-9.018. */
+  certificationNumber: string;
+};
+
+/** Wrapped in a section so it can share the nested-section draft hook. */
+export type BusinessProfileDoc = { business: BusinessProfile };
+
+export const emptyBusinessProfile = (): BusinessProfileDoc => ({
+  business: {
+    glPerOccurrence: '',
+    glAggregate: '',
+    workersComp: '',
+    licenseNumber: '',
+    certificationNumber: '',
+  },
+});
+
 /** Sum of one frequency column across every body priced for it. */
 export const commercialTotal = (bodies: WaterBody[], field: keyof WaterBody): number =>
   bodies.reduce((sum, b) => {

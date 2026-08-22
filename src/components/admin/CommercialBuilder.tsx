@@ -22,13 +22,18 @@ import { useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ChevronLeft,
+  Download,
+  LoaderCircle,
   LogOut,
   Plus,
+  ShieldCheck,
   Trash2,
   X,
 } from 'lucide-react';
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
-import { useCommercialDraft } from '@/lib/useAdminDraft';
+import { useBusinessProfile, useCommercialDraft } from '@/lib/useAdminDraft';
+import { commercialDateLabel, commercialFilename, renderCommercialPdf } from '@/lib/commercialPdf';
+import { reserveProposalNumber } from '@/lib/adminApi';
 import {
   commercialTotal,
   newWaterBody,
@@ -79,7 +84,11 @@ export const CommercialBuilder = ({
   onBack: () => void;
 }) => {
   const { data, setData, update, clearDraft } = useCommercialDraft();
+  // Its own store, so "Clear" wipes the bid and never the insurance limits.
+  const { data: profile, update: updateProfile } = useBusinessProfile();
   const [confirmClear, setConfirmClear] = useState(false);
+  const [building, setBuilding] = useState(false);
+  const [buildError, setBuildError] = useState('');
 
   const classification = classificationFor(data.property.classification);
   const dailyLogDue = requiresDailyLog(data.property.classification);
@@ -125,6 +134,49 @@ export const CommercialBuilder = ({
   const doClear = () => {
     clearDraft();
     setConfirmClear(false);
+  };
+
+  /**
+   * Build the PDF and hand it to the browser.
+   *
+   * DOWNLOAD RATHER THAN SEND, for now and on purpose. A commercial bid is not
+   * accepted by tapping a link: it goes into a board packet, is compared against
+   * two others over weeks, and comes back countersigned by whoever holds the
+   * authority. The document ends in a signature block for exactly that reason,
+   * so the honest v1 is a file you attach yourself.
+   *
+   * It still reserves a proposal number, so a commercial bid is numbered in the
+   * same sequence as everything else and the number on the page matches the one
+   * you will refer to on the phone.
+   */
+  const downloadPdf = async () => {
+    if (building) return;
+    setBuilding(true);
+    setBuildError('');
+    try {
+      const proposalNumber = await reserveProposalNumber();
+      const blob = await renderCommercialPdf({
+        data,
+        business: profile.business,
+        dateLabel: commercialDateLabel(),
+        proposalNumber,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = commercialFilename(data.property.name, proposalNumber);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // Revoked on the next tick, not immediately: Safari has not finished
+      // reading the blob when click() returns and lands on an empty file.
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    } catch (err) {
+      setBuildError('Could not build the PDF. Check the fields and try again.');
+      console.error('commercial pdf failed', err);
+    } finally {
+      setBuilding(false);
+    }
   };
 
   return (
@@ -741,6 +793,106 @@ export const CommercialBuilder = ({
               person, so keep it to what happens next.
             </p>
           </Section>
+
+          {/* ---------------- Our own details ---------------- */}
+          <Section title="Your insurance & licensing">
+            <div className="-mt-2 flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue-light" />
+              <p className="text-sm leading-relaxed text-gray-400">
+                Filled in once and kept — <strong className="text-gray-300">Clear</strong> never
+                touches this. A management company checks these first, and a bid without them is
+                often set aside before the scope is read. Anything left blank is simply left off the
+                document, so nothing untrue can ship.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <FieldShell id="bp-gl1" label="General liability — per occurrence">
+                <input
+                  id="bp-gl1"
+                  className={fieldClass}
+                  placeholder=" "
+                  autoComplete="off"
+                  value={profile.business.glPerOccurrence}
+                  onChange={(e) => updateProfile('business', 'glPerOccurrence', e.target.value)}
+                />
+              </FieldShell>
+              <FieldShell id="bp-gl2" label="General liability — aggregate">
+                <input
+                  id="bp-gl2"
+                  className={fieldClass}
+                  placeholder=" "
+                  autoComplete="off"
+                  value={profile.business.glAggregate}
+                  onChange={(e) => updateProfile('business', 'glAggregate', e.target.value)}
+                />
+              </FieldShell>
+              <FieldShell id="bp-wc" label="Workers' compensation">
+                <select
+                  id="bp-wc"
+                  className={selectClass}
+                  value={profile.business.workersComp}
+                  onChange={(e) => updateProfile('business', 'workersComp', e.target.value)}
+                >
+                  <option value="">Not stated</option>
+                  <option value="carried">Carried on all field staff</option>
+                  <option value="exempt">Exempt — leave it off the document</option>
+                </select>
+              </FieldShell>
+              <FieldShell id="bp-lic" label="Florida licence number">
+                <input
+                  id="bp-lic"
+                  className={fieldClass}
+                  placeholder=" "
+                  autoComplete="off"
+                  value={profile.business.licenseNumber}
+                  onChange={(e) => updateProfile('business', 'licenseNumber', e.target.value)}
+                />
+              </FieldShell>
+              <FieldShell id="bp-cert" label="Service technician certification no.">
+                <input
+                  id="bp-cert"
+                  className={fieldClass}
+                  placeholder=" "
+                  autoComplete="off"
+                  value={profile.business.certificationNumber}
+                  onChange={(e) => updateProfile('business', 'certificationNumber', e.target.value)}
+                />
+              </FieldShell>
+            </div>
+          </Section>
+
+          {/* ---------------- Build ---------------- */}
+          <div className="pb-4">
+            {buildError && (
+              <div
+                role="alert"
+                className="mb-3 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+              >
+                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
+                <span>{buildError}</span>
+              </div>
+            )}
+            <button
+              onClick={downloadPdf}
+              disabled={building}
+              className="flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark py-4 text-lg font-bold text-white shadow-lg shadow-brand-blue/20 transition-all hover:from-brand-blue-light hover:to-brand-blue disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {building ? (
+                <>
+                  <LoaderCircle className="h-5 w-5 animate-spin" /> Building the proposal…
+                </>
+              ) : (
+                <>
+                  <Download className="h-5 w-5" /> Download the proposal
+                </>
+              )}
+            </button>
+            <p className="mt-2 text-center text-xs leading-relaxed text-gray-500">
+              A commercial bid isn&apos;t accepted by tapping a link — it goes into a board packet
+              and comes back countersigned, so the document ends in a signature block and you attach
+              it yourself.
+            </p>
+          </div>
         </div>
       </div>
     </div>

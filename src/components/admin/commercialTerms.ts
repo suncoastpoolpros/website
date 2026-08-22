@@ -9,38 +9,15 @@
  *
  * TWO KINDS OF VALUE LIVE IN THIS FILE.
  *
- * The BUSINESS CONSTANTS below are the same on every bid — limits, licence
- * numbers, response windows. They belong here rather than in the autosaved
- * draft, because a draft is cleared between customers and nobody should be
- * retyping their insurance limits per proposal.
+ * The FIXED LANGUAGE below is the same on every bid — response windows, the
+ * insurance offer, what makes this bid different.
  *
  * The PER-BID FIGURES — repair threshold, escalator, term — are fields on the
  * builder, because they are genuinely negotiated. The helpers at the bottom
- * turn them into the sentences that get printed.
+ * turn them into the sentences that get printed. Our own insurance limits and
+ * licence numbers are NOT here: they live in the business profile (adminApi),
+ * which outlives any one draft.
  */
-
-// ---------------------------------------------------------------------------
-// BUSINESS CONSTANTS — fill these in once.
-//
-// Every one of them is omitted from the document while it is blank, so an
-// unfilled value never reaches a customer as a false claim or an empty label.
-// Anything asserting a limit or a licence must be true: a board's insurance
-// reviewer checks these against the certificate, and a mismatch loses the bid
-// on the spot.
-// ---------------------------------------------------------------------------
-
-export const BUSINESS = {
-  /** General liability, per occurrence. e.g. '1,000,000' */
-  glPerOccurrence: '',
-  /** General liability, aggregate. e.g. '2,000,000' */
-  glAggregate: '',
-  /** Workers' compensation — leave blank if exempt rather than implying cover. */
-  workersComp: '',
-  /** Florida licence number, if a licensed contractor. */
-  licenseNumber: '',
-  /** Public Pool Service Technician certification reference, per 64E-9.018. */
-  certificationNumber: '',
-} as const;
 
 /**
  * Insurance is often the first thing a management company checks, and a bid

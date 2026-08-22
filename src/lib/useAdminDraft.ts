@@ -8,9 +8,11 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  type BusinessProfileDoc,
   type CommercialData,
   type InspectionData,
   type ProposalData,
+  emptyBusinessProfile,
   emptyCommercial,
   emptyInspection,
   emptyProposal,
@@ -104,3 +106,13 @@ export const useInspectionDraft = () =>
  */
 export const useCommercialDraft = () =>
   useAdminDraft<CommercialData>('scpp_commercial_draft', emptyCommercial);
+
+/**
+ * Our own insurance, licence and certification details — the same on every bid.
+ *
+ * A SEPARATE STORE from the commercial draft, deliberately: these outlive any
+ * one proposal, and pressing "Clear" on a bid must not wipe them. Same hook, so
+ * it autosaves the same way; just never handed a clearDraft anyone can reach.
+ */
+export const useBusinessProfile = () =>
+  useAdminDraft<BusinessProfileDoc>('scpp_business_profile', emptyBusinessProfile);
