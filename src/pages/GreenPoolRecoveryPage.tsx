@@ -158,6 +158,11 @@ const GREEN_FAQ: Array<{ question: string; answer: string }> = [
       "Not automatically. Clear water and sanitized water aren't the same thing, and during a recovery the chlorine is often still well above swimming range anyway. We'll tell you when the numbers are actually in a safe band — usually a day or two after it looks finished.",
   },
   {
+    question: 'It went green after a hurricane. Same thing?',
+    answer:
+      "Same bloom, different cause — and if the storm is what did it, the debris and runoff usually need dealing with alongside the algae, so it is worth starting from our storm cleanup instead. Rainwater dilutes the chlorine while the pump sits off for days, then the runoff drops in the phosphates and nitrates that feed what follows. Caught within a few days it is a tier one or two. Left a fortnight it is a tier three.",
+  },
+  {
     question: 'What does a green pool cleanup cost?',
     answer:
       "It's a flat quote, given up front from photos, and it varies with the size of the pool, which tier it's in, and whether the filter can keep up. What it isn't is an hourly meter — storm and recovery work is the easiest place in this industry to run one, and we'd rather you knew the number before anyone turns up.",

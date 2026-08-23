@@ -89,6 +89,26 @@ const STORM_FAQ: Array<{ question: string; answer: string }> = [
       "Probably, and this is the one that catches people. Debris settles out and the water goes clear on its own, which makes it look finished — while there is still no measurable sanitizer in it. The visible mess is the easy part. What actually needs doing is rebuilding the chemistry and holding it long enough to be confident the water is safe again.",
   },
   {
+    question: 'My screen enclosure came down. Is the pool still cleanable?',
+    answer:
+      "Almost always, yes — and it is one of the more common calls we get in Pinellas. A failed cage drops screen panels, aluminium framing and fasteners into the water, which is heavy, awkward debris rather than a reason to write the pool off. We clear what is in the pool and flag anything that has scratched the finish. We do not rebuild enclosures, but we will tell you honestly what the water and the surface look like underneath once it is out, which is usually what the insurance conversation needs.",
+  },
+  {
+    question: 'My pump will not turn on after the storm. Was it the surge?',
+    answer:
+      "Possibly. Lightning and grid surges take out pump motors, control boards, timers and automation, and it is a separate problem from a motor that sat in floodwater — a surge-damaged board often looks completely dry. Either way, do not keep flipping the breaker to test it. We check the pad as part of a storm cleanup, tell you which of the two you are dealing with, and quote the repair before anything is replaced.",
+  },
+  {
+    question: 'How long should the pump run once the power is back?',
+    answer:
+      "Continuously for the first couple of days, not on its usual timer. A mildly cloudy pool generally needs a full 24 hours of circulation; one that went green or took a real debris load needs 48 or more. The filter is doing the actual clearing at that point, so it needs to keep running — and it will need cleaning more than once while it does.",
+  },
+  {
+    question: 'My pool went green after the storm. Is that a different job?',
+    answer:
+      "It is the same call, just further along. Green after a storm is an algae bloom that got going while the pump was off, fed by debris and runoff — the storm caused it, so we handle it as part of the cleanup rather than as a separate booking. If it has been sitting green for weeks rather than days it becomes a full recovery, which is its own process.",
+  },
+  {
     question: 'How quickly can you get out after a storm?',
     answer:
       "It depends on how wide the damage is. After a major storm we are triaging a whole route, and existing weekly customers come first. Call or text as early as you can — even before the power is back — and we will give you a real position in the queue rather than a promise we cannot keep. Getting on the list costs nothing and it decides how big the job is by the time we arrive.",
@@ -727,8 +747,9 @@ const StormCleanupPageInner = () => {
               </h2>
               <p className="section-subtext max-w-2xl mx-auto mb-8">
                 Text us a few pictures of the pool and we will come back with a flat number
-                for the cleanup — before anyone turns up. Storm work is the easiest place in
-                this industry to run a meter, and we would rather you knew the price up front.
+                for the cleanup — before anyone turns up. Emergency storm work is the easiest
+                place in this industry to run a meter on someone who has just had a rough
+                week, and we would rather you knew the price up front.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-300 mb-8">
                 <span className="flex items-center gap-2">
@@ -760,7 +781,14 @@ const StormCleanupPageInner = () => {
               </p>
 
               <p className="text-[13px] text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                Serving pools across Pinellas County — St.&nbsp;Petersburg,{' '}
+                Storm damage often turns into a{' '}
+                <SmartLink
+                  to="/services/green-pool-recovery/"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  green pool a few days later
+                </SmartLink>
+                . Serving pools across Pinellas County — St.&nbsp;Petersburg,{' '}
                 <SmartLink to="/st-pete-beach-fl/" className="text-gray-400 hover:text-white transition-colors">
                   St.&nbsp;Pete Beach
                 </SmartLink>
