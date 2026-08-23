@@ -14,6 +14,7 @@ import { type ParsedQuoteLink, parseQuoteLink } from "@/lib/quoteLinks";
 import { PRICING_CONDITION_TERM } from "@/components/admin/proposalTerms";
 import { jobKindOf, showsConditionTerm } from "@/components/admin/jobKinds";
 import { splitTierIncludes } from "@/lib/adminApi";
+import { shortBullet } from "@/components/admin/tierPresets";
 import {
   DECLINE_REASONS,
   declineReply,
@@ -1030,13 +1031,20 @@ export const ApprovePage = () => {
                           tier,
                           i > 0 ? (tiers[i - 1]?.includes ?? []) : [],
                         );
+                        /* Short forms here and NOWHERE else. The PDF keeps
+                           the long ones: it is read once and carefully, often
+                           on paper, and there the qualifier after the dash is
+                           the part that answers the objection. This page is
+                           scanned two columns at a time, where the same
+                           qualifiers turn six quick promises into six
+                           paragraphs. */
                         const row = (item: string, j: number) => (
                           <li
                             key={j}
                             className="flex gap-2 text-sm leading-relaxed text-[#374151]"
                           >
                             <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
-                            {item}
+                            {shortBullet(item)}
                           </li>
                         );
                         return (
