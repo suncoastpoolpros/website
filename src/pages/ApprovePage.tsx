@@ -1189,17 +1189,34 @@ export const ApprovePage = () => {
               .
             </p>
 
+            {/* SAYS THE WORD. "Going a different route?" was polite to the
+                point of being easy to miss — somebody who has decided against
+                us is skimming for the exit, and a soft phrase does not read as
+                one. "Decline this proposal" is the sentence they are looking
+                for, and the line under it carries the ask.
+
+                An exit this visible costs some conversions; that trade is made
+                on purpose. A lost quote nobody explains teaches nothing, and
+                four of the next ten saying "price" is worth more than the
+                handful of soft maybes a quieter prompt would have preserved.
+
+                Outlined, not filled: unmistakably a button, but never
+                competing with Select, which stays the only solid dark thing on
+                the page. */}
             {!declined && (
-              <p className="mx-auto mt-2 max-w-lg text-center text-[13px] leading-relaxed text-[#8a94a3]">
-                Going a different route?{" "}
+              <div className="mt-6 flex justify-center">
                 <button
                   onClick={() => setDeclineOpen(true)}
-                  className={quietLink}
+                  className="w-full max-w-sm rounded-xl border border-[#c8d4e0] bg-white px-5 py-3.5 text-center transition-colors hover:border-[#9fb3c8] hover:bg-[#f7f9fc]"
                 >
-                  Tell us why
+                  <span className="block text-sm font-bold text-[#0a1628]">
+                    Decline this proposal
+                  </span>
+                  <span className="mt-0.5 block text-xs leading-relaxed text-[#6b7280]">
+                    Tell us why &mdash; it takes one tap and genuinely helps
+                  </span>
                 </button>
-                .
-              </p>
+              </div>
             )}
 
             {/* The acknowledgement matches: a line, not a panel. Still tinted
