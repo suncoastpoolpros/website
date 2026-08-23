@@ -829,10 +829,14 @@ export const ApprovePage = () => {
                 decision, not the pitch. The download below keeps the full
                 document one click away. */}
 
-            {/* Extra room below on desktop: the recommended card is lifted 20px
-                clear of the row, and at mb-4 its banner came up level with this
-                line. The lift has to buy its space from somewhere. */}
-            <p className="mb-4 text-center text-[#6b7280] sm:mb-9">
+            {/* Extra room below on desktop = the base gap PLUS the lift.
+                The recommended card's top edge is a full banner-height (40px)
+                above the row, so at mb-4 its banner came up level with this
+                line and read as a collision. mb-14 restores the same visual
+                gap the unlifted card has.
+
+                Tied to the lift: if -mt-10 changes, this changes with it. */}
+            <p className="mb-4 text-center text-[#6b7280] sm:mb-14">
               Choose the plan that works best for you.
             </p>
             <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
