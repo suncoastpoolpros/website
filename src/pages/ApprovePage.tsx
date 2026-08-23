@@ -1006,26 +1006,77 @@ export const ApprovePage = () => {
                           it. Each card carries the whole list now and stands
                           alone in any order. */}
                       {(() => {
-                        const items = tier.includes.map((x) => x.trim()).filter(Boolean);
-                        const n = Math.min(tier.extrasCount ?? 0, items.length);
+                        const own = tier.includes
+                          .map((x) => x.trim())
+                          .filter(Boolean);
+                        /*
+                         * OLDER QUOTES GET THE SAME FULL CARD, composed here
+                         * rather than written back to the database.
+                         *
+                         * A quote stored before the lists were merged holds only
+                         * this plan's extras, because the card said "Everything
+                         * in <base>, plus:" and let the other card carry the
+                         * rest. Without extrasCount that is all we would render,
+                         * and the reference it depended on is gone from this
+                         * page — so the annual card would silently understate
+                         * what the customer is buying.
+                         *
+                         * BACKFILLING THE ROWS WOULD BE THE WRONG FIX. Those
+                         * rows are the record of what was sent, some of them
+                         * signed, and the schema is explicit that a stored quote
+                         * must not change under the customer.
+                         *
+                         * Composing at render time is not the same thing. The
+                         * emailed PDF says "Everything in Pay Monthly, plus:
+                         * [four]"; this card lists all ten. Those are the same
+                         * claim stated two ways — one by reference, one in full
+                         * — so no customer can set the two side by side and find
+                         * a discrepancy. Nothing stored moves.
+                         */
+                        const base =
+                          i > 0 ? (tiers[i - 1]?.includes ?? []) : [];
+                        const inherited =
+                          tier.extrasCount == null && base.length
+                            ? base
+                                .map((x) => x.trim())
+                                .filter(Boolean)
+                                // A hand-edited old tier may already repeat one.
+                                .filter((x) => !own.includes(x))
+                            : [];
+                        const items = [...own, ...inherited];
+                        const n = Math.min(
+                          tier.extrasCount ??
+                            (inherited.length ? own.length : 0),
+                          items.length,
+                        );
                         const row = (item: string, j: number) => (
-                          <li key={j} className="flex gap-2 text-sm leading-relaxed text-[#374151]">
+                          <li
+                            key={j}
+                            className="flex gap-2 text-sm leading-relaxed text-[#374151]"
+                          >
                             <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
                             {item}
                           </li>
                         );
-                        if (!n) return <ul className="mt-4 space-y-2">{items.map(row)}</ul>;
+                        if (!n)
+                          return (
+                            <ul className="mt-4 space-y-2">{items.map(row)}</ul>
+                          );
                         return (
                           <>
                             <p className="mt-4 text-sm font-bold text-[#0a1628]">
                               Additional benefits
                             </p>
-                            <ul className="mt-2 space-y-2">{items.slice(0, n).map(row)}</ul>
+                            <ul className="mt-2 space-y-2">
+                              {items.slice(0, n).map(row)}
+                            </ul>
                             {items.length > n && (
                               <>
                                 <div className="mt-4 border-t border-[#e9eef4]" />
                                 <ul className="mt-4 space-y-2">
-                                  {items.slice(n).map((item, j) => row(item, n + j))}
+                                  {items
+                                    .slice(n)
+                                    .map((item, j) => row(item, n + j))}
                                 </ul>
                               </>
                             )}
