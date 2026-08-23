@@ -166,10 +166,6 @@ const STORM_FAQ: Array<{ question: string; answer: string }> = [
 // these nodes; they'd only appear after the page hydrates. That matters more
 // here than anywhere else on the site: this page's whole reason for shipping in
 // August is being indexed fast, ahead of a named storm.
-//
-// NOTE: the breadcrumb is two levels. The /services/ hub doesn't exist yet, and
-// pointing a crumb at a 404 is worse than a shorter trail. Add the Services
-// crumb when the hub ships.
 const STORM_SCHEMA = [
   serviceSchema({
     serviceType: 'Storm & Hurricane Pool Cleanup',
@@ -188,6 +184,7 @@ const STORM_SCHEMA = [
   },
   breadcrumbSchema([
     { name: 'Home', path: '/' },
+    { name: 'Services', path: '/services/' },
     { name: 'Storm Cleanup', path: CANONICAL },
   ]),
 ];

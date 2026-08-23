@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { ServiceAreasMenu } from '@/components/ServiceAreasMenu';
 import { cities } from '@/lib/cities';
+import { ServicesMenu } from '@/components/ServicesMenu';
 import { Container } from '@/components/Container';
 import { useQuoteSheet } from '@/components/QuoteSheet';
 import { PHONE_DISPLAY, PHONE_HREF, SMS_HREF, HOURS_SHORT } from '@/lib/contact';
@@ -21,6 +22,7 @@ import { PHONE_DISPLAY, PHONE_HREF, SMS_HREF, HOURS_SHORT } from '@/lib/contact'
 // "Home" and the "Service Areas" accordion render separately above these.
 type MobileNavItem = { label: string; to?: string; href?: string };
 const MOBILE_NAV: MobileNavItem[] = [
+  { label: 'Services', to: '/services/' },
   { label: 'How It Works', to: '/how-it-works/' },
   { label: 'FAQ', to: '/faq/' },
   { label: 'Tools', to: '/tools/' },
@@ -34,6 +36,8 @@ export const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [areasOpen, setAreasOpen] = useState(false);
   const closeTimer = useRef<number | null>(null);
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const servicesCloseTimer = useRef<number | null>(null);
   const { open: openQuoteSheet, warm: warmQuoteSheet, isOpen: quoteSheetOpen } = useQuoteSheet();
   const { pathname } = useLocation();
   const [areasExpanded, setAreasExpanded] = useState(false);
@@ -109,12 +113,27 @@ export const Navbar = () => {
   // Delay close-on-leave so the user can travel from the trigger
   // down into the panel without it snapping shut.
   const openAreas = () => {
+    setServicesOpen(false);
     if (closeTimer.current) {
       window.clearTimeout(closeTimer.current);
       closeTimer.current = null;
     }
     setAreasOpen(true);
   };
+  const openServices = () => {
+    if (servicesCloseTimer.current) {
+      window.clearTimeout(servicesCloseTimer.current);
+      servicesCloseTimer.current = null;
+    }
+    setServicesOpen(true);
+    setAreasOpen(false);
+  };
+
+  const scheduleServicesClose = () => {
+    if (servicesCloseTimer.current) window.clearTimeout(servicesCloseTimer.current);
+    servicesCloseTimer.current = window.setTimeout(() => setServicesOpen(false), 120);
+  };
+
   const scheduleClose = () => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
     closeTimer.current = window.setTimeout(() => setAreasOpen(false), 120);
@@ -212,11 +231,47 @@ export const Navbar = () => {
               )}
             </div>
 
+            {/* Services — the slot How It Works used to hold. How It Works
+                moves INSIDE this menu rather than off the site: it handles
+                billing and chemical-cost objections, which is real mid-funnel
+                work, it just does not need one of five header slots. */}
+            <div
+              className="relative"
+              onMouseEnter={openServices}
+              onMouseLeave={scheduleServicesClose}
+            >
+              <button
+                type="button"
+                onClick={() => setServicesOpen((v) => !v)}
+                aria-expanded={servicesOpen}
+                aria-haspopup="true"
+                className="inline-flex items-center gap-1 whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
+              >
+                Services
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform ${servicesOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {servicesOpen && (
+                <div
+                  className="absolute left-1/2 top-full -translate-x-1/2 pt-3 z-50"
+                  onMouseEnter={openServices}
+                  onMouseLeave={scheduleServicesClose}
+                >
+                  <ServicesMenu />
+                </div>
+              )}
+            </div>
+
+            {/* Pool Care was in the mobile drawer but had NO desktop entry at
+                all — nine guides with no way to reach them from a desktop
+                header. The slot freed by Careers pays for it. */}
             <Link
-              to="/how-it-works/"
+              to="/pool-care/"
               className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
             >
-              How It Works
+              Pool Care
             </Link>
             <Link
               to="/faq/"
@@ -229,12 +284,6 @@ export const Navbar = () => {
               className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
             >
               Tools
-            </Link>
-            <Link
-              to="/careers/"
-              className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
-            >
-              Careers
             </Link>
           </div>
 

@@ -3,6 +3,7 @@ import { SmartLink as Link } from '@/components/SmartLink';
 import { Facebook, Phone, Mail, MapPin } from 'lucide-react';
 import { Container } from '@/components/Container';
 import { cities } from '@/lib/cities';
+import { pagedServices } from '@/lib/services';
 import {
   BUSINESS_NAME,
   PHONE_DISPLAY,
@@ -30,9 +31,14 @@ const footerCities = cities.filter(
 // client-only, so a page that appears solely in a dropdown ships orphaned.
 // When the /services/ hub lands this becomes its own column.
 const exploreLinks = [
+  // Generated from lib/services, so a new service page appears here the moment
+  // it gets a `to` — no chance of shipping one that nothing links to. The
+  // weekly entry points at the hub itself, so it is filtered out as a dupe.
+  { label: 'Services', href: '/services/', route: true },
+  ...pagedServices
+    .filter((s) => s.to !== '/services/')
+    .map((s) => ({ label: s.label, href: s.to as string, route: true })),
   { label: 'How It Works', href: '/how-it-works/', route: true },
-  { label: 'Storm Cleanup', href: '/services/storm-cleanup/', route: true },
-  { label: 'Green Pool Recovery', href: '/services/green-pool-recovery/', route: true },
   { label: 'FAQ', href: '/faq/', route: true },
   { label: 'Tools', href: '/tools/', route: true },
   { label: 'Pool Care', href: '/pool-care/', route: true },

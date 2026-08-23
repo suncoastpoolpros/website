@@ -1,6 +1,8 @@
 import React from 'react';
-import { Check, Waves, ClipboardCheck } from 'lucide-react';
+import { Check, Waves, ClipboardCheck, ArrowRight } from 'lucide-react';
 import { Container } from '@/components/Container';
+import { SmartLink } from '@/components/SmartLink';
+import { services as SERVICE_REGISTRY, serviceHref } from '@/lib/services';
 import { useQuoteSheet } from '@/components/QuoteSheet';
 import {
   IcWeeklyCleaning,
@@ -11,36 +13,59 @@ import {
   IcGreenRecovery,
 } from '@/components/PoolIcons';
 
+// The six service cards, each pointing at a real destination.
+//
+// Two problems fixed here at once. Every card used to be a DEAD END -- six
+// services advertised from the site's strongest page with nothing to click. And
+// "Saltwater & Chemistry" and "Salt & Equipment Care" were near-duplicates of
+// each other, which left storm cleanup -- a service we actually run, in a state
+// that has a hurricane season -- off the homepage entirely.
+//
+// `to` comes from lib/services so these cannot drift from the hub, the nav
+// dropdown, or the footer. Cards without their own page yet deep-link to their
+// section on the hub, so nothing here is a dead end at any point.
+const byslug = (slug: string) => {
+  const found = SERVICE_REGISTRY.find((s) => s.slug === slug);
+  if (!found) throw new Error(`Unknown service slug: ${slug}`);
+  return found;
+};
+
 const services = [
   {
     icon: IcWeeklyCleaning,
     title: "Weekly Pool Cleaning",
-    description: "Dependable scheduled service keeping your pool clean, balanced, and always ready to enjoy."
-  },
-  {
-    icon: IcChemistry,
-    title: "Saltwater & Chemistry",
-    description: "Expert balancing to protect surfaces, equipment, and swimmer comfort."
-  },
-  {
-    icon: IcUpgrade,
-    title: "Equipment Upgrades",
-    description: "Modernize with a variable-speed pump, salt system, or smart automation — lower bills, less hassle."
-  },
-  {
-    icon: IcFilter,
-    title: "Filter Cleaning & Replacement",
-    description: "Improves water clarity, circulation efficiency, and equipment lifespan."
-  },
-  {
-    icon: IcSaltCare,
-    title: "Salt & Equipment Care",
-    description: "Salt cell service, system tune-ups, and seasonal care that keep everything running efficiently."
+    description: "Dependable scheduled service keeping your pool clean, balanced, and always ready to enjoy.",
+    to: serviceHref(byslug('weekly')),
   },
   {
     icon: IcGreenRecovery,
     title: "Green Pool Recovery",
-    description: "Rapid restoration service to bring neglected or algae-affected pools back to clear condition."
+    description: "Rapid restoration service to bring neglected or algae-affected pools back to clear condition.",
+    to: serviceHref(byslug('green')),
+  },
+  {
+    icon: IcSaltCare,
+    title: "Storm & Hurricane Cleanup",
+    description: "Debris cleared, chemistry rebuilt, and your equipment checked over after the weather passes through.",
+    to: serviceHref(byslug('storm')),
+  },
+  {
+    icon: IcChemistry,
+    title: "Saltwater & Chemistry",
+    description: "Salt cell service, system tune-ups, and expert balancing that protects surfaces, equipment, and swimmers.",
+    to: serviceHref(byslug('salt')),
+  },
+  {
+    icon: IcFilter,
+    title: "Filter Cleaning & Replacement",
+    description: "Improves water clarity, circulation efficiency, and equipment lifespan.",
+    to: serviceHref(byslug('filter')),
+  },
+  {
+    icon: IcUpgrade,
+    title: "Equipment Upgrades",
+    description: "Modernize with a variable-speed pump, salt system, or smart automation — lower bills, less hassle.",
+    to: serviceHref(byslug('equipment')),
   }
 ];
 
@@ -168,16 +193,20 @@ export const Services = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, i) => (
-            <div
+            <SmartLink
               key={i}
-              className="glass-panel p-6 rounded-2xl border border-white/5 hover:bg-white/5 transition-colors"
+              to={service.to}
+              className="group glass-panel p-6 rounded-2xl border border-white/5 hover:bg-white/5 transition-colors block h-full"
             >
               <div className="w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center mb-4">
                 <service.icon className="w-6 h-6 text-brand-blue-light" />
               </div>
-              <h3 className="text-lg md:text-xl font-display font-bold text-white mb-2">{service.title}</h3>
+              <h3 className="text-lg md:text-xl font-display font-bold text-white mb-2 flex items-center gap-1.5">
+                {service.title}
+                <ArrowRight className="w-4 h-4 text-gray-500 transition-all group-hover:text-brand-blue-light group-hover:translate-x-0.5" />
+              </h3>
               <p className="text-gray-400 leading-relaxed">{service.description}</p>
-            </div>
+            </SmartLink>
           ))}
         </div>
       </Container>

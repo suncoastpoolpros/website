@@ -166,8 +166,6 @@ const GREEN_FAQ: Array<{ question: string; answer: string }> = [
 // JSON-LD in the PRERENDERED head via usePageMeta({ jsonLd }) — not a useEffect,
 // which never runs during renderToString and would leave the crawler's first
 // fetch with no schema at all.
-//
-// NOTE: two-level breadcrumb until the /services/ hub exists.
 const RECOVERY_SCHEMA = [
   serviceSchema({
     serviceType: 'Green Pool Recovery & Cleanup',
@@ -186,6 +184,7 @@ const RECOVERY_SCHEMA = [
   },
   breadcrumbSchema([
     { name: 'Home', path: '/' },
+    { name: 'Services', path: '/services/' },
     { name: 'Green Pool Recovery', path: CANONICAL },
   ]),
 ];
