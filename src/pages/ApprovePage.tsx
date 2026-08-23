@@ -162,6 +162,11 @@ const leadsWithBreakdown = (
   return quote.proposal?.deliveredBy === 'link';
 };
 
+/** Links in the footer lines: colour and weight, with the underline held back
+ *  for hover. Four underlined links in two sentences read as clutter. */
+const quietLink =
+  'font-semibold text-brand-blue hover:text-brand-blue-dark hover:underline underline-offset-4';
+
 export const ApprovePage = () => {
   usePageMeta({
     title: 'Your Pool Service Proposal — Suncoast Pool Pros',
@@ -931,48 +936,48 @@ export const ApprovePage = () => {
               close the tab.
             */}
             {/*
-              Help BEFORE the exit, deliberately in that order.
+              Help BEFORE the exit, deliberately in that order: someone
+              wavering on the price should meet "call us" before they meet
+              "tell us why you're not buying". At the FOOT of the plans because
+              hesitation happens after reading a price, not before it.
 
-              Someone wavering on the price should meet "call us" first; the
-              decline line below is only for people who have already decided.
-              Until now the exit was the only thing down here, which is the
-              wrong last impression on a page whose job is to convert.
+              KEPT DELIBERATELY PLAIN. The first version underlined four links
+              inside two sentences of prose and the result was link-soup — the
+              decoration was doing the shouting rather than the words. Colour
+              and weight are enough to read as a link here; the underline
+              arrives on hover, where it confirms rather than competes. The
+              editorial tails ("a real person answers", "genuinely helps a
+              small business like ours") went for the same reason: on a page
+              this quiet they added bulk and a second wrapped line without
+              adding information.
 
-              And it is at the FOOT of the plans rather than only in the header,
-              because hesitation happens after reading a price, not before it —
-              somebody unsure at this point should not have to scroll back up to
-              find a way to ask.
-
-              THREE WAYS, and text is not an afterthought: the whole lead flow
-              is text-first, and "text us a question" is a far lower barrier
-              than a phone call for someone with a small doubt about a number.
+              The two lines carry different weight on purpose. Asking for help
+              is the one we want taken; the decline is genuinely secondary and
+              now looks it.
             */}
             <p className="mx-auto mt-10 max-w-lg text-center text-sm leading-relaxed text-[#6b7280]">
               Questions?{' '}
-              <a href={PHONE_HREF} className="font-semibold text-brand-blue underline underline-offset-4 hover:text-brand-blue-dark">
+              <a href={PHONE_HREF} className={quietLink}>
                 Call
               </a>{' '}
               or{' '}
-              <a href={SMS_HREF} className="font-semibold text-brand-blue underline underline-offset-4 hover:text-brand-blue-dark">
+              <a href={SMS_HREF} className={quietLink}>
                 text
               </a>{' '}
               {PHONE_DISPLAY}, or{' '}
-              <a href={EMAIL_HREF} className="font-semibold text-brand-blue underline underline-offset-4 hover:text-brand-blue-dark">
+              <a href={EMAIL_HREF} className={quietLink}>
                 email us
-              </a>{' '}
-              &mdash; a real person answers.
+              </a>
+              .
             </p>
 
             {!declined && (
-              <p className="mx-auto mt-3 max-w-lg text-center text-sm leading-relaxed text-[#6b7280]">
+              <p className="mx-auto mt-2 max-w-lg text-center text-[13px] leading-relaxed text-[#8a94a3]">
                 Going a different route?{' '}
-                <button
-                  onClick={() => setDeclineOpen(true)}
-                  className="font-semibold text-brand-blue underline underline-offset-4 hover:text-brand-blue-dark"
-                >
+                <button onClick={() => setDeclineOpen(true)} className={quietLink}>
                   Tell us why
-                </button>{' '}
-                &mdash; it takes one tap, and it genuinely helps a small business like ours.
+                </button>
+                .
               </p>
             )}
 
@@ -981,7 +986,7 @@ export const ApprovePage = () => {
                 reason — two of them are recoverable, and a screen that only says
                 "thanks" wastes the last moment anyone is paying attention. */}
             {declined && (
-              <p className="mx-auto mt-3 max-w-lg text-center text-sm leading-relaxed text-[#176a2c]">
+              <p className="mx-auto mt-2 max-w-lg text-center text-[13px] leading-relaxed text-[#176a2c]">
                 <span className="font-semibold">Thank you &mdash; that helps.</span>{' '}
                 {declineReply(declined)}
               </p>
