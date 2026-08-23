@@ -29,7 +29,7 @@ import {
   proposalFilename,
   renderProposalPdf,
 } from '@/lib/proposalPdf';
-import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
+import { EMAIL_HREF, PHONE_DISPLAY, PHONE_HREF, SMS_HREF } from '@/lib/contact';
 import { ProposalBreakdown } from '@/components/ProposalBreakdown';
 
 /**
@@ -930,8 +930,41 @@ export const ApprovePage = () => {
               one person whose answer is worth having, and they are about to
               close the tab.
             */}
+            {/*
+              Help BEFORE the exit, deliberately in that order.
+
+              Someone wavering on the price should meet "call us" first; the
+              decline line below is only for people who have already decided.
+              Until now the exit was the only thing down here, which is the
+              wrong last impression on a page whose job is to convert.
+
+              And it is at the FOOT of the plans rather than only in the header,
+              because hesitation happens after reading a price, not before it —
+              somebody unsure at this point should not have to scroll back up to
+              find a way to ask.
+
+              THREE WAYS, and text is not an afterthought: the whole lead flow
+              is text-first, and "text us a question" is a far lower barrier
+              than a phone call for someone with a small doubt about a number.
+            */}
+            <p className="mx-auto mt-10 max-w-lg text-center text-sm leading-relaxed text-[#6b7280]">
+              Questions?{' '}
+              <a href={PHONE_HREF} className="font-semibold text-brand-blue underline underline-offset-4 hover:text-brand-blue-dark">
+                Call
+              </a>{' '}
+              or{' '}
+              <a href={SMS_HREF} className="font-semibold text-brand-blue underline underline-offset-4 hover:text-brand-blue-dark">
+                text
+              </a>{' '}
+              {PHONE_DISPLAY}, or{' '}
+              <a href={EMAIL_HREF} className="font-semibold text-brand-blue underline underline-offset-4 hover:text-brand-blue-dark">
+                email us
+              </a>{' '}
+              &mdash; a real person answers.
+            </p>
+
             {!declined && (
-              <p className="mx-auto mt-10 max-w-lg text-center text-sm leading-relaxed text-[#6b7280]">
+              <p className="mx-auto mt-3 max-w-lg text-center text-sm leading-relaxed text-[#6b7280]">
                 Going a different route?{' '}
                 <button
                   onClick={() => setDeclineOpen(true)}
@@ -948,7 +981,7 @@ export const ApprovePage = () => {
                 reason — two of them are recoverable, and a screen that only says
                 "thanks" wastes the last moment anyone is paying attention. */}
             {declined && (
-              <p className="mx-auto mt-10 max-w-lg text-center text-sm leading-relaxed text-[#176a2c]">
+              <p className="mx-auto mt-3 max-w-lg text-center text-sm leading-relaxed text-[#176a2c]">
                 <span className="font-semibold">Thank you &mdash; that helps.</span>{' '}
                 {declineReply(declined)}
               </p>
