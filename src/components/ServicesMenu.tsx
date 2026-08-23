@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ClipboardCheck } from 'lucide-react';
+import { ArrowRight, ClipboardCheck, Timer, Check } from 'lucide-react';
 import { useQuoteSheet } from '@/components/QuoteSheet';
 import { pagedServices, services } from '@/lib/services';
 
@@ -29,8 +29,11 @@ export const ServicesMenu = () => {
   };
 
   return (
-    <div className="w-[620px] bg-gradient-to-r from-[#e4e9f0] to-white border border-black/10 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden">
-      <div className="grid grid-cols-[1fr_15rem]">
+    <div className="w-[664px] bg-gradient-to-r from-[#e4e9f0] to-white border border-black/10 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden">
+      {/* 17rem rail, not 15: at 15 the "Five minutes, tops" heading wrapped
+          onto two lines, which made the reassurance block read as a paragraph
+          instead of a headline. */}
+      <div className="grid grid-cols-[1fr_17rem]">
         {/* LEFT — the services with their own pages */}
         <div className="p-7 pr-5">
           <p className="text-[10px] uppercase tracking-[0.25em] text-brand-blue font-bold mb-2">
@@ -81,20 +84,44 @@ export const ServicesMenu = () => {
 
         {/* RIGHT — the offer, then the two things people look for next */}
         <div className="p-5 border-l border-black/10 bg-white/60 flex flex-col gap-4">
+          {/* Effort, not price. The ~$150 anchor used to sit here, and this is
+              the one surface where it appears WITHOUT the caveats that travel
+              with it everywhere else ("moves with size, tree cover, salt vs.
+              chlorine"). In a 240px rail there is no room for them, so a big
+              or heavily-shaded pool anchors on a number that will not be
+              theirs — and the real quote then reads as a bait-and-switch. The
+              number keeps its place on the hub and the homepage, next to the
+              qualifiers. A nav menu's job is to lower the cost of the next
+              click.
+
+              The five minutes is deliberately framed as YOUR effort, not our
+              turnaround: "takes five minutes" alone reads as "a quote arrives
+              in five minutes", which is not true — replies are same-day. */}
           <div className="rounded-xl bg-white border border-brand-blue/20 p-4 shadow-sm">
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-display font-black text-[#0a1628] text-2xl leading-none">
-                ~$150
+            <div className="flex items-center gap-2 mb-1.5">
+              <Timer className="w-4 h-4 text-brand-blue shrink-0" />
+              <span className="font-display font-bold text-[#0a1628] text-[15px] leading-none whitespace-nowrap">
+                Five minutes, tops
               </span>
-              <span className="text-gray-600 font-semibold text-sm">/mo</span>
             </div>
-            <p className="text-[#0a1628] font-semibold text-xs mt-1.5 leading-snug">
-              Flat rate, chemicals included
-            </p>
-            <p className="text-gray-500 text-[11px] mt-1 leading-snug">
-              No contract. Cancel any time.
+            <p className="text-gray-600 text-xs leading-snug">
+              Text a few photos of the pool and your address — that is the whole
+              thing. A flat number comes back the same day.
             </p>
           </div>
+
+          <ul className="flex flex-col gap-1.5">
+            {['All standard chemicals included', 'No contract, cancel any time', 'No site visit to schedule'].map(
+              (line) => (
+                <li key={line} className="flex items-start gap-2">
+                  <span className="mt-[3px] w-4 h-4 rounded bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center shrink-0">
+                    <Check className="w-2.5 h-2.5 text-brand-blue" />
+                  </span>
+                  <span className="text-gray-700 text-xs leading-snug">{line}</span>
+                </li>
+              ),
+            )}
+          </ul>
 
           <Link
             to="/how-it-works/"
