@@ -14,6 +14,13 @@ import { type ProposalData, type Tier, formatPrice, tierDelta } from '@/lib/admi
 import { BENEFITS_HEADING, includedBenefits } from './proposalBenefits';
 import { sanitizationLabel } from './sanitization';
 import { PRICING_CONDITION_TERM_SHORT } from './proposalTerms';
+import {
+  jobAssurances,
+  jobKindOf,
+  showsConditionTerm,
+  showsExtrasTable,
+  trustHeading,
+} from './jobKinds';
 import { filterTypeLabel } from './filterService';
 import {
   EXTRAS_COL_THEIRS,
@@ -253,7 +260,13 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 18,
     marginHorizontal: -18,
-    marginBottom: 22,
+    // No bottom margin. react-pdf counts trailing margin when deciding whether
+    // a wrap={false} block fits, so 22pt of space that nothing ever occupies
+    // was enough to push the accept box — the call to action — onto a page of
+    // its own. It is either the last element, where the page padding already
+    // provides the gap, or it is followed by photos, which force their own
+    // page break regardless.
+    marginBottom: 0,
   },
   acceptText: { fontSize: 8.5, color: GREEN, lineHeight: 1.3 },
 
@@ -359,6 +372,10 @@ export const ProposalDocument = ({
   const hasEquipment = pool.pump || pool.filterType || pool.filter || pool.heater || pool.equipmentNotes;
   const addOns = proposal.addOns.filter((a) => a.label.trim() || a.price.trim());
   const tiered = proposal.pricingMode === 'tiers' && proposal.tiers.length > 0;
+  const kind = jobKindOf(proposal.jobKind);
+  const hasCustomer = [customer.name, customer.address, customer.email, customer.phone].some((v) =>
+    v.trim(),
+  );
   // Every "what's included" surface is derived from THIS pool's filter, so a
   // sand-filter customer never reads a promise about cartridge elements.
   const filterOption = { type: pool.filterType, included: pool.filterServiceIncluded === 'yes' };
@@ -411,7 +428,10 @@ export const ProposalDocument = ({
         {hasPoolBasics || hasEquipment ? (
           <View style={styles.twoCol}>
             <View style={styles.colLeft}>
-              <Text style={styles.sectionLabel}>Prepared For</Text>
+              {/* Suppressed when every line under it is blank — a quote raised
+                  from an address alone, which the texted-lead flow makes
+                  routine, otherwise printed a heading over nothing. */}
+              {hasCustomer ? <Text style={styles.sectionLabel}>Prepared For</Text> : null}
               {customer.name.trim() ? <Text style={styles.valueLine}>{customer.name.trim()}</Text> : null}
               {customer.address.trim() ? <Text style={styles.valueLine}>{customer.address.trim()}</Text> : null}
               {customer.email.trim() ? <Text style={styles.valueLine}>{customer.email.trim()}</Text> : null}
@@ -446,7 +466,7 @@ export const ProposalDocument = ({
           </View>
         ) : (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Prepared For</Text>
+            {hasCustomer ? <Text style={styles.sectionLabel}>Prepared For</Text> : null}
             {customer.name.trim() ? <Text style={styles.valueLine}>{customer.name.trim()}</Text> : null}
             {customer.address.trim() ? <Text style={styles.valueLine}>{customer.address.trim()}</Text> : null}
             {customer.email.trim() ? <Text style={styles.valueLine}>{customer.email.trim()}</Text> : null}
@@ -457,10 +477,22 @@ export const ProposalDocument = ({
         {/* In tier mode this box IS the service definition — both plans include
             the same service, so it's stated once here rather than repeated in
             each card — and it always renders regardless of the toggle. */}
+        {/* The trust block, chosen by what this job actually is.
+            A one-time recovery used to carry the weekly-service promises — "a
+            report after every visit", a two-week guarantee — which on a job
+            with three visits and a four-day life reads as a template nobody
+            adjusted. It is replaced rather than removed: a one-off buyer is not
+            less anxious, they are anxious about the price moving and about
+            being told the pool needs draining. See jobKinds.ts. */}
         {proposal.includeBenefits || tiered ? (
           <View style={styles.includedBox} wrap={false}>
-            <Text style={styles.includedHeading}>{BENEFITS_HEADING}</Text>
-            {includedBenefits(filterOption, pool.sanitization).map((b, i) => (
+            <Text style={styles.includedHeading}>
+              {kind === 'recurring' ? BENEFITS_HEADING : trustHeading(kind)}
+            </Text>
+            {(kind === 'recurring'
+              ? includedBenefits(filterOption, pool.sanitization)
+              : jobAssurances(kind)
+            ).map((b, i) => (
               <View key={i} style={styles.includedItem}>
                 <Text style={styles.includedCheck}>•</Text>
                 <Text style={styles.includedItemText}>{b}</Text>
@@ -469,7 +501,7 @@ export const ProposalDocument = ({
           </View>
         ) : null}
 
-        {(proposal.includeBenefits || tiered) && extras.length ? (
+        {showsExtrasTable(kind) && (proposal.includeBenefits || tiered) && extras.length ? (
           <View style={styles.section}>
             <View style={styles.extrasBox}>
               {extras.map((x, i) => (
@@ -509,8 +541,14 @@ export const ProposalDocument = ({
           </View>
         ) : null}
 
+        {/* minPresenceAhead is 40pt (~3 lines), not 72. The reserve exists so
+            "Scope of Work" never lands alone at the foot of a page, and three
+            lines settles that. At 72 it demanded six, which on a short one-time
+            quote missed fitting by a couple of points and pushed the scope, the
+            price AND the accept box onto a second page that was then two thirds
+            empty — a quote that reads as padded rather than brief. */}
         {scopeLines.length ? (
-          <View style={styles.section} minPresenceAhead={72}>
+          <View style={styles.section} minPresenceAhead={40}>
             <Text style={styles.sectionLabel}>Scope of Work</Text>
             {scopeLines.map((line, i) =>
               /^[•\-]/.test(line) ? (
@@ -601,14 +639,18 @@ export const ProposalDocument = ({
           </View>
         ) : null}
 
-        {/* The condition the PRICE assumes, outside the tiered/single branch so
-            it renders on every proposal. It was first put with the plan terms,
-            which meant a single-price proposal — a one-time recovery, a deep
-            clean — carried no such line at all, and that is the case where the
-            pool's starting condition matters most. */}
-        <View style={styles.finePrintBlock}>
-          <Text style={styles.finePrintLine}>{PRICING_CONDITION_TERM_SHORT}</Text>
-        </View>
+        {/* The condition the PRICE assumes — on RECURRING work only.
+            It sits outside the tiered/single branch because a single-price
+            weekly quote needs it just as much as a tiered one. But on a
+            one-time job it is absurd: "pricing assumes the pool is clean and in
+            balanced condition" on a green-to-clean, where the pool being filthy
+            IS the job, reads either as a copy-paste error or as a trapdoor to
+            raise the price on arrival. */}
+        {showsConditionTerm(kind) ? (
+          <View style={styles.finePrintBlock}>
+            <Text style={styles.finePrintLine}>{PRICING_CONDITION_TERM_SHORT}</Text>
+          </View>
+        ) : null}
 
         <View style={styles.acceptBox} wrap={false}>
           <Text style={styles.acceptText}>

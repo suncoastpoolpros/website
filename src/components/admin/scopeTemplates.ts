@@ -23,7 +23,21 @@ export type ScopeContext = {
   filterType: string;
 };
 
-export type ScopeTemplate = { label: string; build: (ctx: ScopeContext) => string };
+import type { JobKind } from './jobKinds';
+
+export type ScopeTemplate = {
+  label: string;
+  /**
+   * What kind of job this template describes.
+   *
+   * Picking a template is already the operator saying what this is, so the
+   * document's trust block follows from it rather than from remembering a
+   * separate toggle — which is how every one-time quote ended up carrying the
+   * weekly-service promises. See jobKinds.ts.
+   */
+  kind: JobKind;
+  build: (ctx: ScopeContext) => string;
+};
 
 /**
  * How the filter is actually serviced on this pool.
@@ -79,6 +93,7 @@ const saltLine = ({ sanitization }: ScopeContext): string[] =>
 export const SCOPE_TEMPLATES: ScopeTemplate[] = [
   {
     label: 'Weekly Pool Cleaning (recurring)',
+    kind: 'recurring',
     build: (ctx) =>
       [
         'Weekly full-service pool maintenance, performed once per week:',
@@ -98,6 +113,7 @@ export const SCOPE_TEMPLATES: ScopeTemplate[] = [
   },
   {
     label: 'Bi-Weekly Pool Cleaning (recurring)',
+    kind: 'recurring',
     build: (ctx) =>
       [
         'Bi-weekly (every other week) full-service pool maintenance:',
@@ -116,6 +132,7 @@ export const SCOPE_TEMPLATES: ScopeTemplate[] = [
   },
   {
     label: 'Green Pool Recovery (one-time)',
+    kind: 'recovery',
     build: () => `One-time green-to-clean pool recovery:
 
 • On-site assessment of water condition, circulation, and filtration.
@@ -129,6 +146,7 @@ Goal: return the pool to clear, swimmable, properly balanced water. We recommend
   },
   {
     label: 'One-Time Deep Clean',
+    kind: 'recovery',
     build: () => `One-time deep clean and chemistry reset:
 
 • Thorough brushing of walls, steps, and waterline tile.
@@ -139,6 +157,7 @@ Goal: return the pool to clear, swimmable, properly balanced water. We recommend
   },
   {
     label: 'Equipment Repair / Installation',
+    kind: 'repair',
     build: () => `Equipment repair / installation:
 
 • Diagnose the reported issue and confirm the recommended repair or replacement.
@@ -151,6 +170,7 @@ Parts and labor as detailed above. Manufacturer warranty applies to new equipmen
   },
   {
     label: 'Salt System Service',
+    kind: 'repair',
     build: () => `Salt system (chlorine generator) service:
 
 • Inspect the salt cell, control board, and flow switch.
@@ -161,6 +181,7 @@ Parts and labor as detailed above. Manufacturer warranty applies to new equipmen
   },
   {
     label: 'Filter Clean / Rebuild',
+    kind: 'repair',
     build: () => `Filter cleaning / rebuild:
 
 • Disassemble the filter and inspect internal components.
@@ -170,6 +191,7 @@ Parts and labor as detailed above. Manufacturer warranty applies to new equipmen
   },
   {
     label: 'Commercial / HOA Service',
+    kind: 'recurring',
     build: () => `Commercial / HOA pool service:
 
 • Scheduled maintenance visits per the agreed frequency, performed to Florida public-pool standards.

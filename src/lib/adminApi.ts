@@ -52,8 +52,18 @@ export type ProposalData = {
     price: string;
     /** Optional à-la-carte services listed separately (not summed into price). */
     addOns: AddOn[];
-    /** Show the "what's included" all-inclusive highlight (recurring service). */
+    /** Show the trust block at all. WHICH block is decided by jobKind. */
     includeBenefits: boolean;
+    /**
+     * What kind of job this is quoting — and therefore which trust block the
+     * document carries.
+     *
+     * Absent on drafts and stored quotes written before this existed, so every
+     * reader coerces it (see jobKindOf). Defaulting to 'recurring' is the
+     * correct back-compat: that is the document every one of those older quotes
+     * was actually built as.
+     */
+    jobKind?: string;
     /**
      * A personal note that appears in the EMAIL ONLY, never in the PDF. The PDF
      * is the formal document and gets filed or forwarded; this is the covering
@@ -233,6 +243,7 @@ export const emptyProposal = (): ProposalData => ({
     price: '',
     addOns: [],
     includeBenefits: true,
+    jobKind: 'recurring',
     emailNote: '',
     // Single-price stays the default, so nothing about an ordinary proposal
     // changes until the admin explicitly switches to tiers.

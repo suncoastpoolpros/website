@@ -24,6 +24,14 @@ import { PhotoPicker } from './PhotoPicker';
 import { EmailReview } from './EmailReview';
 import { SANITIZATION_TYPES } from './sanitization';
 import { SCOPE_TEMPLATES } from './scopeTemplates';
+import {
+  JOB_KINDS,
+  jobAssurances,
+  jobKindOf,
+  showsExtrasTable,
+  trustHeading,
+  type JobKind,
+} from './jobKinds';
 import { ADDON_PRESETS } from './addonPresets';
 import { BENEFITS_HEADING, includedBenefits } from './proposalBenefits';
 import {
@@ -146,6 +154,8 @@ export const ProposalBuilder = ({
   // Drop a pre-written service description into the scope field. Appends (with a
   // blank line) when scope already has text, so templates can be combined and
   // nothing the admin typed gets clobbered.
+  const jobKind: JobKind = jobKindOf(data.proposal.jobKind);
+
   const insertScopeTemplate = (label: string) => {
     const tpl = SCOPE_TEMPLATES.find((t) => t.label === label);
     if (!tpl) return;
@@ -157,6 +167,13 @@ export const ProposalBuilder = ({
     });
     const current = data.proposal.scope.trim();
     update('proposal', 'scope', current ? `${current}\n\n${text}` : text);
+    // Picking a template IS the operator saying what this job is, so it moves
+    // the answer at the top of the form with it. Without this the two could
+    // disagree — a green-recovery scope under the weekly-service promises,
+    // which is the exact mismatch the question exists to prevent. Only on the
+    // FIRST template: once scope has text the operator is combining templates,
+    // and the second one should not silently reclassify the document.
+    if (!current) update('proposal', 'jobKind', tpl.kind);
   };
 
   // --- Additional-services (add-on) line items ---
@@ -706,6 +723,47 @@ export const ProposalBuilder = ({
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           {/* ---- Form ---- */}
           <div className="space-y-8">
+            {/* FIRST, above the customer, because it decides what the whole
+                document says — not a preference buried near the pricing. The
+                operator answers it once and every downstream section follows.
+                Three rather than two: a repair and a green-to-clean are both
+                "one-time", but they are sold against completely different
+                worries — a price that moves versus a part you did not need. */}
+            <Section title="What are you quoting?">
+              <div role="radiogroup" aria-label="What are you quoting?" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {JOB_KINDS.map((k) => {
+                  const picked = jobKind === k.key;
+                  return (
+                    <button
+                      key={k.key}
+                      role="radio"
+                      aria-checked={picked}
+                      onClick={() => update('proposal', 'jobKind', k.key)}
+                      className={`rounded-xl border p-4 text-left transition-colors ${
+                        picked
+                          ? 'border-brand-blue bg-brand-blue/10'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <span className="block font-display text-sm font-bold text-white">
+                        {k.label}
+                      </span>
+                      <span className="mt-1 block text-xs leading-relaxed text-gray-400">
+                        {k.hint}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {jobKind !== 'recurring' && (
+                <p className="text-xs leading-relaxed text-gray-500">
+                  The proposal drops the weekly-service promises and the monthly comparison table,
+                  and answers what a one-off buyer actually asks instead. Inserting a scope template
+                  moves this for you.
+                </p>
+              )}
+            </Section>
+
             <Section title="Customer">
               <FieldShell id="c-name" label="Full name">
                 <input id="c-name" className={fieldClass} placeholder=" " autoComplete="off" autoCapitalize="words"
@@ -994,11 +1052,13 @@ export const ProposalBuilder = ({
                   className="mt-0.5 h-4 w-4 accent-brand-blue"
                 />
                 <span className="text-sm text-gray-200">
-                  Highlight &ldquo;what&rsquo;s included&rdquo; — chemicals, filter &amp; salt-cell cleans{' '}
+                  Show the &ldquo;{trustHeading(jobKind)}&rdquo; panel{' '}
                   <span className="text-gray-400">
                     {data.proposal.pricingMode === 'tiers'
                       ? '(always shown on a tiered proposal — it defines the service both plans include)'
-                      : '(recommended for recurring service; turn off for one-time jobs)'}
+                      : jobKind === 'recurring'
+                        ? '(chemicals, filter and salt-cell cleans — recommended)'
+                        : '(the flat price, what’s included and what you’re not committing to — recommended)'}
                   </span>
                 </span>
               </label>
@@ -1239,6 +1299,7 @@ const ProposalPreview = ({
     .filter(Boolean)
     .join(' × ');
   const tiered = proposal.pricingMode === 'tiers' && proposal.tiers.length > 0;
+  const previewKind = jobKindOf(proposal.jobKind);
   const filterOption = { type: pool.filterType, included: pool.filterServiceIncluded === 'yes' };
   const extras = includedExtras(filterOption, pool.sanitization);
   const tiers = tiered ? proposal.tiers : [];
@@ -1261,18 +1322,30 @@ const ProposalPreview = ({
         </div>
       </div>
       <div className="space-y-5 px-6 py-5 text-sm">
-        <PreviewBlock label="Prepared For">
-          <PreviewRow label="Name" value={customer.name} />
-          <PreviewRow label="Service Address" value={customer.address} />
-          <PreviewRow label="Email" value={customer.email} />
-          <PreviewRow label="Phone" value={customer.phone} />
-        </PreviewBlock>
+        {/* The heading goes with its rows: a quote raised from an address
+            alone printed "PREPARED FOR" over nothing at all. */}
+        {[customer.name, customer.address, customer.email, customer.phone].some((v) => v.trim()) && (
+          <PreviewBlock label="Prepared For">
+            <PreviewRow label="Name" value={customer.name} />
+            <PreviewRow label="Service Address" value={customer.address} />
+            <PreviewRow label="Email" value={customer.email} />
+            <PreviewRow label="Phone" value={customer.phone} />
+          </PreviewBlock>
+        )}
 
+        {/* Mirrors ProposalDocument exactly. A preview that shows the weekly
+            promises while the PDF carries the one-time ones is worse than no
+            preview — it is the operator approving a document they did not see. */}
         {(proposal.includeBenefits || tiered) && (
           <div className="rounded-lg border border-[#cfe3f2] bg-[#eef6fb] px-4 py-3">
-            <div className="mb-2 text-sm font-bold text-brand-blue-dark">{BENEFITS_HEADING}</div>
+            <div className="mb-2 text-sm font-bold text-brand-blue-dark">
+              {previewKind === 'recurring' ? BENEFITS_HEADING : trustHeading(previewKind)}
+            </div>
             <ul className="space-y-1">
-              {includedBenefits(filterOption, pool.sanitization).map((b, i) => (
+              {(previewKind === 'recurring'
+                ? includedBenefits(filterOption, pool.sanitization)
+                : jobAssurances(previewKind)
+              ).map((b, i) => (
                 <li key={i} className="flex gap-2 py-[3px] text-[13px] font-semibold leading-relaxed text-stone-800">
                   <span className="text-green-600">✓</span>
                   {b}
@@ -1282,7 +1355,7 @@ const ProposalPreview = ({
           </div>
         )}
 
-        {(proposal.includeBenefits || tiered) && extras.length > 0 && (
+        {showsExtrasTable(previewKind) && (proposal.includeBenefits || tiered) && extras.length > 0 && (
           <PreviewBlock label={EXTRAS_HEADING}>
             <p className="mb-2 text-[12px] leading-relaxed text-stone-700">{EXTRAS_INTRO}</p>
             <div>
