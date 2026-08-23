@@ -24,8 +24,14 @@ const footerCities = cities.filter(
 );
 
 // `route: true` → client-side <Link>; otherwise an in-page/home anchor.
+//
+// Service pages live here for the same reason the city pages do (see above):
+// the footer is the only CRAWLABLE internal link to them. The nav menus are
+// client-only, so a page that appears solely in a dropdown ships orphaned.
+// When the /services/ hub lands this becomes its own column.
 const exploreLinks = [
   { label: 'How It Works', href: '/how-it-works/', route: true },
+  { label: 'Storm Cleanup', href: '/services/storm-cleanup/', route: true },
   { label: 'FAQ', href: '/faq/', route: true },
   { label: 'Tools', href: '/tools/', route: true },
   { label: 'Pool Care', href: '/pool-care/', route: true },

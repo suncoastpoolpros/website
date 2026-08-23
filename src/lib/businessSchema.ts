@@ -72,3 +72,33 @@ export const poolServiceSchema = () => ({
     availability: 'https://schema.org/InStock',
   },
 });
+
+/**
+ * A Service node for one of the /services/ pages.
+ *
+ * Same shape as poolServiceSchema() above but parameterised, and deliberately
+ * WITHOUT an `offers` block: the specialist services are quoted per job (from
+ * photos), so asserting any price — even a minPrice — would be a claim the page
+ * itself contradicts. Only the weekly subscription has a real published floor.
+ *
+ * `url` should be the page's canonical path (leading and trailing slash), so
+ * the node points at the page that describes the service rather than at the
+ * site root.
+ */
+export const serviceSchema = ({
+  serviceType,
+  description,
+  url,
+}: {
+  serviceType: string;
+  description: string;
+  url: string;
+}) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  serviceType,
+  provider: { '@id': BUSINESS_ID },
+  areaServed: AREAS_SERVED.map((name) => ({ '@type': 'City', name })),
+  description,
+  url: `${SITE_ORIGIN}${url}`,
+});

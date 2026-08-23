@@ -45,6 +45,7 @@ import { PoolSmellPage } from '@/pages/PoolSmellPage';
 import { PoolServiceVsDiyPage } from '@/pages/PoolServiceVsDiyPage';
 import { CyanuricAcidPage } from '@/pages/CyanuricAcidPage';
 import { GreenPoolPage } from '@/pages/GreenPoolPage';
+import { StormCleanupPage } from '@/pages/StormCleanupPage';
 import { VariableSpeedPumpsPage } from '@/pages/VariableSpeedPumpsPage';
 import { SaltWaterVsChlorinePage } from '@/pages/SaltWaterVsChlorinePage';
 import { DrainPoolPage } from '@/pages/DrainPoolPage';
@@ -83,6 +84,7 @@ export const PRERENDER_ROUTES = [
   '/pool-care/variable-speed-pumps',
   '/pool-care/salt-water-vs-chlorine',
   '/pool-care/how-to-drain-a-pool',
+  '/services/storm-cleanup',
   '/tools',
   '/tools/pool-volume-calculator',
   '/tools/pool-heating-cost-calculator',
@@ -125,6 +127,7 @@ const Routing = () => (
     <Route path="/pool-care/pool-service-vs-diy" element={<PoolServiceVsDiyPage />} />
     <Route path="/pool-care/cyanuric-acid" element={<CyanuricAcidPage />} />
     <Route path="/pool-care/green-pool" element={<GreenPoolPage />} />
+    <Route path="/services/storm-cleanup" element={<StormCleanupPage />} />
     <Route path="/pool-care/variable-speed-pumps" element={<VariableSpeedPumpsPage />} />
     <Route path="/pool-care/salt-water-vs-chlorine" element={<SaltWaterVsChlorinePage />} />
     <Route path="/pool-care/how-to-drain-a-pool" element={<DrainPoolPage />} />
