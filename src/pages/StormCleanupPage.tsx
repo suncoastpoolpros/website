@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
   Wind,
@@ -599,6 +598,24 @@ const StormCleanupPageInner = () => {
                   <ClipboardCheck className="w-4 h-4 text-brand-blue-light" /> Photo report every visit
                 </span>
               </div>
+              {/* The close lives here now, with the price. It used to sit in
+                  its own card below the FAQ, which put the ask a full section
+                  away from the reason to say yes. */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
+                <a href="#quote" onClick={handleQuoteClick} className="btn btn-orange w-full sm:w-auto">
+                  <MessageSquare className="w-[18px] h-[18px]" />
+                  Get a Cleanup Quote
+                </a>
+                <a href={PHONE_HREF} className="btn btn-glass w-full sm:w-auto">
+                  <Phone className="w-[18px] h-[18px]" />
+                  {PHONE_DISPLAY}
+                </a>
+              </div>
+              <p className="text-gray-400 text-[15px] max-w-xl mx-auto mb-8">
+                Send photos now and you get a flat number and a real position in the queue —
+                even if the power is still out.
+              </p>
+
               <p className="text-[13px] text-gray-500 max-w-2xl mx-auto leading-relaxed">
                 Serving pools across Pinellas County — St.&nbsp;Petersburg,{' '}
                 <SmartLink to="/st-pete-beach-fl/" className="text-gray-400 hover:text-white transition-colors">
@@ -668,42 +685,20 @@ const StormCleanupPageInner = () => {
                   );
                 })}
               </div>
-            </div>
-          </Container>
-        </section>
 
-        {/* ── Closing CTA ───────────────────────────────────────── */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-4">
-          <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 text-center border border-white/10 bg-gradient-to-br from-brand-blue/15 via-white/[0.03] to-brand-orange/10">
-            <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-brand-blue/12 blur-3xl pointer-events-none" />
-            <div className="relative">
-              <h2 className="font-display font-bold text-white text-2xl sm:text-3xl mb-3">
-                Don&rsquo;t wait for the water to turn.
-              </h2>
-              <p className="text-gray-400 mb-7 max-w-md mx-auto">
-                Send us photos now and we&rsquo;ll get you a flat quote and a real position in
-                the queue — even if the power is still out.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a href="#quote" onClick={handleQuoteClick} className="btn btn-orange w-full sm:w-auto">
-                  <MessageSquare className="w-[18px] h-[18px]" />
-                  Get a Cleanup Quote
-                </a>
-                <a href={PHONE_HREF} className="btn btn-glass w-full sm:w-auto">
-                  <Phone className="w-[18px] h-[18px]" />
-                  {PHONE_DISPLAY}
-                </a>
-              </div>
-              <p className="text-gray-500 text-sm max-w-lg mx-auto mt-6">
-                Storms are the reason a lot of people stop doing this themselves. If you want
-                it handled year-round instead,{' '}
-                <Link to="/how-it-works/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+              <p className="text-center text-gray-500 text-sm mt-8 max-w-lg mx-auto leading-relaxed">
+                Storms are the reason a lot of people stop doing this themselves. If you want it
+                handled year-round instead,{' '}
+                <SmartLink
+                  to="/how-it-works/"
+                  className="text-brand-orange hover:text-brand-orange-dark font-semibold"
+                >
                   here&rsquo;s how weekly service works
-                </Link>
+                </SmartLink>
                 .
               </p>
             </div>
-          </div>
+          </Container>
         </section>
 
         <Footer />
