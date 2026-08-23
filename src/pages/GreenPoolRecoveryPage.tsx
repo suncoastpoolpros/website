@@ -203,6 +203,13 @@ const GreenPoolRecoveryPageInner = () => {
       // ~110-character cut, where the old copy showed only the city list.
       'Green pool cleanup in St. Petersburg & Pinellas County. We vacuum the algae out rather than draining your pool — honest timelines, flat quote from photos.',
     canonicalPath: CANONICAL,
+    // The vacuum photo IS this page's core claim — we pull the sludge out
+    // rather than draining. Far stronger as a shared-link card than the
+    // generic banner. Absolute https is required: prerender.mjs ignores
+    // relative ogImage values on purpose.
+    ogImage: 'https://suncoastpoolpros.com/og-green-pool-recovery.jpg',
+    ogImageAlt:
+      'A filtered pool vacuum lifting sludge off the floor of a St. Petersburg pool',
     fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
     jsonLd: RECOVERY_SCHEMA,
   });

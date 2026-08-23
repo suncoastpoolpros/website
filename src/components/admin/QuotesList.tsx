@@ -22,6 +22,7 @@ import {
   Mail,
   Phone,
   MessageSquare,
+  Building2,
 } from 'lucide-react';
 import { approveUrl, quoteUrl } from '@/lib/quoteLinks';
 import { formatPrice } from '@/lib/adminApi';
@@ -31,6 +32,8 @@ import { STATUS_META, ago, onDate, openSummary, statusOf, type Status } from './
 type Quote = {
   id: string;
   number?: number | null;
+  /** 'commercial' for a bid. Absent on every row written before bids existed. */
+  docKind?: string;
   name: string;
   email: string;
   phone: string | null;
@@ -314,11 +317,24 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                           {q.address && <p className="truncate text-xs text-gray-500">{q.address}</p>}
                         </div>
                         <div className="flex flex-col items-end gap-1.5">
-                          <span
-                            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${meta.chip}`}
-                          >
-                            <meta.Icon className="h-3.5 w-3.5" />
-                            {meta.label}
+                          <span className="flex items-center gap-1.5">
+                            {/* A bid was never emailed, so it has no accept
+                                link and no opens. Without saying so it reads as
+                                a quote nobody has ever looked at — which is the
+                                one signal on this screen meant to prompt a
+                                phone call. */}
+                            {q.docKind === 'commercial' && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2 py-1 text-[11px] font-semibold text-gray-300">
+                                <Building2 className="h-3 w-3" />
+                                Bid
+                              </span>
+                            )}
+                            <span
+                              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${meta.chip}`}
+                            >
+                              <meta.Icon className="h-3.5 w-3.5" />
+                              {meta.label}
+                            </span>
                           </span>
                           {q.price && (
                             <span className="text-sm font-bold text-brand-blue-light">
@@ -336,6 +352,8 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                           </span>
                         ) : status === 'expired' ? (
                           <span>Link expired {ago(q.expiresAt)}</span>
+                        ) : q.docKind === 'commercial' ? (
+                          <span>Downloaded — sent by you</span>
                         ) : (
                           <span>No answer yet</span>
                         )}
@@ -345,6 +363,7 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                             This line exists to tell you what to do next, and
                             only an awaiting quote has a next. */}
                         {status === 'awaiting' &&
+                          q.docKind !== 'commercial' &&
                           (() => {
                             const o = openSummary(q);
                             return (

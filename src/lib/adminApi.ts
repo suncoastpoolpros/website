@@ -422,6 +422,42 @@ export const emptyBusinessProfile = (): BusinessProfileDoc => ({
   },
 });
 
+/**
+ * Record a commercial bid.
+ *
+ * Called on download, because that is when the bid becomes something a property
+ * actually holds. Pass the token from a previous save to edit that row instead
+ * of leaving a second near-identical one behind.
+ *
+ * NEVER THROWS. A storage failure must not cost the operator their PDF — the
+ * bid is still deliverable, it just is not on the list — so this resolves to
+ * null and the caller carries on. That is the same call send-proposal makes,
+ * and for the same reason.
+ */
+export async function saveCommercialBid(
+  args: CommercialData & { token?: string | null; proposalNumber?: number | null },
+  signal?: AbortSignal,
+): Promise<string | null> {
+  try {
+    const res = await fetch('/api/admin/save-commercial', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal,
+      body: JSON.stringify({
+        token: args.token ?? null,
+        property: args.property,
+        bodies: args.bodies,
+        bid: { ...args.bid, property: args.property },
+        proposalNumber: args.proposalNumber ?? null,
+      }),
+    });
+    const data = (await res.json().catch(() => ({}))) as { ok?: boolean; token?: string };
+    return res.ok && data.ok && data.token ? data.token : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Sum of one frequency column across every body priced for it. */
 export const commercialTotal = (bodies: WaterBody[], field: keyof WaterBody): number =>
   bodies.reduce((sum, b) => {

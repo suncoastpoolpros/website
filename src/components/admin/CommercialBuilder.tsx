@@ -35,7 +35,7 @@ import {
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
 import { useBusinessProfile, useCommercialDraft } from '@/lib/useAdminDraft';
 import { commercialDateLabel, commercialFilename, renderCommercialPdf } from '@/lib/commercialPdf';
-import { reserveProposalNumber } from '@/lib/adminApi';
+import { reserveProposalNumber, saveCommercialBid } from '@/lib/adminApi';
 import {
   commercialTotal,
   newWaterBody,
@@ -110,6 +110,10 @@ export const CommercialBuilder = ({
    * not the exception.
    */
   const reservedNumberRef = useRef<number | null>(null);
+  /** The stored row for this bid, so a re-download edits it rather than
+   *  leaving a second near-identical record behind. */
+  const savedTokenRef = useRef<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   /**
    * Apply a hand-off from the residential builder — ONLY into blank fields.
@@ -182,6 +186,8 @@ export const CommercialBuilder = ({
     // A new bid gets a new number. Without this, the next property would be
     // quoted under the last one's proposal number.
     reservedNumberRef.current = null;
+    savedTokenRef.current = null;
+    setSaved(false);
   };
 
   /**
@@ -219,6 +225,21 @@ export const CommercialBuilder = ({
       document.body.appendChild(a);
       a.click();
       a.remove();
+      /**
+       * Recorded AFTER the file is in the operator's hands, and never allowed
+       * to fail the download. The PDF is the deliverable; the row is so you can
+       * answer "what did we quote this property, and when" in three months.
+       * A storage outage should cost you the record, not the bid.
+       */
+      const token = await saveCommercialBid({
+        ...data,
+        token: savedTokenRef.current,
+        proposalNumber,
+      });
+      if (token) {
+        savedTokenRef.current = token;
+        setSaved(true);
+      }
       // Revoked on the next tick, not immediately: Safari has not finished
       // reading the blob when click() returns and lands on an empty file.
       setTimeout(() => URL.revokeObjectURL(url), 4000);
@@ -957,9 +978,9 @@ export const CommercialBuilder = ({
               )}
             </button>
             <p className="mt-2 text-center text-xs leading-relaxed text-gray-500">
-              A commercial bid isn&apos;t accepted by tapping a link — it goes into a board packet
-              and comes back countersigned, so the document ends in a signature block and you attach
-              it yourself.
+              {saved
+                ? 'Saved to Sent Quotes. Downloading again updates that record rather than adding another.'
+                : 'A commercial bid isn’t accepted by tapping a link — it goes into a board packet and comes back countersigned, so the document ends in a signature block and you attach it yourself.'}
             </p>
           </div>
         </div>

@@ -160,7 +160,7 @@ const HurricanePoolPrepPageInner = () => {
   usePageMeta({
     title: 'How to Prepare Your Pool for a Hurricane — Florida Guide',
     description:
-      'Do not drain it. The nine things to do with a Florida pool before a hurricane — water level, chlorine, the breaker, the cover — and why draining is the costly mistake.',
+      'Do not drain it. Nine things to do with a Florida pool before a hurricane — water level, chlorine, the breaker — and why draining is the costly mistake.',
     canonicalPath: CANONICAL,
     fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
     jsonLd: PREP_SCHEMA,
