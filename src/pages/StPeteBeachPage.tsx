@@ -52,8 +52,11 @@ const HeroSection = () => {
             .hero-stpetebeach-scrim in index.css). */}
         <div className="hero-stpetebeach-scrim absolute inset-0 pointer-events-none" aria-hidden />
 
-        {/* Warm beach glow upper-right, cool ambient lower-left for balance */}
-        <div className="hidden md:block absolute top-[20%] right-[8%] w-[42vw] h-[52vh] bg-brand-orange/12 rounded-full blur-[130px] animate-float" />
+        {/* Spotlight glow behind the phone, deep-blue ambient lower-left for
+            balance — same pairing as the homepage hero. This used to be a warm
+            orange bloom, which read as a different brand before you'd scrolled
+            a pixel. */}
+        <div className="hidden md:block absolute top-[20%] right-[8%] w-[42vw] h-[52vh] bg-brand-blue/12 rounded-full blur-[130px] animate-float" />
         <div className="hidden md:block absolute bottom-[5%] left-[-12%] w-[42vw] h-[42vw] bg-[#0a2540]/35 rounded-full blur-[130px] animate-morph" />
 
         {/* Bottom blend into the next section (#07111c). */}
@@ -69,7 +72,7 @@ const HeroSection = () => {
             className="lg:col-span-7"
           >
             <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8">
-              <MapPin className="w-3.5 h-3.5 text-brand-orange-light" />
+              <MapPin className="w-3.5 h-3.5 text-brand-blue-light" />
               <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
                 St. Pete Beach · Gulf Barrier Island
               </span>
@@ -131,12 +134,15 @@ const HeroSection = () => {
                 <span className="font-semibold text-white/90">5.0</span>
                 <span className="text-gray-500">on Google</span>
               </div>
+              {/* Stars stay orange (homepage hero does the same); every other
+                  icon in the strip is blue-light, matching the homepage's
+                  blue MapPin. */}
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-brand-orange-light" />
+                <ShieldCheck className="w-4 h-4 text-brand-blue-light" />
                 <span>Always Blue Guarantee</span>
               </div>
               <div className="flex items-center gap-2">
-                <Wind className="w-4 h-4 text-brand-orange-light" />
+                <Wind className="w-4 h-4 text-brand-blue-light" />
                 <span>Built for salt-air equipment</span>
               </div>
             </div>
@@ -205,7 +211,6 @@ export const StPeteBeachPage = () => {
     title: PAGE_TITLE,
     description: PAGE_DESC,
     canonicalPath: '/st-pete-beach-fl/',
-    ogImage: '/st-pete-beach-hero.jpg',
     heroPreload: {
       mobile: '/st-pete-beach-hero-mobile-v2.webp',
       desktop: '/st-pete-beach-hero.webp',

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Container } from '@/components/Container';
 import { SmartLink } from '@/components/SmartLink';
+import { useQuoteSheet } from '@/components/QuoteSheet';
 import { stPeteBeachFaqs } from '@/pages/stPeteBeachFaqs';
 
 // ── Section 1: "The barrier-island toll" ───────────────────────────
@@ -81,20 +82,27 @@ const processSteps = [
 const faqs = stPeteBeachFaqs;
 
 const IslandTollSection = () => (
-  // Bright, sun-bleached coastal wash — warmer and lighter than the deep-Gulf
-  // tone of the other city pages, to read "open beach" rather than "quiet cove".
-  <section className="py-20 md:py-28 relative overflow-hidden bg-gradient-to-b from-[#07111c] via-[#0b1622] to-[#07111c]">
-    <div className="absolute top-[-10%] left-1/4 w-[55%] h-[45%] bg-brand-orange/[0.06] rounded-full blur-[150px] pointer-events-none" />
-    <div className="absolute -bottom-28 -left-32 w-[520px] h-[520px] rounded-full bg-brand-blue/[0.06] blur-[150px] pointer-events-none" />
+  // Flat #07111c — the site's base surface. This used to run its own
+  // navy-to-navy gradient, which (stacked with the five other sections that
+  // each picked a slightly different navy) made the whole below-fold read as
+  // one continuous wash with no section boundaries. Dark sections now sit on
+  // exactly two surfaces: flat #07111c, or transparent so the page's fixed
+  // bg-mesh shows through. Contrast comes from the light band and the photo
+  // interlude, not from drifting the base color.
+  <section className="py-16 md:py-24 relative overflow-hidden bg-[#07111c]">
+    <div className="absolute top-[-10%] left-1/4 w-[55%] h-[45%] bg-brand-blue/[0.06] rounded-full blur-[150px] pointer-events-none" />
+    <div className="absolute -bottom-28 -left-32 w-[520px] h-[520px] rounded-full bg-brand-blue/[0.05] blur-[150px] pointer-events-none" />
     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
     <Container className="relative z-10">
       <m.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="max-w-2xl mb-14"
+        className="max-w-2xl mb-10 md:mb-12"
       >
-        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+        {/* Blue kicker — site convention (see Services.tsx). Orange is reserved
+            for action on this page: the guide CTA below and the closing band. */}
+        <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
           Why Beach Pools Are Different
         </span>
         <h2 className="section-heading text-white leading-tight mb-4">
@@ -117,10 +125,13 @@ const IslandTollSection = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.08 }}
-            className="glass-panel rounded-2xl p-6 md:p-7 flex gap-5"
+            className="relative rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 md:p-7 flex gap-5 shadow-[0_12px_30px_-16px_rgba(0,0,0,0.8)] hover:bg-white/[0.06] hover:border-white/15 transition-colors"
           >
-            <div className="shrink-0 w-12 h-12 rounded-xl bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center">
-              <item.icon className="w-6 h-6 text-brand-orange-light" />
+            {/* Faint top-edge highlight — the homepage card treatment; it's what
+                makes a surface read as a lit object instead of a flat rectangle. */}
+            <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+            <div className="shrink-0 w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center">
+              <item.icon className="w-6 h-6 text-brand-blue-light" />
             </div>
             <div>
               <h3 className="text-lg font-display font-bold text-white mb-2">
@@ -178,18 +189,21 @@ const weeklyChecklist = [
 ];
 
 const WeeklyVisitSection = () => (
-  <section className="py-20 md:py-28 bg-[#0a1422] relative overflow-hidden">
+  // No background of its own — the page's fixed bg-mesh gradient shows through.
+  // Sitting between two flat #07111c sections, that subtle blue bloom is what
+  // separates it, the same way Services/FAQ/QuoteForm work on the homepage.
+  <section className="py-16 md:py-24 relative overflow-hidden">
     <div className="absolute top-0 right-1/4 w-[50%] h-[40%] bg-brand-blue/[0.06] rounded-full blur-[150px] pointer-events-none" />
-    <div className="absolute -bottom-24 -right-28 w-[460px] h-[460px] rounded-full bg-brand-orange/[0.05] blur-[150px] pointer-events-none" />
+    <div className="absolute -bottom-24 -right-28 w-[460px] h-[460px] rounded-full bg-brand-blue/[0.05] blur-[150px] pointer-events-none" />
     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
     <Container className="relative z-10">
       <m.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="max-w-2xl mb-12"
+        className="max-w-2xl mb-10 md:mb-12"
       >
-        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+        <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
           What's In Every Weekly Visit
         </span>
         <h2 className="section-heading text-white leading-tight mb-4">
@@ -211,9 +225,9 @@ const WeeklyVisitSection = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: (i % 2) * 0.06 }}
-            className="flex items-start gap-3 glass-panel rounded-xl p-4 md:p-5"
+            className="flex items-start gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] p-4 md:p-5"
           >
-            <CheckCircle2 className="w-5 h-5 text-brand-orange-light shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-5 h-5 text-brand-blue-light shrink-0 mt-0.5" />
             <p className="text-gray-300 text-[15px] leading-relaxed">{item}</p>
           </m.div>
         ))}
@@ -225,7 +239,7 @@ const WeeklyVisitSection = () => (
         viewport={{ once: true }}
         className="mt-8 flex items-center justify-center gap-3 text-center"
       >
-        <ClipboardCheck className="w-5 h-5 text-brand-orange-light shrink-0" />
+        <ClipboardCheck className="w-5 h-5 text-brand-blue-light shrink-0" />
         <p className="text-gray-400 text-[15px]">
           Then it's all written up —
           <span className="text-white"> numbers, what got done, and photos in your inbox before we leave.</span>
@@ -243,8 +257,11 @@ const InterludeBand = () => (
 
     <div className="interlude-tint-stpetebeach absolute inset-0 pointer-events-none" />
 
+    {/* Both edges fade to #07111c — the sections above and below are now that
+        same flat navy, so the photo dissolves into them with no visible seam.
+        (The bottom used to fade to #0a1422, which left a soft step at the join.) */}
     <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07111c] to-transparent pointer-events-none" />
-    <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0a1422] to-transparent pointer-events-none" />
+    <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#07111c] to-transparent pointer-events-none" />
 
     <div className="relative h-full flex items-center justify-center">
       <m.p
@@ -266,18 +283,18 @@ const InterludeBand = () => (
 // "during a booking / between bookings" failure framing — this is about the
 // dual identity of the same pool, and tuning service to both modes.
 const TwoModesSection = () => (
-  <section className="py-20 md:py-28 bg-[#0a1422] relative overflow-hidden">
+  <section className="py-16 md:py-24 bg-[#07111c] relative overflow-hidden">
     <div className="absolute top-1/3 -right-20 w-[420px] h-[420px] rounded-full bg-brand-blue/[0.06] blur-[140px] pointer-events-none" />
-    <div className="absolute bottom-0 -left-24 w-[420px] h-[420px] rounded-full bg-brand-orange/[0.05] blur-[140px] pointer-events-none" />
+    <div className="absolute bottom-0 -left-24 w-[420px] h-[420px] rounded-full bg-brand-blue/[0.05] blur-[140px] pointer-events-none" />
 
     <Container className="relative z-10">
       <m.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="max-w-2xl mb-14"
+        className="max-w-2xl mb-10 md:mb-12"
       >
-        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+        <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
           One Pool, Two Lives
         </span>
         <h2 className="section-heading text-white leading-tight mb-4">
@@ -298,8 +315,9 @@ const TwoModesSection = () => (
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="glass-panel rounded-2xl p-7 md:p-8"
+          className="relative glass-panel rounded-2xl p-7 md:p-8"
         >
+          <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
           <div className="flex items-center gap-3 mb-5">
             <div className="w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center shrink-0">
               <Home className="w-6 h-6 text-brand-blue-light" />
@@ -347,14 +365,19 @@ const TwoModesSection = () => (
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.08 }}
-          className="glass-panel rounded-2xl p-7 md:p-8"
+          className="relative glass-panel rounded-2xl p-7 md:p-8"
         >
+          <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+          {/* Paired-card contrast now runs blue vs. neutral-white rather than
+              blue vs. orange — same visual distinction between the two modes,
+              without spending the page's action color on a static label. The
+              neutral chip is the homepage CtaBand's second-card treatment. */}
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-12 h-12 rounded-xl bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center shrink-0">
-              <Users className="w-6 h-6 text-brand-orange-light" />
+            <div className="w-12 h-12 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
+              <Users className="w-6 h-6 text-white" />
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange-light">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
                 When it's theirs
               </p>
               <h3 className="text-xl font-display font-bold text-white leading-tight">
@@ -396,7 +419,7 @@ const TwoModesSection = () => (
         viewport={{ once: true }}
         className="mt-10 flex items-center justify-center gap-3 text-center"
       >
-        <Droplets className="w-5 h-5 text-brand-orange-light shrink-0" />
+        <Droplets className="w-5 h-5 text-brand-blue-light shrink-0" />
         <p className="text-gray-400 text-[15px]">
           One weekly service —
           <span className="text-white"> tuned to whichever life your pool is living that week.</span>
@@ -406,52 +429,86 @@ const TwoModesSection = () => (
   </section>
 );
 
-const ProcessSection = () => (
-  <section className="py-20 md:py-24 relative overflow-hidden bg-gradient-to-b from-[#0a1422] via-[#0c1828] to-[#0e1c2e]">
-    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[45%] bg-brand-blue/[0.06] rounded-full blur-[160px] pointer-events-none" />
-    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
-    <Container>
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="max-w-2xl mb-12"
-      >
-        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-          How Weekly Service Works
-        </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
-          Simple for you. Thorough at the pool.
-        </h2>
-        <p className="section-subtext">
-          You shouldn't have to manage your pool service. Here's the whole
-          arrangement — three things, then it just runs.
-        </p>
-      </m.div>
+// ── THE LIGHT BAND ─────────────────────────────────────────────────
+// The page's one polarity flip, and the reason the below-fold no longer reads
+// as a single continuous dark scroll. Site rule: exactly ONE light-band passage
+// per page — more than one and it stops being a structural hinge and turns into
+// a stripe pattern. It uses the homepage's light tokens (#e4e9f0 → #d6dde7
+// ground, #0a1628 headings, slate-600 body, white cards, brand-blue accents) but
+// its own composition: icon cards, not the homepage's numbered medallion row.
+//
+// Placed mid-page on purpose — everything above it is the barrier-island
+// problem, everything below it is proof and offer. The hard cut from #07111c
+// straight to the light ground IS the separator; no fade, no edge rule.
+const ProcessSection = () => {
+  const { open: openQuoteSheet } = useQuoteSheet();
+  return (
+    <section className="py-16 md:py-24 relative overflow-hidden bg-gradient-to-b from-[#e4e9f0] to-[#d6dde7]">
+      {/* Soft brand-blue bloom for depth on the light ground */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[50%] bg-brand-blue/[0.05] rounded-full blur-[140px] pointer-events-none" />
+      <Container className="relative z-10">
+        {/* Centered header — the site centers only the sections meant to make
+            you stop and act (light band, closing CTA, FAQ). Every other header
+            on this page stays left-aligned. */}
+        <m.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center max-w-2xl mx-auto mb-10 md:mb-14"
+        >
+          <span className="text-brand-blue font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+            How Weekly Service Works
+          </span>
+          <h2 className="section-heading text-[#0a1628] leading-tight mb-4">
+            Simple for you. Thorough at the pool.
+          </h2>
+          <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+            You shouldn't have to manage your pool service. Here's the whole
+            arrangement — three things, then it just runs.
+          </p>
+        </m.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {processSteps.map((item, i) => (
-          <m.div
-            key={item.step}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.1 }}
-            className="glass-panel rounded-2xl p-7"
-          >
-            <div className="w-12 h-12 rounded-xl bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center mb-5">
-              <item.icon className="w-6 h-6 text-brand-orange-light" />
-            </div>
-            <h3 className="text-lg font-display font-bold text-white mb-2">
-              {item.step}
-            </h3>
-            <p className="text-gray-400 leading-relaxed text-[15px]">{item.body}</p>
-          </m.div>
-        ))}
-      </div>
-    </Container>
-  </section>
-);
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
+          {processSteps.map((item, i) => (
+            <m.div
+              key={item.step}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="rounded-2xl bg-white border border-brand-blue/15 shadow-[0_10px_30px_-18px_rgba(10,22,40,0.45)] p-6 md:p-7"
+            >
+              <div className="w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center mb-5">
+                <item.icon className="w-6 h-6 text-brand-blue" />
+              </div>
+              <h3 className="text-lg font-display font-bold text-[#0a1628] mb-2 leading-snug">
+                {item.step}
+              </h3>
+              <p className="text-slate-600 leading-relaxed text-[15px]">{item.body}</p>
+            </m.div>
+          ))}
+        </div>
+
+        {/* The one place orange earns its keep on the light ground — action,
+            not decoration. (One-accent rule: this section's kicker and icons
+            stay blue so the button is the only warm thing on screen.) */}
+        <m.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-12 flex flex-col items-center gap-3"
+        >
+          <button type="button" onClick={openQuoteSheet} className="btn btn-orange">
+            Get My Beach Pool Quote
+          </button>
+          <p className="text-gray-500 text-sm text-center">
+            Flat monthly rate · Chemicals included · Cancel any time
+          </p>
+        </m.div>
+      </Container>
+    </section>
+  );
+};
 
 // ── Section 5: why-us comparison — retuned to beachfront pain ──────
 const WHY_US_PAIRS: Array<{
@@ -495,19 +552,20 @@ const WHY_US_PAIRS: Array<{
 ];
 
 const WhyUsSection = () => (
-  <section className="py-20 md:py-28 relative overflow-hidden bg-[#0e1c2e]">
-    <div className="absolute top-1/4 right-[-10%] w-[460px] h-[460px] rounded-full bg-brand-orange/[0.05] blur-[150px] pointer-events-none" />
+  // First section after the light band — flat #07111c, so the page snaps back
+  // to its base surface with a hard edge rather than easing into another navy.
+  <section className="py-16 md:py-24 relative overflow-hidden bg-[#07111c]">
+    <div className="absolute top-1/4 right-[-10%] w-[460px] h-[460px] rounded-full bg-brand-blue/[0.06] blur-[150px] pointer-events-none" />
     <div className="absolute bottom-0 left-[-8%] w-[400px] h-[400px] rounded-full bg-brand-blue/[0.05] blur-[140px] pointer-events-none" />
-    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
 
     <Container className="relative z-10">
       <m.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="max-w-2xl mb-12 md:mb-14"
+        className="max-w-2xl mb-10 md:mb-12"
       >
-        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+        <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
           What Trips Up Most Services
         </span>
         <h2 className="section-heading text-white leading-tight mb-4">
@@ -545,10 +603,13 @@ const WhyUsSection = () => (
               </p>
             </div>
 
-            <div className="p-6 md:p-7 bg-brand-orange/[0.05]">
+            {/* Blue wash, not orange. A tinted half-panel this large is a
+                surface, not a call to action — orange at this size competed
+                with the actual CTAs and pulled the page off the site palette. */}
+            <div className="p-6 md:p-7 bg-brand-blue/[0.07]">
               <div className="flex items-start gap-3 mb-2">
-                <CheckCircle2 className="w-5 h-5 text-brand-orange-light shrink-0 mt-0.5" />
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-orange-light">
+                <CheckCircle2 className="w-5 h-5 text-brand-blue-light shrink-0 mt-0.5" />
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-blue-light">
                   How we run it
                 </p>
               </div>
@@ -578,8 +639,11 @@ const WhyUsSection = () => (
 );
 
 const PromiseStrip = () => (
-  <section className="py-16 md:py-20 relative overflow-hidden bg-[#101e30]">
-    <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[80%] h-[100%] bg-brand-orange/[0.08] rounded-full blur-[150px] pointer-events-none" />
+  // Transparent — the bg-mesh shows through, so it lifts off the flat #07111c
+  // section above it without introducing yet another navy. The two hairline
+  // rules top and bottom are what frame it as a distinct band.
+  <section className="py-16 md:py-24 relative overflow-hidden">
+    <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[80%] h-[100%] bg-brand-blue/[0.07] rounded-full blur-[150px] pointer-events-none" />
     <div className="absolute inset-0 bg-gradient-to-b from-white/[0.025] via-transparent to-transparent pointer-events-none" />
     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent pointer-events-none" />
     <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
@@ -599,13 +663,13 @@ const PromiseStrip = () => (
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-300">
           <span className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-brand-orange-light" /> Always Blue Guarantee
+            <ShieldCheck className="w-4 h-4 text-brand-blue-light" /> Always Blue Guarantee
           </span>
           <span className="flex items-center gap-2">
-            <Wrench className="w-4 h-4 text-brand-orange-light" /> Equipment checked every visit
+            <Wrench className="w-4 h-4 text-brand-blue-light" /> Equipment checked every visit
           </span>
           <span className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-brand-orange-light" /> GPS-verified service
+            <MapPin className="w-4 h-4 text-brand-blue-light" /> GPS-verified service
           </span>
         </div>
 
@@ -664,7 +728,9 @@ const relatedGuides: Array<{
 ];
 
 const RelatedGuidesSection = () => (
-  <section className="py-20 md:py-24 bg-[#07111c] relative overflow-hidden">
+  // Transparent (mesh) — sits between the flat #07111c FAQ and the flat
+  // #07111c closing CtaBand, so the page ends on a light/dark/light beat.
+  <section className="py-16 md:py-24 relative overflow-hidden">
     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
     <div className="absolute top-0 left-1/4 w-[50%] h-[40%] bg-brand-blue/[0.05] rounded-full blur-[150px] pointer-events-none" />
     <Container className="relative z-10">
@@ -672,9 +738,9 @@ const RelatedGuidesSection = () => (
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="max-w-2xl mb-12"
+        className="max-w-2xl mb-10 md:mb-12"
       >
-        <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+        <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
           Pool Care, Explained
         </span>
         <h2 className="section-heading text-white leading-tight mb-4">
@@ -700,13 +766,13 @@ const RelatedGuidesSection = () => (
               to={g.to}
               className="group glass-panel rounded-2xl p-6 md:p-7 flex items-start gap-4 h-full hover:bg-white/10 transition-colors"
             >
-              <div className="shrink-0 w-11 h-11 rounded-xl bg-brand-orange/10 border border-brand-orange/20 flex items-center justify-center">
-                <g.icon className="w-5 h-5 text-brand-orange-light" />
+              <div className="shrink-0 w-11 h-11 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center">
+                <g.icon className="w-5 h-5 text-brand-blue-light" />
               </div>
               <div className="flex-1">
                 <h3 className="text-[17px] font-display font-bold text-white mb-1.5 flex items-center gap-1.5">
                   {g.title}
-                  <ArrowRight className="w-4 h-4 text-gray-500 transition-all group-hover:text-brand-orange-light group-hover:translate-x-0.5" />
+                  <ArrowRight className="w-4 h-4 text-gray-500 transition-all group-hover:text-brand-blue-light group-hover:translate-x-0.5" />
                 </h3>
                 <p className="text-gray-400 text-[14px] leading-relaxed">{g.blurb}</p>
               </div>
@@ -721,15 +787,15 @@ const RelatedGuidesSection = () => (
 const FaqSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   return (
-    <section className="py-20 md:py-24 bg-[#07111c] relative">
+    <section className="py-16 md:py-24 bg-[#07111c] relative">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-10 md:mb-12"
         >
-          <span className="text-brand-orange-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+          <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
             St. Pete Beach Pool Service
           </span>
           <h2 className="section-heading text-white">Questions, answered.</h2>
@@ -755,7 +821,7 @@ const FaqSection = () => {
                 >
                   <span className="text-white font-semibold text-[17px]">{faq.q}</span>
                   {isOpen ? (
-                    <Minus className="w-5 h-5 shrink-0 text-brand-orange-light" />
+                    <Minus className="w-5 h-5 shrink-0 text-brand-blue-light" />
                   ) : (
                     <Plus className="w-5 h-5 shrink-0 text-gray-400" />
                   )}
