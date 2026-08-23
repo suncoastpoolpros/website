@@ -1364,9 +1364,13 @@ export const ProposalBuilder = ({
             {data.proposal.pricingMode === "tiers" && (
               <Section title="Plans">
                 <p className="text-xs leading-relaxed text-gray-500">
-                  Each plan lists everything it includes, so either card reads
-                  on its own. The upgrade&rsquo;s own extras are labelled
-                  &ldquo;Additional benefits&rdquo; and printed first.
+                  The PDF shows the upgrade as &ldquo;Everything in{" "}
+                  {data.proposal.tiers[0]?.name || "the first plan"},
+                  plus&rdquo; its own extras, because both cards sit side by
+                  side there. The web page lists everything in each card instead
+                  &mdash; a phone stacks them with the recommended one first,
+                  where a backward reference would point at something not yet
+                  read.
                 </p>
                 {data.proposal.tiers.map((tier, i) => (
                   <div
@@ -1922,12 +1926,19 @@ const ProposalPreview = ({
                   {(tier.includes.some((x) => x.trim()) || i > 0) && (
                     <div className="my-1.5 h-px bg-stone-200" />
                   )}
-                  {(tier.extrasCount ?? 0) > 0 && (
+                  {/* Mirrors the PDF, which is what this preview IS: the
+                      cross-reference and only this plan's own extras. The
+                      customer-facing web page lists everything in both cards
+                      instead — see ProposalDocument for why the two differ. */}
+                  {i > 0 && tiers[i - 1]?.name?.trim() && (
                     <div className="mb-1 text-[10px] font-bold text-navy">
-                      Additional benefits
+                      Everything in {tiers[i - 1].name.trim()}, plus:
                     </div>
                   )}
-                  {tier.includes
+                  {(tier.extrasCount
+                    ? tier.includes.slice(0, tier.extrasCount)
+                    : tier.includes
+                  )
                     .map((x) => x.trim())
                     .filter(Boolean)
                     .map((item, j) => (

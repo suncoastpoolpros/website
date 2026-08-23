@@ -501,13 +501,18 @@ const TierCard = ({
 }) => {
   const items = tier.includes.map((i) => i.trim()).filter(Boolean);
   const extras = Math.min(tier.extrasCount ?? 0, items.length);
+  // Only the extras when the tier declares them; the whole list otherwise.
+  const shown = extras > 0 ? items.slice(0, extras) : items;
   return (
     <View
       style={[styles.tierCard, tier.recommended ? styles.tierCardRec : null]}
     >
       {tier.recommended ? (
         <View style={styles.ribbon}>
-          <Text style={styles.ribbonText}>RECOMMENDED</Text>
+          {/* Same word as the approve page. The customer reads both documents,
+              often side by side, and two names for one thing invites the
+              question of whether they are the same thing. */}
+          <Text style={styles.ribbonText}>BEST VALUE</Text>
         </View>
       ) : null}
       <Text style={styles.tierName}>{tier.name.trim()}</Text>
@@ -531,30 +536,32 @@ const TierCard = ({
       ) : null}
       {/* No divider when there's nothing under it — the base card carries only a
           price, because the service it buys is listed once above the cards. */}
-      {items.length ? <View style={styles.tierRule} /> : null}
-      {/* Extras labelled and first, shared service under a rule — the same
-          split the approve page makes, so the printed document and the page the
-          customer signs on cannot describe the plan differently. */}
-      {extras > 0 ? (
-        <Text style={styles.tierBuildsOn}>Additional benefits</Text>
+      {/* THE PDF KEEPS THE CROSS-REFERENCE, and deliberately diverges from the
+          approve page here.
+
+          "Everything in <base>, plus:" broke on the page because a phone stacks
+          the cards with the recommended one FIRST, so it pointed at something
+          not yet read. A PDF has no such problem: the page is a fixed width,
+          the two cards are always side by side, and the base plan is always to
+          the left of the sentence referring to it. The reference is unambiguous
+          in print and it keeps the card short, which matters far more on a
+          document that has to share a page with the scope and the price.
+
+          So the PDF shows only this plan's OWN extras — items.slice(0, extras)
+          — while the page shows the full list. Same stored data, read two ways,
+          because the two media fail differently. Old quotes have no extrasCount
+          and fall back to printing everything, which is exactly what they were
+          sent. */}
+      {shown.length || buildsOn ? <View style={styles.tierRule} /> : null}
+      {buildsOn ? (
+        <Text style={styles.tierBuildsOn}>Everything in {buildsOn}, plus:</Text>
       ) : null}
-      {items.slice(0, extras || items.length).map((item, i) => (
+      {shown.map((item, i) => (
         <View key={i} style={styles.tierItem}>
           <Text style={styles.tierCheck}>•</Text>
           <Text style={styles.tierItemText}>{item}</Text>
         </View>
       ))}
-      {extras > 0 && items.length > extras ? (
-        <>
-          <View style={styles.tierRule} />
-          {items.slice(extras).map((item, i) => (
-            <View key={extras + i} style={styles.tierItem}>
-              <Text style={styles.tierCheck}>•</Text>
-              <Text style={styles.tierItemText}>{item}</Text>
-            </View>
-          ))}
-        </>
-      ) : null}
     </View>
   );
 };
