@@ -28,6 +28,7 @@ import { Footer } from '@/components/Footer';
 import { Container } from '@/components/Container';
 import { SmartLink } from '@/components/SmartLink';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
+import { ServiceAreaStrip } from '@/components/ServiceAreaStrip';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 import { serviceSchema } from '@/lib/businessSchema';
@@ -238,7 +239,7 @@ const StormCleanupPageInner = () => {
           <p className="text-lg text-gray-400 leading-relaxed max-w-xl mx-auto mb-8">
             Debris out, filter cleaned, chemistry rebuilt from wherever the rain left it, and
             eyes on the equipment before anything gets switched back on. We cover
-            St.&nbsp;Petersburg, the beaches, and the rest of the county.
+            St.&nbsp;Petersburg, Clearwater, Largo, Palm Harbor and the rest of Pinellas.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -252,6 +253,8 @@ const StormCleanupPageInner = () => {
             </a>
           </div>
         </section>
+
+        <ServiceAreaStrip intro="A named storm does not stop at a city line, and neither do we. Post-storm cleanup runs across Pinellas County and into South Tampa." />
 
         {/* Two doors. People land here in one of two very different moments —
             watching a cone on the news, or standing over a brown pool — and

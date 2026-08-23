@@ -17,6 +17,7 @@ import { Footer } from '@/components/Footer';
 import { Container } from '@/components/Container';
 import { SmartLink } from '@/components/SmartLink';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
+import { ServiceAreaStrip } from '@/components/ServiceAreaStrip';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 import { serviceSchema, poolServiceSchema } from '@/lib/businessSchema';
@@ -154,7 +155,8 @@ const ServicesPageInner = () => {
           </h1>
           <p className="text-lg text-gray-400 leading-relaxed max-w-xl mx-auto mb-8">
             One flat rate for the weekly service, and straight quotes for everything else —
-            recoveries, storms, filters and equipment. No contracts, and no chemical bill
+            recoveries, storms, filters and equipment. Serving St.&nbsp;Petersburg, Clearwater,
+            Largo, Seminole, Dunedin and Palm Harbor — no contracts, and no chemical bill
             arriving separately at the end of the month.
           </p>
 
@@ -169,6 +171,8 @@ const ServicesPageInner = () => {
             </a>
           </div>
         </section>
+
+        <ServiceAreaStrip intro="Every service on this page is available anywhere we run a route — across Pinellas County and into South Tampa." />
 
         {/* ── Everything we do ──────────────────────────────────── */}
         <section className="py-16 md:py-24 relative overflow-hidden bg-[#07111c]">

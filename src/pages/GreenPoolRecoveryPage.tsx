@@ -27,6 +27,7 @@ import { Footer } from '@/components/Footer';
 import { Container } from '@/components/Container';
 import { SmartLink } from '@/components/SmartLink';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
+import { ServiceAreaStrip } from '@/components/ServiceAreaStrip';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 import { serviceSchema } from '@/lib/businessSchema';
@@ -236,7 +237,8 @@ const GreenPoolRecoveryPageInner = () => {
           <p className="text-lg text-gray-400 leading-relaxed max-w-xl mx-auto mb-8">
             Send us a photo and we&rsquo;ll tell you which of three states your pool is in, how
             long it will actually take, and what it costs — as one flat number, before anyone
-            turns up.
+            turns up. We recover pools across St.&nbsp;Petersburg, Clearwater, Largo,
+            Seminole and Palm Harbor.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -250,6 +252,8 @@ const GreenPoolRecoveryPageInner = () => {
             </a>
           </div>
         </section>
+
+        <ServiceAreaStrip intro="Green pools turn up everywhere from downtown St. Pete to the north end of the county. These are the cities we run recoveries in." />
 
         {/* ── THE LIGHT BAND — the three tiers ──────────────────── */}
         {/* The page's one polarity flip. It lands on the tiers because that's
