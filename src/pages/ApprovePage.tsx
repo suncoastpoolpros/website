@@ -7,7 +7,6 @@ import {
   ArrowRight,
   ArrowLeft,
   Download,
-  MessageSquare,
   X,
 } from 'lucide-react';
 import { usePageMeta } from '@/lib/usePageMeta';
@@ -913,58 +912,46 @@ export const ApprovePage = () => {
               customer doing us the favour of explaining should not have to read
               a sentence that sounds like an accusation.
             */}
+            {/*
+              A LINE, not a box.
+
+              This was a panel, and every version of a panel was wrong: filled
+              lighter than the page it looked washed out, filled darker it
+              looked disabled, and filled white it looked like a third plan.
+              The problem was never the colour — it was that a container of any
+              kind asks to be compared with the two containers above it, and
+              this must not be compared with them. Without one there is nothing
+              to weigh against a plan card, and the exit stops competing with
+              the decision while staying perfectly findable by anyone who has
+              already made it.
+
+              Kept at the point of decision rather than in a footer, because
+              somebody who has just read the price and decided against it is the
+              one person whose answer is worth having, and they are about to
+              close the tab.
+            */}
             {!declined && (
-              /* mt-10, not mt-6. At the plan cards' own spacing this inherited
-                 their rhythm and read as part of the choice set — the very
-                 thing the muted styling is trying to avoid. The extra air is
-                 what makes it a separate zone rather than a third option, and
-                 it puts a little more distance between the exit and the
-                 decision without hiding it. */
-              /* RECESSED, not elevated. It was #f7f9fc — three per cent
-                 LIGHTER than the page's #eef2f7 — so it was reaching for the
-                 same floating-card treatment as the two plans and missing,
-                 which is why it read as washed out rather than deliberate.
-                 Going darker than the page puts it on the opposite axis: the
-                 plans lift off the surface, this sinks into it. It stops
-                 competing with them and starts looking like an aside, which is
-                 exactly what it is. */
-              <div className="mt-10 rounded-2xl border border-[#d3dfeb] bg-[#e3eaf3] px-5 py-5 text-center">
-                {/* A speech bubble, deliberately not an exclamation mark.
-                    An exclamation is the vocabulary of warnings and form
-                    errors — on a page that also carries a signature form it
-                    would read as something gone wrong, which is the opposite
-                    of the tone this box needs. A bubble says "tell us". */}
-                <span className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full border border-[#cddaea] bg-white text-brand-blue">
-                  <MessageSquare className="h-[18px] w-[18px]" />
-                </span>
-                <p className="text-[15px] font-semibold text-[#1f2937]">Going a different route?</p>
-                <p className="mx-auto mt-1 max-w-md text-sm leading-relaxed text-[#6b7280]">
-                  We&rsquo;d still like to hear from you. Whether you&rsquo;ve chosen another company
-                  or simply decided the timing isn&rsquo;t right, telling us why takes one tap
-                  &mdash; and it&rsquo;s genuinely the most useful thing anyone can do for a small
-                  business like ours.
-                </p>
+              <p className="mx-auto mt-10 max-w-lg text-center text-sm leading-relaxed text-[#6b7280]">
+                Going a different route?{' '}
                 <button
                   onClick={() => setDeclineOpen(true)}
-                  className="mt-3 text-sm font-semibold text-brand-blue underline underline-offset-4 hover:text-brand-blue-dark"
+                  className="font-semibold text-brand-blue underline underline-offset-4 hover:text-brand-blue-dark"
                 >
-                  Share your feedback
-                </button>
-              </div>
+                  Tell us why
+                </button>{' '}
+                &mdash; it takes one tap, and it genuinely helps a small business like ours.
+              </p>
             )}
 
-            {/* Once they have told us, the box becomes the acknowledgement —
-                the reply is written per reason, because two of them are
-                recoverable and a screen that just says "thanks" wastes the last
-                moment anyone is paying attention. The plans stay on screen and
-                the link keeps working: declining is not a door closing. */}
+            {/* The acknowledgement matches: a line, not a panel. Still tinted
+                green, because something DID happen and the reply is written per
+                reason — two of them are recoverable, and a screen that only says
+                "thanks" wastes the last moment anyone is paying attention. */}
             {declined && (
-              <div className="mt-10 rounded-2xl border border-green-200 bg-green-50 px-5 py-5 text-center">
-                <p className="text-[15px] font-semibold text-green-900">Thank you — that helps.</p>
-                <p className="mx-auto mt-1 max-w-md text-sm leading-relaxed text-green-800">
-                  {declineReply(declined)}
-                </p>
-              </div>
+              <p className="mx-auto mt-10 max-w-lg text-center text-sm leading-relaxed text-[#176a2c]">
+                <span className="font-semibold">Thank you &mdash; that helps.</span>{' '}
+                {declineReply(declined)}
+              </p>
             )}
 
             {/* NOTE: the "What Others Charge Extra For" value stack is
