@@ -96,7 +96,7 @@ const STORM_FAQ: Array<{ question: string; answer: string }> = [
   {
     question: 'How long until my pool is usable again?',
     answer:
-      "For most storm pools we are talking a few days rather than weeks — the debris comes out on the first visit, and the chemistry needs a little time to be rebuilt and hold. A pool that sat untouched for a week or more, or one that took genuine flooding, takes longer. We will tell you which one you have after we have seen it, not before.",
+      "Most storm pools take two visits. The first clears the debris and rebuilds the chemistry; the second, a few days later, confirms the numbers held and finishes the polish. We manage that because we vacuum sand straight to waste and use filtered vacuums for the sludge, rather than pushing everything through your filter and coming back every time it blinds. A pool that sat untouched for a week or more, or one that took genuine flooding, takes longer — and we will say so once we have seen it.",
   },
   {
     question: 'My pool overflowed. Is that a problem?',
@@ -197,8 +197,9 @@ const StormCleanupPageInner = () => {
           <p className="text-lg text-gray-400 leading-relaxed max-w-xl mx-auto mb-8">
             Storm runoff leaves a pool unsafe, not just ugly — and the rain washed out the
             chlorine that would normally handle it. We clear it, rebuild the chemistry, and
-            tell you in writing when it is safe again. St.&nbsp;Petersburg, Clearwater, Largo,
-            Palm Harbor and the rest of Pinellas.
+            tell you in writing when it is safe again. <span className="text-white">Most pools
+            are done in two visits.</span> St.&nbsp;Petersburg, Clearwater, Largo, Palm Harbor
+            and the rest of Pinellas.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -447,6 +448,130 @@ const StormCleanupPageInner = () => {
               The storm is the easy part to see. What it left behind is not.
             </m.p>
           </div>
+        </section>
+
+        {/* ── Equipment: the actual differentiator ──────────────── */}
+        {/* Sits straight after the interlude on purpose — the photo shows the
+            vacuum, this explains why there are two of them. Most competitors
+            run storm debris through the customer's own filter because it is the
+            only method they have, which is what turns a two-visit job into a
+            fortnight or a drain quote. */}
+        <section className="py-16 md:py-24 relative overflow-hidden bg-[#07111c]">
+          <div className="absolute top-0 right-1/4 w-[50%] h-[40%] bg-brand-blue/[0.06] rounded-full blur-[150px] pointer-events-none" />
+          <Container className="relative z-10">
+            <div className="max-w-2xl mb-10 md:mb-12">
+              <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+                Why We Are Faster
+              </span>
+              <h2 className="section-heading text-white leading-[1.1] mb-4">
+                Two vacuums, because storm debris is not one thing.
+              </h2>
+              <p className="section-subtext">
+                Sand behaves nothing like leaf litter, and a pool full of both needs a
+                different answer than either alone. Most services own one method and make
+                every pool fit it. We pick the tool for what is actually on your floor.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mb-6">
+              <m.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="relative glass-panel rounded-2xl p-7 md:p-8"
+              >
+                <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center shrink-0">
+                    <Waves className="w-6 h-6 text-brand-blue-light" />
+                  </span>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-blue-light">
+                      For sand and heavy silt
+                    </p>
+                    <h3 className="text-xl font-display font-bold text-white leading-tight">
+                      Vacuumed straight to waste
+                    </h3>
+                  </div>
+                </div>
+                <p className="text-gray-300 leading-relaxed text-[15px] mb-4">
+                  Storm surge and runoff drop fine sand and grit that will pack a filter solid
+                  in a single pass. This one sends it out of the pool entirely, bypassing your
+                  filter rather than loading it — so the heavy material is gone in one go
+                  instead of being pushed through equipment that then has to be stripped.
+                </p>
+                <p className="text-gray-400 leading-relaxed text-[15px]">
+                  It costs some water, which we top back up. That is a fair trade when the
+                  alternative is a blinded filter and three more visits.
+                </p>
+              </m.div>
+
+              <m.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.08 }}
+                className="relative glass-panel rounded-2xl p-7 md:p-8"
+              >
+                <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="w-12 h-12 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
+                    <Filter className="w-6 h-6 text-white" />
+                  </span>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+                      For leaf litter and sludge
+                    </p>
+                    <h3 className="text-xl font-display font-bold text-white leading-tight">
+                      Filtered on board, water stays
+                    </h3>
+                  </div>
+                </div>
+                <p className="text-gray-300 leading-relaxed text-[15px] mb-4">
+                  Our other vacuums carry their own filtration. The debris comes out and the
+                  water goes back in, so the level does not drop — which matters when the
+                  ground is already saturated and taking a pool down is the last thing anyone
+                  should be doing.
+                </p>
+                <p className="text-gray-400 leading-relaxed text-[15px]">
+                  This is the one that clears pools other companies look at and quote a full
+                  drain and acid wash on.
+                </p>
+              </m.div>
+            </div>
+
+            {/* The payoff */}
+            <m.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="relative rounded-2xl border border-brand-orange/25 bg-brand-orange/[0.05] p-6 md:p-8"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 md:gap-8 items-center">
+                <div className="text-center md:text-left md:border-r md:border-white/10 md:pr-8">
+                  <span className="font-display font-black text-white text-5xl md:text-6xl leading-none block">
+                    2
+                  </span>
+                  <span className="text-brand-orange-light font-semibold text-sm uppercase tracking-[0.16em]">
+                    visits, typically
+                  </span>
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-white text-lg mb-2 leading-snug">
+                    That is what having both gets you.
+                  </h3>
+                  <p className="text-gray-300 text-[15px] leading-relaxed">
+                    Most storm pools are done in two: the first clears the debris and rebuilds
+                    the chemistry, the second confirms the numbers held and finishes the
+                    polish. A service running everything through your filter cannot do that —
+                    they are back a third and fourth time because the filter keeps blinding,
+                    or they are quoting you a drain. Genuinely destroyed pools take longer, and
+                    we will say so when we have seen it.
+                  </p>
+                </div>
+              </div>
+            </m.div>
+          </Container>
         </section>
 
         {/* ── What the cleanup covers ───────────────────────────── */}
