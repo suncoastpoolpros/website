@@ -415,24 +415,31 @@ const StormCleanupPageInner = () => {
             site's one-per-page rule. This is the OTHER device the city pages
             already use for exactly this problem: a full-bleed photo that
             interrupts a long dark run without going light. Reuses the existing
-            Pinellas interlude image set — no new asset, and a regional image is
-            right for a page that is not about one city. */}
+            our own filtered vacuum working through storm silt. It was standing
+            in with the Pinellas beach photo, which read as holiday rather than
+            aftermath. A real job photo also does work no stock image can: it
+            shows the equipment the page keeps claiming we use. */}
         <section className="relative h-[38vh] min-h-[320px] md:h-[44vh] md:min-h-[400px] overflow-hidden">
-          <div className="interlude-bg-pinellas-desktop absolute inset-0 hidden md:block bg-cover bg-center" aria-hidden />
-          <div className="interlude-bg-pinellas-mobile absolute inset-0 md:hidden bg-cover bg-center" aria-hidden />
-          <div className="interlude-tint-pinellas absolute inset-0 pointer-events-none" aria-hidden />
+          <div className="interlude-bg-stormvac-desktop absolute inset-0 hidden md:block bg-cover bg-center" aria-hidden />
+          <div className="interlude-bg-stormvac-mobile absolute inset-0 md:hidden bg-cover bg-center" aria-hidden />
+          <div className="interlude-tint-stormvac absolute inset-0 pointer-events-none" aria-hidden />
 
           {/* Fades to #07111c on both edges so the join is seamless. */}
           <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#07111c] to-transparent pointer-events-none" />
           <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#07111c] to-transparent pointer-events-none" />
 
-          <div className="relative h-full flex items-center justify-center">
+          {/* Copy sits RIGHT of centre on desktop. Centred, it landed straight
+              on the vacuum head — burying the one thing the photo is here to
+              show. The right side of the frame is open silt, which takes text
+              cleanly. Mobile's crop puts the head mid-frame, so there the copy
+              drops to the open silt below it instead. */}
+          <div className="relative h-full flex items-end pb-10 justify-center md:items-center md:pb-0 md:justify-end md:pr-[7%]">
             <m.p
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-15%' }}
               transition={{ duration: 1, ease: 'easeOut' }}
-              className="text-shadow-interlude font-display italic text-white/90 text-2xl sm:text-3xl md:text-[2.25rem] leading-snug text-center px-6 max-w-2xl tracking-tight"
+              className="text-shadow-interlude font-display italic text-white/90 text-2xl sm:text-3xl md:text-[2.1rem] leading-snug text-center md:text-right px-6 max-w-2xl md:max-w-[26rem] tracking-tight"
             >
               The storm is the easy part to see. What it left behind is not.
             </m.p>

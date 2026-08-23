@@ -1145,3 +1145,35 @@ input[type="date"]::-webkit-date-and-time-value {
     background-color: rgb(48 54 63 / 0.82) !important;
   }
 }
+
+/* ===== Storm cleanup interlude — a real job photo, not a stock beach.
+   The Pinellas interlude set (a Belleair waterfront house) was standing in
+   here, which read as "vacation" on a page about hurricane aftermath. This is
+   our own filtered vacuum working through storm silt — the exact thing the page
+   argues we do instead of draining a pool.
+
+   Treatment is DELIBERATELY lighter than the other interludes. Those photos are
+   bright sunlit beaches, so they take brightness(0.55) to sit text on. This one
+   is already dim, desaturated pool water; the same filter crushed it to near
+   black. Slight lift instead, and only enough blue tint to tie it to the
+   palette without turning the silt navy. ===== */
+.interlude-bg-stormvac-desktop {
+  background-image: image-set(
+    url('/storm-vacuum-cleanup.webp') type('image/webp') 1x,
+    url('/storm-vacuum-cleanup-1920.webp') type('image/webp') 2x,
+    url('/storm-vacuum-cleanup.jpg') type('image/jpeg') 1x
+  );
+  filter: saturate(1.1) brightness(0.92) contrast(1.06);
+}
+.interlude-bg-stormvac-mobile {
+  background-image: image-set(
+    url('/storm-vacuum-cleanup-mobile.webp') type('image/webp') 1x,
+    url('/storm-vacuum-cleanup.jpg') type('image/jpeg') 1x
+  );
+  filter: saturate(1.1) brightness(0.92) contrast(1.06);
+}
+.interlude-tint-stormvac {
+  background-color: #0a2540;
+  mix-blend-mode: overlay;
+  opacity: 0.3;
+}
