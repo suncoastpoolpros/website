@@ -60,7 +60,10 @@ export const ANNUAL_MONTHS_CHARGED = 11;
  * a stale preset from wording the admin edited on purpose, so it would nag
  * forever on any customised proposal.
  */
-export const PRESET_VERSION = 4;
+/* 5: the annual badge became "Save $X" and the four-figure total moved to its
+   own billingNote line under the button. A draft started before that has the
+   old combined string and no billingNote, so it should be offered the refresh. */
+export const PRESET_VERSION = 5;
 
 /** Terms specific to prepaying for the year. */
 /**
@@ -269,6 +272,7 @@ export const syncTierPrices = (
       // Price and its sub-line are always derived — they aren't editable.
       price: now.price,
       priceNote: now.priceNote,
+      billingNote: now.billingNote,
       tagline: carry('tagline'),
       valueNote: carry('valueNote'),
     };
@@ -290,6 +294,7 @@ export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', in
       // DE's, tall enough to push the whole comparison onto the next page.
       tagline: 'The full service, billed month to month.',
       priceNote: '',
+      billingNote: '',
       includes: monthlyIncludes(filter),
       recommended: false,
       // Answers "why is this more than the quote down the road?" before the
@@ -307,8 +312,24 @@ export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', in
       // comparable and reads as the expensive option; "$163/mo" next to
       // "$178/mo" reads as the cheaper one, which it is.
       price: monthly ? `${formatAmount(effectiveMonthly(monthly))}/mo` : '',
-      priceNote: monthly
-        ? `$${formatAmount(monthly * ANNUAL_MONTHS_CHARGED)} billed once — $${formatAmount(monthly)} saved`
+      /*
+       * THE BADGE SELLS; THE LINE BENEATH DISCLOSES.
+       *
+       * This used to read "$1,815 billed once — $165 saved", which put a large
+       * total right beside a small monthly rate and invited exactly the
+       * comparison the headline price was designed to avoid. A four-figure
+       * number next to "$151/mo" reads as the expensive option even when it is
+       * the cheaper one.
+       *
+       * So the badge is now the saving alone, and the total moves to a quiet
+       * line under the button (billingNote). It is NOT hidden: burying what
+       * somebody is actually agreeing to pay would only move the shock to the
+       * invoice, where it costs more. It is simply no longer competing with
+       * the rate.
+       */
+      priceNote: monthly ? `Save $${formatAmount(monthly)}` : '',
+      billingNote: monthly
+        ? `$${formatAmount(monthly * ANNUAL_MONTHS_CHARGED)} billed once — ${ANNUAL_MONTHS_CHARGED} months paid, your ${ANNUAL_MONTHS_CHARGED + 1}th free.`
         : '',
       tagline: 'The full service, with one month free.',
       includes: [...ANNUAL_INCLUDES],

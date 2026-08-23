@@ -143,6 +143,7 @@ export const proposalDataFromQuote = (quote: {
           price: str(t?.price),
           tagline: str(t?.tagline),
           priceNote: str(t?.priceNote),
+          billingNote: str(t?.billingNote),
           includes: Array.isArray(t?.includes) ? (t.includes as unknown[]).map(str) : [],
           recommended: t?.recommended === true,
           valueNote: str(t?.valueNote),

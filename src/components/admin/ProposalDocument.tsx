@@ -212,6 +212,7 @@ const styles = StyleSheet.create({
   // small-text context reserves too little room and the next line overlaps it.
   tierPrice: { fontSize: 18, lineHeight: 1.15, fontFamily: 'Helvetica-Bold', color: BLUE_DARK, marginTop: 6 },
   tierDeltaText: { fontSize: 8.5, lineHeight: 1.3, fontFamily: 'Helvetica-Bold', color: BRAND_BLUE, marginTop: 3 },
+  tierBillingNote: { fontSize: 7, lineHeight: 1.35, color: MUTED, marginTop: 2 },
   tierRule: { borderTopWidth: 1, borderTopColor: LINE, marginTop: 7, marginBottom: 6 },
   tierBuildsOn: { fontSize: 8, lineHeight: 1.3, fontFamily: 'Helvetica-Bold', color: NAVY, marginBottom: 5 },
   tierItem: { flexDirection: 'row', marginBottom: 2.5 },
@@ -327,6 +328,9 @@ const TierCard = ({
           effective monthly rate needs "$1,958 billed once", not "+$X more". */}
       {tier.priceNote.trim() ? (
         <Text style={styles.tierDeltaText}>{tier.priceNote.trim()}</Text>
+      ) : null}
+      {tier.billingNote?.trim() ? (
+        <Text style={styles.tierBillingNote}>{tier.billingNote.trim()}</Text>
       ) : delta ? (
         <Text style={styles.tierDeltaText}>
           {delta} more than {buildsOn}

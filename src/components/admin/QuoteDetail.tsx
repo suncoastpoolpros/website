@@ -37,6 +37,7 @@ type Tier = {
   price?: string;
   tagline?: string;
   priceNote?: string;
+  billingNote?: string;
   includes?: string[];
   recommended?: boolean;
   valueNote?: string;
@@ -457,6 +458,7 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
                           )}
                         </div>
                         {str(t.priceNote) && <p className="mt-0.5 text-xs text-gray-400">{str(t.priceNote)}</p>}
+                        {str(t.billingNote) && <p className="mt-0.5 text-xs text-gray-500">{str(t.billingNote)}</p>}
                         {str(t.tagline) && <p className="mt-1 text-sm text-gray-300">{str(t.tagline)}</p>}
                         {includes.length > 0 && (
                           <ul className="mt-2 space-y-1">

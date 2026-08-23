@@ -107,7 +107,12 @@ export type Tier = {
    * effective MONTHLY rate needs "$1,958 billed once". Left blank, the card
    * falls back to the computed "+$12/mo more than X" delta.
    */
+  /** The badge beside the rate, e.g. "Save $165". */
   priceNote: string;
+  /** The quiet disclosure under the button, e.g. "$1,815 billed once — 11
+   *  months paid, your 12th free." Absent on quotes stored before the note was
+   *  split in two; those keep the single combined string in priceNote. */
+  billingNote?: string;
   includes: string[];
   /** Draws the ribbon + brand border. Exactly one tier should have it. */
   recommended: boolean;

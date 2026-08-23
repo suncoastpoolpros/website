@@ -68,6 +68,8 @@ type Tier = {
   /** e.g. "$2,035 billed once — $185 saved". The PDF and email both show this;
    *  it was missing here, on the page where the decision actually happens. */
   priceNote?: string;
+  /** The quiet disclosure under the button. */
+  billingNote?: string;
   tagline: string;
   includes: string[];
   recommended: boolean;
@@ -971,6 +973,20 @@ export const ApprovePage = () => {
                           <span className="sr-only"> {tier.name}</span>
                         </button>
                       </span>
+                      {/* What they are actually agreeing to pay, under the
+                          button and above the rule.
+
+                          Deliberately NOT in the badge beside the rate: a
+                          four-figure total there reads as the expensive option
+                          even when it is the cheaper one. Equally deliberately
+                          NOT omitted — burying the figure would only move the
+                          surprise to the invoice, where it costs far more than
+                          a moment's pause here. */}
+                      {tier.billingNote?.trim() && (
+                        <p className="mt-2 text-center text-xs leading-relaxed text-[#6b7280]">
+                          {tier.billingNote.trim()}
+                        </p>
+                      )}
                       {/* A rule under the button, not a bare gap. Above it the
                         card is making an offer; below it the card is
                         justifying one, and the line is what tells you the

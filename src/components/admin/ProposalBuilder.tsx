@@ -1151,6 +1151,9 @@ export const ProposalBuilder = ({
                           {tier.priceNote.trim() && (
                             <p className="text-xs font-semibold text-brand-blue-light">{tier.priceNote}</p>
                           )}
+                          {tier.billingNote?.trim() && (
+                            <p className="text-xs text-gray-400">{tier.billingNote}</p>
+                          )}
                         </>
                       ) : (
                         <p className="text-sm text-gray-400">Set the base rate above.</p>
@@ -1468,6 +1471,9 @@ const ProposalPreview = ({
                   )}
                   {tier.priceNote.trim() ? (
                     <div className="text-[10px] font-bold text-brand-blue">{tier.priceNote.trim()}</div>
+                  ) : null}
+                  {tier.billingNote?.trim() ? (
+                    <div className="text-[10px] text-stone-500">{tier.billingNote.trim()}</div>
                   ) : i > 0 && delta ? (
                     <div className="text-[10px] font-bold text-brand-blue">
                       {delta} more than {tiers[i - 1].name.trim()}
