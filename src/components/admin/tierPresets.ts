@@ -63,7 +63,10 @@ export const ANNUAL_MONTHS_CHARGED = 11;
 /* 5: the annual badge became "Save $X" and the four-figure total moved to its
    own billingNote line under the button. A draft started before that has the
    old combined string and no billingNote, so it should be offered the refresh. */
-export const PRESET_VERSION = 6;
+/* 7: plan taglines. The annual one answers the lock-in objection instead of
+   restating the saving badge below it; the monthly one loses a redundant word.
+   Both old strings are in the LEGACY lists, so drafts pick the new wording up. */
+export const PRESET_VERSION = 7;
 
 /** Terms specific to prepaying for the year. */
 /**
@@ -212,7 +215,7 @@ const SHORT_FORMS: Record<string, string> = {
   "Filter care included — never a separate invoice": "Filter care included",
   "One flat rate — it doesn’t rise in summer": "One flat rate, even in summer",
   "A GPS-stamped photo report after every visit":
-    "Photo report after every visit",
+    "GPS-verified service report after every visit",
   "No contract — cancel any time with 30 days notice":
     "No contract, cancel any time",
   "Your 12th month free — pay for 11, the last one is on us":
@@ -277,10 +280,14 @@ const LEGACY_MONTHLY_INCLUDES: string[][] = [
   ],
 ];
 
-const LEGACY_MONTHLY_TAGLINES = ["Everything above, billed month to month."];
+const LEGACY_MONTHLY_TAGLINES = [
+  "Everything above, billed month to month.",
+  "The full service, billed month to month.",
+];
 const LEGACY_ANNUAL_TAGLINES = [
   "The same service, paid annually.",
   "Everything above, paid annually.",
+  "The full service, with one month free.",
 ];
 
 const sameList = (a: string[], b: string[]): boolean =>
@@ -367,7 +374,10 @@ export const buildTiers = (
       // both plans carry the identical service — repeating all six bullets
       // inside a 250pt column was both redundant and, with longer wordings like
       // DE's, tall enough to push the whole comparison onto the next page.
-      tagline: "The full service, billed month to month.",
+      // Neutral and short. Flexibility is this card's only real advantage over
+      // the other, so it says that plainly and does not oversell it — which
+      // leaves the annual card free to take the advantage away.
+      tagline: "The full service, month to month.",
       priceNote: "",
       billingNote: "",
       includes: monthlyIncludes(filter),
@@ -406,7 +416,27 @@ export const buildTiers = (
       billingNote: monthly
         ? `$${formatAmount(monthly * ANNUAL_MONTHS_CHARGED)} billed once — ${ANNUAL_MONTHS_CHARGED} months paid, your ${ANNUAL_MONTHS_CHARGED + 1}th free.`
         : "",
-      tagline: "The full service, with one month free.",
+      /*
+       * THE OBJECTION AND ITS ANSWER IN THE SAME GLANCE.
+       *
+       * This read "The full service, with one month free" — which restated the
+       * badge directly beneath it and opened with the same three words as the
+       * other card, so the highest-attention line on the card was spent twice
+       * over on repetition.
+       *
+       * What actually stops this sale is not the price, it is handing over
+       * $1,815 and feeling tied in. The answer to that was the NINTH item on
+       * the card, in a bullet, below the fold on a phone — the fear at the top
+       * and the antidote 400px away. It is now the first thing read after the
+       * plan's name.
+       *
+       * Deliberately self-contained: no "same service as the monthly plan".
+       * On a phone the cards stack with this one FIRST, so a reference to the
+       * other card points at something not yet read. The card lists the whole
+       * service below it anyway and the badge carries the money; this line does
+       * the one job neither of those can.
+       */
+      tagline: "Nothing locked in — cancel any time, unused months refunded.",
       /*
        * THE FULL LIST, not "everything in Pay Monthly, plus:".
        *
