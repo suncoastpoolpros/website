@@ -65,8 +65,11 @@ export const ANNUAL_MONTHS_CHARGED = 11;
    old combined string and no billingNote, so it should be offered the refresh. */
 /* 7: plan taglines. The annual one answers the lock-in objection instead of
    restating the saving badge below it; the monthly one loses a redundant word.
-   Both old strings are in the LEGACY lists, so drafts pick the new wording up. */
-export const PRESET_VERSION = 7;
+   Both old strings are in the LEGACY lists, so drafts pick the new wording up.
+   8: "photo report" → "service report" in both the long and short forms.
+   "GPS-stamped" is the term used everywhere else, so print and page now say the
+   same thing — the customer reads both documents, often side by side. */
+export const PRESET_VERSION = 8;
 
 /** Terms specific to prepaying for the year. */
 /**
@@ -169,7 +172,7 @@ export const monthlyIncludes = (filter: FilterOption): string[] => [
   // only means something once you say what it protects you from.
   "One flat rate — it doesn’t rise in summer",
   // Proof of visit, which is the whole anxiety for anyone not home when we come.
-  "A GPS-stamped photo report after every visit",
+  "A GPS-stamped service report after every visit",
   // Risk reversal, sitting directly above the Choose button rather than only in
   // the Difference box further up the page. Backed by section 6 of the Service
   // Agreement — see GUARANTEE_BENEFIT in proposalBenefits.ts before editing.
@@ -214,8 +217,8 @@ const SHORT_FORMS: Record<string, string> = {
   "All chemicals included in your set monthly rate": "All chemicals included",
   "Filter care included — never a separate invoice": "Filter care included",
   "One flat rate — it doesn’t rise in summer": "One flat rate, even in summer",
-  "A GPS-stamped photo report after every visit":
-    "GPS-verified service report after every visit",
+  "A GPS-stamped service report after every visit":
+    "GPS-stamped service report after every visit",
   "No contract — cancel any time with 30 days notice":
     "No contract, cancel any time",
   "Your 12th month free — pay for 11, the last one is on us":
