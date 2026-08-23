@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
   Wind,
+  Sprout,
+  Camera,
   CloudRain,
   Ban,
   Zap,
@@ -49,37 +51,55 @@ const PREP_CARDS: Array<{
     icon: Droplets,
     title: 'Leave the water in it',
     body:
-      "The water is what's holding your pool down. Days of rain saturate the ground around the shell, and the pressure of all that groundwater pushes up underneath it — a full pool has the weight to push back. Drain it first and you've removed the ballast at the exact moment you need it most.",
-  },
-  {
-    icon: Zap,
-    title: 'Kill the power at the breaker',
-    body:
-      "Shut the pump, heater, and salt system off at the panel — not just at the timer. It protects the equipment from the surge when power comes back, and it means nothing is energized if the pad ends up underwater. Leave it off until you've actually looked at the equipment afterward.",
-  },
-  {
-    icon: TestTube,
-    title: 'Shock it the day before',
-    body:
-      "Run the chlorine high before the weather arrives. You're building a buffer that has to survive several days with no pump, no filtration, and a lot of organic debris landing in the water. A pool that goes into a storm at the low end of normal is green on the other side.",
-  },
-  {
-    icon: Ban,
-    title: "Don't put the cover on",
-    body:
-      "A cover doesn't protect a pool in a hurricane — it collects branches and roof debris, then tears, sinks, or drags all of it across the finish. The water itself handles falling debris better than a cover does, and an uncovered pool is far easier to clean out after.",
+      "The water is what's holding your pool down. Days of rain saturate the ground around the shell and raise the water table, and that pressure pushes up underneath it — a full pool has the weight to push back. Drain it first and you have removed the ballast at the exact moment you need it most.",
   },
   {
     icon: Waves,
-    title: 'Lower it a foot, at most',
+    title: 'Lower it a foot or two — no further',
     body:
-      "If serious flooding is forecast and you want the extra freeboard, take it down about a foot — no further, and only if you have time to do it properly. Anything more starts trading a manageable overflow for the much bigger problem in the first card.",
+      "If you want a buffer for the rainfall, take it down twelve to twenty-four inches. That is enough to stop it spilling over the deck and into the house, and shallow enough that the remaining water still anchors the shell. Below about half full you are back to the problem in the first card.",
+  },
+  {
+    icon: TestTube,
+    title: 'Shock it to 3–5 ppm the day before',
+    body:
+      "Put free chlorine at the top of its normal band before the weather arrives. You are building a buffer that has to survive several days with no pump, no filtration, and a lot of organic debris landing in the water. A pool that goes into a storm at the low end is green on the other side.",
+  },
+  {
+    icon: Zap,
+    title: 'Cut the power at the breaker',
+    body:
+      "Shut the pump, heater, and salt system off at the panel — not just at the timer. It protects the equipment from the surge when power comes back, and means nothing is energised if the pad ends up underwater. Anything that unplugs and can be moved is better off inside.",
+  },
+  {
+    icon: Wrench,
+    title: 'Pull the cleaner out',
+    body:
+      "Robotic and suction cleaners come out of the water and get stored dry. Left in, they are one more thing to be damaged by debris, and one more thing tangled under a pile of branches when you are trying to see the floor afterwards.",
+  },
+  {
+    icon: Ban,
+    title: 'Leave the cover off',
+    body:
+      "A cover does not protect a pool in a hurricane — it collects branches and roof debris, then tears, sinks, or drags all of it across the finish. The water itself handles falling debris better than a cover does, and an uncovered pool is far easier to clean out after.",
   },
   {
     icon: Wind,
-    title: 'Furniture: use your judgment',
+    title: 'Anything loose goes inside',
     body:
-      "The old advice was to throw everything in the pool. It does stop a chair going through a window — but it can also chip plaster and leave rust marks, and cushions turn into a soup that stains. If there's room in the garage, that's better. If there isn't, the pool beats the alternative.",
+      "Furniture, toys, planters, the float pile. The old advice was to throw it all in the pool — it does stop a chair going through a window, but it can chip plaster and leave rust marks, and cushions turn into a soup that stains. Garage first if there is room; the pool only if there is not.",
+  },
+  {
+    icon: Sprout,
+    title: 'Trim what hangs over the water',
+    body:
+      "Overhanging limbs are the single biggest source of what we pull out afterwards. An hour with a saw before the season starts is the difference between netting a few leaves and hauling half a tree out of the deep end.",
+  },
+  {
+    icon: Camera,
+    title: 'Photograph the pool and the pad',
+    body:
+      "Before-and-after photos are worth having if you end up making a claim, and they take two minutes. Get the water, the deck, the screen enclosure, and a clear shot of the equipment so there is a record of what condition it was in.",
   },
 ];
 
@@ -87,15 +107,15 @@ const PREP_CARDS: Array<{
 const CLEANUP_STEPS: Array<{ icon: typeof Wind; title: string; body: string }> = [
   {
     icon: Brush,
-    title: 'Everything out of the water',
+    title: 'Debris out before the pump goes back on',
     body:
-      'Surface debris, the layer sitting on the floor, and the material packed into the skimmer throats and pump basket — which is usually where the real blockage is hiding after a storm.',
+      'Order matters here. Branches and mulch get netted out before anything is switched on, because running the pump with that in the water is how you pack the suction lines and turn a cleanup into a repair. Skimmer throats and pump basket get cleared at the same time.',
   },
   {
     icon: Filter,
-    title: 'The filter, cleaned properly',
+    title: 'Vacuumed to waste, filter cleaned properly',
     body:
-      "A storm load will blind a filter in a single cycle. It gets backwashed or pulled and cleaned, not just glanced at — otherwise you're running the recovery through something that can't pass water.",
+      "A storm load will blind a filter in a single cycle, so the heavy silt goes out to waste rather than through it. The filter itself then gets backwashed or pulled and cleaned, not just glanced at — otherwise the recovery is running through something that cannot pass water.",
   },
   {
     icon: TestTube,
@@ -113,7 +133,7 @@ const CLEANUP_STEPS: Array<{ icon: typeof Wind; title: string; body: string }> =
     icon: Wrench,
     title: 'Eyes on the equipment pad',
     body:
-      "Before anything gets switched back on: how high the water came, whether the motor got wet, and whether the pad drained. A flooded pump motor that gets energized is a replacement, not a repair.",
+      "Before anything gets switched back on: how high the water came, whether the motor got wet, and whether the pad drained. A motor that sat in water can often be dried and cleaned professionally — but silt inside one that gets energised first will seize it, and then it is a replacement.",
   },
   {
     icon: CalendarClock,
@@ -145,6 +165,21 @@ const STORM_FAQ: Array<{ question: string; answer: string }> = [
       "Skim what you can reach, brush the walls and floor daily to keep algae from anchoring, and hand-broadcast liquid chlorine around the perimeter rather than dropping tabs in a floater — with no circulation a floater just sits in one place and can bleach the surface under it. Don't swim until it's balanced again. Once power returns, run the pump continuously for the first couple of days.",
   },
   {
+    question: 'My pool overflowed. Do I need to pump it down?',
+    answer:
+      "Yes, but only back to the tile line — halfway up the skimmer opening. Above that the skimmers stop working and surface debris just sits there. Use the waste setting on your multiport valve if the equipment is dry and safe to run, or a submersible pump if it is not. Stop at the tile. Emptying it further the day after a storm, when the ground is at its most saturated, is when a shell is most likely to lift.",
+  },
+  {
+    question: 'How much chlorine should I add before a storm?',
+    answer:
+      "Get free chlorine to the top of its normal range — around 3 to 5 ppm — the day before it arrives. You are not trying to shock it; you are giving it a buffer that has to last several days with no pump and a lot of debris landing in the water. Afterwards is when it needs a proper shock, and that is a bigger dose.",
+  },
+  {
+    question: 'My pump was underwater. Can it be saved?',
+    answer:
+      "Often, yes — but not by switching it on to find out. A motor that sat in floodwater can usually be dried and cleaned professionally. What kills it is energising it with silt still inside, which seizes the bearings and turns a service into a replacement. Leave the breaker off until someone has actually looked at it.",
+  },
+  {
     question: 'How quickly can you get out after a storm?',
     answer:
       "Honestly: it depends on how wide the damage is. After a major storm we're triaging a whole route, and existing weekly customers come first. Call or text as early as you can — even before the weather clears — and we'll give you a real position in the queue rather than a promise we can't keep.",
@@ -168,6 +203,23 @@ const STORM_FAQ: Array<{ question: string; answer: string }> = [
 // here than anywhere else on the site: this page's whole reason for shipping in
 // August is being indexed fast, ahead of a named storm.
 const STORM_SCHEMA = [
+  // HowTo built from the same PREP_CARDS the light band renders, so the markup
+  // can never describe steps the page does not show. The prep section is a
+  // genuine ordered procedure and was emitting no HowTo at all, which is the
+  // rich-result type this query actually returns.
+  {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'How to prepare your pool for a hurricane',
+    description:
+      'What to do with a swimming pool before a hurricane or tropical storm in Florida — including why draining it is the one thing not to do.',
+    step: PREP_CARDS.map((c, i) => ({
+      '@type': 'HowToStep',
+      position: i + 1,
+      name: c.title,
+      text: c.body,
+    })),
+  },
   serviceSchema({
     serviceType: 'Storm & Hurricane Pool Cleanup',
     description:
@@ -318,12 +370,12 @@ const StormCleanupPageInner = () => {
                 Before It Hits
               </span>
               <h2 className="section-heading text-[#0a1628] leading-tight mb-4">
-                Six things to do — and one to never do.
+                Nine things to do — and one to never do.
               </h2>
               <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
                 Most of the damage we clean up after a storm was decided in the two days
-                before it. None of this takes long, and it changes how bad the other side
-                looks.
+                before it. None of it takes long, and together they change how bad the
+                other side looks.
               </p>
             </div>
 
@@ -434,6 +486,65 @@ const StormCleanupPageInner = () => {
           </Container>
         </section>
 
+        {/* ── The water is too high ─────────────────────────────── */}
+        {/* "My pool overflowed" is a real post-storm search and the page had
+            nothing for it. It is also where people talk themselves into
+            draining — the pool is disgusting AND too full, right when the
+            ground is at its most saturated. */}
+        <section className="py-16 md:py-24 relative overflow-hidden bg-[#07111c]">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
+          <div className="absolute top-1/4 -left-24 w-[420px] h-[420px] rounded-full bg-brand-blue/[0.06] blur-[140px] pointer-events-none" />
+          <Container className="relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-start">
+              <div className="lg:pt-2">
+                <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+                  If It Overflowed
+                </span>
+                <h2 className="section-heading text-white leading-[1.1] mb-4">
+                  Too full is a real problem — and still not a reason to drain it.
+                </h2>
+                <p className="section-subtext mb-6">
+                  A foot of rain puts the water over the skimmer mouth, which means the skimmers
+                  stop skimming and the surface debris just sits there. Worth fixing quickly. But
+                  this is also the moment people decide to empty the pool out and start again,
+                  and it is the worst possible moment to do it.
+                </p>
+                <div className="rounded-2xl border border-brand-orange/25 bg-brand-orange/[0.05] p-6">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-brand-orange-light shrink-0 mt-0.5" />
+                    <p className="text-white font-semibold text-[15px] leading-relaxed">
+                      The ground is more saturated the day after a storm than at any other point
+                      in the year. Taking the water out then is exactly when a shell is most
+                      likely to lift.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative glass-panel rounded-3xl p-6 sm:p-8 overflow-hidden">
+                <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 mb-4">
+                  Bringing the level back down
+                </p>
+                <ul className="flex flex-col gap-4">
+                  {[
+                    'Target is halfway up the skimmer opening — roughly the middle of the waterline tile. Not lower.',
+                    'If the equipment is dry and safe to run, the multiport valve\u2019s waste setting takes water out without sending it through the filter.',
+                    'No multiport, or the pad is still wet? A submersible pump on the deck does the same job and keeps you away from the equipment.',
+                    'Take it down in stages and stop at the tile line. This is a top-up in reverse, not a drain.',
+                    'While the level is high, the skimmers are doing nothing — net the surface by hand until it is back down.',
+                  ].map((line) => (
+                    <li key={line} className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-brand-blue-light shrink-0 mt-0.5" />
+                      <span className="text-[15px] text-gray-300 leading-snug">{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </Container>
+        </section>
+
         {/* ── What the cleanup covers ───────────────────────────── */}
         <section className="py-16 md:py-24 relative overflow-hidden">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
@@ -514,8 +625,9 @@ const StormCleanupPageInner = () => {
                     The moment power returns
                   </p>
                   <p className="text-white font-semibold text-[15px] leading-relaxed">
-                    Check the pad before you flip the breaker. If the motor sat in water,
-                    energizing it is what turns a repair into a replacement.
+                    Check the pad before you flip the breaker. A motor that sat in water can
+                    often be saved if it is cleaned and dried first — energising it wet is what
+                    turns that into a replacement.
                   </p>
                 </div>
               </div>
