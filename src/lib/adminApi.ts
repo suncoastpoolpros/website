@@ -107,6 +107,14 @@ export type Tier = {
    * effective MONTHLY rate needs "$1,958 billed once". Left blank, the card
    * falls back to the computed "+$12/mo more than X" delta.
    */
+  /**
+   * How many of `includes` are this plan's OWN extras, as opposed to the
+   * service both plans share. Lets a card label the difference — "Additional
+   * benefits" over the first N — without any renderer having to know which
+   * plan it is looking at. Absent means "no split", which is every quote
+   * stored before this and every single-plan proposal.
+   */
+  extrasCount?: number;
   /** The badge beside the rate, e.g. "Save $165". */
   priceNote: string;
   /** The quiet disclosure under the button, e.g. "$1,815 billed once — 11

@@ -1,7 +1,28 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Send, LoaderCircle, CheckCircle, Check, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ChevronLeft, ChevronDown, X, Link2, Building2, ArrowRight } from 'lucide-react';
-import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
-import { useProposalDraft } from '@/lib/useAdminDraft';
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Send,
+  LoaderCircle,
+  CheckCircle,
+  Check,
+  AlertCircle,
+  Trash2,
+  LogOut,
+  Calculator,
+  FilePlus2,
+  ChevronLeft,
+  ChevronDown,
+  X,
+  Link2,
+  Building2,
+  ArrowRight,
+} from "lucide-react";
+import {
+  FieldShell,
+  fieldClass,
+  selectClass,
+  textareaClass,
+} from "@/components/FormField";
+import { useProposalDraft } from "@/lib/useAdminDraft";
 import {
   sendProposal,
   saveQuoteOnly,
@@ -16,15 +37,19 @@ import {
   type ProposalData,
   type ProposalPreview,
   type Tier,
-} from '@/lib/adminApi';
-import { blobToBase64 } from '@/lib/adminMedia';
-import { proposalDateLabel, proposalFilename, renderProposalPdf } from '@/lib/proposalPdf';
-import { toTitleCase, formatUsPhone } from '@/lib/textFormat';
-import { Section, PreviewBlock, PreviewRow } from './adminUi';
-import { PhotoPicker } from './PhotoPicker';
-import { EmailReview } from './EmailReview';
-import { SANITIZATION_TYPES } from './sanitization';
-import { SCOPE_TEMPLATES } from './scopeTemplates';
+} from "@/lib/adminApi";
+import { blobToBase64 } from "@/lib/adminMedia";
+import {
+  proposalDateLabel,
+  proposalFilename,
+  renderProposalPdf,
+} from "@/lib/proposalPdf";
+import { toTitleCase, formatUsPhone } from "@/lib/textFormat";
+import { Section, PreviewBlock, PreviewRow } from "./adminUi";
+import { PhotoPicker } from "./PhotoPicker";
+import { EmailReview } from "./EmailReview";
+import { SANITIZATION_TYPES } from "./sanitization";
+import { SCOPE_TEMPLATES } from "./scopeTemplates";
 import {
   JOB_KINDS,
   jobAssurances,
@@ -32,9 +57,9 @@ import {
   showsExtrasTable,
   trustHeading,
   type JobKind,
-} from './jobKinds';
-import { ADDON_PRESETS } from './addonPresets';
-import { BENEFITS_HEADING, includedBenefits } from './proposalBenefits';
+} from "./jobKinds";
+import { ADDON_PRESETS } from "./addonPresets";
+import { BENEFITS_HEADING, includedBenefits } from "./proposalBenefits";
 import {
   EXTRAS_COL_THEIRS,
   EXTRAS_INTRO,
@@ -43,36 +68,39 @@ import {
   EXTRAS_INCLUDED_LABEL,
   EXTRAS_NOTE,
   includedExtras,
-} from './includedExtras';
+} from "./includedExtras";
 import {
   PRESET_VERSION,
   buildTiers,
   syncFilterService,
   syncTierPrices,
   upgradeTierWording,
-} from './tierPresets';
-import { FILTER_TYPES, inclusionQuestion, supportsFilterService } from './filterService';
+} from "./tierPresets";
+import {
+  FILTER_TYPES,
+  inclusionQuestion,
+  supportsFilterService,
+} from "./filterService";
 
 // Plain input (no floating label) for the add-on rows.
 const addonInput =
-  'h-12 w-full rounded-xl border border-stone-300 bg-stone-100 px-4 text-stone-900 placeholder-stone-400 focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50';
+  "h-12 w-full rounded-xl border border-stone-300 bg-stone-100 px-4 text-stone-900 placeholder-stone-400 focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50";
 
 type SendStatus =
-  | { kind: 'idle' }
+  | { kind: "idle" }
   /** Reserving the number and rendering the email for the review step. */
-  | { kind: 'preparing' }
+  | { kind: "preparing" }
   /** The review step is open. Nothing has been sent; nothing is saved. */
-  | { kind: 'review' }
-  | { kind: 'sending' }
-  | { kind: 'saving' }
+  | { kind: "review" }
+  | { kind: "sending" }
+  | { kind: "saving" }
   /** `stored: false` = emailed, but the quote was NOT saved. See the sent screen. */
-  | { kind: 'sent'; stored: boolean }
+  | { kind: "sent"; stored: boolean }
   /** Saved without emailing — the link is the deliverable, so it's shown to copy. */
-  | { kind: 'saved'; url: string }
-  | { kind: 'error'; message: string };
+  | { kind: "saved"; url: string }
+  | { kind: "error"; message: string };
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-
 
 export const ProposalBuilder = ({
   onLogout,
@@ -108,19 +136,23 @@ export const ProposalBuilder = ({
     if (upgradedRef.current) return;
     upgradedRef.current = true;
     setData((p) => {
-      if (p.proposal.pricingMode !== 'tiers' || p.proposal.tiers.length === 0) return p;
+      if (p.proposal.pricingMode !== "tiers" || p.proposal.tiers.length === 0)
+        return p;
       const tiers = upgradeTierWording(p.proposal.tiers, {
         type: p.pool.filterType,
-        included: p.pool.filterServiceIncluded === 'yes',
+        included: p.pool.filterServiceIncluded === "yes",
       });
       // Reference-equal when nothing matched a legacy preset — skip the write so
       // an untouched draft isn't marked dirty just by being opened.
       const changed = tiers.some((t, i) => t !== p.proposal.tiers[i]);
       if (!changed) return p;
-      return { ...p, proposal: { ...p.proposal, tiers, presetVersion: PRESET_VERSION } };
+      return {
+        ...p,
+        proposal: { ...p.proposal, tiers, presetVersion: PRESET_VERSION },
+      };
     });
   }, [setData]);
-  const [status, setStatus] = useState<SendStatus>({ kind: 'idle' });
+  const [status, setStatus] = useState<SendStatus>({ kind: "idle" });
   const [copied, setCopied] = useState(false);
   // Abort controller + a cancelled flag so Cancel actually stops the send:
   // the fetch is aborted via the signal, and the flag bails out of the
@@ -135,7 +167,7 @@ export const ProposalBuilder = ({
   const [overrides, setOverrides] = useState<EmailOverrides>({});
   const [refreshing, setRefreshing] = useState(false);
   /** A failed send, shown inside the review dialog where the retry button is. */
-  const [sendError, setSendError] = useState('');
+  const [sendError, setSendError] = useState("");
   /**
    * The number reserved when the review opened, HELD across a cancel.
    *
@@ -170,34 +202,42 @@ export const ProposalBuilder = ({
       filterType: data.pool.filterType,
     });
     const current = data.proposal.scope.trim();
-    update('proposal', 'scope', current ? `${current}\n\n${text}` : text);
+    update("proposal", "scope", current ? `${current}\n\n${text}` : text);
     // Picking a template IS the operator saying what this job is, so it moves
     // the answer at the top of the form with it. Without this the two could
     // disagree — a green-recovery scope under the weekly-service promises,
     // which is the exact mismatch the question exists to prevent. Only on the
     // FIRST template: once scope has text the operator is combining templates,
     // and the second one should not silently reclassify the document.
-    if (!current) update('proposal', 'jobKind', tpl.kind);
+    if (!current) update("proposal", "jobKind", tpl.kind);
   };
 
   // --- Additional-services (add-on) line items ---
-  const addAddOn = (label = '', price = '') =>
-    setData((p) => ({
-      ...p,
-      proposal: { ...p.proposal, addOns: [...p.proposal.addOns, { label, price }] },
-    }));
-  const updateAddOn = (idx: number, field: 'label' | 'price', value: string) =>
+  const addAddOn = (label = "", price = "") =>
     setData((p) => ({
       ...p,
       proposal: {
         ...p.proposal,
-        addOns: p.proposal.addOns.map((a, i) => (i === idx ? { ...a, [field]: value } : a)),
+        addOns: [...p.proposal.addOns, { label, price }],
+      },
+    }));
+  const updateAddOn = (idx: number, field: "label" | "price", value: string) =>
+    setData((p) => ({
+      ...p,
+      proposal: {
+        ...p.proposal,
+        addOns: p.proposal.addOns.map((a, i) =>
+          i === idx ? { ...a, [field]: value } : a,
+        ),
       },
     }));
   const removeAddOn = (idx: number) =>
     setData((p) => ({
       ...p,
-      proposal: { ...p.proposal, addOns: p.proposal.addOns.filter((_, i) => i !== idx) },
+      proposal: {
+        ...p.proposal,
+        addOns: p.proposal.addOns.filter((_, i) => i !== idx),
+      },
     }));
 
   // --- Filter service ---
@@ -210,12 +250,17 @@ export const ProposalBuilder = ({
       // A type that can't carry the service (Other/blank) can't have it
       // included, and changing type re-opens the question rather than carrying
       // the previous pool's answer over to a different filter.
-      const answer = supportsFilterService(type) ? p.pool.filterServiceIncluded : '';
-      const filter = { type, included: answer === 'yes' };
+      const answer = supportsFilterService(type)
+        ? p.pool.filterServiceIncluded
+        : "";
+      const filter = { type, included: answer === "yes" };
       return {
         ...p,
         pool: { ...p.pool, filterType: type, filterServiceIncluded: answer },
-        proposal: { ...p.proposal, tiers: syncFilterService(p.proposal.tiers, filter) },
+        proposal: {
+          ...p.proposal,
+          tiers: syncFilterService(p.proposal.tiers, filter),
+        },
       };
     });
 
@@ -227,7 +272,7 @@ export const ProposalBuilder = ({
         ...p.proposal,
         tiers: syncFilterService(p.proposal.tiers, {
           type: p.pool.filterType,
-          included: answer === 'yes',
+          included: answer === "yes",
         }),
       },
     }));
@@ -243,14 +288,14 @@ export const ProposalBuilder = ({
         ...p.proposal,
         pricingMode: mode,
         tiers:
-          mode === 'tiers' && p.proposal.tiers.length === 0
+          mode === "tiers" && p.proposal.tiers.length === 0
             ? buildTiers(p.proposal.price, {
                 type: p.pool.filterType,
-                included: p.pool.filterServiceIncluded === 'yes',
+                included: p.pool.filterServiceIncluded === "yes",
               })
             : p.proposal.tiers,
         presetVersion:
-          mode === 'tiers' && p.proposal.tiers.length === 0
+          mode === "tiers" && p.proposal.tiers.length === 0
             ? PRESET_VERSION
             : p.proposal.presetVersion,
       },
@@ -261,7 +306,9 @@ export const ProposalBuilder = ({
       ...p,
       proposal: {
         ...p.proposal,
-        tiers: p.proposal.tiers.map((t, i) => (i === idx ? { ...t, ...patch } : t)),
+        tiers: p.proposal.tiers.map((t, i) =>
+          i === idx ? { ...t, ...patch } : t,
+        ),
       },
     }));
 
@@ -272,7 +319,10 @@ export const ProposalBuilder = ({
       ...p,
       proposal: {
         ...p.proposal,
-        tiers: p.proposal.tiers.map((t, i) => ({ ...t, recommended: i === idx })),
+        tiers: p.proposal.tiers.map((t, i) => ({
+          ...t,
+          recommended: i === idx,
+        })),
       },
     }));
 
@@ -287,10 +337,15 @@ export const ProposalBuilder = ({
       proposal: {
         ...p.proposal,
         price: value,
-        tiers: syncTierPrices(p.proposal.tiers, p.proposal.tiers[0]?.price ?? '', value, {
-          type: p.pool.filterType,
-          included: p.pool.filterServiceIncluded === 'yes',
-        }),
+        tiers: syncTierPrices(
+          p.proposal.tiers,
+          p.proposal.tiers[0]?.price ?? "",
+          value,
+          {
+            type: p.pool.filterType,
+            included: p.pool.filterServiceIncluded === "yes",
+          },
+        ),
       },
     }));
 
@@ -301,7 +356,7 @@ export const ProposalBuilder = ({
         ...p.proposal,
         tiers: buildTiers(p.proposal.price, {
           type: p.pool.filterType,
-          included: p.pool.filterServiceIncluded === 'yes',
+          included: p.pool.filterServiceIncluded === "yes",
         }),
         presetVersion: PRESET_VERSION,
       },
@@ -311,7 +366,7 @@ export const ProposalBuilder = ({
   // a promise that was meant to be there, and nothing downstream would flag it.
   // Tiers exist but were generated before the current preset revision.
   const presetsOutdated =
-    data.proposal.pricingMode === 'tiers' &&
+    data.proposal.pricingMode === "tiers" &&
     data.proposal.tiers.length > 0 &&
     data.proposal.presetVersion < PRESET_VERSION;
 
@@ -323,14 +378,14 @@ export const ProposalBuilder = ({
    * actually chose.
    */
   const filterAnswer =
-    data.pool.filterServiceIncluded === 'yes'
-      ? 'yes'
-      : data.pool.filterServiceIncluded === 'no'
-        ? 'no'
-        : '';
+    data.pool.filterServiceIncluded === "yes"
+      ? "yes"
+      : data.pool.filterServiceIncluded === "no"
+        ? "no"
+        : "";
 
   const filterAnswered =
-    !supportsFilterService(data.pool.filterType) || filterAnswer !== '';
+    !supportsFilterService(data.pool.filterType) || filterAnswer !== "";
 
   /**
    * A NAME IS NOT REQUIRED. A pool is quoted from its address, and the common
@@ -353,7 +408,7 @@ export const ProposalBuilder = ({
    * unquotable.
    */
   const canSaveLink = useMemo(
-    () => data.customer.address.trim() !== '' && filterAnswered,
+    () => data.customer.address.trim() !== "" && filterAnswered,
     [data.customer.address, filterAnswered],
   );
 
@@ -366,18 +421,26 @@ export const ProposalBuilder = ({
    * demand, so there's nothing to attach.
    */
   const handleSaveLink = async () => {
-    if (!canSaveLink || status.kind === 'saving' || status.kind === 'sending') return;
+    if (!canSaveLink || status.kind === "saving" || status.kind === "sending")
+      return;
     cancelledRef.current = false;
     const controller = new AbortController();
     abortRef.current = controller;
-    setStatus({ kind: 'saving' });
+    setStatus({ kind: "saving" });
     try {
       const proposalNumber = await reserveProposalNumber(controller.signal);
       if (cancelledRef.current) return;
-      const { url } = await saveQuoteOnly({ ...data, proposalNumber, photos }, controller.signal);
-      setStatus({ kind: 'saved', url });
+      const { url } = await saveQuoteOnly(
+        { ...data, proposalNumber, photos },
+        controller.signal,
+      );
+      setStatus({ kind: "saved", url });
     } catch (err) {
-      if (cancelledRef.current || (err instanceof DOMException && err.name === 'AbortError')) return;
+      if (
+        cancelledRef.current ||
+        (err instanceof DOMException && err.name === "AbortError")
+      )
+        return;
       /**
        * Name the reason. saveQuoteOnly throws the server's error code, and
        * every branch here is a different action for the operator — remove a
@@ -386,14 +449,14 @@ export const ProposalBuilder = ({
        */
       const reason = String(err);
       setStatus({
-        kind: 'error',
-        message: reason.includes('storage_unavailable')
-          ? 'Quote storage isn’t connected, so there’s no link to create. Check the D1 binding.'
-          : reason.includes('payload_too_large')
-            ? 'Those photos are too large to save. Remove one or two and try again.'
-            : reason.includes('customer_address_required')
-              ? 'Add the service address — a quote needs it to be saved without a name.'
-              : 'Couldn’t create the link. Please try again.',
+        kind: "error",
+        message: reason.includes("storage_unavailable")
+          ? "Quote storage isn’t connected, so there’s no link to create. Check the D1 binding."
+          : reason.includes("payload_too_large")
+            ? "Those photos are too large to save. Remove one or two and try again."
+            : reason.includes("customer_address_required")
+              ? "Add the service address — a quote needs it to be saved without a name."
+              : "Couldn’t create the link. Please try again.",
       });
     }
   };
@@ -413,31 +476,43 @@ export const ProposalBuilder = ({
    * keeps it (see reservedNumberRef).
    */
   const openReview = async (nextOverrides: EmailOverrides = overrides) => {
-    if (!canSend || status.kind === 'sending' || status.kind === 'preparing') return;
+    if (!canSend || status.kind === "sending" || status.kind === "preparing")
+      return;
     cancelledRef.current = false;
     const controller = new AbortController();
     abortRef.current = controller;
-    setSendError('');
-    setStatus({ kind: 'preparing' });
+    setSendError("");
+    setStatus({ kind: "preparing" });
     try {
       if (reservedNumberRef.current == null) {
-        reservedNumberRef.current = await reserveProposalNumber(controller.signal);
+        reservedNumberRef.current = await reserveProposalNumber(
+          controller.signal,
+        );
         if (cancelledRef.current) return;
       }
       const next = await previewProposal(
-        { ...data, proposalNumber: reservedNumberRef.current, overrides: nextOverrides },
+        {
+          ...data,
+          proposalNumber: reservedNumberRef.current,
+          overrides: nextOverrides,
+        },
         controller.signal,
       );
       if (cancelledRef.current) return;
       setPreview(next);
-      setStatus({ kind: 'review' });
+      setStatus({ kind: "review" });
     } catch (err) {
-      if (cancelledRef.current || (err instanceof DOMException && err.name === 'AbortError')) return;
+      if (
+        cancelledRef.current ||
+        (err instanceof DOMException && err.name === "AbortError")
+      )
+        return;
       setStatus({
-        kind: 'error',
-        message: 'Could not render the email to review. Check the connection and try again.',
+        kind: "error",
+        message:
+          "Could not render the email to review. Check the connection and try again.",
       });
-      console.error('preview proposal failed', err);
+      console.error("preview proposal failed", err);
     } finally {
       abortRef.current = null;
     }
@@ -463,13 +538,17 @@ export const ProposalBuilder = ({
     setRefreshing(true);
     try {
       const next = await previewProposal(
-        { ...data, proposalNumber: reservedNumberRef.current, overrides: nextOverrides },
+        {
+          ...data,
+          proposalNumber: reservedNumberRef.current,
+          overrides: nextOverrides,
+        },
         controller.signal,
       );
       setPreview(next);
     } catch (err) {
-      if (!(err instanceof DOMException && err.name === 'AbortError')) {
-        console.error('refresh preview failed', err);
+      if (!(err instanceof DOMException && err.name === "AbortError")) {
+        console.error("refresh preview failed", err);
       }
     } finally {
       // Only the newest request owns the spinner — an aborted one clearing it
@@ -488,12 +567,12 @@ export const ProposalBuilder = ({
    * that number is already printed in the subject line they just approved.
    */
   const handleSend = async () => {
-    if (!canSend || status.kind === 'sending') return;
+    if (!canSend || status.kind === "sending") return;
     cancelledRef.current = false;
     const controller = new AbortController();
     abortRef.current = controller;
-    setSendError('');
-    setStatus({ kind: 'sending' });
+    setSendError("");
+    setStatus({ kind: "sending" });
     try {
       const proposalNumber = reservedNumberRef.current;
       // renderProposalPdf keeps the engine a lazy chunk fetched on first send,
@@ -526,17 +605,22 @@ export const ProposalBuilder = ({
       reservedNumberRef.current = null;
       setPreview(null);
       setOverrides({});
-      setStatus({ kind: 'sent', stored: result.stored });
+      setStatus({ kind: "sent", stored: result.stored });
     } catch (err) {
       // A cancel (flag set, or the fetch aborted) is not an error — stay idle.
-      if (cancelledRef.current || (err instanceof DOMException && err.name === 'AbortError')) {
+      if (
+        cancelledRef.current ||
+        (err instanceof DOMException && err.name === "AbortError")
+      ) {
         return;
       }
       // Back to the review, not out to the form: the email is still correct and
       // still approved, so the recovery is one more press of Send it.
-      setStatus({ kind: 'review' });
-      setSendError('Could not send the proposal. Check the connection and try again.');
-      console.error('send proposal failed', err);
+      setStatus({ kind: "review" });
+      setSendError(
+        "Could not send the proposal. Check the connection and try again.",
+      );
+      console.error("send proposal failed", err);
     } finally {
       abortRef.current = null;
     }
@@ -545,9 +629,9 @@ export const ProposalBuilder = ({
   /** Close the review without sending. The email, the overrides and the
    *  reserved number all survive, so re-opening is instant and costs nothing. */
   const closeReview = () => {
-    if (status.kind === 'sending') return;
-    setSendError('');
-    setStatus({ kind: 'idle' });
+    if (status.kind === "sending") return;
+    setSendError("");
+    setStatus({ kind: "idle" });
   };
 
   /** Abort an in-flight send. Back to the review rather than the form: the
@@ -555,8 +639,8 @@ export const ProposalBuilder = ({
   const handleCancelSend = () => {
     cancelledRef.current = true;
     abortRef.current?.abort();
-    setSendError('');
-    setStatus(preview ? { kind: 'review' } : { kind: 'idle' });
+    setSendError("");
+    setStatus(preview ? { kind: "review" } : { kind: "idle" });
   };
 
   const handleLogout = async () => {
@@ -573,24 +657,29 @@ export const ProposalBuilder = ({
     reservedNumberRef.current = null;
     setPreview(null);
     setOverrides({});
-    setSendError('');
-    setStatus({ kind: 'idle' });
+    setSendError("");
+    setStatus({ kind: "idle" });
   };
 
-  if (status.kind === 'saved') {
+  if (status.kind === "saved") {
     return (
       <div className="min-h-dvh flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-lg text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-brand-blue/40 bg-brand-blue/15">
             <Link2 className="h-8 w-8 text-brand-blue-light" />
           </div>
-          <h2 className="font-display text-2xl font-bold text-white">Link ready</h2>
+          <h2 className="font-display text-2xl font-bold text-white">
+            Link ready
+          </h2>
           <p className="mt-2 text-gray-300">
-            Nothing was emailed. Send this to {data.customer.name.trim() || 'them'} however you like — it
-            opens with the full breakdown of the service, then the plans.
+            Nothing was emailed. Send this to{" "}
+            {data.customer.name.trim() || "them"} however you like — it opens
+            with the full breakdown of the service, then the plans.
           </p>
           <div className="mt-6 flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] p-2 pl-4 text-left">
-            <span className="min-w-0 flex-1 truncate font-mono text-xs text-gray-300">{status.url}</span>
+            <span className="min-w-0 flex-1 truncate font-mono text-xs text-gray-300">
+              {status.url}
+            </span>
             <button
               onClick={async () => {
                 try {
@@ -598,12 +687,12 @@ export const ProposalBuilder = ({
                   setCopied(true);
                   window.setTimeout(() => setCopied(false), 1800);
                 } catch {
-                  window.prompt('Copy the link:', status.url);
+                  window.prompt("Copy the link:", status.url);
                 }
               }}
               className="shrink-0 rounded-lg bg-brand-blue px-3 py-2 text-sm font-semibold text-white hover:bg-brand-blue-light"
             >
-              {copied ? 'Copied' : 'Copy'}
+              {copied ? "Copied" : "Copy"}
             </button>
           </div>
           <div className="mt-8 flex justify-center gap-3">
@@ -614,7 +703,7 @@ export const ProposalBuilder = ({
               <FilePlus2 className="h-5 w-5" /> New proposal
             </button>
             <button
-              onClick={() => setStatus({ kind: 'idle' })}
+              onClick={() => setStatus({ kind: "idle" })}
               className="rounded-xl border border-white/15 px-5 py-3 font-semibold text-gray-200 hover:bg-white/5"
             >
               Back to this one
@@ -625,17 +714,19 @@ export const ProposalBuilder = ({
     );
   }
 
-  if (status.kind === 'sent') {
+  if (status.kind === "sent") {
     return (
       <div className="min-h-dvh flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-md text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-green-500/30 bg-green-500/15">
             <CheckCircle className="h-8 w-8 text-green-400" />
           </div>
-          <h2 className="font-display text-2xl font-bold text-white">Proposal sent</h2>
+          <h2 className="font-display text-2xl font-bold text-white">
+            Proposal sent
+          </h2>
           <p className="mt-2 text-gray-300">
-            Emailed to <span className="text-white">{data.customer.email}</span> with the PDF attached.
-            A copy was BCC&apos;d to your inbox.
+            Emailed to <span className="text-white">{data.customer.email}</span>{" "}
+            with the PDF attached. A copy was BCC&apos;d to your inbox.
           </p>
           {/*
             The send succeeded and the quote did NOT save. Deliberately loud:
@@ -646,12 +737,15 @@ export const ProposalBuilder = ({
           */}
           {!status.stored && (
             <div className="mt-6 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-left">
-              <p className="font-semibold text-amber-200">Sent, but not saved.</p>
+              <p className="font-semibold text-amber-200">
+                Sent, but not saved.
+              </p>
               <p className="mt-1 text-sm leading-relaxed text-amber-100/90">
-                Storage was unavailable, so this proposal went out{' '}
-                <strong>without an accept link</strong> and it will not appear in Sent Quotes. The
-                customer has the PDF and can still reply. Check the D1 binding, then send again to
-                give them a link they can accept from.
+                Storage was unavailable, so this proposal went out{" "}
+                <strong>without an accept link</strong> and it will not appear
+                in Sent Quotes. The customer has the PDF and can still reply.
+                Check the D1 binding, then send again to give them a link they
+                can accept from.
               </p>
             </div>
           )}
@@ -663,7 +757,7 @@ export const ProposalBuilder = ({
               <FilePlus2 className="h-5 w-5" /> New proposal
             </button>
             <button
-              onClick={() => setStatus({ kind: 'idle' })}
+              onClick={() => setStatus({ kind: "idle" })}
               className="rounded-xl border border-white/15 px-5 py-3 font-semibold text-gray-200 hover:bg-white/5"
             >
               Back to this one
@@ -679,19 +773,22 @@ export const ProposalBuilder = ({
       {/* The email, before it goes anywhere. Stays mounted through the send so
           the spinner and the Cancel sit where the operator is already looking,
           rather than under a second overlay that hides what they just read. */}
-      {preview && (status.kind === 'review' || status.kind === 'sending') && (
+      {preview && (status.kind === "review" || status.kind === "sending") && (
         <EmailReview
           preview={preview}
           overrides={overrides}
           onOverridesChange={setOverrides}
           refreshing={refreshing}
           onRequestRerender={refreshPreview}
-          toEmail={data.customer.email || 'the customer'}
-          attachmentName={proposalFilename(data.customer.name, reservedNumberRef.current)}
-          sending={status.kind === 'sending'}
+          toEmail={data.customer.email || "the customer"}
+          attachmentName={proposalFilename(
+            data.customer.name,
+            reservedNumberRef.current,
+          )}
+          sending={status.kind === "sending"}
           error={sendError}
           onSend={handleSend}
-          onCancel={status.kind === 'sending' ? handleCancelSend : closeReview}
+          onCancel={status.kind === "sending" ? handleCancelSend : closeReview}
         />
       )}
 
@@ -705,8 +802,12 @@ export const ProposalBuilder = ({
             >
               <ChevronLeft className="h-4 w-4" /> All documents
             </button>
-            <h1 className="font-display text-2xl font-bold text-white">New Proposal</h1>
-            <p className="text-sm text-gray-400">Draft saves automatically as you type.</p>
+            <h1 className="font-display text-2xl font-bold text-white">
+              New Proposal
+            </h1>
+            <p className="text-sm text-gray-400">
+              Draft saves automatically as you type.
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -734,7 +835,11 @@ export const ProposalBuilder = ({
                 "one-time", but they are sold against completely different
                 worries — a price that moves versus a part you did not need. */}
             <Section title="What are you quoting?">
-              <div role="radiogroup" aria-label="What are you quoting?" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div
+                role="radiogroup"
+                aria-label="What are you quoting?"
+                className="grid grid-cols-1 gap-3 sm:grid-cols-3"
+              >
                 {JOB_KINDS.map((k) => {
                   const picked = jobKind === k.key;
                   return (
@@ -742,11 +847,11 @@ export const ProposalBuilder = ({
                       key={k.key}
                       role="radio"
                       aria-checked={picked}
-                      onClick={() => update('proposal', 'jobKind', k.key)}
+                      onClick={() => update("proposal", "jobKind", k.key)}
                       className={`rounded-xl border p-4 text-left transition-colors ${
                         picked
-                          ? 'border-brand-blue bg-brand-blue/10'
-                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                          ? "border-brand-blue bg-brand-blue/10"
+                          : "border-white/10 bg-white/5 hover:border-white/20"
                       }`}
                     >
                       <span className="block font-display text-sm font-bold text-white">
@@ -759,11 +864,11 @@ export const ProposalBuilder = ({
                   );
                 })}
               </div>
-              {jobKind !== 'recurring' && (
+              {jobKind !== "recurring" && (
                 <p className="text-xs leading-relaxed text-gray-500">
-                  The proposal drops the weekly-service promises and the monthly comparison table,
-                  and answers what a one-off buyer actually asks instead. Inserting a scope template
-                  moves this for you.
+                  The proposal drops the weekly-service promises and the monthly
+                  comparison table, and answers what a one-off buyer actually
+                  asks instead. Inserting a scope template moves this for you.
                 </p>
               )}
 
@@ -783,9 +888,9 @@ export const ProposalBuilder = ({
                     An HOA, condo association or property manager?
                   </span>
                   <span className="mt-0.5 block text-xs leading-relaxed text-gray-500">
-                    That needs the Commercial Bid — every body of water priced by frequency, the
-                    compliance scope and the contract terms a board reads. Anything typed here comes
-                    with you.
+                    That needs the Commercial Bid — every body of water priced
+                    by frequency, the compliance scope and the contract terms a
+                    board reads. Anything typed here comes with you.
                   </span>
                 </span>
                 <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-gray-600 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-blue-light" />
@@ -794,38 +899,90 @@ export const ProposalBuilder = ({
 
             <Section title="Customer">
               <FieldShell id="c-name" label="Full name">
-                <input id="c-name" className={fieldClass} placeholder=" " autoComplete="off" autoCapitalize="words"
-                  value={data.customer.name} onChange={(e) => update('customer', 'name', e.target.value)}
-                  onBlur={(e) => update('customer', 'name', toTitleCase(e.target.value))} />
+                <input
+                  id="c-name"
+                  className={fieldClass}
+                  placeholder=" "
+                  autoComplete="off"
+                  autoCapitalize="words"
+                  value={data.customer.name}
+                  onChange={(e) => update("customer", "name", e.target.value)}
+                  onBlur={(e) =>
+                    update("customer", "name", toTitleCase(e.target.value))
+                  }
+                />
               </FieldShell>
               <FieldShell id="c-addr" label="Service address">
-                <input id="c-addr" className={fieldClass} placeholder=" " autoComplete="off" autoCapitalize="words"
-                  value={data.customer.address} onChange={(e) => update('customer', 'address', e.target.value)}
-                  onBlur={(e) => update('customer', 'address', toTitleCase(e.target.value))} />
+                <input
+                  id="c-addr"
+                  className={fieldClass}
+                  placeholder=" "
+                  autoComplete="off"
+                  autoCapitalize="words"
+                  value={data.customer.address}
+                  onChange={(e) =>
+                    update("customer", "address", e.target.value)
+                  }
+                  onBlur={(e) =>
+                    update("customer", "address", toTitleCase(e.target.value))
+                  }
+                />
               </FieldShell>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FieldShell id="c-email" label="Email">
-                  <input id="c-email" type="email" className={fieldClass} placeholder=" " autoComplete="off"
-                    value={data.customer.email} onChange={(e) => update('customer', 'email', e.target.value)} />
+                  <input
+                    id="c-email"
+                    type="email"
+                    className={fieldClass}
+                    placeholder=" "
+                    autoComplete="off"
+                    value={data.customer.email}
+                    onChange={(e) =>
+                      update("customer", "email", e.target.value)
+                    }
+                  />
                 </FieldShell>
                 <FieldShell id="c-phone" label="Phone">
-                  <input id="c-phone" type="tel" className={fieldClass} placeholder=" " autoComplete="off"
-                    value={data.customer.phone} onChange={(e) => update('customer', 'phone', e.target.value)}
-                    onBlur={(e) => update('customer', 'phone', formatUsPhone(e.target.value))} />
+                  <input
+                    id="c-phone"
+                    type="tel"
+                    className={fieldClass}
+                    placeholder=" "
+                    autoComplete="off"
+                    value={data.customer.phone}
+                    onChange={(e) =>
+                      update("customer", "phone", e.target.value)
+                    }
+                    onBlur={(e) =>
+                      update("customer", "phone", formatUsPhone(e.target.value))
+                    }
+                  />
                 </FieldShell>
               </div>
 
               {/* Sits with the customer, not down by the document settings: it's
                   the message TO this person, and it's written while they're
                   still in mind — right after typing their name. */}
-              <FieldShell id="pr-emailnote" label="Personal note — email only, not on the PDF" multiline>
-                <textarea id="pr-emailnote" rows={4} className={textareaClass} placeholder=" "
+              <FieldShell
+                id="pr-emailnote"
+                label="Personal note — email only, not on the PDF"
+                multiline
+              >
+                <textarea
+                  id="pr-emailnote"
+                  rows={4}
+                  className={textareaClass}
+                  placeholder=" "
                   value={data.proposal.emailNote}
-                  onChange={(e) => update('proposal', 'emailNote', e.target.value)} />
+                  onChange={(e) =>
+                    update("proposal", "emailNote", e.target.value)
+                  }
+                />
               </FieldShell>
               <p className="-mt-2 text-xs text-gray-500">
-                Appears at the top of the email, under the greeting and above the plan options. The PDF
-                is the formal document and stays clean.
+                Appears at the top of the email, under the greeting and above
+                the plan options. The PDF is the formal document and stays
+                clean.
               </p>
               {data.proposal.emailNote.trim() && (
                 <div className="rounded-xl border border-white/10 bg-white/5 p-4">
@@ -842,12 +999,22 @@ export const ProposalBuilder = ({
             <Section title="Pool — Size & Volume">
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FieldShell id="p-gal" label="Volume (gallons)">
-                  <input id="p-gal" inputMode="numeric" className={fieldClass} placeholder=" "
-                    value={data.pool.gallons} onChange={(e) => update('pool', 'gallons', e.target.value)} />
+                  <input
+                    id="p-gal"
+                    inputMode="numeric"
+                    className={fieldClass}
+                    placeholder=" "
+                    value={data.pool.gallons}
+                    onChange={(e) => update("pool", "gallons", e.target.value)}
+                  />
                 </FieldShell>
                 <FieldShell id="p-shape" label="Shape" floated>
-                  <select id="p-shape" className={selectClass}
-                    value={data.pool.shape} onChange={(e) => update('pool', 'shape', e.target.value)}>
+                  <select
+                    id="p-shape"
+                    className={selectClass}
+                    value={data.pool.shape}
+                    onChange={(e) => update("pool", "shape", e.target.value)}
+                  >
                     <option value=""></option>
                     <option>Rectangle</option>
                     <option>Oval / Freeform</option>
@@ -860,30 +1027,55 @@ export const ProposalBuilder = ({
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <FieldShell id="p-len" label="Length (ft)">
-                  <input id="p-len" inputMode="decimal" className={fieldClass} placeholder=" "
-                    value={data.pool.length} onChange={(e) => update('pool', 'length', e.target.value)} />
+                  <input
+                    id="p-len"
+                    inputMode="decimal"
+                    className={fieldClass}
+                    placeholder=" "
+                    value={data.pool.length}
+                    onChange={(e) => update("pool", "length", e.target.value)}
+                  />
                 </FieldShell>
                 <FieldShell id="p-wid" label="Width (ft)">
-                  <input id="p-wid" inputMode="decimal" className={fieldClass} placeholder=" "
-                    value={data.pool.width} onChange={(e) => update('pool', 'width', e.target.value)} />
+                  <input
+                    id="p-wid"
+                    inputMode="decimal"
+                    className={fieldClass}
+                    placeholder=" "
+                    value={data.pool.width}
+                    onChange={(e) => update("pool", "width", e.target.value)}
+                  />
                 </FieldShell>
                 <FieldShell id="p-dep" label="Avg depth (ft)">
-                  <input id="p-dep" inputMode="decimal" className={fieldClass} placeholder=" "
-                    value={data.pool.avgDepth} onChange={(e) => update('pool', 'avgDepth', e.target.value)} />
+                  <input
+                    id="p-dep"
+                    inputMode="decimal"
+                    className={fieldClass}
+                    placeholder=" "
+                    value={data.pool.avgDepth}
+                    onChange={(e) => update("pool", "avgDepth", e.target.value)}
+                  />
                 </FieldShell>
               </div>
               <a
                 href="/tools/pool-volume-calculator/"
                 className="inline-flex items-center gap-2 text-sm font-semibold text-brand-blue-light hover:text-white"
               >
-                <Calculator className="h-4 w-4" /> Open the volume calculator (your draft is saved)
+                <Calculator className="h-4 w-4" /> Open the volume calculator
+                (your draft is saved)
               </a>
             </Section>
 
             <Section title="Pool — Sanitization & Equipment">
               <FieldShell id="p-san" label="Sanitization" floated>
-                <select id="p-san" className={selectClass}
-                  value={data.pool.sanitization} onChange={(e) => update('pool', 'sanitization', e.target.value)}>
+                <select
+                  id="p-san"
+                  className={selectClass}
+                  value={data.pool.sanitization}
+                  onChange={(e) =>
+                    update("pool", "sanitization", e.target.value)
+                  }
+                >
                   <option value=""></option>
                   {SANITIZATION_TYPES.map((t) => (
                     <option key={t}>{t}</option>
@@ -892,31 +1084,61 @@ export const ProposalBuilder = ({
               </FieldShell>
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FieldShell id="p-pump" label="Pump">
-                  <input id="p-pump" className={fieldClass} placeholder=" " autoCapitalize="words"
-                    value={data.pool.pump} onChange={(e) => update('pool', 'pump', e.target.value)}
-                    onBlur={(e) => update('pool', 'pump', toTitleCase(e.target.value))} />
+                  <input
+                    id="p-pump"
+                    className={fieldClass}
+                    placeholder=" "
+                    autoCapitalize="words"
+                    value={data.pool.pump}
+                    onChange={(e) => update("pool", "pump", e.target.value)}
+                    onBlur={(e) =>
+                      update("pool", "pump", toTitleCase(e.target.value))
+                    }
+                  />
                 </FieldShell>
                 <FieldShell id="p-heater" label="Heater">
-                  <input id="p-heater" className={fieldClass} placeholder=" " autoCapitalize="words"
-                    value={data.pool.heater} onChange={(e) => update('pool', 'heater', e.target.value)}
-                    onBlur={(e) => update('pool', 'heater', toTitleCase(e.target.value))} />
+                  <input
+                    id="p-heater"
+                    className={fieldClass}
+                    placeholder=" "
+                    autoCapitalize="words"
+                    value={data.pool.heater}
+                    onChange={(e) => update("pool", "heater", e.target.value)}
+                    onBlur={(e) =>
+                      update("pool", "heater", toTitleCase(e.target.value))
+                    }
+                  />
                 </FieldShell>
                 {/* Filter type and its make/model sit together — with five fields
                     in a two-column grid the model field previously landed beside
                     Heater, pairing it with the wrong thing. */}
                 <FieldShell id="p-filter-type" label="Filter type" floated>
-                  <select id="p-filter-type" className={selectClass}
-                    value={data.pool.filterType} onChange={(e) => setFilterType(e.target.value)}>
+                  <select
+                    id="p-filter-type"
+                    className={selectClass}
+                    value={data.pool.filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                  >
                     <option value=""></option>
                     {FILTER_TYPES.map((t) => (
-                      <option key={t} value={t}>{t}</option>
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
                     ))}
                   </select>
                 </FieldShell>
                 <FieldShell id="p-filter" label="Filter make & model">
-                  <input id="p-filter" className={fieldClass} placeholder=" " autoCapitalize="words"
-                    value={data.pool.filter} onChange={(e) => update('pool', 'filter', e.target.value)}
-                    onBlur={(e) => update('pool', 'filter', toTitleCase(e.target.value))} />
+                  <input
+                    id="p-filter"
+                    className={fieldClass}
+                    placeholder=" "
+                    autoCapitalize="words"
+                    value={data.pool.filter}
+                    onChange={(e) => update("pool", "filter", e.target.value)}
+                    onBlur={(e) =>
+                      update("pool", "filter", toTitleCase(e.target.value))
+                    }
+                  />
                 </FieldShell>
               </div>
               {/* A required choice, not a dropdown with a default. This field
@@ -931,8 +1153,16 @@ export const ProposalBuilder = ({
                   </p>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {[
-                      { value: 'yes', label: 'Yes', hint: 'Included in the monthly cost' },
-                      { value: 'no', label: 'No', hint: 'Quoted separately when needed' },
+                      {
+                        value: "yes",
+                        label: "Yes",
+                        hint: "Included in the monthly cost",
+                      },
+                      {
+                        value: "no",
+                        label: "No",
+                        hint: "Quoted separately when needed",
+                      },
                     ].map((opt) => {
                       const on = filterAnswer === opt.value;
                       return (
@@ -943,8 +1173,8 @@ export const ProposalBuilder = ({
                           onClick={() => setFilterIncluded(opt.value)}
                           className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
                             on
-                              ? 'border-brand-blue-light bg-brand-blue text-white ring-2 ring-brand-blue-light/40'
-                              : 'border-white/15 bg-white/5 text-gray-300 hover:border-brand-blue-light hover:text-white'
+                              ? "border-brand-blue-light bg-brand-blue text-white ring-2 ring-brand-blue-light/40"
+                              : "border-white/15 bg-white/5 text-gray-300 hover:border-brand-blue-light hover:text-white"
                           }`}
                         >
                           {/* A filled tick, not just a tint: the previous 25%
@@ -952,14 +1182,22 @@ export const ProposalBuilder = ({
                               browser's focus ring. */}
                           <span
                             className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                              on ? 'border-white bg-white text-brand-blue' : 'border-white/30'
+                              on
+                                ? "border-white bg-white text-brand-blue"
+                                : "border-white/30"
                             }`}
                           >
-                            {on && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                            {on && (
+                              <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                            )}
                           </span>
                           <span>
-                            <span className="block text-base font-semibold">{opt.label}</span>
-                            <span className={`block text-xs ${on ? 'text-white/80' : 'text-gray-400'}`}>
+                            <span className="block text-base font-semibold">
+                              {opt.label}
+                            </span>
+                            <span
+                              className={`block text-xs ${on ? "text-white/80" : "text-gray-400"}`}
+                            >
                               {opt.hint}
                             </span>
                           </span>
@@ -967,9 +1205,10 @@ export const ProposalBuilder = ({
                       );
                     })}
                   </div>
-                  {filterAnswer === '' && (
+                  {filterAnswer === "" && (
                     <p className="text-xs text-amber-300/90">
-                      Pick one — this decides whether the quote promises a filter replacement.
+                      Pick one — this decides whether the quote promises a
+                      filter replacement.
                     </p>
                   )}
                 </div>
@@ -977,9 +1216,21 @@ export const ProposalBuilder = ({
 
               {/* Automation had its own field; it's rare enough on a sales
                   document that it lives here now when it's worth a mention. */}
-              <FieldShell id="p-eqnotes" label="Equipment notes — automation, anything unusual" multiline>
-                <textarea id="p-eqnotes" rows={2} className={textareaClass} placeholder=" "
-                  value={data.pool.equipmentNotes} onChange={(e) => update('pool', 'equipmentNotes', e.target.value)} />
+              <FieldShell
+                id="p-eqnotes"
+                label="Equipment notes — automation, anything unusual"
+                multiline
+              >
+                <textarea
+                  id="p-eqnotes"
+                  rows={2}
+                  className={textareaClass}
+                  placeholder=" "
+                  value={data.pool.equipmentNotes}
+                  onChange={(e) =>
+                    update("pool", "equipmentNotes", e.target.value)
+                  }
+                />
               </FieldShell>
             </Section>
 
@@ -992,7 +1243,11 @@ export const ProposalBuilder = ({
             </Section>
 
             <Section title="Proposal">
-              <FieldShell id="pr-template" label="Insert a service template" floated>
+              <FieldShell
+                id="pr-template"
+                label="Insert a service template"
+                floated
+              >
                 <select
                   id="pr-template"
                   className={selectClass}
@@ -1011,27 +1266,38 @@ export const ProposalBuilder = ({
                 </select>
               </FieldShell>
               <FieldShell id="pr-scope" label="Scope of work" multiline>
-                <textarea id="pr-scope" rows={8} className={textareaClass} placeholder=" "
-                  value={data.proposal.scope} onChange={(e) => update('proposal', 'scope', e.target.value)} />
+                <textarea
+                  id="pr-scope"
+                  rows={8}
+                  className={textareaClass}
+                  placeholder=" "
+                  value={data.proposal.scope}
+                  onChange={(e) => update("proposal", "scope", e.target.value)}
+                />
               </FieldShell>
               <FieldShell
                 id="pr-price"
                 label={
-                  data.proposal.pricingMode === 'tiers'
-                    ? 'Base rate — seeds the plans (e.g. 165/mo)'
-                    : 'Total price (e.g. $2,400 or $185/mo)'
+                  data.proposal.pricingMode === "tiers"
+                    ? "Base rate — seeds the plans (e.g. 165/mo)"
+                    : "Total price (e.g. $2,400 or $185/mo)"
                 }
               >
-                <input id="pr-price" className={fieldClass} placeholder=" "
-                  value={data.proposal.price} onChange={(e) => setBasePrice(e.target.value)} />
+                <input
+                  id="pr-price"
+                  className={fieldClass}
+                  placeholder=" "
+                  value={data.proposal.price}
+                  onChange={(e) => setBasePrice(e.target.value)}
+                />
               </FieldShell>
 
               {/* Single price vs. two plans. */}
               <div className="flex flex-wrap items-center gap-2">
-                {([
-                  { mode: 'single' as const, label: 'One price' },
-                  { mode: 'tiers' as const, label: 'Two plans' },
-                ]).map(({ mode, label }) => {
+                {[
+                  { mode: "single" as const, label: "One price" },
+                  { mode: "tiers" as const, label: "Two plans" },
+                ].map(({ mode, label }) => {
                   const on = data.proposal.pricingMode === mode;
                   return (
                     <button
@@ -1041,15 +1307,15 @@ export const ProposalBuilder = ({
                       onClick={() => setPricingMode(mode)}
                       className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
                         on
-                          ? 'border-brand-blue-light bg-brand-blue/25 text-white'
-                          : 'border-white/15 text-gray-300 hover:border-brand-blue-light hover:text-white'
+                          ? "border-brand-blue-light bg-brand-blue/25 text-white"
+                          : "border-white/15 text-gray-300 hover:border-brand-blue-light hover:text-white"
                       }`}
                     >
                       {label}
                     </button>
                   );
                 })}
-                {data.proposal.pricingMode === 'tiers' && (
+                {data.proposal.pricingMode === "tiers" && (
                   <button
                     type="button"
                     onClick={resetTiers}
@@ -1064,43 +1330,49 @@ export const ProposalBuilder = ({
                   signal that the saved wording has been superseded. */}
               {presetsOutdated && (
                 <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200">
-                  The plan wording has been updated since this draft was started. Reset to preset to
-                  pick it up — that replaces both plans, including any edits you made here.
+                  The plan wording has been updated since this draft was
+                  started. Reset to preset to pick it up — that replaces both
+                  plans, including any edits you made here.
                 </p>
               )}
               <label
                 className={`flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4 ${
-                  data.proposal.pricingMode === 'tiers' ? 'opacity-50' : ''
+                  data.proposal.pricingMode === "tiers" ? "opacity-50" : ""
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={data.proposal.includeBenefits}
-                  onChange={(e) => update('proposal', 'includeBenefits', e.target.checked)}
+                  onChange={(e) =>
+                    update("proposal", "includeBenefits", e.target.checked)
+                  }
                   className="mt-0.5 h-4 w-4 accent-brand-blue"
                 />
                 <span className="text-sm text-gray-200">
-                  Show the &ldquo;{trustHeading(jobKind)}&rdquo; panel{' '}
+                  Show the &ldquo;{trustHeading(jobKind)}&rdquo; panel{" "}
                   <span className="text-gray-400">
-                    {data.proposal.pricingMode === 'tiers'
-                      ? '(always shown on a tiered proposal — it defines the service both plans include)'
-                      : jobKind === 'recurring'
-                        ? '(chemicals, filter and salt-cell cleans — recommended)'
-                        : '(the flat price, what’s included and what you’re not committing to — recommended)'}
+                    {data.proposal.pricingMode === "tiers"
+                      ? "(always shown on a tiered proposal — it defines the service both plans include)"
+                      : jobKind === "recurring"
+                        ? "(chemicals, filter and salt-cell cleans — recommended)"
+                        : "(the flat price, what’s included and what you’re not committing to — recommended)"}
                   </span>
                 </span>
               </label>
             </Section>
 
-            {data.proposal.pricingMode === 'tiers' && (
+            {data.proposal.pricingMode === "tiers" && (
               <Section title="Plans">
-                <p className="-mt-1 text-sm text-gray-400">
-                  The second plan shows as &ldquo;Everything in {data.proposal.tiers[0]?.name || 'the first plan'},
-                  plus&rdquo; — so it only ever adds. Never move something out of the first plan to make the
-                  upgrade look better; that turns the flat-rate promise into an upsell.
+                <p className="text-xs leading-relaxed text-gray-500">
+                  Each plan lists everything it includes, so either card reads
+                  on its own. The upgrade&rsquo;s own extras are labelled
+                  &ldquo;Additional benefits&rdquo; and printed first.
                 </p>
                 {data.proposal.tiers.map((tier, i) => (
-                  <div key={i} className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div
+                    key={i}
+                    className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-4"
+                  >
                     {/* Collapsed by default: the presets are right for almost
                         every proposal, so the common case is reading them, not
                         rewriting them. The summary keeps the two things that DO
@@ -1110,9 +1382,13 @@ export const ProposalBuilder = ({
                       <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                         Plan {i + 1}
                       </span>
-                      <span className="font-semibold text-white">{tier.name.trim() || '—'}</span>
+                      <span className="font-semibold text-white">
+                        {tier.name.trim() || "—"}
+                      </span>
                       {tier.price.trim() && (
-                        <span className="text-sm text-brand-blue-light">{formatPrice(tier.price)}</span>
+                        <span className="text-sm text-brand-blue-light">
+                          {formatPrice(tier.price)}
+                        </span>
                       )}
                       <label className="ml-auto flex cursor-pointer items-center gap-2 text-sm text-gray-200">
                         <input
@@ -1127,58 +1403,132 @@ export const ProposalBuilder = ({
                       <button
                         type="button"
                         aria-expanded={editingTier === i}
-                        onClick={() => setEditingTier(editingTier === i ? null : i)}
+                        onClick={() =>
+                          setEditingTier(editingTier === i ? null : i)
+                        }
                         className="inline-flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-sm font-semibold text-gray-300 hover:bg-white/5 hover:text-white"
                       >
-                        {editingTier === i ? 'Done' : 'Edit'}
-                        <ChevronDown className={`h-4 w-4 transition-transform ${editingTier === i ? 'rotate-180' : ''}`} />
+                        {editingTier === i ? "Done" : "Edit"}
+                        <ChevronDown
+                          className={`h-4 w-4 transition-transform ${editingTier === i ? "rotate-180" : ""}`}
+                        />
                       </button>
                     </div>
                     {editingTier === i && (
                       <div className="space-y-4">
-                    <FieldShell id={`tier-name-${i}`} label="Plan name">
-                      <input id={`tier-name-${i}`} className={fieldClass} placeholder=" "
-                        value={tier.name} onChange={(e) => updateTier(i, { name: e.target.value })} />
-                    </FieldShell>
-                    {/* Read-only: both plans price off the base rate above, so
+                        <FieldShell id={`tier-name-${i}`} label="Plan name">
+                          <input
+                            id={`tier-name-${i}`}
+                            className={fieldClass}
+                            placeholder=" "
+                            value={tier.name}
+                            onChange={(e) =>
+                              updateTier(i, { name: e.target.value })
+                            }
+                          />
+                        </FieldShell>
+                        {/* Read-only: both plans price off the base rate above, so
                         there's nothing to type here and no way for the two to
                         disagree. */}
-                    <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Price</p>
-                      {tier.price.trim() ? (
-                        <>
-                          <p className="text-lg font-bold text-white">{formatPrice(tier.price)}</p>
-                          {tier.priceNote.trim() && (
-                            <p className="text-xs font-semibold text-brand-blue-light">{tier.priceNote}</p>
+                        <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                            Price
+                          </p>
+                          {tier.price.trim() ? (
+                            <>
+                              <p className="text-lg font-bold text-white">
+                                {formatPrice(tier.price)}
+                              </p>
+                              {tier.priceNote.trim() && (
+                                <p className="text-xs font-semibold text-brand-blue-light">
+                                  {tier.priceNote}
+                                </p>
+                              )}
+                              {tier.billingNote?.trim() && (
+                                <p className="text-xs text-gray-400">
+                                  {tier.billingNote}
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-sm text-gray-400">
+                              Set the base rate above.
+                            </p>
                           )}
-                          {tier.billingNote?.trim() && (
-                            <p className="text-xs text-gray-400">{tier.billingNote}</p>
-                          )}
-                        </>
-                      ) : (
-                        <p className="text-sm text-gray-400">Set the base rate above.</p>
-                      )}
-                      <p className="mt-1 text-xs text-gray-500">Calculated from the base rate.</p>
-                    </div>
-                    <FieldShell id={`tier-tagline-${i}`} label="One-line tagline">
-                      <input id={`tier-tagline-${i}`} className={fieldClass} placeholder=" "
-                        value={tier.tagline} onChange={(e) => updateTier(i, { tagline: e.target.value })} />
-                    </FieldShell>
-                    <FieldShell id={`tier-includes-${i}`} label={i === 0 ? "What's included — one per line" : 'What it adds — one per line'} multiline>
-                      <textarea id={`tier-includes-${i}`} rows={6} className={textareaClass} placeholder=" "
-                        value={tier.includes.join('\n')}
-                        onChange={(e) => updateTier(i, { includes: e.target.value.split('\n') })} />
-                    </FieldShell>
-                    {i > 0 && (
-                      <FieldShell id={`tier-value-${i}`} label="Value note — the break-even line" multiline>
-                        <textarea id={`tier-value-${i}`} rows={3} className={textareaClass} placeholder=" "
-                          value={tier.valueNote} onChange={(e) => updateTier(i, { valueNote: e.target.value })} />
-                      </FieldShell>
-                    )}
-                    <FieldShell id={`tier-fine-${i}`} label="Fine print / limits" multiline>
-                      <textarea id={`tier-fine-${i}`} rows={3} className={textareaClass} placeholder=" "
-                        value={tier.finePrint} onChange={(e) => updateTier(i, { finePrint: e.target.value })} />
-                    </FieldShell>
+                          <p className="mt-1 text-xs text-gray-500">
+                            Calculated from the base rate.
+                          </p>
+                        </div>
+                        <FieldShell
+                          id={`tier-tagline-${i}`}
+                          label="One-line tagline"
+                        >
+                          <input
+                            id={`tier-tagline-${i}`}
+                            className={fieldClass}
+                            placeholder=" "
+                            value={tier.tagline}
+                            onChange={(e) =>
+                              updateTier(i, { tagline: e.target.value })
+                            }
+                          />
+                        </FieldShell>
+                        <FieldShell
+                          id={`tier-includes-${i}`}
+                          label={
+                            i === 0
+                              ? "What's included — one per line"
+                              : "What it adds — one per line"
+                          }
+                          multiline
+                        >
+                          <textarea
+                            id={`tier-includes-${i}`}
+                            rows={6}
+                            className={textareaClass}
+                            placeholder=" "
+                            value={tier.includes.join("\n")}
+                            onChange={(e) =>
+                              updateTier(i, {
+                                includes: e.target.value.split("\n"),
+                              })
+                            }
+                          />
+                        </FieldShell>
+                        {i > 0 && (
+                          <FieldShell
+                            id={`tier-value-${i}`}
+                            label="Value note — the break-even line"
+                            multiline
+                          >
+                            <textarea
+                              id={`tier-value-${i}`}
+                              rows={3}
+                              className={textareaClass}
+                              placeholder=" "
+                              value={tier.valueNote}
+                              onChange={(e) =>
+                                updateTier(i, { valueNote: e.target.value })
+                              }
+                            />
+                          </FieldShell>
+                        )}
+                        <FieldShell
+                          id={`tier-fine-${i}`}
+                          label="Fine print / limits"
+                          multiline
+                        >
+                          <textarea
+                            id={`tier-fine-${i}`}
+                            rows={3}
+                            className={textareaClass}
+                            placeholder=" "
+                            value={tier.finePrint}
+                            onChange={(e) =>
+                              updateTier(i, { finePrint: e.target.value })
+                            }
+                          />
+                        </FieldShell>
                       </div>
                     )}
                   </div>
@@ -1188,14 +1538,17 @@ export const ProposalBuilder = ({
 
             <Section title="Additional Services (optional)">
               <p className="-mt-1 text-sm text-gray-400">
-                À-la-carte extras, listed separately on the proposal. Quick-add a common one, then set its price.
+                À-la-carte extras, listed separately on the proposal. Quick-add
+                a common one, then set its price.
               </p>
               <div className="flex flex-wrap gap-2">
                 {ADDON_PRESETS.map((preset) => (
                   <button
                     key={preset.label}
                     type="button"
-                    onClick={() => addAddOn(preset.label, preset.defaultPrice ?? '')}
+                    onClick={() =>
+                      addAddOn(preset.label, preset.defaultPrice ?? "")
+                    }
                     className="rounded-full border border-white/15 px-3 py-1.5 text-sm text-gray-200 transition-colors hover:border-brand-blue-light hover:text-white"
                   >
                     + {preset.label}
@@ -1211,14 +1564,20 @@ export const ProposalBuilder = ({
                         placeholder="Service"
                         autoCapitalize="words"
                         value={a.label}
-                        onChange={(e) => updateAddOn(i, 'label', e.target.value)}
-                        onBlur={(e) => updateAddOn(i, 'label', toTitleCase(e.target.value))}
+                        onChange={(e) =>
+                          updateAddOn(i, "label", e.target.value)
+                        }
+                        onBlur={(e) =>
+                          updateAddOn(i, "label", toTitleCase(e.target.value))
+                        }
                       />
                       <input
                         className={`${addonInput} w-32 shrink-0`}
                         placeholder="Price"
                         value={a.price}
-                        onChange={(e) => updateAddOn(i, 'price', e.target.value)}
+                        onChange={(e) =>
+                          updateAddOn(i, "price", e.target.value)
+                        }
                       />
                       <button
                         type="button"
@@ -1248,13 +1607,22 @@ export const ProposalBuilder = ({
               scroll the entire form past it. Only the preview scrolls — the Send
               button and its validation hint stay pinned below it. */}
           <div className="lg:sticky lg:top-8 lg:self-start lg:flex lg:max-h-[calc(100dvh-4rem)] lg:flex-col">
-            <p className="mb-2 shrink-0 text-xs font-semibold uppercase tracking-wider text-gray-500">Live preview</p>
+            <p className="mb-2 shrink-0 text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Live preview
+            </p>
             <div className="admin-scroll lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
-              <ProposalPreview data={data} photos={photos} dateLabel={proposalDateLabel()} />
+              <ProposalPreview
+                data={data}
+                photos={photos}
+                dateLabel={proposalDateLabel()}
+              />
             </div>
 
-            {status.kind === 'error' && (
-              <div role="alert" className="mt-4 shrink-0 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {status.kind === "error" && (
+              <div
+                role="alert"
+                className="mt-4 shrink-0 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+              >
                 <AlertCircle className="h-5 w-5 shrink-0 text-red-400" />
                 <span>{status.message}</span>
               </div>
@@ -1262,12 +1630,17 @@ export const ProposalBuilder = ({
 
             <button
               onClick={() => openReview()}
-              disabled={!canSend || status.kind === 'preparing' || status.kind === 'sending'}
+              disabled={
+                !canSend ||
+                status.kind === "preparing" ||
+                status.kind === "sending"
+              }
               className="mt-4 shrink-0 flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark py-4 text-lg font-bold text-white shadow-lg shadow-brand-blue/20 transition-all hover:from-brand-blue-light hover:to-brand-blue disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {status.kind === 'preparing' ? (
+              {status.kind === "preparing" ? (
                 <>
-                  <LoaderCircle className="h-5 w-5 animate-spin" /> Preparing the email…
+                  <LoaderCircle className="h-5 w-5 animate-spin" /> Preparing
+                  the email…
                 </>
               ) : (
                 <>
@@ -1279,7 +1652,7 @@ export const ProposalBuilder = ({
               <p className="mt-2 shrink-0 text-center text-xs text-gray-500">
                 {!filterAnswered
                   ? `Answer “${inclusionQuestion(data.pool.filterType)}” to send.`
-                  : 'Enter a valid email address to send.'}
+                  : "Enter a valid email address to send."}
               </p>
             )}
 
@@ -1288,24 +1661,31 @@ export const ProposalBuilder = ({
                 needs no email address, which is the whole reason it exists. */}
             <button
               onClick={handleSaveLink}
-              disabled={!canSaveLink || status.kind === 'saving' || status.kind === 'preparing' || status.kind === 'sending'}
+              disabled={
+                !canSaveLink ||
+                status.kind === "saving" ||
+                status.kind === "preparing" ||
+                status.kind === "sending"
+              }
               className="mt-3 shrink-0 flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 py-3 text-sm font-semibold text-gray-200 transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {status.kind === 'saving' ? (
+              {status.kind === "saving" ? (
                 <>
-                  <LoaderCircle className="h-4 w-4 animate-spin" /> Creating link…
+                  <LoaderCircle className="h-4 w-4 animate-spin" /> Creating
+                  link…
                 </>
               ) : (
                 <>
-                  <Link2 className="h-4 w-4" /> Create link only — don&apos;t email
+                  <Link2 className="h-4 w-4" /> Create link only — don&apos;t
+                  email
                 </>
               )}
             </button>
             {!canSaveLink && (
               <p className="mt-2 shrink-0 text-center text-xs text-gray-500">
                 {!filterAnswered
-                  ? 'Answer the filter question to create a link.'
-                  : 'Enter the service address to create a link.'}
+                  ? "Answer the filter question to create a link."
+                  : "Enter the service address to create a link."}
               </p>
             )}
           </div>
@@ -1326,36 +1706,56 @@ const ProposalPreview = ({
   dateLabel: string;
 }) => {
   const { customer, pool, proposal } = data;
-  const dims = [pool.length && `${pool.length} ft L`, pool.width && `${pool.width} ft W`, pool.avgDepth && `${pool.avgDepth} ft avg`]
+  const dims = [
+    pool.length && `${pool.length} ft L`,
+    pool.width && `${pool.width} ft W`,
+    pool.avgDepth && `${pool.avgDepth} ft avg`,
+  ]
     .filter(Boolean)
-    .join(' × ');
-  const tiered = proposal.pricingMode === 'tiers' && proposal.tiers.length > 0;
+    .join(" × ");
+  const tiered = proposal.pricingMode === "tiers" && proposal.tiers.length > 0;
   const previewKind = jobKindOf(proposal.jobKind);
-  const filterOption = { type: pool.filterType, included: pool.filterServiceIncluded === 'yes' };
+  const filterOption = {
+    type: pool.filterType,
+    included: pool.filterServiceIncluded === "yes",
+  };
   const extras = includedExtras(filterOption, pool.sanitization);
   const tiers = tiered ? proposal.tiers : [];
   const delta = tierDelta(tiers[0], tiers[1]);
-  const recommended = tiers.find((t) => t.recommended) ?? tiers[tiers.length - 1];
+  const recommended =
+    tiers.find((t) => t.recommended) ?? tiers[tiers.length - 1];
   const acceptWords = tiers
     .map((t) => t.name.trim().toUpperCase())
     .filter(Boolean)
-    .sort((a, b) => (a === recommended?.name.trim().toUpperCase() ? -1 : b === recommended?.name.trim().toUpperCase() ? 1 : 0));
+    .sort((a, b) =>
+      a === recommended?.name.trim().toUpperCase()
+        ? -1
+        : b === recommended?.name.trim().toUpperCase()
+          ? 1
+          : 0,
+    );
   return (
     <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white text-stone-800 shadow-xl">
       <div className="flex items-center justify-between border-b-4 border-brand-blue bg-navy px-6 py-5 text-white">
         <div>
-          <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400">Suncoast Pool Pros</div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400">
+            Suncoast Pool Pros
+          </div>
           <div className="mt-0.5 text-lg font-bold">Service Proposal</div>
         </div>
         <div className="text-right">
-          <div className="text-[9px] uppercase tracking-wide text-gray-400">Date</div>
+          <div className="text-[9px] uppercase tracking-wide text-gray-400">
+            Date
+          </div>
           <div className="text-sm">{dateLabel}</div>
         </div>
       </div>
       <div className="space-y-5 px-6 py-5 text-sm">
         {/* The heading goes with its rows: a quote raised from an address
             alone printed "PREPARED FOR" over nothing at all. */}
-        {[customer.name, customer.address, customer.email, customer.phone].some((v) => v.trim()) && (
+        {[customer.name, customer.address, customer.email, customer.phone].some(
+          (v) => v.trim(),
+        ) && (
           <PreviewBlock label="Prepared For">
             <PreviewRow label="Name" value={customer.name} />
             <PreviewRow label="Service Address" value={customer.address} />
@@ -1370,14 +1770,19 @@ const ProposalPreview = ({
         {(proposal.includeBenefits || tiered) && (
           <div className="rounded-lg border border-[#cfe3f2] bg-[#eef6fb] px-4 py-3">
             <div className="mb-2 text-sm font-bold text-brand-blue-dark">
-              {previewKind === 'recurring' ? BENEFITS_HEADING : trustHeading(previewKind)}
+              {previewKind === "recurring"
+                ? BENEFITS_HEADING
+                : trustHeading(previewKind)}
             </div>
             <ul className="space-y-1">
-              {(previewKind === 'recurring'
+              {(previewKind === "recurring"
                 ? includedBenefits(filterOption, pool.sanitization)
                 : jobAssurances(previewKind)
               ).map((b, i) => (
-                <li key={i} className="flex gap-2 py-[3px] text-[13px] font-semibold leading-relaxed text-stone-800">
+                <li
+                  key={i}
+                  className="flex gap-2 py-[3px] text-[13px] font-semibold leading-relaxed text-stone-800"
+                >
                   <span className="text-green-600">✓</span>
                   {b}
                 </li>
@@ -1386,52 +1791,73 @@ const ProposalPreview = ({
           </div>
         )}
 
-        {showsExtrasTable(previewKind) && (proposal.includeBenefits || tiered) && extras.length > 0 && (
-          <PreviewBlock label={EXTRAS_HEADING}>
-            <p className="mb-2 text-[12px] leading-relaxed text-stone-700">{EXTRAS_INTRO}</p>
-            <div>
-              <div className="flex gap-2 border-b border-stone-200 pb-1 text-[8px] uppercase tracking-wide text-stone-400">
-                <span className="flex-1" />
-                <span className="w-16 text-right">{EXTRAS_COL_THEIRS}</span>
-                <span className="w-12 text-right">{EXTRAS_COL_YOURS}</span>
-              </div>
-              {extras.map((x, i) => (
-                <div
-                  key={i}
-                  className={`flex items-start gap-2 py-1 ${
-                    i < extras.length - 1 ? 'border-b border-stone-100' : ''
-                  }`}
-                >
-                  <span className="flex-1">
-                    <span className="block text-[12px] font-semibold text-navy">{x.label}</span>
-                    <span className="block text-[9px] text-stone-400">{x.basis}</span>
-                  </span>
-                  <span className="w-16 text-right text-[12px] text-stone-500 line-through">{x.typical}</span>
-                  <span className="w-12 text-right text-[11px] font-bold text-green-700">
-                    {EXTRAS_INCLUDED_LABEL}
-                  </span>
+        {showsExtrasTable(previewKind) &&
+          (proposal.includeBenefits || tiered) &&
+          extras.length > 0 && (
+            <PreviewBlock label={EXTRAS_HEADING}>
+              <p className="mb-2 text-[12px] leading-relaxed text-stone-700">
+                {EXTRAS_INTRO}
+              </p>
+              <div>
+                <div className="flex gap-2 border-b border-stone-200 pb-1 text-[8px] uppercase tracking-wide text-stone-400">
+                  <span className="flex-1" />
+                  <span className="w-16 text-right">{EXTRAS_COL_THEIRS}</span>
+                  <span className="w-12 text-right">{EXTRAS_COL_YOURS}</span>
                 </div>
-              ))}
-              <p className="mt-1.5 text-[10px] italic leading-snug text-stone-400">{EXTRAS_NOTE}</p>
-            </div>
-          </PreviewBlock>
-        )}
+                {extras.map((x, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-start gap-2 py-1 ${
+                      i < extras.length - 1 ? "border-b border-stone-100" : ""
+                    }`}
+                  >
+                    <span className="flex-1">
+                      <span className="block text-[12px] font-semibold text-navy">
+                        {x.label}
+                      </span>
+                      <span className="block text-[9px] text-stone-400">
+                        {x.basis}
+                      </span>
+                    </span>
+                    <span className="w-16 text-right text-[12px] text-stone-500 line-through">
+                      {x.typical}
+                    </span>
+                    <span className="w-12 text-right text-[11px] font-bold text-green-700">
+                      {EXTRAS_INCLUDED_LABEL}
+                    </span>
+                  </div>
+                ))}
+                <p className="mt-1.5 text-[10px] italic leading-snug text-stone-400">
+                  {EXTRAS_NOTE}
+                </p>
+              </div>
+            </PreviewBlock>
+          )}
 
         {(pool.gallons || dims || pool.shape || pool.sanitization) && (
           <PreviewBlock label="Pool — Size & Volume">
-            <PreviewRow label="Volume" value={pool.gallons ? `${pool.gallons} gallons` : ''} />
+            <PreviewRow
+              label="Volume"
+              value={pool.gallons ? `${pool.gallons} gallons` : ""}
+            />
             <PreviewRow label="Dimensions" value={dims} />
             <PreviewRow label="Shape" value={pool.shape} />
             <PreviewRow label="Sanitization" value={pool.sanitization} />
           </PreviewBlock>
         )}
 
-        {(pool.pump || pool.filterType || pool.filter || pool.heater || pool.equipmentNotes) && (
+        {(pool.pump ||
+          pool.filterType ||
+          pool.filter ||
+          pool.heater ||
+          pool.equipmentNotes) && (
           <PreviewBlock label="Equipment">
             <PreviewRow label="Pump" value={pool.pump} />
             <PreviewRow
               label="Filter"
-              value={[pool.filterType, pool.filter].filter((v) => v.trim()).join(' — ')}
+              value={[pool.filterType, pool.filter]
+                .filter((v) => v.trim())
+                .join(" — ")}
             />
             <PreviewRow label="Heater" value={pool.heater} />
             <PreviewRow label="Notes" value={pool.equipmentNotes} />
@@ -1440,7 +1866,9 @@ const ProposalPreview = ({
 
         {proposal.scope.trim() && (
           <PreviewBlock label="Scope of Work">
-            <p className="whitespace-pre-line leading-relaxed text-stone-700">{proposal.scope.trim()}</p>
+            <p className="whitespace-pre-line leading-relaxed text-stone-700">
+              {proposal.scope.trim()}
+            </p>
           </PreviewBlock>
         )}
 
@@ -1454,7 +1882,9 @@ const ProposalPreview = ({
                 <div
                   key={i}
                   className={`rounded-lg border p-2.5 ${
-                    tier.recommended ? 'border-brand-blue bg-[#f1f7fc]' : 'border-stone-200'
+                    tier.recommended
+                      ? "border-brand-blue bg-[#f1f7fc]"
+                      : "border-stone-200"
                   }`}
                 >
                   {tier.recommended && (
@@ -1462,18 +1892,28 @@ const ProposalPreview = ({
                       Recommended
                     </span>
                   )}
-                  <div className="text-[13px] font-bold text-navy">{tier.name.trim()}</div>
+                  <div className="text-[13px] font-bold text-navy">
+                    {tier.name.trim()}
+                  </div>
                   {tier.tagline.trim() && (
-                    <div className="text-[10px] leading-snug text-stone-500">{tier.tagline.trim()}</div>
+                    <div className="text-[10px] leading-snug text-stone-500">
+                      {tier.tagline.trim()}
+                    </div>
                   )}
                   {tier.price.trim() && (
-                    <div className="mt-1 text-base font-bold text-brand-blue-dark">{formatPrice(tier.price)}</div>
+                    <div className="mt-1 text-base font-bold text-brand-blue-dark">
+                      {formatPrice(tier.price)}
+                    </div>
                   )}
                   {tier.priceNote.trim() ? (
-                    <div className="text-[10px] font-bold text-brand-blue">{tier.priceNote.trim()}</div>
+                    <div className="text-[10px] font-bold text-brand-blue">
+                      {tier.priceNote.trim()}
+                    </div>
                   ) : null}
                   {tier.billingNote?.trim() ? (
-                    <div className="text-[10px] text-stone-500">{tier.billingNote.trim()}</div>
+                    <div className="text-[10px] text-stone-500">
+                      {tier.billingNote.trim()}
+                    </div>
                   ) : i > 0 && delta ? (
                     <div className="text-[10px] font-bold text-brand-blue">
                       {delta} more than {tiers[i - 1].name.trim()}
@@ -1482,16 +1922,19 @@ const ProposalPreview = ({
                   {(tier.includes.some((x) => x.trim()) || i > 0) && (
                     <div className="my-1.5 h-px bg-stone-200" />
                   )}
-                  {i > 0 && (
+                  {(tier.extrasCount ?? 0) > 0 && (
                     <div className="mb-1 text-[10px] font-bold text-navy">
-                      Everything in {tiers[i - 1].name.trim()}, plus:
+                      Additional benefits
                     </div>
                   )}
                   {tier.includes
                     .map((x) => x.trim())
                     .filter(Boolean)
                     .map((item, j) => (
-                      <div key={j} className="flex gap-1.5 text-[10px] leading-snug text-stone-700">
+                      <div
+                        key={j}
+                        className="flex gap-1.5 text-[10px] leading-snug text-stone-700"
+                      >
                         <span className="text-green-600">•</span>
                         <span>{item}</span>
                       </div>
@@ -1504,8 +1947,15 @@ const ProposalPreview = ({
                 {tiers
                   .filter((t) => t.finePrint.trim())
                   .map((t, i, arr) => (
-                    <p key={i} className="text-[9px] leading-snug text-stone-400">
-                      {arr.length > 1 && <span className="font-semibold text-stone-500">{t.name.trim()}: </span>}
+                    <p
+                      key={i}
+                      className="text-[9px] leading-snug text-stone-400"
+                    >
+                      {arr.length > 1 && (
+                        <span className="font-semibold text-stone-500">
+                          {t.name.trim()}:{" "}
+                        </span>
+                      )}
                       {t.finePrint.trim()}
                     </p>
                   ))}
@@ -1517,8 +1967,8 @@ const ProposalPreview = ({
                   key={i}
                   className={`mt-2 rounded-lg border px-3 py-2 text-[11px] leading-relaxed ${
                     tier.recommended
-                      ? 'border-[#f0dcb4] bg-[#fff8ec] text-[#8a5a10]'
-                      : 'border-[#d4e6f4] bg-[#f1f7fc] text-brand-blue-dark'
+                      ? "border-[#f0dcb4] bg-[#fff8ec] text-[#8a5a10]"
+                      : "border-[#d4e6f4] bg-[#f1f7fc] text-brand-blue-dark"
                   }`}
                 >
                   {tier.valueNote.trim()}
@@ -1529,7 +1979,9 @@ const ProposalPreview = ({
         ) : proposal.price.trim() ? (
           <div className="flex items-center justify-between rounded-lg border border-[#d6e6f3] bg-[#f1f6fb] px-4 py-3">
             <span className="text-stone-500">Total</span>
-            <span className="text-lg font-bold text-brand-blue-dark">{formatPrice(proposal.price)}</span>
+            <span className="text-lg font-bold text-brand-blue-dark">
+              {formatPrice(proposal.price)}
+            </span>
           </div>
         ) : null}
 
@@ -1539,8 +1991,12 @@ const ProposalPreview = ({
               .filter((a) => a.label.trim() || a.price.trim())
               .map((a, i) => (
                 <div key={i} className="flex justify-between gap-3">
-                  <span className="text-stone-700">{a.label.trim() || '—'}</span>
-                  <span className="font-medium text-stone-800">{formatPrice(a.price)}</span>
+                  <span className="text-stone-700">
+                    {a.label.trim() || "—"}
+                  </span>
+                  <span className="font-medium text-stone-800">
+                    {formatPrice(a.price)}
+                  </span>
                 </div>
               ))}
           </PreviewBlock>
@@ -1549,12 +2005,13 @@ const ProposalPreview = ({
         <div className="rounded-lg border border-[#bfe7c6] bg-[#eefaf0] px-4 py-3 text-[13px] leading-relaxed text-[#1d7a33]">
           {acceptWords.length > 1 ? (
             <>
-              To accept, reply to this email with the plan you&rsquo;d like —{' '}
-              <strong>{acceptWords.join(' or ')}</strong>.
+              To accept, reply to this email with the plan you&rsquo;d like —{" "}
+              <strong>{acceptWords.join(" or ")}</strong>.
             </>
           ) : (
             <>
-              To accept, simply reply <strong>&quot;APPROVED&quot;</strong> to the email this is attached to.
+              To accept, simply reply <strong>&quot;APPROVED&quot;</strong> to
+              the email this is attached to.
             </>
           )}
         </div>
@@ -1584,4 +2041,3 @@ const ProposalPreview = ({
     </div>
   );
 };
-

@@ -166,7 +166,13 @@ export const monthlyIncludes = (filter: FilterOption): string[] => [
   'No contract — cancel any time with 30 days notice',
 ];
 
-export const ANNUAL_INCLUDES = [
+/**
+ * What prepaying adds, ON TOP of the service both plans share.
+ *
+ * These print FIRST in the annual card, before the shared service list, so the
+ * four lines that actually differ are the four a skimming reader meets first.
+ */
+export const ANNUAL_EXTRAS = [
   'Your 12th month free — pay for 11, the last one is on us',
   '20% off repair labour on repairs and upgrades',
   'Cancel any time — unused months refunded',
@@ -332,7 +338,25 @@ export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', in
         ? `$${formatAmount(monthly * ANNUAL_MONTHS_CHARGED)} billed once — ${ANNUAL_MONTHS_CHARGED} months paid, your ${ANNUAL_MONTHS_CHARGED + 1}th free.`
         : '',
       tagline: 'The full service, with one month free.',
-      includes: [...ANNUAL_INCLUDES],
+      /*
+       * THE FULL LIST, not "everything in Pay Monthly, plus:".
+       *
+       * That phrasing pointed at the other card, and on a phone the cards stack
+       * with this one FIRST — so it referred to something the reader had not
+       * reached yet. Rewording it would not have helped: a reader who has not
+       * seen the monthly plan still learns nothing about what they are buying.
+       *
+       * Each card now carries the whole set and stands alone in any order, the
+       * way SiteGround's do. It also makes the two directly comparable, since
+       * the same line appears in the same place on both — which is the reading
+       * a two-column price table is FOR, and which the cross-reference quietly
+       * prevented.
+       *
+       * The four annual-only lines come first so the difference is not buried
+       * under six lines the customer has already read on the card above.
+       */
+      includes: [...ANNUAL_EXTRAS, ...monthlyIncludes(filter)],
+      extrasCount: ANNUAL_EXTRAS.length,
       recommended: true,
       // Answers the objection prepaying actually raises — being tied in.
       valueNote: monthly

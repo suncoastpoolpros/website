@@ -70,6 +70,8 @@ type Tier = {
   priceNote?: string;
   /** The quiet disclosure under the button. */
   billingNote?: string;
+  /** How many leading `includes` are this plan's own extras. */
+  extrasCount?: number;
   tagline: string;
   includes: string[];
   recommended: boolean;
@@ -992,31 +994,44 @@ export const ApprovePage = () => {
                         justifying one, and the line is what tells you the
                         difference at a glance. */}
                       <div className="mt-5 border-t border-[#e9eef4]" />
-                      {/* "Everything in <base>, plus:" — the PDF and the email
-                        both print this, and without it the upgrade card reads
-                        as though those few bullets are ALL you get, with no
-                        mention of the pool service itself. Names the plan
-                        rather than a position, so it still reads correctly on a
-                        phone where this card is shown first. */}
-                      {i > 0 && tiers[i - 1]?.name?.trim() && (
-                        <p className="mt-4 text-sm font-bold text-[#0a1628]">
-                          Everything in {tiers[i - 1].name.trim()}, plus:
-                        </p>
-                      )}
-                      <ul className="mt-4 space-y-2">
-                        {tier.includes
-                          .map((x) => x.trim())
-                          .filter(Boolean)
-                          .map((item, j) => (
-                            <li
-                              key={j}
-                              className="flex gap-2 text-sm leading-relaxed text-[#374151]"
-                            >
-                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
-                              {item}
-                            </li>
-                          ))}
-                      </ul>
+                      {/* The extras are LABELLED and come first; the shared
+                          service follows under a rule.
+
+                          This replaced "Everything in Pay Monthly, plus:",
+                          which pointed at the other card — and on a phone the
+                          cards stack with this one FIRST, so it named something
+                          the reader had not reached. Rewording it would not
+                          have helped: a reader who has not seen the monthly
+                          plan learns nothing from being told this one includes
+                          it. Each card carries the whole list now and stands
+                          alone in any order. */}
+                      {(() => {
+                        const items = tier.includes.map((x) => x.trim()).filter(Boolean);
+                        const n = Math.min(tier.extrasCount ?? 0, items.length);
+                        const row = (item: string, j: number) => (
+                          <li key={j} className="flex gap-2 text-sm leading-relaxed text-[#374151]">
+                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
+                            {item}
+                          </li>
+                        );
+                        if (!n) return <ul className="mt-4 space-y-2">{items.map(row)}</ul>;
+                        return (
+                          <>
+                            <p className="mt-4 text-sm font-bold text-[#0a1628]">
+                              Additional benefits
+                            </p>
+                            <ul className="mt-2 space-y-2">{items.slice(0, n).map(row)}</ul>
+                            {items.length > n && (
+                              <>
+                                <div className="mt-4 border-t border-[#e9eef4]" />
+                                <ul className="mt-4 space-y-2">
+                                  {items.slice(n).map((item, j) => row(item, n + j))}
+                                </ul>
+                              </>
+                            )}
+                          </>
+                        );
+                      })()}
                       {/* The note stays bottom-anchored so it lines up across
                         both cards however much each has to say. The BUTTON no
                         longer lives here — it sits under the price now. */}
