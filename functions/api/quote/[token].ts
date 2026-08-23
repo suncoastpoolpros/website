@@ -7,7 +7,7 @@
  * exposes nothing they weren't sent — but it must not expose anything MORE, so
  * the acceptance evidence columns (IP, user agent) are never returned.
  */
-import { getQuote, isPricingStale, isThrottled, recordLookupFailure, recordQuoteOpen } from '../_quotes';
+import { docKindOf, getQuote, isPricingStale, isThrottled, recordLookupFailure, recordQuoteOpen } from '../_quotes';
 import { hasAdminSession } from '../admin/_shared';
 
 type Ctx = {
@@ -54,6 +54,20 @@ export const onRequestGet = async (ctx: Ctx): Promise<Response> => {
   if (!row) {
     // Not awaited on the response path — the customer's 404 shouldn't wait on a
     // bookkeeping write, and Pages keeps the worker alive for it.
+    ctx.waitUntil?.(recordLookupFailure(ctx.env.DB, ip));
+    return json({ ok: false, error: 'not_found' }, 404);
+  }
+  /**
+   * A commercial bid is stored in this table but has no customer-facing page.
+   * It is not accepted by tapping a link — it goes into a board packet and
+   * comes back countersigned — and the approve page renders a residential
+   * proposal: plans, a monthly rate, a signature that accepts one. Serving a
+   * bid through it would show a board a mangled version of their own document.
+   *
+   * Deliberately the SAME 404 as an unknown token, and it counts toward the
+   * lookup throttle, so nothing about the response reveals that the row exists.
+   */
+  if (docKindOf(row.proposal_json) === 'commercial') {
     ctx.waitUntil?.(recordLookupFailure(ctx.env.DB, ip));
     return json({ ok: false, error: 'not_found' }, 404);
   }

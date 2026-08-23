@@ -232,6 +232,75 @@ export async function saveQuote(
 }
 
 /**
+ * Which document a stored row is.
+ *
+ * Kept INSIDE proposal_json rather than in a column of its own, deliberately:
+ * every read path already selects proposal_json, so this needs no migration and
+ * no console step, and it works the moment it deploys. A quote written before
+ * commercial bids existed has no marker and is a proposal, which is what it is.
+ */
+export type StoredDocKind = 'proposal' | 'commercial';
+
+export const docKindOf = (proposalJson: string | null | undefined): StoredDocKind => {
+  try {
+    const p = JSON.parse(proposalJson || '{}') as { docKind?: unknown };
+    return p.docKind === 'commercial' ? 'commercial' : 'proposal';
+  } catch {
+    return 'proposal';
+  }
+};
+
+/**
+ * Overwrite an existing quote in place.
+ *
+ * Exists because a commercial bid is downloaded more than once — you spot a
+ * typo, you fix a price, you send the corrected copy. Inserting each time would
+ * leave the list full of near-identical rows with different tokens, and no way
+ * to tell which one the board actually holds.
+ *
+ * Deliberately does NOT touch created_at, the proposal number, the open
+ * counters or the acceptance columns. Re-saving a bid is an edit to what we
+ * quoted, not a new quote and not a reason to lose the record of who looked at
+ * it. Returns false when the row is gone, so the caller can insert instead.
+ */
+export async function updateQuote(
+  db: unknown,
+  id: string,
+  quote: {
+    customer?: { name?: string; email?: string; address?: string; phone?: string };
+    pool?: unknown;
+    proposal?: unknown;
+  },
+): Promise<boolean> {
+  if (!isQuoteStorageAvailable(db)) return false;
+  try {
+    const res = await db
+      .prepare(
+        `UPDATE quotes
+            SET customer_name = ?, customer_email = ?, customer_address = ?,
+                customer_phone = ?, pool_json = ?, proposal_json = ?
+          WHERE id = ?`,
+      )
+      .bind(
+        String(quote.customer?.name ?? '').trim(),
+        String(quote.customer?.email ?? '').trim(),
+        String(quote.customer?.address ?? '').trim() || null,
+        String(quote.customer?.phone ?? '').trim() || null,
+        JSON.stringify(quote.pool ?? {}),
+        JSON.stringify(quote.proposal ?? {}),
+        id,
+      )
+      .run();
+    // D1 reports rows_written; a miss means the row was deleted underneath us.
+    const changed = (res as { meta?: { changes?: number } })?.meta?.changes;
+    return changed === undefined ? true : changed > 0;
+  } catch (err) {
+    console.log('[quotes] update_failed:', String(err).slice(0, 300));
+    return false;
+  }
+}
+
+/**
  * Photos attached to a proposal.
  *
  * Written alongside the quote and read only when the customer presses

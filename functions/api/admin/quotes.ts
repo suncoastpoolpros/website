@@ -10,7 +10,7 @@
  * none has been), and that logic belongs next to the data rather than
  * duplicated in a component.
  */
-import { listQuotes } from '../_quotes';
+import { docKindOf, listQuotes } from '../_quotes';
 import { type AdminContext, json, isAllowedOrigin, requireSession } from './_shared';
 
 type Tier = { name?: string; price?: string; recommended?: boolean };
@@ -42,9 +42,19 @@ export const onRequestGet = async (ctx: AdminContext): Promise<Response> => {
       const acceptedTier = tiers.find((t) => (t.name ?? '').trim() === accepted);
       const headline = tiers.find((t) => t.recommended) ?? tiers[0];
       const price = (acceptedTier?.price ?? headline?.price ?? proposal.price ?? '').trim();
+      /**
+       * Commercial bids live in the same table and belong on the same list —
+       * "what is outstanding" is one question, not two. But they behave
+       * differently enough that the row has to say so: there is no accept link,
+       * no plan, and no open count, because nothing was emailed. Without a
+       * marker a bid would read as a quote nobody has ever opened, which is the
+       * one signal on this screen that is meant to prompt a phone call.
+       */
+      const docKind = docKindOf(row.proposal_json);
 
       return {
         id: row.id,
+        docKind,
         number: row.number ?? null,
         name: row.customer_name,
         email: row.customer_email,
