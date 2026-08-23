@@ -54,6 +54,10 @@ export type QuoteRow = {
   accepted_plan: string | null;
   accepted_ip: string | null;
   accepted_ua: string | null;
+  /** Why it was lost. Null on every quote nobody told us about — most of them. */
+  declined_at?: string | null;
+  declined_reason?: string | null;
+  declined_note?: string | null;
   onboarding_json?: string | null;
   terms_version?: string | null;
   /** Human-readable proposal number. Null on quotes sent before numbering. */
@@ -296,6 +300,75 @@ export async function updateQuote(
     return changed === undefined ? true : changed > 0;
   } catch (err) {
     console.log('[quotes] update_failed:', String(err).slice(0, 300));
+    return false;
+  }
+}
+
+/**
+ * The fixed set of decline reasons.
+ *
+ * A TAPPED ANSWER, not a typed one. Almost nobody writes a paragraph explaining
+ * why they went elsewhere; a great many will tap one of six words on their way
+ * out. A fixed set is also the only version of this that can be counted across
+ * quotes — "four of the last ten said price" is an instruction, where ten
+ * paragraphs are an afternoon's reading.
+ *
+ * Chosen so that each one implies a DIFFERENT action, and two of them are
+ * recoverable: 'timing' is a callback in six weeks, 'price' is a conversation
+ * about a lower frequency. 'other' exists so nobody is forced to misreport
+ * themselves into a category that does not fit — a wrong reason is worse than
+ * no reason, because it is counted.
+ *
+ * Mirrored in src/components/admin/declineReasons.ts, which owns the labels the
+ * customer reads. Only the KEYS have to agree; check-mirrors enforces it.
+ */
+export const DECLINE_REASONS = [
+  'price',
+  'competitor',
+  'timing',
+  'diy',
+  'scope',
+  'no_longer_needed',
+  'other',
+] as const;
+
+export type DeclineReason = (typeof DECLINE_REASONS)[number];
+
+export const isDeclineReason = (v: unknown): v is DeclineReason =>
+  typeof v === 'string' && (DECLINE_REASONS as readonly string[]).includes(v);
+
+/**
+ * Record why a quote was lost.
+ *
+ * NOT DESTRUCTIVE, on purpose. Nothing is deleted, the link keeps working, and
+ * the quote can still be accepted afterwards — people change their minds, and a
+ * customer who declined on price in March and calls back in June should not
+ * find a dead link. Declining twice simply overwrites the reason, since the
+ * later answer is the truer one.
+ *
+ * Returns false rather than throwing: losing the reason is a shame, but it must
+ * never turn into an error page for a customer who was doing us a favour by
+ * telling us.
+ */
+export async function recordDecline(
+  db: unknown,
+  id: string,
+  reason: DeclineReason,
+  note: string,
+): Promise<boolean> {
+  if (!isQuoteStorageAvailable(db)) return false;
+  try {
+    await db
+      .prepare(
+        `UPDATE quotes
+            SET declined_at = ?, declined_reason = ?, declined_note = ?
+          WHERE id = ?`,
+      )
+      .bind(new Date().toISOString(), reason, note.slice(0, 2000) || null, id)
+      .run();
+    return true;
+  } catch (err) {
+    console.log('[quotes] decline_failed:', String(err).slice(0, 300));
     return false;
   }
 }
@@ -693,18 +766,39 @@ export async function acceptQuote(
 export async function listQuotes(db: unknown, limit = 200): Promise<QuoteRow[] | null> {
   if (!isQuoteStorageAvailable(db)) return null;
   try {
-    const res = await db
-      .prepare(
-        `SELECT id, number, created_at, expires_at, customer_name, customer_email,
-                customer_address, customer_phone, proposal_json,
-                accepted_at, accepted_plan,
-                first_opened_at, last_opened_at, open_count, admin_open_count
-           FROM quotes
-          ORDER BY created_at DESC
-          LIMIT ${Math.max(1, Math.min(limit, 500))}`,
-      )
-      .all<QuoteRow>();
-    return res.results ?? [];
+    const cap = Math.max(1, Math.min(limit, 500));
+    const cols = `id, number, created_at, expires_at, customer_name, customer_email,
+                  customer_address, customer_phone, proposal_json,
+                  accepted_at, accepted_plan,
+                  first_opened_at, last_opened_at, open_count, admin_open_count`;
+    /**
+     * The decline columns are selected SEPARATELY, with a fallback.
+     *
+     * Migrations here are applied by hand in the D1 console, out of band from
+     * the deploy, so the code and the schema are routinely out of step in one
+     * direction or the other for a few minutes. Naming a column that does not
+     * exist yet fails the whole query — and this query IS the Sent Quotes
+     * screen, so a deploy that landed before the migration would black out the
+     * one page that shows what is outstanding.
+     *
+     * Trying the richer query first and falling back means the order stops
+     * mattering: before the migration the list works without decline reasons,
+     * after it they simply appear. No coordination, nothing to remember.
+     */
+    try {
+      const res = await db
+        .prepare(
+          `SELECT ${cols}, declined_at, declined_reason, declined_note
+             FROM quotes ORDER BY created_at DESC LIMIT ${cap}`,
+        )
+        .all<QuoteRow>();
+      return res.results ?? [];
+    } catch {
+      const res = await db
+        .prepare(`SELECT ${cols} FROM quotes ORDER BY created_at DESC LIMIT ${cap}`)
+        .all<QuoteRow>();
+      return res.results ?? [];
+    }
   } catch (err) {
     console.log('[quotes] list_failed:', String(err).slice(0, 300));
     return null;

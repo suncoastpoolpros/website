@@ -64,6 +64,11 @@ export const onRequestGet = async (ctx: AdminContext): Promise<Response> => {
         expiresAt: row.expires_at,
         acceptedAt: row.accepted_at,
         acceptedPlan: row.accepted_plan,
+        // Why it was lost, when they told us. Null on everything else, which is
+        // most quotes — people mostly just do not reply.
+        declinedAt: row.declined_at ?? null,
+        declinedReason: row.declined_reason ?? null,
+        declinedNote: row.declined_note ?? null,
         // Activity. Null / 0 on quotes sent before opens were tracked, which
         // reads the same as "never opened" — honest, since we genuinely
         // don't know.

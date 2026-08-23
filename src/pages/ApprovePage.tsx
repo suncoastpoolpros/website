@@ -7,11 +7,17 @@ import {
   ArrowRight,
   ArrowLeft,
   Download,
+  X,
 } from 'lucide-react';
 import { usePageMeta } from '@/lib/usePageMeta';
 import { type ParsedQuoteLink, parseQuoteLink } from '@/lib/quoteLinks';
 import { PRICING_CONDITION_TERM } from '@/components/admin/proposalTerms';
 import { jobKindOf, showsConditionTerm } from '@/components/admin/jobKinds';
+import {
+  DECLINE_REASONS,
+  declineReply,
+  type DeclineReasonKey,
+} from '@/components/admin/declineReasons';
 
 /** Matches MAX_PHOTOS in the builder's PhotoPicker — the ceiling on how far
  *  the fetch loop below will walk before giving up. */
@@ -193,6 +199,37 @@ export const ApprovePage = () => {
    * creating a link-only one.
    */
   const [step, setStep] = useState<0 | 1 | 2>(1);
+  /** Which reason they gave, once given. Drives the acknowledgement copy. */
+  const [declined, setDeclined] = useState<DeclineReasonKey | null>(null);
+  const [declineOpen, setDeclineOpen] = useState(false);
+  const [declineReason, setDeclineReason] = useState<DeclineReasonKey | null>(null);
+  const [declineNote, setDeclineNote] = useState('');
+  const [decliningBusy, setDecliningBusy] = useState(false);
+
+  /**
+   * Send it, and close regardless of what the server says.
+   *
+   * A failure is logged but NOT shown. They answered the question we asked;
+   * telling them it did not save would be asking them to do it a second time
+   * for our benefit, and the likeliest outcome is that they simply leave.
+   */
+  const submitDecline = async () => {
+    if (!declineReason || decliningBusy) return;
+    setDecliningBusy(true);
+    try {
+      await fetch('/api/quote/decline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, reason: declineReason, note: declineNote.trim() }),
+      });
+    } catch {
+      /* their answer is worth more than our record of it */
+    } finally {
+      setDeclined(declineReason);
+      setDeclineOpen(false);
+      setDecliningBusy(false);
+    }
+  };
   const [plan, setPlan] = useState('');
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState('');
@@ -854,6 +891,59 @@ export const ApprovePage = () => {
               })}
             </div>
 
+            {/*
+              The third box, under the two plans.
+
+              PLACED HERE ON PURPOSE, at the point of decision rather than
+              tucked in a footer. The reasoning is that somebody who has read
+              the price and decided against it is the one person whose answer is
+              worth having, and they are about to close the tab — a link three
+              screens away never reaches them.
+
+              The trade is real and worth naming: an exit beside a decision
+              costs some conversions, because a "no" that would otherwise have
+              been a "not yet" can now be given in one tap. It is mitigated by
+              WEIGHT rather than by hiding it. This is deliberately not a third
+              plan card — no price, no border of its own, muted type, and it
+              sits BELOW the grid rather than inside it, so it reads as "none of
+              these?" rather than as a third option with equal standing.
+
+              The wording carries no guilt and asks for nothing but a tap. A
+              customer doing us the favour of explaining should not have to read
+              a sentence that sounds like an accusation.
+            */}
+            {!declined && (
+              <div className="mt-6 rounded-2xl border border-[#e3e8ef] bg-[#f7f9fc] px-5 py-4 text-center">
+                <p className="text-[15px] font-semibold text-[#1f2937]">Going a different route?</p>
+                <p className="mx-auto mt-1 max-w-md text-sm leading-relaxed text-[#6b7280]">
+                  We&rsquo;d still like to hear from you. Whether you&rsquo;ve chosen another company
+                  or simply decided the timing isn&rsquo;t right, telling us why takes one tap
+                  &mdash; and it&rsquo;s genuinely the most useful thing anyone can do for a small
+                  business like ours.
+                </p>
+                <button
+                  onClick={() => setDeclineOpen(true)}
+                  className="mt-3 text-sm font-semibold text-brand-blue underline underline-offset-4 hover:text-brand-blue-dark"
+                >
+                  Share your feedback
+                </button>
+              </div>
+            )}
+
+            {/* Once they have told us, the box becomes the acknowledgement —
+                the reply is written per reason, because two of them are
+                recoverable and a screen that just says "thanks" wastes the last
+                moment anyone is paying attention. The plans stay on screen and
+                the link keeps working: declining is not a door closing. */}
+            {declined && (
+              <div className="mt-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-center">
+                <p className="text-[15px] font-semibold text-green-900">Thank you — that helps.</p>
+                <p className="mx-auto mt-1 max-w-md text-sm leading-relaxed text-green-800">
+                  {declineReply(declined)}
+                </p>
+              </div>
+            )}
+
             {/* NOTE: the "What Others Charge Extra For" value stack is
                 deliberately NOT on this page. It stays in the PDF and the
                 proposal email — see includedExtras.ts — but by the time someone
@@ -1164,6 +1254,82 @@ export const ApprovePage = () => {
           </>
         )}
       </div>
+
+      {/* The reason sheet.
+          One question, six taps, and an optional note nobody is obliged to
+          fill in. Every extra field here is a reason to close the tab instead,
+          so there is no email box, no signature and no confirmation step: they
+          have already decided, and this is a favour they are doing us. */}
+      {declineOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Tell us why"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setDeclineOpen(false);
+          }}
+        >
+          <div className="max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:rounded-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#0a1628]">What made the difference?</h2>
+                <p className="mt-1 text-sm leading-relaxed text-[#6b7280]">
+                  One tap is plenty. Nothing here commits you to anything, and your quote stays
+                  live either way.
+                </p>
+              </div>
+              <button
+                onClick={() => setDeclineOpen(false)}
+                aria-label="Close"
+                className="-mr-1 -mt-1 rounded-lg p-2 text-[#9aa3b0] hover:bg-[#f1f5f9] hover:text-[#0a1628]"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-2">
+              {DECLINE_REASONS.map((r) => (
+                <button
+                  key={r.key}
+                  onClick={() => setDeclineReason(r.key)}
+                  aria-pressed={declineReason === r.key}
+                  className={`rounded-xl border px-4 py-3 text-left text-[15px] transition-colors ${
+                    declineReason === r.key
+                      ? 'border-brand-blue bg-[#eef6fb] font-semibold text-[#0a1628]'
+                      : 'border-[#e3e8ef] text-[#374151] hover:border-[#c8d4e0] hover:bg-[#f7f9fc]'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+
+            <label className="mt-4 block">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#6b7280]">
+                Anything else? (optional)
+              </span>
+              <textarea
+                rows={3}
+                value={declineNote}
+                onChange={(e) => setDeclineNote(e.target.value)}
+                className="mt-1.5 w-full rounded-xl border border-[#e3e8ef] p-3 text-[15px] text-[#0a1628] focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue/40"
+              />
+            </label>
+
+            <button
+              onClick={submitDecline}
+              disabled={!declineReason || decliningBusy}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-blue py-3.5 text-[15px] font-bold text-white hover:bg-brand-blue-dark disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {decliningBusy ? 'Sending…' : 'Send feedback'}
+            </button>
+            <p className="mt-2 text-center text-xs text-[#9aa3b0]">
+              This doesn&rsquo;t cancel anything — you can still accept later.
+            </p>
+          </div>
+        </div>
+      )}
     </main>
   );
 };

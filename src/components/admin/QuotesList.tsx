@@ -28,6 +28,7 @@ import { approveUrl, quoteUrl } from '@/lib/quoteLinks';
 import { formatPrice } from '@/lib/adminApi';
 import { QuoteDetail } from './QuoteDetail';
 import { STATUS_META, ago, onDate, openSummary, statusOf, type Status } from './quoteFormat';
+import { declineMeta } from './declineReasons';
 
 type Quote = {
   id: string;
@@ -42,6 +43,9 @@ type Quote = {
   expiresAt: string;
   acceptedAt: string | null;
   acceptedPlan: string | null;
+  declinedAt?: string | null;
+  declinedReason?: string | null;
+  declinedNote?: string | null;
   /** Activity — see openSummary. Absent on older rows, which read as unopened. */
   firstOpenedAt?: string | null;
   lastOpenedAt?: string | null;
@@ -95,7 +99,7 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
   const quotes = load.kind === 'ready' ? load.quotes : [];
 
   const counts = useMemo(() => {
-    const c = { all: quotes.length, accepted: 0, awaiting: 0, expired: 0 };
+    const c = { all: quotes.length, accepted: 0, declined: 0, awaiting: 0, expired: 0 };
     for (const q of quotes) c[statusOf(q)] += 1;
     return c;
   }, [quotes]);
@@ -226,12 +230,13 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
 
         {load.kind === 'ready' && load.storage && quotes.length > 0 && (
           <>
-            <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
               {(
                 [
                   ['all', 'Sent', counts.all],
                   ['accepted', 'Accepted', counts.accepted],
                   ['awaiting', 'Awaiting', counts.awaiting],
+                  ['declined', 'Declined', counts.declined],
                   ['expired', 'Expired', counts.expired],
                 ] as const
               ).map(([key, label, n]) => {
@@ -349,6 +354,12 @@ export const QuotesList = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                           <span className="text-green-300">
                             Chose <span className="font-semibold">{q.acceptedPlan}</span> ·{' '}
                             {ago(q.acceptedAt!)}
+                          </span>
+                        ) : status === 'declined' ? (
+                          <span className="text-rose-200">
+                            {declineMeta(q.declinedReason)?.adminLabel ?? 'Declined'}
+                            {declineMeta(q.declinedReason)?.recoverable ? ' · worth another go' : ''}
+                            {q.declinedAt ? ` · ${ago(q.declinedAt)}` : ''}
                           </span>
                         ) : status === 'expired' ? (
                           <span>Link expired {ago(q.expiresAt)}</span>

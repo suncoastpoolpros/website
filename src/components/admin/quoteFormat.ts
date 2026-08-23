@@ -4,15 +4,24 @@
  * Lives on its own so the two screens can't drift: a quote that reads "Awaiting"
  * in the list must not read "Expired" once you open it.
  */
-import { Check, Clock, CircleSlash } from 'lucide-react';
+import { Check, Clock, CircleSlash, ThumbsDown } from 'lucide-react';
 
-export type Status = 'accepted' | 'awaiting' | 'expired';
+export type Status = 'accepted' | 'declined' | 'awaiting' | 'expired';
 
 /** Everything the status depends on — deliberately narrow so both screens fit. */
-export type Statusable = { acceptedAt: string | null; expiresAt: string };
+export type Statusable = {
+  acceptedAt: string | null;
+  expiresAt: string;
+  /** Set when the customer told us why they went another way. */
+  declinedAt?: string | null;
+};
 
 export const statusOf = (q: Statusable): Status => {
+  // Accepted OUTRANKS declined, deliberately. Declining is not destructive and
+  // the link keeps working, so someone can decline in March and accept in June
+  // — and when they do, what the quote IS is accepted.
   if (q.acceptedAt) return 'accepted';
+  if (q.declinedAt) return 'declined';
   return new Date(q.expiresAt).getTime() < Date.now() ? 'expired' : 'awaiting';
 };
 
@@ -57,6 +66,12 @@ export const STATUS_META: Record<
     chip: 'border-green-500/30 bg-green-500/15 text-green-300',
     accent: 'border-l-green-500/60',
     Icon: Check,
+  },
+  declined: {
+    label: 'Declined',
+    chip: 'border-rose-400/30 bg-rose-400/10 text-rose-200',
+    accent: 'border-l-rose-400/50',
+    Icon: ThumbsDown,
   },
   awaiting: {
     label: 'Awaiting',
