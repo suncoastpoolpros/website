@@ -23,6 +23,8 @@
 import type { Tier } from "@/lib/adminApi";
 import {
   ALL_FILTER_LINES,
+  ALL_PLAN_FILTER_LINES,
+  planFilterBullet,
   ALL_FILTER_TERMS,
   type FilterOption,
   filterServiceLine,
@@ -69,7 +71,10 @@ export const ANNUAL_MONTHS_CHARGED = 11;
    8: "photo report" → "service report" in both the long and short forms.
    "GPS-stamped" is the term used everywhere else, so print and page now say the
    same thing — the customer reads both documents, often side by side. */
-export const PRESET_VERSION = 8;
+/* 9: the plan card's filter bullet now names the filter (Cartridge / DE /
+   Sand) instead of a generic "Filter care included", so it can be recognised
+   and removed when the answer or the type changes. */
+export const PRESET_VERSION = 9;
 
 /** Terms specific to prepaying for the year. */
 /**
@@ -112,18 +117,31 @@ export const syncFilterService = (
   filter: FilterOption,
 ): Tier[] => {
   if (tiers.length === 0) return tiers;
-  const line = filterServiceLine(filter);
+  // The PLAN CARD's bullet, not the Difference box's costed sentence: this
+  // function edits tiers[0].includes, which IS the card. Inserting the costed
+  // sentence here put the same paragraph in two places on one document.
+  const line = planFilterBullet(filter);
   const terms = filterServiceTerms(filter);
   return tiers.map((tier, i) => {
     if (i !== 0) return tier;
+    /*
+     * Strip BOTH families of filter bullet, then re-insert at most one.
+     *
+     * ALL_FILTER_LINES is the costed sentence from the Difference box;
+     * ALL_PLAN_FILTER_LINES is the plan card's own short bullet, including the
+     * legacy generic wording. Recognising only the first was the bug: the card
+     * kept a generic promise the filter answer had just withdrawn, and a type
+     * change added a second bullet beside the first rather than replacing it.
+     */
     const kept = tier.includes.filter(
-      (b) => !ALL_FILTER_LINES.includes(b.trim()),
+      (b) =>
+        !ALL_FILTER_LINES.includes(b.trim()) &&
+        !ALL_PLAN_FILTER_LINES.includes(b.trim()),
     );
     let includes = kept;
     if (line) {
-      // Put it back where serviceIncludes would have placed it, or at the end if
-      // the routine-cleaning bullet has been edited away.
-      const anchor = kept.findIndex((b) => /filter cleaning/i.test(b));
+      // Back where monthlyIncludes puts it: directly after the chemicals line.
+      const anchor = kept.findIndex((b) => /all chemicals/i.test(b));
       includes =
         anchor === -1
           ? [...kept, line]
@@ -164,9 +182,12 @@ export const monthlyIncludes = (filter: FilterOption): string[] => [
   // ONLY when this quote actually bundles it. filterServiceIncluded is asked per
   // quote and is often 'no' — printing this on a pool where it wasn't sold
   // promises a bill we'd then be expected to absorb.
-  ...(filter.included && supportsFilterService(filter.type)
-    ? ["Filter care included — never a separate invoice"]
-    : []),
+  // Names the customer's ACTUAL filter, and is the same string
+  // syncFilterService looks for — see planFilterBullet. The old generic
+  // "Filter care included" named no filter, so nothing could recognise it as
+  // the filter bullet, and switching the answer to "not included" left the
+  // promise standing on a pool where it had not been sold.
+  ...(planFilterBullet(filter) ? [planFilterBullet(filter) as string] : []),
   // Names the objection nobody says out loud: "fine, but what about August?"
   // Under a usage-billing competitor that is a real, larger bill. "Flat rate"
   // only means something once you say what it protects you from.
@@ -219,6 +240,12 @@ const SHORT_FORMS: Record<string, string> = {
   "One flat rate — it doesn’t rise in summer": "One flat rate, even in summer",
   "A GPS-stamped service report after every visit":
     "GPS-stamped service report after every visit",
+  "Cartridge replacements included — never a separate invoice":
+    "Cartridge replacements included",
+  "DE split, clean & recharge included — never a separate invoice":
+    "DE split, clean & recharge included",
+  "Sand media replacement included — never a separate invoice":
+    "Sand media replacement included",
   "No contract — cancel any time with 30 days notice":
     "No contract, cancel any time",
   "Your 12th month free — pay for 11, the last one is on us":

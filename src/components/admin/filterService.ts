@@ -87,6 +87,55 @@ export const filterServiceLine = ({ type, included }: FilterOption): string | nu
 };
 
 /**
+ * The PLAN CARD's filter bullet — short, and specific to this pool's filter.
+ *
+ * Separate from filterServiceLine because the two appear on the same page: that
+ * one is the costed sentence in the Suncoast Difference box ("a $120 value,
+ * based on an 8–18 month element life"), this one is a bullet in a column
+ * beside a price. Printing the costed sentence in both places says the same
+ * thing twice in one document.
+ *
+ * SPECIFIC, not generic. The card used to say "Filter care included — never a
+ * separate invoice" for every filter type, which was true but vague, and vague
+ * is what let it go stale: because the string named no filter, nothing could
+ * recognise it as the filter bullet, so switching the answer to "not included"
+ * left it standing and the card kept promising a service that had not been
+ * sold. Naming the filter is what makes the line findable — see
+ * ALL_PLAN_FILTER_LINES.
+ *
+ * Returns null when nothing is bundled, so no line is printed at all rather
+ * than a line telling the customer what they do not get.
+ */
+export const planFilterBullet = ({ type, included }: FilterOption): string | null => {
+  if (!included || !supportsFilterService(type)) return null;
+  switch (type) {
+    case 'Cartridge':
+      return 'Cartridge replacements included — never a separate invoice';
+    case 'DE':
+      return 'DE split, clean & recharge included — never a separate invoice';
+    case 'Sand':
+      return 'Sand media replacement included — never a separate invoice';
+    default:
+      return null;
+  }
+};
+
+/**
+ * Every plan-card filter bullet that has ever existed, so a stale one can be
+ * found and removed when the filter type or the answer changes.
+ *
+ * The legacy generic string is listed LAST and deliberately: a draft written
+ * before the bullet named the filter still carries it, and without this entry
+ * that draft can never lose the promise.
+ */
+export const ALL_PLAN_FILTER_LINES: string[] = [
+  ...FILTER_TYPES.map((type) => planFilterBullet({ type, included: true })).filter(
+    (l): l is string => l !== null,
+  ),
+  'Filter care included — never a separate invoice',
+];
+
+/**
  * Every line filterServiceLine can ever produce. The builder uses this to find
  * and replace a stale filter bullet when the filter type changes, without
  * touching anything the admin typed by hand.
