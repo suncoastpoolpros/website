@@ -1048,14 +1048,27 @@ export const ApprovePage = () => {
                             )}
                             {extras.length > 0 && (
                               <>
-                                <p
-                                  className={`text-sm font-bold text-[#0a1628] ${
-                                    shared.length ? "mt-5" : "mt-4"
-                                  }`}
+                                {/* A rule, not a heading. "Additional benefits"
+                                    labelled something the items already say for
+                                    themselves — nobody reads "Your 12th month
+                                    free" and wonders which plan it belongs to.
+                                    The line does the same work without words,
+                                    and the shared rows above it stay level with
+                                    the other card, which was the point.
+
+                                    Only on the card that HAS extras, so the
+                                    asymmetry is the signal: one plan runs on
+                                    past where the other stops. */}
+                                {shared.length > 0 && (
+                                  <div className="mt-5 border-t border-[#e9eef4]" />
+                                )}
+                                <ul
+                                  className={
+                                    shared.length
+                                      ? "mt-5 space-y-2"
+                                      : "mt-4 space-y-2"
+                                  }
                                 >
-                                  Additional benefits
-                                </p>
-                                <ul className="mt-2 space-y-2">
                                   {extras.map((item, j) =>
                                     row(item, shared.length + j),
                                   )}
