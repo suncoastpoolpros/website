@@ -856,15 +856,21 @@ export const ApprovePage = () => {
                       // to beat. Side by side on desktop, natural order reads
                       // cheaper-then-better — which only works as anchoring if
                       // the better one visually dominates, hence the ring below.
-                      /* Lifted clear of the row on desktop, the way a featured
-                         plan is set apart everywhere from pricing tables to shop
-                         shelves: it does the same job as the banner, in a
-                         register the eye reads before it reads any words.
-                         Desktop only — stacked on a phone there is no row to
-                         rise above, and a negative margin would just crowd
-                         whatever sits over it. */
+                      /* Lifted by EXACTLY the banner's height (h-10 / -mt-10).
+                         That is what makes the two cards line up, rather than
+                         compensating paddings that break the moment a tagline
+                         wraps: the banner occupies the space the lift creates,
+                         so both bodies begin on the same line and the buttons
+                         follow for free. The card stands proud of the row and
+                         nothing below it is knocked out of true.
+
+                         THE TWO VALUES MUST STAY EQUAL — change the banner
+                         height and change this with it.
+
+                         Desktop only: stacked on a phone there is no row to
+                         rise above. */
                       tier.recommended
-                        ? "order-first sm:order-none sm:-mt-5"
+                        ? "order-first sm:order-none sm:-mt-10"
                         : ""
                     } ${
                       tier.recommended
@@ -890,25 +896,8 @@ export const ApprovePage = () => {
                         chosen, so a solid blue bar never sits on a card the
                         customer has just decided against. */}
                     {tier.recommended && (
-                      <div className="bg-[#1669AE] py-2.5 text-center text-[12.5px] font-bold uppercase tracking-wider text-white">
+                      <div className="flex h-10 items-center justify-center bg-[#1669AE] text-[12.5px] font-bold uppercase tracking-wider text-white">
                         Best value
-                      </div>
-                    )}
-                    {/* The other card reserves the same strip, so the two
-                        titles — and with them the two Choose buttons — sit on
-                        the same line. Without it the banner pushes the
-                        recommended card's contents down and the two calls to
-                        action end up at different heights, which reads as
-                        sloppy rather than as emphasis.
-
-                        Desktop only: on a phone the cards stack, nothing is
-                        being aligned to, and the strip would be dead space. */}
-                    {!tier.recommended && (
-                      <div
-                        aria-hidden
-                        className="hidden py-2.5 text-[12.5px] font-bold uppercase tracking-wider sm:block"
-                      >
-                        &nbsp;
                       </div>
                     )}
                     <div className="flex flex-1 flex-col p-5">
@@ -935,7 +924,7 @@ export const ApprovePage = () => {
                           baseline; centred, a small pill floats oddly against a
                           30px number. */}
                       {(tier.price || tier.priceNote?.trim()) && (
-                        <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-2">
+                        <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-2 sm:min-h-[2.75rem]">
                           {tier.price && (
                             /* The recommended price is set a size larger. Two
                                prices at identical weight ask the customer to do
