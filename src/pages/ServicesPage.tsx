@@ -115,9 +115,11 @@ const ServicesPageInner = () => {
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
   usePageMeta({
-    title: 'Pool Services St. Petersburg, FL — Weekly, Repairs & Cleanup',
+    // Deliberately NOT led by "weekly cleaning": the homepage already owns
+    // that query at #1, so the hub leans on the range instead of competing.
+    title: 'Pool Services in St. Petersburg, FL — Repairs & Cleanup',
     description:
-      'Pool services across St. Petersburg & Pinellas County — flat-rate weekly cleaning with chemicals included, plus green pool recovery, storm cleanup, filters and equipment repair.',
+      'Pool services across St. Petersburg & Pinellas — flat-rate weekly cleaning with chemicals included, plus green pool recovery, storm cleanup and repairs.',
     canonicalPath: CANONICAL,
     fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
     jsonLd: SERVICES_SCHEMA,

@@ -194,9 +194,11 @@ const StormCleanupPageInner = () => {
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
   usePageMeta({
-    title: 'Hurricane Pool Cleanup — St. Petersburg & Pinellas, FL',
+    // Carries both "hurricane" (urgent) and "storm" (broader) — the old title
+    // had only the first.
+    title: 'Hurricane & Storm Pool Cleanup — St. Petersburg, FL',
     description:
-      'Storm and hurricane pool cleanup across Pinellas County — debris removal, filter clean, full rebalance and an equipment check. Plus what to do before it hits.',
+      'Hurricane and storm pool cleanup across St. Petersburg & Pinellas — debris out, filter cleaned, chemistry rebuilt. Plus what to do before it hits.',
     canonicalPath: CANONICAL,
     // No hero photo on this page, so no heroPreload — the head stays lean and
     // the H1 paints as soon as the fonts land. Montserrat 900 is the display

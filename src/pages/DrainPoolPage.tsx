@@ -300,7 +300,7 @@ const DrainPoolPageInner = () => {
   usePageMeta({
     title: 'How to Drain a Pool With a Garden Hose (Siphon)',
     description:
-      'How to drain a pool with a garden hose: set up a gravity siphon, turn the pump off, close the skimmer valves and pull only off the main drain — and how to lower the water safely without floating the pool.',
+      'How to drain a pool with a garden hose — set up a gravity siphon, close the skimmer valves, and pull off the main drain without floating the pool.',
     canonicalPath: '/pool-care/how-to-drain-a-pool/',
     jsonLd: PAGE_SCHEMA,
   });

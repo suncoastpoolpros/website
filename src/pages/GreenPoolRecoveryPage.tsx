@@ -194,9 +194,13 @@ const GreenPoolRecoveryPageInner = () => {
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
   usePageMeta({
-    title: 'Green Pool Cleanup St. Petersburg — Flat-Rate Recovery',
+    // "Green to clean" is the industry-standard term for this job and two
+    // Pinellas competitors rank with it in their titles. It was missing here.
+    title: 'Green Pool Cleanup St. Petersburg, FL — Green to Clean',
     description:
-      'Green pool cleanup and recovery in St. Petersburg & Pinellas County, FL. Honest timelines by severity, flat quote from photos, no hourly meter. Back to blue.',
+      // The no-drain differentiator is front-loaded so it survives mobile's
+      // ~110-character cut, where the old copy showed only the city list.
+      'Green pool cleanup in St. Petersburg & Pinellas County. We vacuum the algae out rather than draining your pool — honest timelines, flat quote from photos.',
     canonicalPath: CANONICAL,
     fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
     jsonLd: RECOVERY_SCHEMA,
