@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Check,
   LoaderCircle,
@@ -8,16 +8,16 @@ import {
   ArrowLeft,
   Download,
   X,
-} from 'lucide-react';
-import { usePageMeta } from '@/lib/usePageMeta';
-import { type ParsedQuoteLink, parseQuoteLink } from '@/lib/quoteLinks';
-import { PRICING_CONDITION_TERM } from '@/components/admin/proposalTerms';
-import { jobKindOf, showsConditionTerm } from '@/components/admin/jobKinds';
+} from "lucide-react";
+import { usePageMeta } from "@/lib/usePageMeta";
+import { type ParsedQuoteLink, parseQuoteLink } from "@/lib/quoteLinks";
+import { PRICING_CONDITION_TERM } from "@/components/admin/proposalTerms";
+import { jobKindOf, showsConditionTerm } from "@/components/admin/jobKinds";
 import {
   DECLINE_REASONS,
   declineReply,
   type DeclineReasonKey,
-} from '@/components/admin/declineReasons';
+} from "@/components/admin/declineReasons";
 
 /** Matches MAX_PHOTOS in the builder's PhotoPicker — the ceiling on how far
  *  the fetch loop below will walk before giving up. */
@@ -28,9 +28,9 @@ import {
   proposalDateLabel,
   proposalFilename,
   renderProposalPdf,
-} from '@/lib/proposalPdf';
-import { EMAIL_HREF, PHONE_DISPLAY, PHONE_HREF, SMS_HREF } from '@/lib/contact';
-import { ProposalBreakdown } from '@/components/ProposalBreakdown';
+} from "@/lib/proposalPdf";
+import { EMAIL_HREF, PHONE_DISPLAY, PHONE_HREF, SMS_HREF } from "@/lib/contact";
+import { ProposalBreakdown } from "@/components/ProposalBreakdown";
 
 /**
  * Where a quote link lands. Three URL shapes, one page — see @/lib/quoteLinks:
@@ -119,23 +119,25 @@ type Quote = {
 };
 
 type State =
-  | { kind: 'loading' }
-  | { kind: 'ready'; quote: Quote }
-  | { kind: 'accepted'; plan: string }
-  | { kind: 'error'; message: string };
+  | { kind: "loading" }
+  | { kind: "ready"; quote: Quote }
+  | { kind: "accepted"; plan: string }
+  | { kind: "error"; message: string };
 
 const formatPrice = (raw: string): string => {
-  const s = (raw ?? '').trim();
-  if (!s) return '';
+  const s = (raw ?? "").trim();
+  if (!s) return "";
   return /^[0-9]/.test(s) ? `$${s}` : s;
 };
 
 const field =
-  'h-12 w-full rounded-xl border border-[#cbd5e1] bg-white px-4 text-[#0a1628] placeholder-[#9aa4b2] focus:border-[#1669AE] focus:outline-none';
+  "h-12 w-full rounded-xl border border-[#cbd5e1] bg-white px-4 text-[#0a1628] placeholder-[#9aa4b2] focus:border-[#1669AE] focus:outline-none";
 
 /** Small caps heading for the two confirmation blocks. */
 const Eyebrow = ({ children }: { children: string }) => (
-  <h2 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">{children}</h2>
+  <h2 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
+    {children}
+  </h2>
 );
 
 /**
@@ -153,28 +155,29 @@ const leadsWithBreakdown = (
   link: ParsedQuoteLink | null,
 ): boolean => {
   if (
-    typeof window !== 'undefined' &&
-    new URLSearchParams(window.location.search).get('full') === '1'
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("full") === "1"
   )
     return true;
-  if (link?.lead === 'breakdown') return true;
-  if (link?.lead === 'plans') return false;
-  return quote.proposal?.deliveredBy === 'link';
+  if (link?.lead === "breakdown") return true;
+  if (link?.lead === "plans") return false;
+  return quote.proposal?.deliveredBy === "link";
 };
 
 /** Links in the footer lines: colour and weight, with the underline held back
  *  for hover. Four underlined links in two sentences read as clutter. */
 const quietLink =
-  'font-semibold text-brand-blue hover:text-brand-blue-dark hover:underline underline-offset-4';
+  "font-semibold text-brand-blue hover:text-brand-blue-dark hover:underline underline-offset-4";
 
 export const ApprovePage = () => {
   usePageMeta({
-    title: 'Your Pool Service Proposal — Suncoast Pool Pros',
-    description: 'Your quote from Suncoast Pool Pros — what’s included, what it costs, and how to accept.',
+    title: "Your Pool Service Proposal — Suncoast Pool Pros",
+    description:
+      "Your quote from Suncoast Pool Pros — what’s included, what it costs, and how to accept.",
     // Points at itself rather than the homepage. Every quote URL rewrites here,
     // so this is the honest canonical for all of them; it stays noindex, so
     // naming it costs nothing and claiming "/" was simply wrong.
-    canonicalPath: '/approve/',
+    canonicalPath: "/approve/",
     /**
      * Its own share card, not the sitewide marketing banner.
      *
@@ -187,12 +190,12 @@ export const ApprovePage = () => {
      * MUST get a new name or the edge keeps serving the old one. Never request
      * a new image URL before it is deployed — a 404 gets cached too.
      */
-    ogImage: 'https://suncoastpoolpros.com/og-quote-v1.jpg',
-    ogImageAlt: 'Your pool service proposal from Suncoast Pool Pros',
+    ogImage: "https://suncoastpoolpros.com/og-quote-v1.jpg",
+    ogImageAlt: "Your pool service proposal from Suncoast Pool Pros",
     noindex: true,
   });
 
-  const [state, setState] = useState<State>({ kind: 'loading' });
+  const [state, setState] = useState<State>({ kind: "loading" });
   /**
    * Step 0 is the breakdown — what the service is and what it covers — and only
    * exists for a customer who was sent a LINK rather than an email. They never
@@ -207,8 +210,10 @@ export const ApprovePage = () => {
   /** Which reason they gave, once given. Drives the acknowledgement copy. */
   const [declined, setDeclined] = useState<DeclineReasonKey | null>(null);
   const [declineOpen, setDeclineOpen] = useState(false);
-  const [declineReason, setDeclineReason] = useState<DeclineReasonKey | null>(null);
-  const [declineNote, setDeclineNote] = useState('');
+  const [declineReason, setDeclineReason] = useState<DeclineReasonKey | null>(
+    null,
+  );
+  const [declineNote, setDeclineNote] = useState("");
   const [decliningBusy, setDecliningBusy] = useState(false);
 
   /**
@@ -222,10 +227,14 @@ export const ApprovePage = () => {
     if (!declineReason || decliningBusy) return;
     setDecliningBusy(true);
     try {
-      await fetch('/api/quote/decline', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, reason: declineReason, note: declineNote.trim() }),
+      await fetch("/api/quote/decline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          reason: declineReason,
+          note: declineNote.trim(),
+        }),
       });
     } catch {
       /* their answer is worth more than our record of it */
@@ -235,17 +244,23 @@ export const ApprovePage = () => {
       setDecliningBusy(false);
     }
   };
-  const [plan, setPlan] = useState('');
+  const [plan, setPlan] = useState("");
   const [busy, setBusy] = useState(false);
-  const [formError, setFormError] = useState('');
-  const [pdfState, setPdfState] = useState<'idle' | 'working' | 'error'>('idle');
+  const [formError, setFormError] = useState("");
+  const [pdfState, setPdfState] = useState<"idle" | "working" | "error">(
+    "idle",
+  );
 
-  const [preferredStart, setPreferredStart] = useState('');
-  const [accessNotes, setAccessNotes] = useState('');
-  const [agree, setAgree] = useState({ requirements: false, service: false, privacy: false });
-  const [signature, setSignature] = useState('');
+  const [preferredStart, setPreferredStart] = useState("");
+  const [accessNotes, setAccessNotes] = useState("");
+  const [agree, setAgree] = useState({
+    requirements: false,
+    service: false,
+    privacy: false,
+  });
+  const [signature, setSignature] = useState("");
   /** Only asked for when the quote carries no address — i.e. it was texted. */
-  const [contactEmail, setContactEmail] = useState('');
+  const [contactEmail, setContactEmail] = useState("");
 
   /**
    * The link the customer arrived on. Three shapes are honoured — see
@@ -254,10 +269,10 @@ export const ApprovePage = () => {
    * the plans.
    */
   const link =
-    typeof window === 'undefined'
+    typeof window === "undefined"
       ? null
       : parseQuoteLink(window.location.pathname, window.location.search);
-  const token = link?.token ?? '';
+  const token = link?.token ?? "";
 
   /**
    * This is the one light page on a dark site, and `html, body { background:
@@ -273,8 +288,8 @@ export const ApprovePage = () => {
     const body = document.body.style;
     const prevHtml = style.background;
     const prevBody = body.background;
-    style.background = '#eef2f7';
-    body.background = '#eef2f7';
+    style.background = "#eef2f7";
+    body.background = "#eef2f7";
     return () => {
       style.background = prevHtml;
       body.background = prevBody;
@@ -283,19 +298,28 @@ export const ApprovePage = () => {
 
   useEffect(() => {
     if (!token) {
-      setState({ kind: 'error', message: 'That link looks incomplete. Please use the button in your email.' });
+      setState({
+        kind: "error",
+        message:
+          "That link looks incomplete. Please use the button in your email.",
+      });
       return;
     }
     let active = true;
     fetch(`/api/quote/${encodeURIComponent(token)}`)
       .then(async (res) => {
-        const data = (await res.json().catch(() => ({}))) as { ok?: boolean; quote?: Quote; error?: string };
+        const data = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          quote?: Quote;
+          error?: string;
+        };
         if (!active) return;
         if (res.ok && data.ok && data.quote) {
           const q = data.quote;
-          if (q.acceptedAt && q.acceptedPlan) setState({ kind: 'accepted', plan: q.acceptedPlan });
+          if (q.acceptedAt && q.acceptedPlan)
+            setState({ kind: "accepted", plan: q.acceptedPlan });
           else {
-            setState({ kind: 'ready', quote: q });
+            setState({ kind: "ready", quote: q });
             // Set here rather than in the initial useState: whether this quote
             // was emailed isn't known until it has loaded.
             if (leadsWithBreakdown(q, link)) setStep(0);
@@ -303,20 +327,27 @@ export const ApprovePage = () => {
           return;
         }
         setState({
-          kind: 'error',
+          kind: "error",
           message:
-            data.error === 'expired'
-              ? 'This quote has expired. Give us a call and we’ll send a fresh one.'
-              : 'We couldn’t find that quote. Please use the button in your email, or give us a call.',
+            data.error === "expired"
+              ? "This quote has expired. Give us a call and we’ll send a fresh one."
+              : "We couldn’t find that quote. Please use the button in your email, or give us a call.",
         });
       })
-      .catch(() => active && setState({ kind: 'error', message: 'Something went wrong loading your quote.' }));
+      .catch(
+        () =>
+          active &&
+          setState({
+            kind: "error",
+            message: "Something went wrong loading your quote.",
+          }),
+      );
     return () => {
       active = false;
     };
   }, [token]);
 
-  const quote = state.kind === 'ready' ? state.quote : null;
+  const quote = state.kind === "ready" ? state.quote : null;
   const showsBreakdown = !!quote && leadsWithBreakdown(quote, link);
   /**
    * Old pricing: readable, not signable. The proposal still renders in full —
@@ -344,7 +375,7 @@ export const ApprovePage = () => {
    */
   const today = useMemo(() => {
     const d = new Date();
-    const pad = (n: number) => String(n).padStart(2, '0');
+    const pad = (n: number) => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   }, []);
 
@@ -376,7 +407,9 @@ export const ApprovePage = () => {
     const out: string[] = [];
     for (let i = 0; i < MAX_PROPOSAL_PHOTOS; i += 1) {
       try {
-        const res = await fetch(`/api/quote/photo?t=${encodeURIComponent(t)}&i=${i}`);
+        const res = await fetch(
+          `/api/quote/photo?t=${encodeURIComponent(t)}&i=${i}`,
+        );
         if (!res.ok) break;
         const data = (await res.json()) as { dataUrl?: string | null };
         if (!data.dataUrl) break;
@@ -389,8 +422,8 @@ export const ApprovePage = () => {
   }, []);
 
   const downloadPdf = useCallback(async () => {
-    if (!quote || pdfState === 'working') return;
-    setPdfState('working');
+    if (!quote || pdfState === "working") return;
+    setPdfState("working");
     try {
       const blob = await renderProposalPdf({
         data: proposalDataFromQuote(quote),
@@ -404,11 +437,11 @@ export const ApprovePage = () => {
         proposalNumber: quote.number,
       });
       downloadBlob(blob, proposalFilename(quote.customerName, quote.number));
-      setPdfState('idle');
+      setPdfState("idle");
     } catch {
       // The PDF is attached to their email too, so this is a convenience
       // failing, not a dead end — the message below says so.
-      setPdfState('error');
+      setPdfState("error");
     }
   }, [quote, pdfState, token, fetchPhotos]);
 
@@ -438,11 +471,11 @@ export const ApprovePage = () => {
   const submit = useCallback(async () => {
     if (!canSubmit || busy) return;
     setBusy(true);
-    setFormError('');
+    setFormError("");
     try {
-      const res = await fetch('/api/quote/accept', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/quote/accept", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           token,
           plan,
@@ -451,7 +484,9 @@ export const ApprovePage = () => {
             // "not collected" rather than defaulting to "same as service".
             // The email is only sent when it was asked for; the endpoint fills a
             // blank address and never overwrites one a proposal was sent to.
-            ...(needsEmail && emailOk ? { customerEmail: contactEmail.trim() } : {}),
+            ...(needsEmail && emailOk
+              ? { customerEmail: contactEmail.trim() }
+              : {}),
             preferredStart,
             accessNotes,
             agreeRequirements: agree.requirements,
@@ -461,15 +496,34 @@ export const ApprovePage = () => {
           },
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; plan?: string };
-      if (res.ok && data.ok) setState({ kind: 'accepted', plan: data.plan ?? plan });
-      else setFormError('We couldn’t record that. Please try again, or give us a call.');
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        plan?: string;
+      };
+      if (res.ok && data.ok)
+        setState({ kind: "accepted", plan: data.plan ?? plan });
+      else
+        setFormError(
+          "We couldn’t record that. Please try again, or give us a call.",
+        );
     } catch {
-      setFormError('Something went wrong. Please give us a call.');
+      setFormError("Something went wrong. Please give us a call.");
     } finally {
       setBusy(false);
     }
-  }, [canSubmit, busy, token, plan, preferredStart, accessNotes, agree, signature, needsEmail, emailOk, contactEmail]);
+  }, [
+    canSubmit,
+    busy,
+    token,
+    plan,
+    preferredStart,
+    accessNotes,
+    agree,
+    signature,
+    needsEmail,
+    emailOk,
+    contactEmail,
+  ]);
 
   /**
    * Who the proposal is for: the number, the name or address, and how to reach
@@ -486,65 +540,75 @@ export const ApprovePage = () => {
    */
   const customerIdentity = quote ? (
     <div className="min-w-0">
-    {/* Only offered to customers who actually started on the
+      {/* Only offered to customers who actually started on the
         breakdown — for anyone else it would point at a step they
         have never seen. And only FROM step 1: on step 0 this is the
         page you are already on, so it would point at itself. */}
-    {showsBreakdown && step === 1 && (
-      <button
-        onClick={() => {
-          setStep(0);
-          window.scrollTo({ top: 0 });
-        }}
-        className="-mt-1 mb-1 inline-flex items-center gap-1.5 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline sm:py-1"
-      >
-        <ArrowLeft className="h-4 w-4" /> What&apos;s included
-      </button>
-    )}
-    {/* The number takes this slot when there is one. It's the same
+      {showsBreakdown && step === 1 && (
+        <button
+          onClick={() => {
+            setStep(0);
+            window.scrollTo({ top: 0 });
+          }}
+          className="-mt-1 mb-1 inline-flex items-center gap-1.5 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline sm:py-1"
+        >
+          <ArrowLeft className="h-4 w-4" /> What&apos;s included
+        </button>
+      )}
+      {/* The number takes this slot when there is one. It's the same
         number on the PDF and in the email subject, so it identifies
         the document; "Prepared for" only labelled a name that needs
         no label. Falls back for quotes sent before numbering. */}
-    <Eyebrow>{quote.number ? `Proposal #${quote.number}` : 'Prepared for'}</Eyebrow>
-    {/* A quote can be saved with no name — a pool is quoted from
+      <Eyebrow>
+        {quote.number ? `Proposal #${quote.number}` : "Prepared for"}
+      </Eyebrow>
+      {/* A quote can be saved with no name — a pool is quoted from
         its address. When there isn't one the address is promoted to
         the strong line rather than leaving an empty row above it. */}
-    {quote.customerName.trim() ? (
-      <>
-        <p className="font-semibold text-[#0a1628]">{quote.customerName.trim()}</p>
-        {quote.customerAddress?.trim() && (
-          <p className="text-sm text-[#374151]">{quote.customerAddress.trim()}</p>
-        )}
-      </>
-    ) : (
-      quote.customerAddress?.trim() && (
-        <p className="font-semibold text-[#0a1628]">{quote.customerAddress.trim()}</p>
-      )
-    )}
-    {/* Email and phone as separate elements, not one joined string.
+      {quote.customerName.trim() ? (
+        <>
+          <p className="font-semibold text-[#0a1628]">
+            {quote.customerName.trim()}
+          </p>
+          {quote.customerAddress?.trim() && (
+            <p className="text-sm text-[#374151]">
+              {quote.customerAddress.trim()}
+            </p>
+          )}
+        </>
+      ) : (
+        quote.customerAddress?.trim() && (
+          <p className="font-semibold text-[#0a1628]">
+            {quote.customerAddress.trim()}
+          </p>
+        )
+      )}
+      {/* Email and phone as separate elements, not one joined string.
         Joined, a wrap left the " · " stranded at the end of the
         first line — which is what it did on narrower phones. They
         stack on mobile with no separator at all, and only sit on one
         line with the dot once there's room for both. */}
-    <p className="mt-0.5 text-sm text-[#6b7280]">
-      {quote.customerEmail?.trim() && (
-        // break-words so a long address wraps instead of pushing the
-        // page sideways — an email is one unbreakable token.
-        <span className="block break-words sm:inline">{quote.customerEmail.trim()}</span>
-      )}
-      {quote.customerPhone?.trim() && (
-        // The separator lives INSIDE the phone's span, so it can
-        // never be left stranded at the end of a wrapped line — it
-        // travels with the number or isn't shown at all.
-        <span className="block whitespace-nowrap sm:inline">
-          {quote.customerEmail?.trim() && (
-            <span className="hidden text-[#c3cedb] sm:inline">· </span>
-          )}
-          {quote.customerPhone.trim()}
-        </span>
-      )}
-    </p>
-              </div>
+      <p className="mt-0.5 text-sm text-[#6b7280]">
+        {quote.customerEmail?.trim() && (
+          // break-words so a long address wraps instead of pushing the
+          // page sideways — an email is one unbreakable token.
+          <span className="block break-words sm:inline">
+            {quote.customerEmail.trim()}
+          </span>
+        )}
+        {quote.customerPhone?.trim() && (
+          // The separator lives INSIDE the phone's span, so it can
+          // never be left stranded at the end of a wrapped line — it
+          // travels with the number or isn't shown at all.
+          <span className="block whitespace-nowrap sm:inline">
+            {quote.customerEmail?.trim() && (
+              <span className="hidden text-[#c3cedb] sm:inline">· </span>
+            )}
+            {quote.customerPhone.trim()}
+          </span>
+        )}
+      </p>
+    </div>
   ) : null;
 
   /**
@@ -556,15 +620,17 @@ export const ApprovePage = () => {
     <div className="flex shrink-0 flex-col items-end gap-1">
       <button
         onClick={downloadPdf}
-        disabled={pdfState === 'working'}
+        disabled={pdfState === "working"}
         className="inline-flex items-center gap-2 py-2.5 text-sm font-semibold text-[#0f4d80] transition-colors hover:text-[#1669AE] hover:underline disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:no-underline sm:py-1"
       >
-        {pdfState === 'working' ? (
+        {pdfState === "working" ? (
           <LoaderCircle className="h-4 w-4 animate-spin" />
         ) : (
           <Download className="h-4 w-4" />
         )}
-        {pdfState === 'working' ? 'Preparing your PDF…' : 'Download full proposal'}
+        {pdfState === "working"
+          ? "Preparing your PDF…"
+          : "Download full proposal"}
       </button>
       <a
         href={PHONE_HREF}
@@ -575,7 +641,7 @@ export const ApprovePage = () => {
             number is the part that has to survive. */}
         <span className="hidden sm:inline">Questions?</span> {PHONE_DISPLAY}
       </a>
-      {pdfState === 'error' && (
+      {pdfState === "error" && (
         <p className="max-w-[16rem] text-xs text-[#c0392b] sm:text-right">
           Couldn’t build the PDF — it’s also attached to the email we sent you.
         </p>
@@ -592,13 +658,15 @@ export const ApprovePage = () => {
           measure even when the cards beside it are not. */}
       <div className="mx-auto w-full max-w-5xl">
         <div className="relative mb-8 text-center">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-[#6b7280]">Suncoast Pool Pros</p>
+          <p className="text-[11px] uppercase tracking-[0.2em] text-[#6b7280]">
+            Suncoast Pool Pros
+          </p>
           <h1 className="mt-1 font-display text-2xl font-bold sm:text-3xl">
-            {state.kind === 'accepted'
-              ? 'You’re all set'
+            {state.kind === "accepted"
+              ? "You’re all set"
               : step === 2
-                ? 'Confirm and sign'
-                : 'Your proposal'}
+                ? "Confirm and sign"
+                : "Your proposal"}
           </h1>
           {/*
             A reachable human. Every other word on this page argues for buying;
@@ -617,30 +685,34 @@ export const ApprovePage = () => {
             Hidden on the error state only, which already leads with a
             full-size phone button; two would just look like a mistake.
           */}
-          {state.kind !== 'error' && (
+          {state.kind !== "error" && (
             <a
               href={PHONE_HREF}
               className={`mt-4 items-center gap-2 rounded-full border border-[#dce7f2] bg-white px-4 py-3 text-sm font-semibold text-[#0a1628] transition-colors hover:border-[#1669AE] hover:bg-[#f3f6fb] ${
                 // The header row carries the phone on every width now, so the
                 // pill only appears on the screens that have no header row:
                 // step 2, loading, accepted, error.
-                contactInHeaderRow ? 'hidden' : 'inline-flex md:absolute md:right-0 md:top-0 md:mt-0 md:py-2'
+                contactInHeaderRow
+                  ? "hidden"
+                  : "inline-flex md:absolute md:right-0 md:top-0 md:mt-0 md:py-2"
               }`}
             >
               <Phone className="h-4 w-4 shrink-0 text-[#1669AE]" />
-              {!contactInHeaderRow && <span className="hidden lg:inline">Questions?</span>}
+              {!contactInHeaderRow && (
+                <span className="hidden lg:inline">Questions?</span>
+              )}
               {PHONE_DISPLAY}
             </a>
           )}
         </div>
 
-        {state.kind === 'loading' && (
+        {state.kind === "loading" && (
           <div className="flex justify-center py-16">
             <LoaderCircle className="h-8 w-8 animate-spin text-[#1669AE]" />
           </div>
         )}
 
-        {state.kind === 'error' && (
+        {state.kind === "error" && (
           <div className="rounded-2xl border border-[#f0c8c8] bg-[#fdf1f0] p-6 text-center">
             <AlertCircle className="mx-auto mb-3 h-7 w-7 text-[#c0392b]" />
             <p className="text-[#1f2937]">{state.message}</p>
@@ -653,19 +725,23 @@ export const ApprovePage = () => {
           </div>
         )}
 
-        {state.kind === 'accepted' && (
+        {state.kind === "accepted" && (
           <div className="rounded-2xl border border-[#bfe7c6] bg-[#eefaf0] p-8 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[#bfe7c6] bg-white">
               <Check className="h-7 w-7 text-[#1d7a33]" strokeWidth={3} />
             </div>
             <p className="text-lg font-semibold">
-              Your <span className="text-[#0f4d80]">{state.plan}</span> plan is confirmed.
+              Your <span className="text-[#0f4d80]">{state.plan}</span> plan is
+              confirmed.
             </p>
             <p className="mx-auto mt-3 max-w-md leading-relaxed text-[#374151]">
-              You’ll receive your first invoice on your first scheduled service date. We’ll reach out to
-              confirm that date, and with any questions we have.
+              You’ll receive your first invoice on your first scheduled service
+              date. We’ll reach out to confirm that date, and with any questions
+              we have.
             </p>
-            <p className="mt-5 text-sm text-[#6b7280]">A copy is on its way to your inbox.</p>
+            <p className="mt-5 text-sm text-[#6b7280]">
+              A copy is on its way to your inbox.
+            </p>
           </div>
         )}
 
@@ -734,7 +810,9 @@ export const ApprovePage = () => {
                 decision, not the pitch. The download below keeps the full
                 document one click away. */}
 
-            <p className="mb-4 text-center text-[#6b7280]">Choose the plan that works best for you.</p>
+            <p className="mb-4 text-center text-[#6b7280]">
+              Choose the plan that works best for you.
+            </p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {tiers.map((tier, i) => {
                 const on = plan === tier.name;
@@ -750,19 +828,19 @@ export const ApprovePage = () => {
                 return (
                   <div
                     key={i}
-                    className={`relative flex flex-col rounded-2xl border p-5 text-left transition-colors ${
+                    className={`relative flex flex-col overflow-hidden rounded-2xl border text-left transition-colors ${
                       // Recommended leads on a phone: stacked, the upgrade would
                       // otherwise sit below the fold under the option it's meant
                       // to beat. Side by side on desktop, natural order reads
                       // cheaper-then-better — which only works as anchoring if
                       // the better one visually dominates, hence the ring below.
-                      tier.recommended ? 'order-first sm:order-none' : ''
+                      tier.recommended ? "order-first sm:order-none" : ""
                     } ${
                       on
-                        ? 'border-[#1669AE] bg-white ring-2 ring-[#1669AE]/30'
+                        ? "border-[#1669AE] bg-white ring-2 ring-[#1669AE]/30"
                         : promote
-                          ? 'border-[#1669AE] bg-white shadow-lg shadow-[#1669AE]/15 ring-1 ring-[#1669AE]/20 hover:border-[#0f4d80]'
-                          : 'border-[#e3e8ef] bg-white hover:border-[#9fb3c8]'
+                          ? "border-[#1669AE] bg-white shadow-lg shadow-[#1669AE]/15 ring-1 ring-[#1669AE]/20 hover:border-[#0f4d80]"
+                          : "border-[#e3e8ef] bg-white hover:border-[#9fb3c8]"
                     }`}
                   >
                     {/* Selection covers the whole card, as a stretched button
@@ -777,103 +855,96 @@ export const ApprovePage = () => {
                     >
                       <span className="sr-only">Choose {tier.name}</span>
                     </button>
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        {tier.recommended && (
-                          <span className="mb-2 inline-block rounded bg-[#1669AE] px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-                            Recommended
-                          </span>
-                        )}
-                        <h3 className="font-display text-lg font-bold">{tier.name}</h3>
-                      </div>
-                      <span
-                        className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
-                          on ? 'border-[#1669AE] bg-[#1669AE] text-white' : 'border-[#c3cedb]'
+                    {/* A banner on the card's top EDGE, not a pill inside it.
+                        The pill pushed the plan name down and spent interior
+                        space saying one word; flush to the edge it is more
+                        visible and costs nothing. overflow-hidden on the card
+                        is what clips it to the rounded corners.
+
+                        It stays on the card whatever is selected — that is
+                        information about the plan, not a claim about the
+                        current choice — but it MUTES once the other plan is
+                        chosen, so a solid blue bar never sits on a card the
+                        customer has just decided against. */}
+                    {tier.recommended && (
+                      <div
+                        className={`py-1.5 text-center text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                          promote || on
+                            ? "bg-[#1669AE] text-white"
+                            : "bg-[#eef4fa] text-[#5c7a99]"
                         }`}
                       >
-                        {on && <Check className="h-4 w-4" strokeWidth={3} />}
-                      </span>
-                    </div>
-                    {tier.tagline && <p className="mt-1 text-sm text-[#6b7280]">{tier.tagline}</p>}
-                    {tier.price && (
-                      /* The recommended price is set a size larger. Two prices at
+                        Recommended
+                      </div>
+                    )}
+                    {/* The other card reserves the same strip, so the two
+                        titles — and with them the two Choose buttons — sit on
+                        the same line. Without it the banner pushes the
+                        recommended card's contents down and the two calls to
+                        action end up at different heights, which reads as
+                        sloppy rather than as emphasis.
+
+                        Desktop only: on a phone the cards stack, nothing is
+                        being aligned to, and the strip would be dead space. */}
+                    {!tier.recommended && (
+                      <div
+                        aria-hidden
+                        className="hidden py-1.5 text-[11px] font-bold uppercase tracking-wider sm:block"
+                      >
+                        &nbsp;
+                      </div>
+                    )}
+                    <div className="flex flex-1 flex-col p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <h3 className="font-display text-lg font-bold">
+                            {tier.name}
+                          </h3>
+                        </div>
+                        <span
+                          className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                            on
+                              ? "border-[#1669AE] bg-[#1669AE] text-white"
+                              : "border-[#c3cedb]"
+                          }`}
+                        >
+                          {on && <Check className="h-4 w-4" strokeWidth={3} />}
+                        </span>
+                      </div>
+                      {tier.tagline && (
+                        <p className="mt-1 text-sm text-[#6b7280]">
+                          {tier.tagline}
+                        </p>
+                      )}
+                      {tier.price && (
+                        /* The recommended price is set a size larger. Two prices at
                          identical weight ask the customer to do the comparison
                          themselves; the point of recommending one is to have
                          already done it. */
-                      <p
-                        className={`mt-3 font-bold text-[#0f4d80] ${
-                          tier.recommended ? 'text-3xl' : 'text-2xl'
-                        }`}
-                      >
-                        {formatPrice(tier.price)}
-                      </p>
-                    )}
-                    {tier.priceNote?.trim() && (
-                      <p className="mt-1 inline-flex self-start rounded-md bg-[#e3f5e8] px-2 py-1 text-sm font-semibold text-[#176a2c]">
-                        {tier.priceNote.trim()}
-                      </p>
-                    )}
-                    {/* "Everything in <base>, plus:" — the PDF and the email
-                        both print this, and without it the upgrade card reads
-                        as though those few bullets are ALL you get, with no
-                        mention of the pool service itself. Names the plan
-                        rather than a position, so it still reads correctly on a
-                        phone where this card is shown first. */}
-                    {i > 0 && tiers[i - 1]?.name?.trim() && (
-                      <p className="mt-4 text-sm font-bold text-[#0a1628]">
-                        Everything in {tiers[i - 1].name.trim()}, plus:
-                      </p>
-                    )}
-                    <ul className="mt-4 space-y-2">
-                      {tier.includes
-                        .map((x) => x.trim())
-                        .filter(Boolean)
-                        .map((item, j) => (
-                          <li key={j} className="flex gap-2 text-sm leading-relaxed text-[#374151]">
-                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
-                            {item}
-                          </li>
-                        ))}
-                    </ul>
-                    {/* The note and the button are bottom-anchored TOGETHER, so
-                        they line up across both cards however much each one has
-                        to say — side by side the shorter card's slack lands
-                        above its note rather than under the button.
-
-                        There used to be a rule above the note to "close" that
-                        slack. Removed: the notes align across the cards anyway,
-                        and on mobile the cards stack and size to their own
-                        content, so the gap is zero and the rule was pure
-                        furniture. */}
-                    <div className="mt-auto">
-                      {tier.valueNote?.trim() && (
-                        <p className="pt-3 text-xs leading-relaxed text-[#6b7280]">
-                          {tier.valueNote.trim()}
+                        <p
+                          className={`mt-3 font-bold text-[#0f4d80] ${
+                            tier.recommended ? "text-3xl" : "text-2xl"
+                          }`}
+                        >
+                          {formatPrice(tier.price)}
                         </p>
                       )}
-                      {/* One button, two jobs: "Choose" while unselected,
-                          "Continue" once it is. Putting the next step in the
-                          card means the decision and the action are in the same
-                          place — no hunting for a separate control after
-                          choosing.
-
-                          The plan name is SR-ONLY, not dropped. It read
-                          "Choose Pay Annually", which is a lot of words for a
-                          button sitting directly under a heading that already
-                          says Pay Annually. But a screen-reader user listing
-                          the buttons on this page would otherwise hear "Choose"
-                          twice with nothing to tell them apart, so the name is
-                          still in the accessible name even though it is no
-                          longer on screen. */}
-                      <span className="relative z-10 block pt-4">
+                      {tier.priceNote?.trim() && (
+                        <p className="mt-1 inline-flex self-start rounded-md bg-[#e3f5e8] px-2 py-1 text-sm font-semibold text-[#176a2c]">
+                          {tier.priceNote.trim()}
+                        </p>
+                      )}
+                      <span className="relative z-10 block pt-5">
                         <button
-                          onClick={() => (on ? goToConfirm() : setPlan(tier.name))}
+                          onClick={() =>
+                            on ? goToConfirm() : setPlan(tier.name)
+                          }
                           className={`flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-bold transition-colors ${
                             on
-                              ? 'border-[#1669AE] bg-gradient-to-r from-brand-blue to-brand-blue-dark text-white shadow-md shadow-[#1669AE]/25'
+                              ? "border-[#1669AE] bg-gradient-to-r from-brand-blue to-brand-blue-dark text-white shadow-md shadow-[#1669AE]/25"
                               : promote
-                                ? 'border-[#1669AE]/60 text-[#0f4d80] hover:bg-[#f3f9fd]'
-                                : 'border-[#dce7f2] text-[#374151] hover:bg-[#f7f9fc]'
+                                ? "border-[#1669AE]/60 text-[#0f4d80] hover:bg-[#f3f9fd]"
+                                : "border-[#dce7f2] text-[#374151] hover:bg-[#f7f9fc]"
                           }`}
                         >
                           {on ? (
@@ -890,6 +961,60 @@ export const ApprovePage = () => {
                           )}
                         </button>
                       </span>
+                      {/* A rule under the button, not a bare gap. Above it the
+                        card is making an offer; below it the card is
+                        justifying one, and the line is what tells you the
+                        difference at a glance. */}
+                      <div className="mt-5 border-t border-[#e9eef4]" />
+                      {/* "Everything in <base>, plus:" — the PDF and the email
+                        both print this, and without it the upgrade card reads
+                        as though those few bullets are ALL you get, with no
+                        mention of the pool service itself. Names the plan
+                        rather than a position, so it still reads correctly on a
+                        phone where this card is shown first. */}
+                      {i > 0 && tiers[i - 1]?.name?.trim() && (
+                        <p className="mt-4 text-sm font-bold text-[#0a1628]">
+                          Everything in {tiers[i - 1].name.trim()}, plus:
+                        </p>
+                      )}
+                      <ul className="mt-4 space-y-2">
+                        {tier.includes
+                          .map((x) => x.trim())
+                          .filter(Boolean)
+                          .map((item, j) => (
+                            <li
+                              key={j}
+                              className="flex gap-2 text-sm leading-relaxed text-[#374151]"
+                            >
+                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
+                              {item}
+                            </li>
+                          ))}
+                      </ul>
+                      {/* The note stays bottom-anchored so it lines up across
+                        both cards however much each has to say. The BUTTON no
+                        longer lives here — it sits under the price now. */}
+                      <div className="mt-auto">
+                        {tier.valueNote?.trim() && (
+                          <p className="pt-3 text-xs leading-relaxed text-[#6b7280]">
+                            {tier.valueNote.trim()}
+                          </p>
+                        )}
+                        {/* One button, two jobs: "Choose" while unselected,
+                          "Continue" once it is. Putting the next step in the
+                          card means the decision and the action are in the same
+                          place — no hunting for a separate control after
+                          choosing.
+
+                          The plan name is SR-ONLY, not dropped. It read
+                          "Choose Pay Annually", which is a lot of words for a
+                          button sitting directly under a heading that already
+                          says Pay Annually. But a screen-reader user listing
+                          the buttons on this page would otherwise hear "Choose"
+                          twice with nothing to tell them apart, so the name is
+                          still in the accessible name even though it is no
+                          longer on screen. */}
+                      </div>
                     </div>
                   </div>
                 );
@@ -956,15 +1081,15 @@ export const ApprovePage = () => {
               now looks it.
             */}
             <p className="mx-auto mt-10 max-w-lg text-center text-sm leading-relaxed text-[#6b7280]">
-              Questions?{' '}
+              Questions?{" "}
               <a href={PHONE_HREF} className={quietLink}>
                 Call
-              </a>{' '}
-              or{' '}
+              </a>{" "}
+              or{" "}
               <a href={SMS_HREF} className={quietLink}>
                 text
-              </a>{' '}
-              {PHONE_DISPLAY}, or{' '}
+              </a>{" "}
+              {PHONE_DISPLAY}, or{" "}
               <a href={EMAIL_HREF} className={quietLink}>
                 email us
               </a>
@@ -973,8 +1098,11 @@ export const ApprovePage = () => {
 
             {!declined && (
               <p className="mx-auto mt-2 max-w-lg text-center text-[13px] leading-relaxed text-[#8a94a3]">
-                Going a different route?{' '}
-                <button onClick={() => setDeclineOpen(true)} className={quietLink}>
+                Going a different route?{" "}
+                <button
+                  onClick={() => setDeclineOpen(true)}
+                  className={quietLink}
+                >
                   Tell us why
                 </button>
                 .
@@ -987,7 +1115,9 @@ export const ApprovePage = () => {
                 "thanks" wastes the last moment anyone is paying attention. */}
             {declined && (
               <p className="mx-auto mt-2 max-w-lg text-center text-[13px] leading-relaxed text-[#176a2c]">
-                <span className="font-semibold">Thank you &mdash; that helps.</span>{' '}
+                <span className="font-semibold">
+                  Thank you &mdash; that helps.
+                </span>{" "}
                 {declineReply(declined)}
               </p>
             )}
@@ -1034,7 +1164,9 @@ export const ApprovePage = () => {
                 </button>
                 {/* Same eyebrow slot as step 1, so the number stays visible on
                     the screen where they sign. */}
-                {quote.number ? <Eyebrow>{`Proposal #${quote.number}`}</Eyebrow> : null}
+                {quote.number ? (
+                  <Eyebrow>{`Proposal #${quote.number}`}</Eyebrow>
+                ) : null}
                 {/* One line, no "Your plan" label above it. After "Confirm and
                     sign", with a Change plan link right there, a label saying
                     this is the plan is stating the obvious in three lines.
@@ -1048,7 +1180,9 @@ export const ApprovePage = () => {
                   {chosen?.price && (
                     <>
                       <span className="font-normal text-[#9aa4b2]"> · </span>
-                      <span className="text-[#0f4d80]">{formatPrice(chosen.price)}</span>
+                      <span className="text-[#0f4d80]">
+                        {formatPrice(chosen.price)}
+                      </span>
                     </>
                   )}
                 </p>
@@ -1068,8 +1202,10 @@ export const ApprovePage = () => {
                   here was the one REQUIRED thing in an optional section; it has
                   moved next to the signature. */}
               <h2 className="mb-3 font-display text-base font-bold">
-                Getting started{' '}
-                <span className="text-sm font-normal text-[#6b7280]">(optional)</span>
+                Getting started{" "}
+                <span className="text-sm font-normal text-[#6b7280]">
+                  (optional)
+                </span>
               </h2>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {/* Asked as a question, and about how SOON rather than "preferred
@@ -1089,30 +1225,41 @@ export const ApprovePage = () => {
                 </label>
                 <label className="text-sm text-[#6b7280]">
                   Gate code, pets, anything we should know
-                  <input className={`${field} mt-1`} value={accessNotes}
-                    onChange={(e) => setAccessNotes(e.target.value)} />
+                  <input
+                    className={`${field} mt-1`}
+                    value={accessNotes}
+                    onChange={(e) => setAccessNotes(e.target.value)}
+                  />
                 </label>
               </div>
               <p className="mt-3 text-xs text-[#6b7280]">
-                We&rsquo;ll confirm your first visit with you — the sooner you start, the sooner your pool
-                is on a routine.
+                We&rsquo;ll confirm your first visit with you — the sooner you
+                start, the sooner your pool is on a routine.
               </p>
             </section>
 
             <section className="mb-5 rounded-2xl border border-[#e3e8ef] bg-white p-5">
-              <h2 className="mb-3 font-display text-base font-bold">Service agreement</h2>
+              <h2 className="mb-3 font-display text-base font-bold">
+                Service agreement
+              </h2>
               <div className="space-y-3">
                 {[
                   {
-                    key: 'requirements' as const,
-                    label: 'I’ve read and agree to the service requirements — access to the pool, an operational pump and filter, and a working outside hose.',
+                    key: "requirements" as const,
+                    label:
+                      "I’ve read and agree to the service requirements — access to the pool, an operational pump and filter, and a working outside hose.",
                   },
                   {
-                    key: 'service' as const,
+                    key: "service" as const,
                     label: (
                       <>
-                        I’ve read and agree to the{' '}
-                        <a href="/service-agreement/" target="_blank" rel="noreferrer" className="text-[#0f4d80] underline">
+                        I’ve read and agree to the{" "}
+                        <a
+                          href="/service-agreement/"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[#0f4d80] underline"
+                        >
                           Service Agreement
                         </a>
                         .
@@ -1120,11 +1267,16 @@ export const ApprovePage = () => {
                     ),
                   },
                   {
-                    key: 'privacy' as const,
+                    key: "privacy" as const,
                     label: (
                       <>
-                        I’ve read and agree to the{' '}
-                        <a href="/privacy-policy/" target="_blank" rel="noreferrer" className="text-[#0f4d80] underline">
+                        I’ve read and agree to the{" "}
+                        <a
+                          href="/privacy-policy/"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[#0f4d80] underline"
+                        >
                           Privacy Policy
                         </a>
                         .
@@ -1132,11 +1284,16 @@ export const ApprovePage = () => {
                     ),
                   },
                 ].map((item) => (
-                  <label key={item.key} className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-[#1f2937]">
+                  <label
+                    key={item.key}
+                    className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-[#1f2937]"
+                  >
                     <input
                       type="checkbox"
                       checked={agree[item.key]}
-                      onChange={(e) => setAgree({ ...agree, [item.key]: e.target.checked })}
+                      onChange={(e) =>
+                        setAgree({ ...agree, [item.key]: e.target.checked })
+                      }
                       className="mt-0.5 h-4 w-4 shrink-0 accent-brand-blue"
                     />
                     <span>{item.label}</span>
@@ -1160,18 +1317,22 @@ export const ApprovePage = () => {
                   one they do. */}
               <div className="mt-4 rounded-xl border border-[#e3e8ef] bg-[#f7f9fc] p-4">
                 <h3 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
-                  {plan ? `${plan} — terms` : 'Terms'}
+                  {plan ? `${plan} — terms` : "Terms"}
                 </h3>
                 {chosen?.finePrint?.trim() && (
-                  <p className="text-sm leading-relaxed text-[#374151]">{chosen.finePrint.trim()}</p>
+                  <p className="text-sm leading-relaxed text-[#374151]">
+                    {chosen.finePrint.trim()}
+                  </p>
                 )}
                 {showsConditionTerm(jobKindOf(quote.proposal?.jobKind)) && (
-                  <p className={`text-sm leading-relaxed text-[#374151] ${chosen?.finePrint?.trim() ? 'mt-2' : ''}`}>
+                  <p
+                    className={`text-sm leading-relaxed text-[#374151] ${chosen?.finePrint?.trim() ? "mt-2" : ""}`}
+                  >
                     {PRICING_CONDITION_TERM}
                   </p>
                 )}
                 <p className="mt-2 text-xs text-[#6b7280]">
-                The full scope of work is in your proposal.
+                  The full scope of work is in your proposal.
                 </p>
               </div>
 
@@ -1204,12 +1365,15 @@ export const ApprovePage = () => {
               */}
               {needsEmail && (
                 <div className="mt-6 rounded-xl border border-[#dbe6f3] bg-[#f5f9fd] p-4">
-                  <label htmlFor="contact-email" className="block text-sm font-semibold text-[#1f2937]">
+                  <label
+                    htmlFor="contact-email"
+                    className="block text-sm font-semibold text-[#1f2937]"
+                  >
                     Where should we send your signed copy?
                   </label>
                   <p className="mt-1 text-xs leading-relaxed text-[#6b7280]">
-                    We don&rsquo;t have an email address for you yet. Your confirmation and every
-                    service report after a visit go here.
+                    We don&rsquo;t have an email address for you yet. Your
+                    confirmation and every service report after a visit go here.
                   </p>
                   <input
                     id="contact-email"
@@ -1221,7 +1385,7 @@ export const ApprovePage = () => {
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
                   />
-                  {contactEmail.trim() !== '' && !emailOk && (
+                  {contactEmail.trim() !== "" && !emailOk && (
                     <p className="mt-1.5 text-xs text-[#c0392b]">
                       That doesn&rsquo;t look like an email address.
                     </p>
@@ -1230,7 +1394,10 @@ export const ApprovePage = () => {
               )}
 
               <div className="mt-6 border-t border-[#e3e8ef] pt-6">
-                <label htmlFor="signature" className="block text-sm font-semibold text-[#1f2937]">
+                <label
+                  htmlFor="signature"
+                  className="block text-sm font-semibold text-[#1f2937]"
+                >
                   Sign to accept
                 </label>
                 <div className="mt-4 border-b-2 border-[#9fb3c8] transition-colors focus-within:border-[#1669AE]">
@@ -1240,7 +1407,7 @@ export const ApprovePage = () => {
                     style={{ fontFamily: '"Caveat", cursive', fontWeight: 700 }}
                     value={signature}
                     onChange={(e) => setSignature(e.target.value)}
-                    placeholder={quote.customerName.trim() || 'Your full name'}
+                    placeholder={quote.customerName.trim() || "Your full name"}
                     autoComplete="name"
                   />
                 </div>
@@ -1253,14 +1420,17 @@ export const ApprovePage = () => {
                   </span>
                 </div>
                 <p className="mt-4 max-w-3xl text-xs leading-relaxed text-[#6b7280]">
-                  Typing your name is your electronic signature. We record it with the date, time and IP
-                  address as proof of acceptance.
+                  Typing your name is your electronic signature. We record it
+                  with the date, time and IP address as proof of acceptance.
                 </p>
               </div>
             </section>
 
             {formError && (
-              <div role="alert" className="mb-4 flex items-start gap-3 rounded-xl border border-[#f0c8c8] bg-[#fdf1f0] px-4 py-3 text-sm text-[#8c2f22]">
+              <div
+                role="alert"
+                className="mb-4 flex items-start gap-3 rounded-xl border border-[#f0c8c8] bg-[#fdf1f0] px-4 py-3 text-sm text-[#8c2f22]"
+              >
                 <AlertCircle className="h-5 w-5 shrink-0 text-[#c0392b]" />
                 {formError}
               </div>
@@ -1272,8 +1442,8 @@ export const ApprovePage = () => {
                   This pricing is from {proposalDateLabel(quote.createdAt)}.
                 </p>
                 <p className="mt-1.5 text-sm leading-relaxed text-[#6b5836]">
-                  Give us a call and we&rsquo;ll confirm it still stands, or send you a fresh quote
-                  — it only takes a minute.
+                  Give us a call and we&rsquo;ll confirm it still stands, or
+                  send you a fresh quote — it only takes a minute.
                 </p>
                 <a
                   href={PHONE_HREF}
@@ -1288,15 +1458,17 @@ export const ApprovePage = () => {
                 disabled={!canSubmit || busy}
                 className="flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-brand-blue to-brand-blue-dark py-4 text-lg font-bold text-white shadow-lg shadow-brand-blue/25 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {busy ? <LoaderCircle className="h-5 w-5 animate-spin" /> : null}
-                {busy ? 'Confirming…' : `Accept and start service`}
+                {busy ? (
+                  <LoaderCircle className="h-5 w-5 animate-spin" />
+                ) : null}
+                {busy ? "Confirming…" : `Accept and start service`}
               </button>
             )}
             {!pricingStale && !canSubmit && (
               <p className="mt-2 text-center text-xs text-[#6b7280]">
                 {needsEmail && !emailOk
-                  ? 'Add your email, tick all three boxes and type your name to continue.'
-                  : 'Tick all three boxes and type your name to continue.'}
+                  ? "Add your email, tick all three boxes and type your name to continue."
+                  : "Tick all three boxes and type your name to continue."}
               </p>
             )}
           </>
@@ -1321,10 +1493,12 @@ export const ApprovePage = () => {
           <div className="max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white p-5 shadow-2xl sm:rounded-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-lg font-bold text-[#0a1628]">What made the difference?</h2>
+                <h2 className="text-lg font-bold text-[#0a1628]">
+                  What made the difference?
+                </h2>
                 <p className="mt-1 text-sm leading-relaxed text-[#6b7280]">
-                  One tap is plenty. Nothing here commits you to anything, and your quote stays
-                  live either way.
+                  One tap is plenty. Nothing here commits you to anything, and
+                  your quote stays live either way.
                 </p>
               </div>
               <button
@@ -1344,8 +1518,8 @@ export const ApprovePage = () => {
                   aria-pressed={declineReason === r.key}
                   className={`rounded-xl border px-4 py-3 text-left text-[15px] transition-colors ${
                     declineReason === r.key
-                      ? 'border-brand-blue bg-[#eef6fb] font-semibold text-[#0a1628]'
-                      : 'border-[#e3e8ef] text-[#374151] hover:border-[#c8d4e0] hover:bg-[#f7f9fc]'
+                      ? "border-brand-blue bg-[#eef6fb] font-semibold text-[#0a1628]"
+                      : "border-[#e3e8ef] text-[#374151] hover:border-[#c8d4e0] hover:bg-[#f7f9fc]"
                   }`}
                 >
                   {r.label}
@@ -1370,7 +1544,7 @@ export const ApprovePage = () => {
               disabled={!declineReason || decliningBusy}
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-blue py-3.5 text-[15px] font-bold text-white hover:bg-brand-blue-dark disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {decliningBusy ? 'Sending…' : 'Send feedback'}
+              {decliningBusy ? "Sending…" : "Send feedback"}
             </button>
             <p className="mt-2 text-center text-xs text-[#9aa3b0]">
               This doesn&rsquo;t cancel anything — you can still accept later.
