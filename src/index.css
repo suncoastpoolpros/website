@@ -1163,17 +1163,44 @@ input[type="date"]::-webkit-date-and-time-value {
     url('/storm-vacuum-cleanup-1920.webp') type('image/webp') 2x,
     url('/storm-vacuum-cleanup.jpg') type('image/jpeg') 1x
   );
-  filter: saturate(1.1) brightness(0.92) contrast(1.06);
+  filter: saturate(1.05) contrast(1.04);
 }
 .interlude-bg-stormvac-mobile {
   background-image: image-set(
     url('/storm-vacuum-cleanup-mobile.webp') type('image/webp') 1x,
     url('/storm-vacuum-cleanup.jpg') type('image/jpeg') 1x
   );
-  filter: saturate(1.1) brightness(0.92) contrast(1.06);
+  filter: saturate(1.05) contrast(1.04);
 }
+
+/* Barely-there blue, just enough to tie the photo to the palette. It was 0.3
+   with a brightness(0.92) filter on top, which is why the silt read navy and
+   the whole frame looked flatter than the original photo. Legibility is now
+   handled by a LOCAL scrim behind the copy (.interlude-scrim-stormvac) rather
+   than by dimming the entire image — the subject stays as shot. */
 .interlude-tint-stormvac {
   background-color: #0a2540;
   mix-blend-mode: overlay;
-  opacity: 0.3;
+  opacity: 0.12;
+}
+
+/* Text scrim. Desktop: a soft wash in from the right, where the copy sits.
+   Mobile: from the bottom, matching where the copy moves on that crop. */
+.interlude-scrim-stormvac {
+  background: linear-gradient(
+    to top,
+    rgba(7, 17, 28, 0.72) 0%,
+    rgba(7, 17, 28, 0.35) 30%,
+    transparent 60%
+  );
+}
+@media (min-width: 768px) {
+  .interlude-scrim-stormvac {
+    background: linear-gradient(
+      to left,
+      rgba(7, 17, 28, 0.7) 0%,
+      rgba(7, 17, 28, 0.3) 32%,
+      transparent 58%
+    );
+  }
 }

@@ -424,9 +424,12 @@ const StormCleanupPageInner = () => {
           <div className="interlude-bg-stormvac-mobile absolute inset-0 md:hidden bg-cover bg-center" aria-hidden />
           <div className="interlude-tint-stormvac absolute inset-0 pointer-events-none" aria-hidden />
 
-          {/* Fades to #07111c on both edges so the join is seamless. */}
-          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#07111c] to-transparent pointer-events-none" />
-          <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#07111c] to-transparent pointer-events-none" />
+          {/* Hard cut into the photo at the top — the fade made it look like
+              the image was struggling to load rather than like a deliberate
+              band. Hard cut at the bottom too — a soft edge there against a
+              hard one above read as unintentional. Text legibility comes from
+              the local scrim, not from fading the band's edges. */}
+          <div className="interlude-scrim-stormvac absolute inset-0 pointer-events-none" aria-hidden />
 
           {/* Copy sits RIGHT of centre on desktop. Centred, it landed straight
               on the vacuum head — burying the one thing the photo is here to
