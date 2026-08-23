@@ -32,6 +32,7 @@ const footerCities = cities.filter(
 const exploreLinks = [
   { label: 'How It Works', href: '/how-it-works/', route: true },
   { label: 'Storm Cleanup', href: '/services/storm-cleanup/', route: true },
+  { label: 'Green Pool Recovery', href: '/services/green-pool-recovery/', route: true },
   { label: 'FAQ', href: '/faq/', route: true },
   { label: 'Tools', href: '/tools/', route: true },
   { label: 'Pool Care', href: '/pool-care/', route: true },

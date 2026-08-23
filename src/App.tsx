@@ -44,6 +44,7 @@ const PoolServiceVsDiyPage = lazyRoute(() => import('@/pages/PoolServiceVsDiyPag
 const CyanuricAcidPage = lazyRoute(() => import('@/pages/CyanuricAcidPage').then((m) => m.CyanuricAcidPage));
 const GreenPoolPage = lazyRoute(() => import('@/pages/GreenPoolPage').then((m) => m.GreenPoolPage));
 const StormCleanupPage = lazyRoute(() => import('@/pages/StormCleanupPage').then((m) => m.StormCleanupPage));
+const GreenPoolRecoveryPage = lazyRoute(() => import('@/pages/GreenPoolRecoveryPage').then((m) => m.GreenPoolRecoveryPage));
 const VariableSpeedPumpsPage = lazyRoute(() => import('@/pages/VariableSpeedPumpsPage').then((m) => m.VariableSpeedPumpsPage));
 const SaltWaterVsChlorinePage = lazyRoute(() => import('@/pages/SaltWaterVsChlorinePage').then((m) => m.SaltWaterVsChlorinePage));
 const DrainPoolPage = lazyRoute(() => import('@/pages/DrainPoolPage').then((m) => m.DrainPoolPage));
@@ -137,6 +138,7 @@ export const ROUTE_COMPONENTS: Record<string, PreloadableComponent> = {
   '/pool-care/cyanuric-acid': CyanuricAcidPage,
   '/pool-care/green-pool': GreenPoolPage,
   '/services/storm-cleanup': StormCleanupPage,
+  '/services/green-pool-recovery': GreenPoolRecoveryPage,
   '/pool-care/variable-speed-pumps': VariableSpeedPumpsPage,
   '/pool-care/salt-water-vs-chlorine': SaltWaterVsChlorinePage,
   '/pool-care/how-to-drain-a-pool': DrainPoolPage,
@@ -253,6 +255,7 @@ export default function App() {
           <Route path="/pool-care/cyanuric-acid" element={<CyanuricAcidPage />} />
           <Route path="/pool-care/green-pool" element={<GreenPoolPage />} />
           <Route path="/services/storm-cleanup" element={<StormCleanupPage />} />
+          <Route path="/services/green-pool-recovery" element={<GreenPoolRecoveryPage />} />
           <Route path="/pool-care/variable-speed-pumps" element={<VariableSpeedPumpsPage />} />
           <Route path="/pool-care/salt-water-vs-chlorine" element={<SaltWaterVsChlorinePage />} />
           <Route path="/pool-care/how-to-drain-a-pool" element={<DrainPoolPage />} />

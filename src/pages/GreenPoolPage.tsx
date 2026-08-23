@@ -520,7 +520,14 @@ const GreenPoolPageInner = () => {
               </h2>
               <p className="text-gray-400 mb-7 max-w-md mx-auto">
                 We clear green pools across St. Petersburg and the Tampa Bay area &mdash; and keep them
-                blue with weekly service for one flat rate.
+                blue with weekly service for one flat rate. See{' '}
+                <Link
+                  to="/services/green-pool-recovery/"
+                  className="text-brand-orange hover:text-brand-orange-dark font-semibold"
+                >
+                  how green pool recovery works
+                </Link>{' '}
+                &mdash; including honest timelines by severity.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <a href="#quote" onClick={handleQuoteClick} className="btn btn-orange w-full sm:w-auto">
