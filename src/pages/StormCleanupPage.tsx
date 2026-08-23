@@ -157,8 +157,16 @@ const StormCleanupPageInner = () => {
     // had only the first.
     title: 'Hurricane & Storm Pool Cleanup — St. Petersburg, FL',
     description:
-      'Hurricane and storm pool cleanup across St. Petersburg & Pinellas. Storm runoff leaves pools genuinely unsafe, not just dirty — debris out, chemistry rebuilt, flat quote.',
+      'Hurricane and storm pool cleanup in St. Petersburg & Pinellas. Storm water leaves a pool unsafe, not just dirty — most pools done in two visits.',
     canonicalPath: CANONICAL,
+    // Page-specific OG card. The generic site banner is a weak preview for this
+    // page; the vacuum photo shows the service and is what makes a shared link
+    // worth clicking. MUST be absolute https — prerender.mjs deliberately
+    // ignores relative values, because several preview clients render no card
+    // at all rather than resolving them.
+    ogImage: 'https://suncoastpoolpros.com/og-storm-cleanup.jpg',
+    ogImageAlt:
+      'A filtered pool vacuum clearing storm silt from the floor of a St. Petersburg pool',
     // No hero photo on this page, so no heroPreload — the head stays lean and
     // the H1 paints as soon as the fonts land. Montserrat 900 is the display
     // weight above the fold; Inter 400 carries the lede.
@@ -829,6 +837,13 @@ const StormCleanupPageInner = () => {
                   className="text-brand-orange hover:text-brand-orange-dark font-semibold"
                 >
                   here&rsquo;s how weekly service works
+                </SmartLink>
+                . Before the next one, there&rsquo;s also the{' '}
+                <SmartLink
+                  to="/pool-care/hurricane-pool-prep/"
+                  className="text-brand-orange hover:text-brand-orange-dark font-semibold"
+                >
+                  hurricane prep checklist
                 </SmartLink>
                 .
               </p>

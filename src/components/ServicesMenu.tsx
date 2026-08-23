@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { SmartLink as Link } from '@/components/SmartLink';
 import { ArrowRight, ClipboardCheck, Timer, Check } from 'lucide-react';
 import { useQuoteSheet } from '@/components/QuoteSheet';
 import { pagedServices, services } from '@/lib/services';
@@ -18,6 +18,12 @@ import { pagedServices, services } from '@/lib/services';
  * "How it works" lives in the right rail rather than the top-level nav: it is
  * the page that handles billing and chemical-cost objections, so it earns a
  * place — just not one of the five header slots.
+ *
+ * Links are SmartLink, not react-router Link. Routes are lazy(), so a plain
+ * Link means the chunk only starts downloading ON CLICK — which on the storm
+ * page is 34KB the user waits for after committing. SmartLink fires the
+ * preload on mouseenter/focus/touchstart, and since this menu only opens on
+ * hover there is always a beat of pointer travel to cover it.
  */
 export const ServicesMenu = () => {
   const { open: openQuoteSheet } = useQuoteSheet();

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+// SmartLink, not react-router Link: city routes are lazy(), so a plain Link
+// defers the chunk download until the click. Preloading on hover covers it.
+import { SmartLink as Link } from '@/components/SmartLink';
 import { MapPin } from 'lucide-react';
 import { useQuoteSheet } from '@/components/QuoteSheet';
 import { cities } from '@/lib/cities';
