@@ -7,6 +7,7 @@ import {
   ArrowRight,
   ArrowLeft,
   Download,
+  MessageSquare,
   X,
 } from 'lucide-react';
 import { usePageMeta } from '@/lib/usePageMeta';
@@ -913,7 +914,21 @@ export const ApprovePage = () => {
               a sentence that sounds like an accusation.
             */}
             {!declined && (
-              <div className="mt-6 rounded-2xl border border-[#e3e8ef] bg-[#f7f9fc] px-5 py-4 text-center">
+              /* mt-10, not mt-6. At the plan cards' own spacing this inherited
+                 their rhythm and read as part of the choice set — the very
+                 thing the muted styling is trying to avoid. The extra air is
+                 what makes it a separate zone rather than a third option, and
+                 it puts a little more distance between the exit and the
+                 decision without hiding it. */
+              <div className="mt-10 rounded-2xl border border-[#e3e8ef] bg-[#f7f9fc] px-5 py-5 text-center">
+                {/* A speech bubble, deliberately not an exclamation mark.
+                    An exclamation is the vocabulary of warnings and form
+                    errors — on a page that also carries a signature form it
+                    would read as something gone wrong, which is the opposite
+                    of the tone this box needs. A bubble says "tell us". */}
+                <span className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full border border-[#d6e3ef] bg-white text-brand-blue">
+                  <MessageSquare className="h-[18px] w-[18px]" />
+                </span>
                 <p className="text-[15px] font-semibold text-[#1f2937]">Going a different route?</p>
                 <p className="mx-auto mt-1 max-w-md text-sm leading-relaxed text-[#6b7280]">
                   We&rsquo;d still like to hear from you. Whether you&rsquo;ve chosen another company
@@ -936,7 +951,7 @@ export const ApprovePage = () => {
                 moment anyone is paying attention. The plans stay on screen and
                 the link keeps working: declining is not a door closing. */}
             {declined && (
-              <div className="mt-6 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-center">
+              <div className="mt-10 rounded-2xl border border-green-200 bg-green-50 px-5 py-5 text-center">
                 <p className="text-[15px] font-semibold text-green-900">Thank you — that helps.</p>
                 <p className="mx-auto mt-1 max-w-md text-sm leading-relaxed text-green-800">
                   {declineReply(declined)}
