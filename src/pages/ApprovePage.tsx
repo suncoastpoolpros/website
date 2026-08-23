@@ -1067,10 +1067,16 @@ export const ApprovePage = () => {
                       })()}
                       {/* The note stays bottom-anchored so it lines up across
                         both cards however much each has to say. The BUTTON no
-                        longer lives here — it sits under the price now. */}
+                        longer lives here — it sits under the price now.
+
+                        pt-6, not pt-3: at 12px the note sat barely further from
+                        the last bullet than the bullets sit from each other, so
+                        it read as a seventh item in smaller type rather than as
+                        a note ABOUT the list. Fine print earns its quietness
+                        from the space around it. */}
                       <div className="mt-auto">
                         {tier.valueNote?.trim() && (
-                          <p className="pt-3 text-xs leading-relaxed text-[#6b7280]">
+                          <p className="pt-6 text-xs leading-relaxed text-[#6b7280]">
                             {tier.valueNote.trim()}
                           </p>
                         )}
