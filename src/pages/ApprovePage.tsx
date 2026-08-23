@@ -810,10 +810,13 @@ export const ApprovePage = () => {
                 decision, not the pitch. The download below keeps the full
                 document one click away. */}
 
-            <p className="mb-4 text-center text-[#6b7280]">
+            {/* Extra room below on desktop: the recommended card is lifted 20px
+                clear of the row, and at mb-4 its banner came up level with this
+                line. The lift has to buy its space from somewhere. */}
+            <p className="mb-4 text-center text-[#6b7280] sm:mb-9">
               Choose the plan that works best for you.
             </p>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
               {tiers.map((tier, i) => {
                 const on = plan === tier.name;
                 /**
@@ -834,7 +837,14 @@ export const ApprovePage = () => {
                       // to beat. Side by side on desktop, natural order reads
                       // cheaper-then-better — which only works as anchoring if
                       // the better one visually dominates, hence the ring below.
-                      tier.recommended ? "order-first sm:order-none" : ""
+                      /* Lifted clear of the row on desktop, the way a featured
+                         plan is set apart everywhere from pricing tables to shop
+                         shelves: it does the same job as the banner, in a
+                         register the eye reads before it reads any words.
+                         Desktop only — stacked on a phone there is no row to
+                         rise above, and a negative margin would just crowd
+                         whatever sits over it. */
+                      tier.recommended ? "order-first sm:order-none sm:-mt-5" : ""
                     } ${
                       on
                         ? "border-[#1669AE] bg-white ring-2 ring-[#1669AE]/30"
@@ -874,7 +884,7 @@ export const ApprovePage = () => {
                             : "bg-[#eef4fa] text-[#5c7a99]"
                         }`}
                       >
-                        Recommended
+                        Best value
                       </div>
                     )}
                     {/* The other card reserves the same strip, so the two
@@ -940,11 +950,20 @@ export const ApprovePage = () => {
                             on ? goToConfirm() : setPlan(tier.name)
                           }
                           className={`flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-bold transition-colors ${
+                            /* Solid dark on BOTH cards, not an outline. A
+                               ghost button asks to be considered; a filled one
+                               asks to be pressed, and this is the only thing on
+                               the card anybody has to do. #0a1628 is the site's
+                               own near-black rather than pure #000, so it reads
+                               as black without leaving the palette.
+
+                               Selected flips to brand blue: dark means "choose
+                               this", blue means "chosen — continue". The colour
+                               carries the state so the label need not work
+                               alone. */
                             on
                               ? "border-[#1669AE] bg-gradient-to-r from-brand-blue to-brand-blue-dark text-white shadow-md shadow-[#1669AE]/25"
-                              : promote
-                                ? "border-[#1669AE]/60 text-[#0f4d80] hover:bg-[#f3f9fd]"
-                                : "border-[#dce7f2] text-[#374151] hover:bg-[#f7f9fc]"
+                              : "border-[#0a1628] bg-[#0a1628] text-white hover:border-[#16283f] hover:bg-[#16283f]"
                           }`}
                         >
                           {on ? (
