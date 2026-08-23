@@ -896,7 +896,7 @@ export const ApprovePage = () => {
                         customer has just decided against. */}
                     {tier.recommended && (
                       <div
-                        className={`py-1.5 text-center text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                        className={`py-2.5 text-center text-[12.5px] font-bold uppercase tracking-wider transition-colors ${
                           promote || on
                             ? "bg-[#1669AE] text-white"
                             : "bg-[#eef4fa] text-[#5c7a99]"
@@ -917,7 +917,7 @@ export const ApprovePage = () => {
                     {!tier.recommended && (
                       <div
                         aria-hidden
-                        className="hidden py-1.5 text-[11px] font-bold uppercase tracking-wider sm:block"
+                        className="hidden py-2.5 text-[12.5px] font-bold uppercase tracking-wider sm:block"
                       >
                         &nbsp;
                       </div>
@@ -944,23 +944,41 @@ export const ApprovePage = () => {
                           {tier.tagline}
                         </p>
                       )}
-                      {tier.price && (
-                        /* The recommended price is set a size larger. Two prices at
-                         identical weight ask the customer to do the comparison
-                         themselves; the point of recommending one is to have
-                         already done it. */
-                        <p
-                          className={`mt-3 font-bold text-[#0f4d80] ${
-                            tier.recommended ? "text-3xl" : "text-2xl"
-                          }`}
-                        >
-                          {formatPrice(tier.price)}
-                        </p>
-                      )}
-                      {tier.priceNote?.trim() && (
-                        <p className="mt-1 inline-flex self-start rounded-md bg-[#e3f5e8] px-2 py-1 text-sm font-semibold text-[#176a2c]">
-                          {tier.priceNote.trim()}
-                        </p>
+                      {/* Price and saving on ONE line, so the rate and the
+                          reason to take it are read as a single fact rather
+                          than as a number followed by a footnote.
+
+                          flex-wrap, not a fixed row: the note is operator-typed
+                          and runs to about thirty characters ("$1,815 billed
+                          once — $165 saved"), which fits beside a price on a
+                          desktop card and does not on a phone. Wrapping puts it
+                          underneath exactly when it has to be, instead of
+                          squeezing both.
+
+                          items-baseline so the pill sits on the price's
+                          baseline; centred, a small pill floats oddly against a
+                          30px number. */}
+                      {(tier.price || tier.priceNote?.trim()) && (
+                        <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-2">
+                          {tier.price && (
+                            /* The recommended price is set a size larger. Two
+                               prices at identical weight ask the customer to do
+                               the comparison themselves; the point of
+                               recommending one is to have already done it. */
+                            <p
+                              className={`font-bold text-[#0f4d80] ${
+                                tier.recommended ? "text-3xl" : "text-2xl"
+                              }`}
+                            >
+                              {formatPrice(tier.price)}
+                            </p>
+                          )}
+                          {tier.priceNote?.trim() && (
+                            <p className="rounded-md bg-[#e3f5e8] px-2 py-1 text-sm font-semibold text-[#176a2c]">
+                              {tier.priceNote.trim()}
+                            </p>
+                          )}
+                        </div>
                       )}
                       <span className="relative z-10 block pt-5">
                         <button
