@@ -452,6 +452,25 @@ export const ApprovePage = () => {
   }, []);
 
   /**
+   * Picking a plan is ONE action, not two.
+   *
+   * It used to select the card — ring, badge swap, button relabelled to
+   * "Continue" — and wait for a second press. That is a step the customer never
+   * asked for: they had already decided by the time they reached for the
+   * button, and the interface answered by admiring the decision instead of
+   * acting on it. The selected styling stays for the one case where it is
+   * genuinely useful — coming BACK from the signature step, where it says which
+   * plan you are partway through.
+   */
+  const selectPlan = useCallback(
+    (name: string) => {
+      setPlan(name);
+      goToConfirm();
+    },
+    [goToConfirm],
+  );
+
+  /**
    * A texted quote has no email on record, so the confirmation would have
    * nowhere to go and there'd be no address to invoice from. Asked for here —
    * one field, at the moment they're already committing — rather than up front,
@@ -831,7 +850,7 @@ export const ApprovePage = () => {
                 return (
                   <div
                     key={i}
-                    className={`relative flex flex-col overflow-hidden rounded-2xl border text-left transition-colors ${
+                    className={`relative flex flex-col overflow-hidden rounded-2xl border text-left ${
                       // Recommended leads on a phone: stacked, the upgrade would
                       // otherwise sit below the fold under the option it's meant
                       // to beat. Side by side on desktop, natural order reads
@@ -859,8 +878,7 @@ export const ApprovePage = () => {
                         HTML. Everything non-interactive sits under this; the
                         footer sits above it on z-10. */}
                     <button
-                      onClick={() => setPlan(tier.name)}
-                      aria-pressed={on}
+                      onClick={() => selectPlan(tier.name)}
                       className="absolute inset-0 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1669AE]"
                     >
                       <span className="sr-only">Choose {tier.name}</span>
@@ -947,7 +965,7 @@ export const ApprovePage = () => {
                       <span className="relative z-10 block pt-5">
                         <button
                           onClick={() =>
-                            on ? goToConfirm() : setPlan(tier.name)
+                            selectPlan(tier.name)
                           }
                           className={`flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-bold transition-colors ${
                             /* Solid dark on BOTH cards, not an outline. A
@@ -966,18 +984,8 @@ export const ApprovePage = () => {
                               : "border-[#0a1628] bg-[#0a1628] text-white hover:border-[#16283f] hover:bg-[#16283f]"
                           }`}
                         >
-                          {on ? (
-                            <>
-                              Continue
-                              <span className="sr-only"> with {tier.name}</span>
-                              <ArrowRight className="h-4 w-4" />
-                            </>
-                          ) : (
-                            <>
-                              Choose
-                              <span className="sr-only"> {tier.name}</span>
-                            </>
-                          )}
+                          Select
+                          <span className="sr-only"> {tier.name}</span>
                         </button>
                       </span>
                       {/* A rule under the button, not a bare gap. Above it the
