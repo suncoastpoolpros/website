@@ -18,7 +18,7 @@
  * property is, what water is on it, what we will do, what it costs, on what
  * terms.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   ArrowRight,
@@ -100,6 +100,16 @@ export const CommercialBuilder = ({
   const [confirmClear, setConfirmClear] = useState(false);
   const [building, setBuilding] = useState(false);
   const [buildError, setBuildError] = useState('');
+  /**
+   * The number reserved for THIS bid, held across repeat downloads.
+   *
+   * Reserving on every click meant downloading twice produced two documents
+   * with two different numbers — so the copy you emailed and the copy on your
+   * desk disagreed about which proposal they were — and burnt a number from a
+   * shared sequence each time. Re-downloading after a typo is the normal case,
+   * not the exception.
+   */
+  const reservedNumberRef = useRef<number | null>(null);
 
   /**
    * Apply a hand-off from the residential builder — ONLY into blank fields.
@@ -169,6 +179,9 @@ export const CommercialBuilder = ({
   const doClear = () => {
     clearDraft();
     setConfirmClear(false);
+    // A new bid gets a new number. Without this, the next property would be
+    // quoted under the last one's proposal number.
+    reservedNumberRef.current = null;
   };
 
   /**
@@ -189,7 +202,10 @@ export const CommercialBuilder = ({
     setBuilding(true);
     setBuildError('');
     try {
-      const proposalNumber = await reserveProposalNumber();
+      if (reservedNumberRef.current == null) {
+        reservedNumberRef.current = await reserveProposalNumber();
+      }
+      const proposalNumber = reservedNumberRef.current;
       const blob = await renderCommercialPdf({
         data,
         business: profile.business,

@@ -11,6 +11,7 @@ import {
 import { usePageMeta } from '@/lib/usePageMeta';
 import { type ParsedQuoteLink, parseQuoteLink } from '@/lib/quoteLinks';
 import { PRICING_CONDITION_TERM } from '@/components/admin/proposalTerms';
+import { jobKindOf, showsConditionTerm } from '@/components/admin/jobKinds';
 
 /** Matches MAX_PHOTOS in the builder's PhotoPicker — the ceiling on how far
  *  the fetch loop below will walk before giving up. */
@@ -100,6 +101,10 @@ type Quote = {
     price?: string;
     scope?: string;
     includeBenefits?: boolean;
+    /** 'recurring' | 'recovery' | 'repair'. Absent on quotes stored before job
+     *  kinds existed — jobKindOf coerces those to recurring, which is what they
+     *  were built as. */
+    jobKind?: string;
     /** 'link' when the quote was never emailed — see the breakdown step. */
     deliveredBy?: string;
   };
@@ -1006,9 +1011,15 @@ export const ApprovePage = () => {
                   screen nobody signs anything on — which is the wrong place for
                   fine print to earn its keep. Here they're in front of someone
                   at the moment they tick "I've read and agree". */}
-              {/* Renders whether or not the plan carries terms of its own: the
-                  condition the PRICE assumes is always worth stating, and this
-                  is the last thing read before a signature. */}
+              {/* The condition the PRICE assumes — on RECURRING work only, and
+                  this is the more important of the two places it is gated.
+                  "Pricing assumes the pool is clean and in balanced condition
+                  when service begins" is the LAST thing read before a
+                  signature, and on a green-to-clean — where the pool being
+                  filthy is the entire job — it reads as a trapdoor to raise the
+                  price on arrival. Removing it from the PDF while leaving it
+                  here would have fixed the copy nobody signs and kept it on the
+                  one they do. */}
               <div className="mt-4 rounded-xl border border-[#e3e8ef] bg-[#f7f9fc] p-4">
                 <h3 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
                   {plan ? `${plan} — terms` : 'Terms'}
@@ -1016,9 +1027,11 @@ export const ApprovePage = () => {
                 {chosen?.finePrint?.trim() && (
                   <p className="text-sm leading-relaxed text-[#374151]">{chosen.finePrint.trim()}</p>
                 )}
-                <p className={`text-sm leading-relaxed text-[#374151] ${chosen?.finePrint?.trim() ? 'mt-2' : ''}`}>
-                  {PRICING_CONDITION_TERM}
-                </p>
+                {showsConditionTerm(jobKindOf(quote.proposal?.jobKind)) && (
+                  <p className={`text-sm leading-relaxed text-[#374151] ${chosen?.finePrint?.trim() ? 'mt-2' : ''}`}>
+                    {PRICING_CONDITION_TERM}
+                  </p>
+                )}
                 <p className="mt-2 text-xs text-[#6b7280]">
                 The full scope of work is in your proposal.
                 </p>
