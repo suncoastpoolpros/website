@@ -42,6 +42,19 @@ type Guide = {
 // proper landing page instead of a bare URL segment).
 const GUIDES: Guide[] = [
   {
+    to: '/pool-care/hurricane-pool-prep/',
+    icon: Waves,
+    tag: 'Hurricane Season',
+    title: 'Hurricane Pool Prep',
+    blurb:
+      'Nine things worth doing to a Florida pool before the weather arrives — and the one instinct, draining it, that costs far more than the storm was ever going to.',
+    points: [
+      'Why draining it can float the shell',
+      'How far to lower the water, and no further',
+      'Chlorine, the breaker, and the cover',
+    ],
+  },
+  {
     to: '/pool-care/green-pool/',
     icon: Waves,
     tag: 'Algae & Green Water',
@@ -169,6 +182,12 @@ const FEATURED_SLUG = '/pool-care/green-pool/';
 // of truth — also drives the ItemList schema). The featured guide is excluded.
 const CATEGORY_GROUPS: { label: string; slugs: string[] }[] = [
   {
+    // First because it is seasonal and the season is now. Move it down the
+    // list once hurricane season is over if the ordering starts to look odd.
+    label: 'Storm season',
+    slugs: ['/pool-care/hurricane-pool-prep/'],
+  },
+  {
     label: 'Common pool problems',
     slugs: ['/pool-care/cloudy-pool-water/', '/pool-care/pool-smells-like-chlorine/'],
   },
@@ -189,6 +208,24 @@ const CATEGORY_GROUPS: { label: string; slugs: string[] }[] = [
     slugs: ['/pool-care/how-to-drain-a-pool/'],
   },
 ];
+
+// GUIDES feeds the ItemList schema; CATEGORY_GROUPS drives what actually
+// RENDERS. Two lists that have to agree, and they silently disagreed once
+// already — a guide added to GUIDES alone appeared in the structured data
+// while being invisible and unlinked on the page. This fails the build
+// instead, because prerender evaluates this module.
+// FEATURED_SLUG renders in its own card above the groups, so it is legitimately
+// absent from CATEGORY_GROUPS — the guard caught that on its first run.
+const ungrouped = GUIDES.filter(
+  (g) =>
+    g.to !== FEATURED_SLUG &&
+    !CATEGORY_GROUPS.some((group) => group.slugs.includes(g.to)),
+).map((g) => g.to);
+if (ungrouped.length) {
+  throw new Error(
+    `PoolCarePage: guide(s) missing from CATEGORY_GROUPS, so they would render nowhere: ${ungrouped.join(', ')}`,
+  );
+}
 
 const bySlug = (slug: string) => GUIDES.find((g) => g.to === slug)!;
 const featured = bySlug(FEATURED_SLUG);

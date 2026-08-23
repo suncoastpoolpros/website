@@ -4,7 +4,7 @@ import { m } from 'motion/react';
 import {
   Wind,
   Sprout,
-  Camera,
+  ShieldOff,
   CloudRain,
   Ban,
   Zap,
@@ -37,71 +37,6 @@ import { serviceSchema } from '@/lib/businessSchema';
 import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 const CANONICAL = '/services/storm-cleanup/';
-
-// ── Before the storm ───────────────────────────────────────────────
-// The half of this subject almost no competitor page covers. It's also where
-// the most expensive mistake lives, so the "don't drain it" card leads and is
-// visually separated from the rest of the checklist.
-const PREP_CARDS: Array<{
-  icon: typeof Wind;
-  title: string;
-  body: string;
-}> = [
-  {
-    icon: Droplets,
-    title: 'Leave the water in it',
-    body:
-      "The water is what's holding your pool down. Days of rain saturate the ground around the shell and raise the water table, and that pressure pushes up underneath it — a full pool has the weight to push back. Drain it first and you have removed the ballast at the exact moment you need it most.",
-  },
-  {
-    icon: Waves,
-    title: 'Lower it a foot or two — no further',
-    body:
-      "If you want a buffer for the rainfall, take it down twelve to twenty-four inches. That is enough to stop it spilling over the deck and into the house, and shallow enough that the remaining water still anchors the shell. Below about half full you are back to the problem in the first card.",
-  },
-  {
-    icon: TestTube,
-    title: 'Shock it to 3–5 ppm the day before',
-    body:
-      "Put free chlorine at the top of its normal band before the weather arrives. You are building a buffer that has to survive several days with no pump, no filtration, and a lot of organic debris landing in the water. A pool that goes into a storm at the low end is green on the other side.",
-  },
-  {
-    icon: Zap,
-    title: 'Cut the power at the breaker',
-    body:
-      "Shut the pump, heater, and salt system off at the panel — not just at the timer. It protects the equipment from the surge when power comes back, and means nothing is energised if the pad ends up underwater. Anything that unplugs and can be moved is better off inside.",
-  },
-  {
-    icon: Wrench,
-    title: 'Pull the cleaner out',
-    body:
-      "Robotic and suction cleaners come out of the water and get stored dry. Left in, they are one more thing to be damaged by debris, and one more thing tangled under a pile of branches when you are trying to see the floor afterwards.",
-  },
-  {
-    icon: Ban,
-    title: 'Leave the cover off',
-    body:
-      "A cover does not protect a pool in a hurricane — it collects branches and roof debris, then tears, sinks, or drags all of it across the finish. The water itself handles falling debris better than a cover does, and an uncovered pool is far easier to clean out after.",
-  },
-  {
-    icon: Wind,
-    title: 'Anything loose goes inside',
-    body:
-      "Furniture, toys, planters, the float pile. The old advice was to throw it all in the pool — it does stop a chair going through a window, but it can chip plaster and leave rust marks, and cushions turn into a soup that stains. Garage first if there is room; the pool only if there is not.",
-  },
-  {
-    icon: Sprout,
-    title: 'Trim what hangs over the water',
-    body:
-      "Overhanging limbs are the single biggest source of what we pull out afterwards. An hour with a saw before the season starts is the difference between netting a few leaves and hauling half a tree out of the deep end.",
-  },
-  {
-    icon: Camera,
-    title: 'Photograph the pool and the pad',
-    body:
-      "Before-and-after photos are worth having if you end up making a claim, and they take two minutes. Get the water, the deck, the screen enclosure, and a clear shot of the equipment so there is a record of what condition it was in.",
-  },
-];
 
 // ── What the cleanup actually covers ───────────────────────────────
 const CLEANUP_STEPS: Array<{ icon: typeof Wind; title: string; body: string }> = [
@@ -145,81 +80,53 @@ const CLEANUP_STEPS: Array<{ icon: typeof Wind; title: string; body: string }> =
 
 const STORM_FAQ: Array<{ question: string; answer: string }> = [
   {
-    question: 'Should I drain my pool before a hurricane?',
+    question: 'Is it safe to swim after a storm?',
     answer:
-      "No — this is the single most common and most expensive storm mistake. The water in your pool is ballast holding the shell in the ground. Saturated soil around an empty or half-empty pool puts upward pressure on it, and that is how shells crack or lift. Leave the water in. If flooding is forecast and you want extra room, lower it by about a foot and no more.",
+      "Not until it has been tested, and usually not for a few days. Storm runoff carries sewage-associated bacteria into the pool at the same time the rain has diluted your chlorine to nothing, so the water can be genuinely unsafe while looking completely normal. Clear is not the same as sanitized. Nobody should be getting in until the numbers are back in a safe band and holding there.",
   },
   {
-    question: 'My pool turned green two days after the storm. Is it ruined?',
+    question: 'My pool looks fine. Do I still need it cleaned?',
     answer:
-      "Almost never. Green after a storm is an algae bloom that got going while the pump was off, fed by debris and runoff — not damage to the pool. It takes a proper shock, a filter that can actually pass water, and a few days of running to clear. The pool surface underneath is generally fine.",
-  },
-  {
-    question: 'Can I run my pump during the storm?',
-    answer:
-      "No. Shut it down at the breaker before the weather arrives. Running through a storm risks the motor if the pad floods, and leaves the equipment exposed to the surge when the grid comes back. Leave it off until someone has looked at the pad and confirmed nothing got wet.",
-  },
-  {
-    question: 'The power has been out for days. What can I do myself?',
-    answer:
-      "Skim what you can reach, brush the walls and floor daily to keep algae from anchoring, and hand-broadcast liquid chlorine around the perimeter rather than dropping tabs in a floater — with no circulation a floater just sits in one place and can bleach the surface under it. Don't swim until it's balanced again. Once power returns, run the pump continuously for the first couple of days.",
-  },
-  {
-    question: 'My pool overflowed. Do I need to pump it down?',
-    answer:
-      "Yes, but only back to the tile line — halfway up the skimmer opening. Above that the skimmers stop working and surface debris just sits there. Use the waste setting on your multiport valve if the equipment is dry and safe to run, or a submersible pump if it is not. Stop at the tile. Emptying it further the day after a storm, when the ground is at its most saturated, is when a shell is most likely to lift.",
-  },
-  {
-    question: 'How much chlorine should I add before a storm?',
-    answer:
-      "Get free chlorine to the top of its normal range — around 3 to 5 ppm — the day before it arrives. You are not trying to shock it; you are giving it a buffer that has to last several days with no pump and a lot of debris landing in the water. Afterwards is when it needs a proper shock, and that is a bigger dose.",
-  },
-  {
-    question: 'My pump was underwater. Can it be saved?',
-    answer:
-      "Often, yes — but not by switching it on to find out. A motor that sat in floodwater can usually be dried and cleaned professionally. What kills it is energising it with silt still inside, which seizes the bearings and turns a service into a replacement. Leave the breaker off until someone has actually looked at it.",
+      "Probably, and this is the one that catches people. Debris settles out and the water goes clear on its own, which makes it look finished — while there is still no measurable sanitizer in it. The visible mess is the easy part. What actually needs doing is rebuilding the chemistry and holding it long enough to be confident the water is safe again.",
   },
   {
     question: 'How quickly can you get out after a storm?',
     answer:
-      "Honestly: it depends on how wide the damage is. After a major storm we're triaging a whole route, and existing weekly customers come first. Call or text as early as you can — even before the weather clears — and we'll give you a real position in the queue rather than a promise we can't keep.",
+      "It depends on how wide the damage is. After a major storm we are triaging a whole route, and existing weekly customers come first. Call or text as early as you can — even before the power is back — and we will give you a real position in the queue rather than a promise we cannot keep. Getting on the list costs nothing and it decides how big the job is by the time we arrive.",
+  },
+  {
+    question: 'How long until my pool is usable again?',
+    answer:
+      "For most storm pools we are talking a few days rather than weeks — the debris comes out on the first visit, and the chemistry needs a little time to be rebuilt and hold. A pool that sat untouched for a week or more, or one that took genuine flooding, takes longer. We will tell you which one you have after we have seen it, not before.",
+  },
+  {
+    question: 'My pool overflowed. Is that a problem?',
+    answer:
+      "It needs bringing back down, yes. Above the skimmer mouth the skimmers stop working entirely, so nothing is being pulled off the surface. What matters more is what people do about it: this is the moment homeowners decide to empty the pool out, on the one day of the year the ground is most saturated — which is exactly when a shell is most likely to lift. We bring the level down to the tile line as part of the visit.",
   },
   {
     question: 'Does my pool need to be drained and acid washed after a storm?',
     answer:
-      "Usually not, and be careful with anyone who leads with that. Draining a pool in saturated Florida ground carries real risk, and most post-storm pools — even genuinely awful-looking ones — come back with debris removal, a proper filter clean, and a shock-and-hold cycle. A full drain is a last resort, not a starting point.",
+      "Usually not, and be careful with anyone who leads with that. Draining a pool in saturated Florida ground carries real risk, and we run vacuums with integrated filtration — the debris and sludge come out of the pool without the water going with them. Most post-storm pools, even genuinely awful-looking ones, come back with cleaning and chemistry. A full drain is a last resort, not a starting point.",
+  },
+  {
+    question: 'My pump was underwater. Can it be saved?',
+    answer:
+      "Often, yes — but not by switching it on to find out. A motor that sat in floodwater can usually be dried and cleaned professionally. What kills it is energising it with silt still inside, which seizes the bearings and turns a service call into a replacement. Leave the breaker off until someone has actually looked at it.",
+  },
+  {
+    question: 'What does storm cleanup cost?',
+    answer:
+      "It is a flat quote given up front from photos, not an hourly meter. The number moves with how much debris is in the pool, how long it has been sitting, and what shape the equipment is in. Storm work is the easiest place in this industry to run a meter on someone who has just had a rough week, and we would rather you knew the price before anyone turns up.",
   },
   {
     question: 'Will my insurance cover the cleanup?',
     answer:
-      "It varies a lot by policy, so it's worth a call to your carrier before you assume either way. Structural damage and equipment are treated differently from debris removal and water chemistry, and deductibles on named storms often work differently from the rest of the policy. Keep photos from before and after — they help whichever way it goes.",
+      "It varies a lot by policy, so it is worth a call to your carrier before you assume either way. Structural damage and equipment are treated differently from debris removal and water chemistry, and deductibles on named storms often work differently from the rest of the policy. Keep photos from before and after — they help whichever way it goes.",
   },
 ];
 
-// JSON-LD, passed through usePageMeta({ jsonLd }) so it lands in the
-// PRERENDERED head — NOT appended from a useEffect. An effect never runs during
-// renderToString, so the HTML a crawler reads on first fetch would carry none of
-// these nodes; they'd only appear after the page hydrates. That matters more
-// here than anywhere else on the site: this page's whole reason for shipping in
-// August is being indexed fast, ahead of a named storm.
 const STORM_SCHEMA = [
-  // HowTo built from the same PREP_CARDS the light band renders, so the markup
-  // can never describe steps the page does not show. The prep section is a
-  // genuine ordered procedure and was emitting no HowTo at all, which is the
-  // rich-result type this query actually returns.
-  {
-    '@context': 'https://schema.org',
-    '@type': 'HowTo',
-    name: 'How to prepare your pool for a hurricane',
-    description:
-      'What to do with a swimming pool before a hurricane or tropical storm in Florida — including why draining it is the one thing not to do.',
-    step: PREP_CARDS.map((c, i) => ({
-      '@type': 'HowToStep',
-      position: i + 1,
-      name: c.title,
-      text: c.body,
-    })),
-  },
   serviceSchema({
     serviceType: 'Storm & Hurricane Pool Cleanup',
     description:
@@ -251,7 +158,7 @@ const StormCleanupPageInner = () => {
     // had only the first.
     title: 'Hurricane & Storm Pool Cleanup — St. Petersburg, FL',
     description:
-      'Hurricane and storm pool cleanup across St. Petersburg & Pinellas — debris out, filter cleaned, chemistry rebuilt. Plus what to do before it hits.',
+      'Hurricane and storm pool cleanup across St. Petersburg & Pinellas. Storm runoff leaves pools genuinely unsafe, not just dirty — debris out, chemistry rebuilt, flat quote.',
     canonicalPath: CANONICAL,
     // No hero photo on this page, so no heroPreload — the head stays lean and
     // the H1 paints as soon as the fonts land. Montserrat 900 is the display
@@ -289,9 +196,10 @@ const StormCleanupPageInner = () => {
             Storm and hurricane pool cleanup, across Pinellas.
           </h1>
           <p className="text-lg text-gray-400 leading-relaxed max-w-xl mx-auto mb-8">
-            Debris out, filter cleaned, chemistry rebuilt from wherever the rain left it, and
-            eyes on the equipment before anything gets switched back on. We cover
-            St.&nbsp;Petersburg, Clearwater, Largo, Palm Harbor and the rest of Pinellas.
+            Storm runoff leaves a pool unsafe, not just ugly — and the rain washed out the
+            chlorine that would normally handle it. We clear it, rebuild the chemistry, and
+            tell you in writing when it is safe again. St.&nbsp;Petersburg, Clearwater, Largo,
+            Palm Harbor and the rest of Pinellas.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -308,181 +216,139 @@ const StormCleanupPageInner = () => {
 
         <ServiceAreaStrip intro="A named storm does not stop at a city line, and neither do we. Post-storm cleanup runs across Pinellas County and into South Tampa." />
 
-        {/* Two doors. People land here in one of two very different moments —
-            watching a cone on the news, or standing over a brown pool — and
-            they need opposite halves of the page. Anchors, not tabs, so both
-            halves stay in the DOM and crawlable. */}
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <a
-              href="#before"
-              className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.04] p-5 flex items-start gap-3.5 hover:bg-white/[0.06] hover:border-white/15 transition-colors text-left"
-            >
-              <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-              <span className="w-11 h-11 shrink-0 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center">
-                <CloudRain className="w-5 h-5 text-brand-blue-light" />
-              </span>
-              <span className="min-w-0">
-                <span className="block font-display font-bold text-white text-[15px] leading-snug mb-1">
-                  There&rsquo;s one coming
-                </span>
-                <span className="block text-[13px] text-gray-400 leading-snug">
-                  What to do this week — and the one thing not to
-                  <ArrowRight className="inline w-3.5 h-3.5 ml-1 -mt-0.5 transition-transform group-hover:translate-x-0.5" />
-                </span>
-              </span>
-            </a>
-
-            <a
-              href="#after"
-              className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.04] p-5 flex items-start gap-3.5 hover:bg-white/[0.06] hover:border-white/15 transition-colors text-left"
-            >
-              <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-              <span className="w-11 h-11 shrink-0 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center">
-                <Waves className="w-5 h-5 text-brand-blue-light" />
-              </span>
-              <span className="min-w-0">
-                <span className="block font-display font-bold text-white text-[15px] leading-snug mb-1">
-                  It already hit
-                </span>
-                <span className="block text-[13px] text-gray-400 leading-snug">
-                  What the cleanup covers and how fast we can get there
-                  <ArrowRight className="inline w-3.5 h-3.5 ml-1 -mt-0.5 transition-transform group-hover:translate-x-0.5" />
-                </span>
-              </span>
-            </a>
-          </div>
-        </section>
-
-        {/* ── THE LIGHT BAND — before the storm ─────────────────── */}
-        {/* The page's one polarity flip, and it goes here on purpose: the
-            pre-storm half is the part that earns trust (and links), so it gets
-            the surface that stops the scroll. Site rule is exactly ONE light
-            band per page. */}
-        <section
-          id="before"
-          className="py-16 md:py-24 relative overflow-hidden bg-gradient-to-b from-[#e4e9f0] to-[#d6dde7] scroll-mt-20"
-        >
+        {/* ── THE LIGHT BAND — why it is a health job ───────────── */}
+        {/* The page's one polarity flip, and it earns the position: this is the
+            argument that turns "I'll get to it" into a booking. Grounded in CDC
+            guidance on floodwater and on tropical-storm-associated waterborne
+            illness — claims stay at "what floodwater carries" and "your
+            disinfectant is gone", which is what the sources support. No
+            diagnosing, no scare statistics. */}
+        <section className="py-16 md:py-24 relative overflow-hidden bg-gradient-to-b from-[#e4e9f0] to-[#d6dde7]">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[50%] bg-brand-blue/[0.05] rounded-full blur-[140px] pointer-events-none" />
           <Container className="relative z-10">
             <div className="text-center max-w-2xl mx-auto mb-10 md:mb-14">
               <span className="text-brand-blue font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-                Before It Hits
+                Why It Is Not Just Dirty
               </span>
               <h2 className="section-heading text-[#0a1628] leading-tight mb-4">
-                Nine things to do — and one to never do.
+                A storm pool is a health problem before it is a cleaning one.
               </h2>
               <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
-                Most of the damage we clean up after a storm was decided in the two days
-                before it. None of it takes long, and together they change how bad the
-                other side looks.
+                Two things happen at once in a hurricane, and it is the combination that
+                matters: contaminated water gets into the pool at the exact moment its
+                disinfectant is wiped out.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
-              {PREP_CARDS.map((card, i) => (
-                <m.div
-                  key={card.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: (i % 3) * 0.08 }}
-                  className="rounded-2xl bg-white border border-brand-blue/15 shadow-[0_10px_30px_-18px_rgba(10,22,40,0.45)] p-6"
-                >
-                  <span className="w-11 h-11 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center mb-4">
-                    <card.icon className="w-5 h-5 text-brand-blue" />
-                  </span>
-                  <h3 className="text-[#0a1628] font-display font-bold text-lg mb-2 leading-snug">
-                    {card.title}
-                  </h3>
-                  <p className="text-slate-600 text-[15px] leading-relaxed">{card.body}</p>
-                </m.div>
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 max-w-5xl mx-auto mb-6">
+              <m.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="rounded-2xl bg-white border border-brand-blue/15 shadow-[0_10px_30px_-18px_rgba(10,22,40,0.45)] p-6 sm:p-7"
+              >
+                <span className="w-11 h-11 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center mb-4">
+                  <Droplets className="w-5 h-5 text-brand-blue" />
+                </span>
+                <h3 className="text-[#0a1628] font-display font-bold text-lg mb-3 leading-snug">
+                  What the water brought in
+                </h3>
+                <p className="text-slate-600 text-[15px] leading-relaxed mb-3">
+                  Floodwater and heavy runoff carry sewage-associated bacteria, viruses and
+                  protozoa. The CDC lists illness from contaminated floodwater ranging from
+                  stomach upset through to dysentery and infectious hepatitis, and names
+                  E.&nbsp;coli and Enterococci among the organisms routinely found in it.
+                </p>
+                <p className="text-slate-600 text-[15px] leading-relaxed">
+                  In Pinellas that water has usually crossed septic drainfields, storm drains,
+                  lawns and street runoff on its way into your backyard. A screen enclosure
+                  does not filter any of it.
+                </p>
+              </m.div>
+
+              <m.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.08 }}
+                className="rounded-2xl bg-white border border-brand-blue/15 shadow-[0_10px_30px_-18px_rgba(10,22,40,0.45)] p-6 sm:p-7"
+              >
+                <span className="w-11 h-11 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center mb-4">
+                  <ShieldOff className="w-5 h-5 text-brand-blue" />
+                </span>
+                <h3 className="text-[#0a1628] font-display font-bold text-lg mb-3 leading-snug">
+                  And the defence that was gone
+                </h3>
+                <p className="text-slate-600 text-[15px] leading-relaxed mb-3">
+                  A pool is safe because its disinfectant is held in a working range. Inches of
+                  rain dilute chlorine and stabilizer together, the pump has been off for days,
+                  and the debris load consumes whatever is left. By the time the water is still
+                  again there is often no measurable sanitizer at all.
+                </p>
+                <p className="text-slate-600 text-[15px] leading-relaxed">
+                  The CDC is explicit that it is <em>properly maintained</em> disinfectant that
+                  makes treated water low-risk. After a storm, that is precisely the thing your
+                  pool no longer has.
+                </p>
+              </m.div>
             </div>
 
-            <p className="text-center text-slate-500 text-sm max-w-xl mx-auto mt-10">
-              If you&rsquo;re a weekly customer, we handle the shock-and-shutdown pass on our
-              last visit before the storm. You don&rsquo;t need to do any of this yourself.
-            </p>
-          </Container>
-        </section>
-
-        {/* ── The clock ─────────────────────────────────────────── */}
-        <section id="after" className="py-16 md:py-24 relative overflow-hidden bg-[#07111c] scroll-mt-16">
-          <div className="absolute top-0 right-1/4 w-[50%] h-[40%] bg-brand-blue/[0.06] rounded-full blur-[150px] pointer-events-none" />
-          <Container className="relative z-10">
-            <div className="max-w-2xl mb-10 md:mb-12">
-              <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-                After It Passes
-              </span>
-              <h2 className="section-heading text-white leading-[1.1] mb-4">
-                A still pool in August doesn&rsquo;t stay clear for long.
-              </h2>
-              <p className="section-subtext">
-                The pool usually survives the storm fine. What gets it is the days
-                afterward, and that part is a race.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
-              {[
-                {
-                  icon: Zap,
-                  title: 'No pump, no filtration',
-                  body:
-                    "Nothing is moving, so nothing is being filtered and the chlorine that is left sits in whatever corner it started in. In Florida summer heat, a pool with organic debris in it and no circulation can turn in a day or two.",
-                },
-                {
-                  icon: CloudRain,
-                  title: 'The rain thinned everything out',
-                  body:
-                    'Inches of rainwater dilute chlorine, stabilizer, and alkalinity together. Without stabilizer, whatever chlorine survives burns off in hours once the sun is back out.',
-                },
-                {
-                  icon: Droplets,
-                  title: 'The runoff brought food',
-                  body:
-                    'Everything the water crossed on the way in — lawn fertilizer, soil, street debris — lands in the pool as phosphates and nitrates. That is what turns a recoverable pool into one that keeps going green.',
-                },
-              ].map((item) => (
-                <m.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="relative rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 shadow-[0_12px_30px_-16px_rgba(0,0,0,0.8)]"
-                >
-                  <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-                  <span className="w-11 h-11 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center mb-4">
-                    <item.icon className="w-5 h-5 text-brand-blue-light" />
-                  </span>
-                  <h3 className="font-display font-bold text-white text-base mb-2 leading-snug">
-                    {item.title}
-                  </h3>
-                  <p className="text-gray-400 text-[15px] leading-relaxed">{item.body}</p>
-                </m.div>
-              ))}
-            </div>
-
+            {/* The timing fact, which is the part people get wrong */}
             <m.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="mt-6 rounded-2xl border border-brand-orange/20 bg-brand-orange/[0.04] p-6 md:p-7 flex flex-col sm:flex-row sm:items-center gap-5"
+              className="max-w-5xl mx-auto rounded-2xl bg-white border border-brand-blue/15 shadow-[0_10px_30px_-18px_rgba(10,22,40,0.45)] p-6 sm:p-7 mb-6"
             >
-              <p className="text-gray-300 leading-relaxed text-[15px] flex-1">
-                If it already went green, that is its own job with its own order of
-                operations — and the full walkthrough is written up if you would rather take
-                it on yourself.
-              </p>
-              <SmartLink
-                to="/pool-care/green-pool/"
-                className="group inline-flex items-center gap-2 shrink-0 text-brand-orange-light font-semibold text-[15px] hover:text-white transition-colors"
-              >
-                Read the green pool guide
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-              </SmartLink>
+              <div className="flex items-start gap-4">
+                <span className="w-11 h-11 shrink-0 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center">
+                  <CalendarClock className="w-5 h-5 text-brand-blue" />
+                </span>
+                <div>
+                  <h3 className="text-[#0a1628] font-display font-bold text-lg mb-2 leading-snug">
+                    It gets less safe over the following week, not more
+                  </h3>
+                  <p className="text-slate-600 text-[15px] leading-relaxed">
+                    Research on storm-affected water systems found E.&nbsp;coli loads climbing
+                    within 12 to 24 hours of a storm starting — and <em>Legionella</em> rising
+                    four to five days later. That second window is the one people miss: the
+                    water has stopped looking dramatic, the panic has passed, and everyone has
+                    moved on to the roof. It is also when the pool is at its worst.
+                  </p>
+                </div>
+              </div>
             </m.div>
+
+            {/* The clear-water trap */}
+            <m.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-5xl mx-auto rounded-2xl border border-brand-orange/30 bg-brand-orange/[0.07] p-6 sm:p-7"
+            >
+              <div className="flex items-start gap-4">
+                <span className="w-11 h-11 shrink-0 rounded-xl bg-brand-orange/15 border border-brand-orange/30 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-[#c85400]" />
+                </span>
+                <div>
+                  <h3 className="text-[#0a1628] font-display font-bold text-lg mb-2 leading-snug">
+                    Clear water is not the same as safe water
+                  </h3>
+                  <p className="text-slate-600 text-[15px] leading-relaxed">
+                    This is the trap. Debris settles, the water goes clear again, and it looks
+                    finished — with no sanitizer in it whatsoever. You cannot see bacteria, and
+                    a pool that looks swimmable four days after a hurricane is exactly the one
+                    nobody should be getting into. The only way to know is to test it, and the
+                    only way to fix it is to rebuild the chemistry properly and hold it there.
+                  </p>
+                </div>
+              </div>
+            </m.div>
+
+            <p className="text-center text-slate-500 text-sm max-w-2xl mx-auto mt-8">
+              Nobody swims until the numbers are back in a safe band — and we will tell you
+              when that is, in writing, rather than when it merely looks clear.
+            </p>
           </Container>
         </section>
 
@@ -524,15 +390,15 @@ const StormCleanupPageInner = () => {
               <div className="relative glass-panel rounded-3xl p-6 sm:p-8 overflow-hidden">
                 <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 mb-4">
-                  Bringing the level back down
+                  How we bring it back down
                 </p>
                 <ul className="flex flex-col gap-4">
                   {[
-                    'Target is halfway up the skimmer opening — roughly the middle of the waterline tile. Not lower.',
-                    'If the equipment is dry and safe to run, the multiport valve\u2019s waste setting takes water out without sending it through the filter.',
-                    'No multiport, or the pad is still wet? A submersible pump on the deck does the same job and keeps you away from the equipment.',
-                    'Take it down in stages and stop at the tile line. This is a top-up in reverse, not a drain.',
-                    'While the level is high, the skimmers are doing nothing — net the surface by hand until it is back down.',
+                    'We take it to halfway up the skimmer opening — the middle of the waterline tile. Not lower, and never to empty.',
+                    'It comes down in stages, off the equipment or with our own pump depending on what the pad looks like.',
+                    'While the level is still high the skimmers are doing nothing, so the surface gets cleared by hand on the same visit.',
+                    'The equipment pad gets checked before anything is run, so we are not pushing water through a motor that sat in a flood.',
+                    'You get the numbers and photos afterwards, the same as any other visit.',
                   ].map((line) => (
                     <li key={line} className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-brand-blue-light shrink-0 mt-0.5" />
@@ -602,55 +468,75 @@ const StormCleanupPageInner = () => {
           </Container>
         </section>
 
-        {/* ── Power outage case ─────────────────────────────────── */}
+        {/* ── The clock is on you, not us ───────────────────────── */}
+        {/* This was a "what you can do while the power is out" checklist. It
+            coached the customer through holding the pool themselves, on the
+            one page whose entire job is to get the work booked. Replaced with
+            the reason waiting costs them. */}
         <section className="py-16 md:py-24 relative overflow-hidden bg-[#07111c]">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
           <Container className="relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-12 items-start">
-              <div className="lg:pt-2">
-                <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-                  While The Power Is Out
-                </span>
-                <h2 className="section-heading text-white leading-[1.1] mb-4">
-                  The pump is down and it&rsquo;s going to be a few days.
-                </h2>
-                <p className="section-subtext mb-6">
-                  This is the most common call we get after a storm, and there is genuinely
-                  useful holding work you can do in the meantime. It will not clear the pool,
-                  but it decides whether we are cleaning it or recovering it.
-                </p>
-
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 mb-3">
-                    The moment power returns
-                  </p>
-                  <p className="text-white font-semibold text-[15px] leading-relaxed">
-                    Check the pad before you flip the breaker. A motor that sat in water can
-                    often be saved if it is cleaned and dried first — energising it wet is what
-                    turns that into a replacement.
-                  </p>
-                </div>
-              </div>
-
-              <div className="relative glass-panel rounded-3xl p-6 sm:p-8 overflow-hidden">
-                <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-                <ul className="flex flex-col gap-4">
-                  {[
-                    'Brush the walls and floor once a day — algae needs to anchor before it can bloom, and brushing keeps knocking it loose.',
-                    'Hand-pour liquid chlorine around the perimeter rather than dropping tabs in a floater. With no flow, a floater parks in one spot and can bleach the finish under it.',
-                    'Skim whatever you can reach. Organic debris is what is eating your chlorine.',
-                    'Leave the water level alone unless it is genuinely about to overflow into the house.',
-                    'Nobody swims until it is tested and balanced — clear-looking water after a storm is not the same as sanitized water.',
-                    'Once power is back and the pad checks out, run the pump continuously for the first couple of days, not on the timer.',
-                  ].map((line) => (
-                    <li key={line} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-brand-blue-light shrink-0 mt-0.5" />
-                      <span className="text-[15px] text-gray-300 leading-snug">{line}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="max-w-2xl mb-10 md:mb-12">
+              <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
+                Why It Gets Worse
+              </span>
+              <h2 className="section-heading text-white leading-[1.1] mb-4">
+                Every day it sits is a longer job.
+              </h2>
+              <p className="section-subtext">
+                A storm pool does not hold steady while you wait for a call back. It moves in
+                one direction, and each stage costs more to reverse than the one before it.
+              </p>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+              {[
+                {
+                  icon: CalendarClock,
+                  t: 'First 48 hours',
+                  b: 'Debris is loose on the surface and the chemistry is only diluted. This is the cheapest the job will ever be, and usually a single visit.',
+                },
+                {
+                  icon: Sprout,
+                  t: 'Days three to five',
+                  b: 'Organics have settled and started breaking down, the algae has taken hold, and what was a cleanup becomes a recovery with several visits.',
+                },
+                {
+                  icon: AlertTriangle,
+                  t: 'Past a week',
+                  b: 'Sludge on the floor, stained plaster, and a filter that will need pulling apart. Standing water is also breeding mosquitoes by this point.',
+                },
+              ].map((item) => (
+                <m.div
+                  key={item.t}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="relative rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 shadow-[0_12px_30px_-16px_rgba(0,0,0,0.8)]"
+                >
+                  <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                  <span className="w-11 h-11 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center mb-4">
+                    <item.icon className="w-5 h-5 text-brand-blue-light" />
+                  </span>
+                  <h3 className="font-display font-bold text-white text-base mb-2 leading-snug">
+                    {item.t}
+                  </h3>
+                  <p className="text-gray-400 text-[15px] leading-relaxed">{item.b}</p>
+                </m.div>
+              ))}
+            </div>
+
+            <m.p
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="mt-8 text-center text-gray-400 text-[15px] max-w-2xl mx-auto"
+            >
+              Call or text as early as you can —
+              <span className="text-white"> even before the power is back and before we can get to you.</span>{' '}
+              Getting in the queue costs nothing and it is what decides which of those three
+              columns your pool is in when we arrive.
+            </m.p>
           </Container>
         </section>
 
