@@ -13,6 +13,7 @@ import { usePageMeta } from "@/lib/usePageMeta";
 import { type ParsedQuoteLink, parseQuoteLink } from "@/lib/quoteLinks";
 import { PRICING_CONDITION_TERM } from "@/components/admin/proposalTerms";
 import { jobKindOf, showsConditionTerm } from "@/components/admin/jobKinds";
+import { splitTierIncludes } from "@/lib/adminApi";
 import {
   DECLINE_REASONS,
   declineReply,
@@ -70,7 +71,9 @@ type Tier = {
   priceNote?: string;
   /** The quiet disclosure under the button. */
   billingNote?: string;
-  /** How many leading `includes` are this plan's own extras. */
+  /** Leading `includes` that are the shared service; the rest are extras. */
+  sharedCount?: number;
+  /** Legacy: the same split when extras led instead. Read, never written. */
   extrasCount?: number;
   tagline: string;
   includes: string[];
@@ -1006,48 +1009,22 @@ export const ApprovePage = () => {
                           it. Each card carries the whole list now and stands
                           alone in any order. */}
                       {(() => {
-                        const own = tier.includes
-                          .map((x) => x.trim())
-                          .filter(Boolean);
-                        /*
-                         * OLDER QUOTES GET THE SAME FULL CARD, composed here
-                         * rather than written back to the database.
-                         *
-                         * A quote stored before the lists were merged holds only
-                         * this plan's extras, because the card said "Everything
-                         * in <base>, plus:" and let the other card carry the
-                         * rest. Without extrasCount that is all we would render,
-                         * and the reference it depended on is gone from this
-                         * page — so the annual card would silently understate
-                         * what the customer is buying.
-                         *
-                         * BACKFILLING THE ROWS WOULD BE THE WRONG FIX. Those
-                         * rows are the record of what was sent, some of them
-                         * signed, and the schema is explicit that a stored quote
-                         * must not change under the customer.
-                         *
-                         * Composing at render time is not the same thing. The
-                         * emailed PDF says "Everything in Pay Monthly, plus:
-                         * [four]"; this card lists all ten. Those are the same
-                         * claim stated two ways — one by reference, one in full
-                         * — so no customer can set the two side by side and find
-                         * a discrepancy. Nothing stored moves.
-                         */
-                        const base =
-                          i > 0 ? (tiers[i - 1]?.includes ?? []) : [];
-                        const inherited =
-                          tier.extrasCount == null && base.length
-                            ? base
-                                .map((x) => x.trim())
-                                .filter(Boolean)
-                                // A hand-edited old tier may already repeat one.
-                                .filter((x) => !own.includes(x))
-                            : [];
-                        const items = [...own, ...inherited];
-                        const n = Math.min(
-                          tier.extrasCount ??
-                            (inherited.length ? own.length : 0),
-                          items.length,
+                        /* Shared rows first so the two cards line up line for
+                           line; this plan's own extras hang off the bottom
+                           under a heading, which is where a reader scanning for
+                           the difference looks anyway.
+
+                           splitTierIncludes also rebuilds the legacy shape,
+                           where the upgrade card stored ONLY its extras and
+                           leaned on "Everything in Pay Monthly, plus:" to imply
+                           the rest. That sentence is gone from this page, so
+                           without it an older quote's annual card would
+                           silently understate what is being bought. Composed
+                           here rather than backfilled: the stored row is the
+                           record of what was sent, some of them signed. */
+                        const { shared, extras } = splitTierIncludes(
+                          tier,
+                          i > 0 ? (tiers[i - 1]?.includes ?? []) : [],
                         );
                         const row = (item: string, j: number) => (
                           <li
@@ -1058,25 +1035,26 @@ export const ApprovePage = () => {
                             {item}
                           </li>
                         );
-                        if (!n)
-                          return (
-                            <ul className="mt-4 space-y-2">{items.map(row)}</ul>
-                          );
                         return (
                           <>
-                            <p className="mt-4 text-sm font-bold text-[#0a1628]">
-                              Additional benefits
-                            </p>
-                            <ul className="mt-2 space-y-2">
-                              {items.slice(0, n).map(row)}
-                            </ul>
-                            {items.length > n && (
+                            {shared.length > 0 && (
+                              <ul className="mt-4 space-y-2">
+                                {shared.map(row)}
+                              </ul>
+                            )}
+                            {extras.length > 0 && (
                               <>
-                                <div className="mt-4 border-t border-[#e9eef4]" />
-                                <ul className="mt-4 space-y-2">
-                                  {items
-                                    .slice(n)
-                                    .map((item, j) => row(item, n + j))}
+                                <p
+                                  className={`text-sm font-bold text-[#0a1628] ${
+                                    shared.length ? "mt-5" : "mt-4"
+                                  }`}
+                                >
+                                  Additional benefits
+                                </p>
+                                <ul className="mt-2 space-y-2">
+                                  {extras.map((item, j) =>
+                                    row(item, shared.length + j),
+                                  )}
                                 </ul>
                               </>
                             )}

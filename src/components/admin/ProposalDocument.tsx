@@ -21,6 +21,7 @@ import {
   type ProposalData,
   type Tier,
   formatPrice,
+  splitTierIncludes,
   tierDelta,
 } from "@/lib/adminApi";
 import { BENEFITS_HEADING, includedBenefits } from "./proposalBenefits";
@@ -491,18 +492,22 @@ const Row = ({
 const TierCard = ({
   tier,
   buildsOn,
+  baseIncludes = [],
   delta,
 }: {
   tier: Tier;
   /** Name of the cheaper tier, when this one builds on it. */
   buildsOn?: string;
+  /** The cheaper plan's list, for rebuilding the legacy stored shape. */
+  baseIncludes?: string[];
   /** Pre-formatted upgrade cost, e.g. "+$12/mo". */
   delta?: string;
 }) => {
-  const items = tier.includes.map((i) => i.trim()).filter(Boolean);
-  const extras = Math.min(tier.extrasCount ?? 0, items.length);
-  // Only the extras when the tier declares them; the whole list otherwise.
-  const shown = extras > 0 ? items.slice(0, extras) : items;
+  const split = splitTierIncludes(tier, baseIncludes);
+  const items = [...split.shared, ...split.extras];
+  // Print shows only what this plan ADDS; the base card carries the rest and
+  // sits immediately to its left, so the reference is never a forward one.
+  const shown = split.extras.length ? split.extras : split.shared;
   return (
     <View
       style={[styles.tierCard, tier.recommended ? styles.tierCardRec : null]}
@@ -893,6 +898,7 @@ export const ProposalDocument = ({
                     <TierCard
                       tier={tier}
                       buildsOn={i > 0 ? tiers[i - 1].name.trim() : undefined}
+                      baseIncludes={i > 0 ? tiers[i - 1].includes : []}
                       delta={i > 0 ? delta : ""}
                     />
                   </View>

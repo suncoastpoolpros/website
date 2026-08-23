@@ -63,7 +63,7 @@ export const ANNUAL_MONTHS_CHARGED = 11;
 /* 5: the annual badge became "Save $X" and the four-figure total moved to its
    own billingNote line under the button. A draft started before that has the
    old combined string and no billingNote, so it should be offered the refresh. */
-export const PRESET_VERSION = 5;
+export const PRESET_VERSION = 6;
 
 /** Terms specific to prepaying for the year. */
 /**
@@ -169,8 +169,8 @@ export const monthlyIncludes = (filter: FilterOption): string[] => [
 /**
  * What prepaying adds, ON TOP of the service both plans share.
  *
- * These print FIRST in the annual card, before the shared service list, so the
- * four lines that actually differ are the four a skimming reader meets first.
+ * Appended AFTER the shared list, so the rows the two cards have in common line
+ * up side by side and the difference is what sticks out at the bottom.
  */
 export const ANNUAL_EXTRAS = [
   'Your 12th month free — pay for 11, the last one is on us',
@@ -352,11 +352,13 @@ export const buildTiers = (basePrice = '', filter: FilterOption = { type: '', in
        * a two-column price table is FOR, and which the cross-reference quietly
        * prevented.
        *
-       * The four annual-only lines come first so the difference is not buried
-       * under six lines the customer has already read on the card above.
+       * The SHARED lines come first, so the identical rows sit level across the
+       * two cards and the eye can run down them. The four annual-only lines
+       * then hang off the bottom of the longer card, under a heading — which is
+       * where somebody scanning for the difference looks anyway.
        */
-      includes: [...ANNUAL_EXTRAS, ...monthlyIncludes(filter)],
-      extrasCount: ANNUAL_EXTRAS.length,
+      includes: [...monthlyIncludes(filter), ...ANNUAL_EXTRAS],
+      sharedCount: monthlyIncludes(filter).length,
       recommended: true,
       // Answers the objection prepaying actually raises — being tied in.
       valueNote: monthly

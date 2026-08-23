@@ -34,6 +34,7 @@ import {
   type EmailOverrides,
   type CustomerInfo,
   type PricingMode,
+  splitTierIncludes,
   type ProposalData,
   type ProposalPreview,
   type Tier,
@@ -1935,21 +1936,21 @@ const ProposalPreview = ({
                       Everything in {tiers[i - 1].name.trim()}, plus:
                     </div>
                   )}
-                  {(tier.extrasCount
-                    ? tier.includes.slice(0, tier.extrasCount)
-                    : tier.includes
-                  )
-                    .map((x) => x.trim())
-                    .filter(Boolean)
-                    .map((item, j) => (
-                      <div
-                        key={j}
-                        className="flex gap-1.5 text-[10px] leading-snug text-stone-700"
-                      >
-                        <span className="text-green-600">•</span>
-                        <span>{item}</span>
-                      </div>
-                    ))}
+                  {(() => {
+                    const sp = splitTierIncludes(
+                      tier,
+                      i > 0 ? (tiers[i - 1]?.includes ?? []) : [],
+                    );
+                    return sp.extras.length ? sp.extras : sp.shared;
+                  })().map((item, j) => (
+                    <div
+                      key={j}
+                      className="flex gap-1.5 text-[10px] leading-snug text-stone-700"
+                    >
+                      <span className="text-green-600">•</span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>

@@ -108,11 +108,18 @@ export type Tier = {
    * falls back to the computed "+$12/mo more than X" delta.
    */
   /**
-   * How many of `includes` are this plan's OWN extras, as opposed to the
-   * service both plans share. Lets a card label the difference — "Additional
-   * benefits" over the first N — without any renderer having to know which
-   * plan it is looking at. Absent means "no split", which is every quote
-   * stored before this and every single-plan proposal.
+   * How many LEADING items of `includes` are the service both plans share.
+   * Anything after them is this plan's own extras.
+   *
+   * Shared-first so the identical rows line up across the two cards side by
+   * side — the comparison a two-column price table exists to make. The extras
+   * then hang off the bottom of the longer card, which is also where a reader
+   * scanning for the difference expects to find it.
+   */
+  sharedCount?: number;
+  /**
+   * The same split when it briefly shipped the other way round — extras FIRST.
+   * Read, never written. Quotes saved in that window still render correctly.
    */
   extrasCount?: number;
   /** The badge beside the rate, e.g. "Save $165". */
@@ -232,6 +239,47 @@ export const formatPrice = (raw: string): string => {
   const s = raw.trim();
   if (!s) return '';
   return /^[0-9]/.test(s) ? `$${s}` : s;
+};
+
+/**
+ * Split a tier's bullet list into the service both plans share and this plan's
+ * own extras.
+ *
+ * ONE FUNCTION, THREE RENDERERS — the approve page, the PDF and the builder
+ * preview. They present the split differently on purpose (the page lists
+ * everything, print keeps "Everything in <base>, plus:"), but they must not
+ * disagree about WHERE it falls.
+ *
+ * Three stored shapes, because this changed twice in a day:
+ *
+ *   sharedCount   current. Shared items lead, extras follow.
+ *   extrasCount   shipped for about an hour with extras leading instead.
+ *   neither       everything before both, when the upgrade card stored ONLY
+ *                 its extras and leaned on "Everything in Pay Monthly, plus:"
+ *                 to imply the rest. Those get the base plan's list prepended
+ *                 so the card no longer understates what is being bought — see
+ *                 ApprovePage for why this is composed and not backfilled.
+ */
+export const splitTierIncludes = (
+  tier: Pick<Tier, 'includes' | 'sharedCount' | 'extrasCount'>,
+  /** The cheaper plan's list, used only to rebuild the legacy shape. */
+  baseIncludes: string[] = [],
+): { shared: string[]; extras: string[] } => {
+  const own = (tier.includes ?? []).map((x) => x.trim()).filter(Boolean);
+  if (tier.sharedCount != null) {
+    const n = Math.min(Math.max(tier.sharedCount, 0), own.length);
+    return { shared: own.slice(0, n), extras: own.slice(n) };
+  }
+  if (tier.extrasCount != null) {
+    const n = Math.min(Math.max(tier.extrasCount, 0), own.length);
+    return { shared: own.slice(n), extras: own.slice(0, n) };
+  }
+  const base = baseIncludes.map((x) => x.trim()).filter(Boolean);
+  if (base.length) {
+    // A hand-edited old tier may already repeat one of the base lines.
+    return { shared: base.filter((x) => !own.includes(x)), extras: own };
+  }
+  return { shared: own, extras: [] };
 };
 
 export const emptyProposal = (): ProposalData => ({
