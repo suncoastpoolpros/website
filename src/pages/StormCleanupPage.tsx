@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -160,6 +160,38 @@ const STORM_FAQ: Array<{ question: string; answer: string }> = [
   },
 ];
 
+// JSON-LD, passed through usePageMeta({ jsonLd }) so it lands in the
+// PRERENDERED head — NOT appended from a useEffect. An effect never runs during
+// renderToString, so the HTML a crawler reads on first fetch would carry none of
+// these nodes; they'd only appear after the page hydrates. That matters more
+// here than anywhere else on the site: this page's whole reason for shipping in
+// August is being indexed fast, ahead of a named storm.
+//
+// NOTE: the breadcrumb is two levels. The /services/ hub doesn't exist yet, and
+// pointing a crumb at a 404 is worse than a shorter trail. Add the Services
+// crumb when the hub ships.
+const STORM_SCHEMA = [
+  serviceSchema({
+    serviceType: 'Storm & Hurricane Pool Cleanup',
+    description:
+      'Storm and hurricane pool cleanup across St. Petersburg and Pinellas County, FL — debris removal, filter cleaning, full chemical rebalance after rainwater dilution, phosphate and nitrate check from storm runoff, and an equipment-pad inspection before anything is switched back on.',
+    url: CANONICAL,
+  }),
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: STORM_FAQ.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: { '@type': 'Answer', text: f.answer },
+    })),
+  },
+  breadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Storm Cleanup', path: CANONICAL },
+  ]),
+];
+
 const StormCleanupPageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
   const [openFaq, setOpenFaq] = useState<string | null>(null);
@@ -173,40 +205,8 @@ const StormCleanupPageInner = () => {
     // the H1 paints as soon as the fonts land. Montserrat 900 is the display
     // weight above the fold; Inter 400 carries the lede.
     fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
+    jsonLd: STORM_SCHEMA,
   });
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify([
-      serviceSchema({
-        serviceType: 'Storm & Hurricane Pool Cleanup',
-        description:
-          'Storm and hurricane pool cleanup across St. Petersburg and Pinellas County, FL — debris removal, filter cleaning, full chemical rebalance after rainwater dilution, phosphate and nitrate check from storm runoff, and an equipment-pad inspection before anything is switched back on.',
-        url: CANONICAL,
-      }),
-      {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: STORM_FAQ.map((f) => ({
-          '@type': 'Question',
-          name: f.question,
-          acceptedAnswer: { '@type': 'Answer', text: f.answer },
-        })),
-      },
-      // NOTE: two levels only. The /services/ hub doesn't exist yet (it lands in
-      // the next pass) — pointing a breadcrumb at a 404 is worse than a shorter
-      // trail. Add the Services crumb when the hub ships.
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Storm Cleanup', path: CANONICAL },
-      ]),
-    ]);
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
 
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();
