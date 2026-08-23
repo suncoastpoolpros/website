@@ -844,13 +844,17 @@ export const ApprovePage = () => {
                 gap is this margin MINUS the lift: 96 - 40 = 56px above the
                 banner, and 96px above the plain card.
 
-                NO items-start, deliberately. Grid's default stretch is what
-                makes the two cards end level: an item with a negative top
-                margin fills from (row top + its margin) to the row's bottom, so
-                the lifted card comes out 40px TALLER and its bottom lands with
-                its neighbour's rather than 40px above it. The card body is
-                flex-1, so the extra height goes to the fine print at the foot
-                rather than opening a gap mid-card.
+                items-start, so each card ends where its own content ends
+                rather than being stretched to the taller one. Both cards used
+                to carry the same six lines and stretching filled the shorter
+                one harmlessly; now the annual card lists ten, so stretching the
+                monthly card to match opens a hole above its fine print with
+                nothing to put in it.
+
+                This does NOT affect the Select buttons. They line up because
+                the featured card is lifted by exactly its banner's height, so
+                both card bodies begin on the same line — a relationship that
+                has nothing to do with how the cards END.
 
                 Wider gutter side by side than stacked. At gap-4 the two cards
                 read as one block with a seam down it, and the lifted card's
@@ -859,7 +863,7 @@ export const ApprovePage = () => {
                 is being asked to tell them apart. Vertical spacing on a phone
                 stays as it was: stacked, they are already unmistakably two
                 things. */}
-            <div className="grid grid-cols-1 gap-4 sm:mt-24 sm:grid-cols-2 sm:gap-8">
+            <div className="grid grid-cols-1 items-start gap-4 sm:mt-24 sm:grid-cols-2 sm:gap-8">
               {tiers.map((tier, i) => {
                 /**
                  * NOTHING ON THIS SCREEN IS "SELECTED".
