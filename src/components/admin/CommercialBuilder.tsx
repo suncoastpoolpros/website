@@ -18,11 +18,13 @@
  * property is, what water is on it, what we will do, what it costs, on what
  * terms.
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
+  ArrowRight,
   ChevronLeft,
   Download,
+  Home,
   LoaderCircle,
   LogOut,
   Plus,
@@ -37,6 +39,7 @@ import { reserveProposalNumber } from '@/lib/adminApi';
 import {
   commercialTotal,
   newWaterBody,
+  type CustomerInfo,
   type WaterBody,
 } from '@/lib/adminApi';
 import { toTitleCase, formatUsPhone } from '@/lib/textFormat';
@@ -79,9 +82,17 @@ const money = (n: number): string =>
 export const CommercialBuilder = ({
   onLogout,
   onBack,
+  handoff = null,
+  onHandoffApplied,
+  onResidential,
 }: {
   onLogout: () => void;
   onBack: () => void;
+  /** Customer typed into the residential builder before it turned out to be
+   *  a commercial property. Null in every other case. */
+  handoff?: CustomerInfo | null;
+  onHandoffApplied: () => void;
+  onResidential: () => void;
 }) => {
   const { data, setData, update, clearDraft } = useCommercialDraft();
   // Its own store, so "Clear" wipes the bid and never the insurance limits.
@@ -89,6 +100,30 @@ export const CommercialBuilder = ({
   const [confirmClear, setConfirmClear] = useState(false);
   const [building, setBuilding] = useState(false);
   const [buildError, setBuildError] = useState('');
+
+  /**
+   * Apply a hand-off from the residential builder — ONLY into blank fields.
+   *
+   * A commercial draft in progress must survive somebody wandering in from the
+   * other builder: overwriting "Sunset Cove Condominium Association" with a
+   * half-typed name because a switch happened would lose real work, and the
+   * operator would have no way to know what it used to say. Filling only the
+   * gaps means the worst case is that nothing happens.
+   */
+  useEffect(() => {
+    if (!handoff) return;
+    setData((prev) => ({
+      ...prev,
+      property: {
+        ...prev.property,
+        name: prev.property.name.trim() || handoff.name,
+        address: prev.property.address.trim() || handoff.address,
+        email: prev.property.email.trim() || handoff.email,
+        phone: prev.property.phone.trim() || handoff.phone,
+      },
+    }));
+    onHandoffApplied();
+  }, [handoff, onHandoffApplied, setData]);
 
   const classification = classificationFor(data.property.classification);
   const dailyLogDue = requiresDailyLog(data.property.classification);
@@ -244,6 +279,24 @@ export const CommercialBuilder = ({
         <div className="space-y-8">
           {/* ---------------- Property ---------------- */}
           <Section title="Property">
+            {/* The way back, for the same reason the way in exists. */}
+            <button
+              onClick={onResidential}
+              className="group -mt-1 flex w-full items-start gap-3 rounded-xl border border-dashed border-white/15 px-4 py-3 text-left transition-colors hover:border-brand-blue/50 hover:bg-white/5"
+            >
+              <Home className="mt-0.5 h-5 w-5 shrink-0 text-gray-500 group-hover:text-brand-blue-light" />
+              <span className="flex-1">
+                <span className="block text-sm font-semibold text-gray-200">
+                  A single home, not a property?
+                </span>
+                <span className="mt-0.5 block text-xs leading-relaxed text-gray-500">
+                  Use the Service Proposal instead — one pool, one rate, and a link the customer
+                  signs. This bid stays saved here.
+                </span>
+              </span>
+              <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-gray-600 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-blue-light" />
+            </button>
+
             <FieldShell id="cp-name" label="Association / company name">
               <input
                 id="cp-name"

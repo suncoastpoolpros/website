@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Send, LoaderCircle, CheckCircle, Check, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ChevronLeft, ChevronDown, X, Link2 } from 'lucide-react';
+import { Send, LoaderCircle, CheckCircle, Check, AlertCircle, Trash2, LogOut, Calculator, FilePlus2, ChevronLeft, ChevronDown, X, Link2, Building2, ArrowRight } from 'lucide-react';
 import { FieldShell, fieldClass, selectClass, textareaClass } from '@/components/FormField';
 import { useProposalDraft } from '@/lib/useAdminDraft';
 import {
@@ -11,6 +11,7 @@ import {
   formatPrice,
   tierDelta,
   type EmailOverrides,
+  type CustomerInfo,
   type PricingMode,
   type ProposalData,
   type ProposalPreview,
@@ -76,9 +77,12 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 export const ProposalBuilder = ({
   onLogout,
   onBack,
+  onCommercial,
 }: {
   onLogout: () => void;
   onBack: () => void;
+  /** Hand this quote to the commercial builder, carrying the customer over. */
+  onCommercial: (customer: CustomerInfo) => void;
 }) => {
   const { data, setData, update, clearDraft } = useProposalDraft();
 
@@ -762,6 +766,30 @@ export const ProposalBuilder = ({
                   moves this for you.
                 </p>
               )}
+
+              {/* The fourth answer, deliberately NOT a fourth chip. The three
+                  above change which paragraphs print on this document; this one
+                  changes which document you are filling in — many bodies of
+                  water, a statutory classification, contract terms. Presenting
+                  it as a peer of the other three would imply it is the same
+                  kind of choice, and the form cannot honour that. */}
+              <button
+                onClick={() => onCommercial(data.customer)}
+                className="group flex w-full items-start gap-3 rounded-xl border border-dashed border-white/15 px-4 py-3 text-left transition-colors hover:border-brand-blue/50 hover:bg-white/5"
+              >
+                <Building2 className="mt-0.5 h-5 w-5 shrink-0 text-gray-500 group-hover:text-brand-blue-light" />
+                <span className="flex-1">
+                  <span className="block text-sm font-semibold text-gray-200">
+                    An HOA, condo association or property manager?
+                  </span>
+                  <span className="mt-0.5 block text-xs leading-relaxed text-gray-500">
+                    That needs the Commercial Bid — every body of water priced by frequency, the
+                    compliance scope and the contract terms a board reads. Anything typed here comes
+                    with you.
+                  </span>
+                </span>
+                <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-gray-600 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-blue-light" />
+              </button>
             </Section>
 
             <Section title="Customer">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LoaderCircle } from 'lucide-react';
 import { usePageMeta } from '@/lib/usePageMeta';
-import { checkSession } from '@/lib/adminApi';
+import { checkSession, type CustomerInfo } from '@/lib/adminApi';
 import { AdminKeypad } from '@/components/admin/AdminKeypad';
 import { AdminHome } from '@/components/admin/AdminHome';
 import { ProposalBuilder } from '@/components/admin/ProposalBuilder';
@@ -39,6 +39,18 @@ export const AdminPage = () => {
   usePageMeta({ title: 'Admin · Suncoast Pool Pros', description: '', noindex: true });
   const [auth, setAuth] = useState<AuthState>('loading');
   const [doc, setDoc] = useState<DocKind | null>(readLastDoc);
+  /**
+   * Customer details carried across when a residential quote turns out to be a
+   * commercial property.
+   *
+   * You can be three fields into a proposal before the address resolves to an
+   * association, and starting again in the other builder is exactly the friction
+   * that makes an operator carry on filling in the wrong document. Held here
+   * rather than written into the commercial draft directly, so an existing
+   * commercial draft can never be clobbered by a switch — the receiving builder
+   * decides what to accept, and only fills blanks.
+   */
+  const [handoff, setHandoff] = useState<CustomerInfo | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -61,6 +73,12 @@ export const AdminPage = () => {
   };
 
   const lock = () => setAuth('locked');
+
+  /** Move to the commercial builder carrying whatever has been typed so far. */
+  const switchToCommercial = (customer: CustomerInfo) => {
+    setHandoff(customer);
+    pickDoc('commercial');
+  };
   const backToHome = () => pickDoc(null);
 
   return (
@@ -73,10 +91,16 @@ export const AdminPage = () => {
       {auth === 'locked' && <AdminKeypad onUnlock={() => setAuth('unlocked')} />}
       {auth === 'unlocked' && doc === null && <AdminHome onPick={pickDoc} onLogout={lock} />}
       {auth === 'unlocked' && doc === 'proposal' && (
-        <ProposalBuilder onLogout={lock} onBack={backToHome} />
+        <ProposalBuilder onLogout={lock} onBack={backToHome} onCommercial={switchToCommercial} />
       )}
       {auth === 'unlocked' && doc === 'commercial' && (
-        <CommercialBuilder onLogout={lock} onBack={backToHome} />
+        <CommercialBuilder
+          onLogout={lock}
+          onBack={backToHome}
+          handoff={handoff}
+          onHandoffApplied={() => setHandoff(null)}
+          onResidential={() => pickDoc('proposal')}
+        />
       )}
       {auth === 'unlocked' && doc === 'inspection' && (
         <InspectionBuilder onLogout={lock} onBack={backToHome} />
