@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -176,6 +176,19 @@ const VSP_SAVINGS_FRACTION = 0.75;
 const usd = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
+      articleSchema,
+      faqSchema,
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Care', path: '/pool-care/' },
+        { name: 'Variable Speed Pumps', path: '/pool-care/variable-speed-pumps/' },
+      ]),
+    ];
+
 const VariableSpeedPumpsPageInner = () => {
   const [openFaq, setOpenFaq] = useState<string | null>(null);
   const { open: openQuoteSheet } = useQuoteSheet();
@@ -214,25 +227,8 @@ const VariableSpeedPumpsPageInner = () => {
     description:
       'A variable-speed pool pump cuts pump electricity 70–80% — often $600–$1,000/yr on St. Petersburg pools. See what you’d save with our free calculator.',
     canonicalPath: '/pool-care/variable-speed-pumps/',
+    jsonLd: PAGE_SCHEMA,
   });
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify([
-      articleSchema,
-      faqSchema,
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Pool Care', path: '/pool-care/' },
-        { name: 'Variable Speed Pumps', path: '/pool-care/variable-speed-pumps/' },
-      ]),
-    ]);
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
 
   return (
     <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">

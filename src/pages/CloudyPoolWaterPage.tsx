@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -195,6 +195,19 @@ const faqSchema = {
   })),
 };
 
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
+      howToSchema,
+      faqSchema,
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Care', path: '/pool-care/' },
+        { name: 'Cloudy Pool Water', path: '/pool-care/cloudy-pool-water/' },
+      ]),
+    ];
+
 const CloudyPoolWaterPageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
   const [openFaq, setOpenFaq] = useState<string | null>(null);
@@ -204,25 +217,8 @@ const CloudyPoolWaterPageInner = () => {
     description:
       'Pool cloudy but the chemicals seem fine? The 5 real causes — filtration, balance, chlorine — and how to clear a cloudy pool fast. From St. Pete pool pros.',
     canonicalPath: '/pool-care/cloudy-pool-water/',
+    jsonLd: PAGE_SCHEMA,
   });
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify([
-      howToSchema,
-      faqSchema,
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Pool Care', path: '/pool-care/' },
-        { name: 'Cloudy Pool Water', path: '/pool-care/cloudy-pool-water/' },
-      ]),
-    ]);
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
 
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();

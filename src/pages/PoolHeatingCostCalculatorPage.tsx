@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Flame,
   Phone,
@@ -87,6 +87,34 @@ const FAQS: { q: string; a: string }[] = [
   },
 ];
 
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
+  {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'LocalBusiness',
+          '@id': 'https://suncoastpoolpros.com/#business',
+          name: 'Suncoast Pool Pros',
+          telephone: '+1-727-295-3621',
+          url: 'https://suncoastpoolpros.com/',
+          areaServed: { '@type': 'City', name: 'St. Petersburg', addressRegion: 'FL' },
+          priceRange: '$$',
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: FAQS.map((f) => ({
+            '@type': 'Question',
+            name: f.q,
+            acceptedAnswer: { '@type': 'Answer', text: f.a },
+          })),
+        },
+      ],
+    },
+];
+
 const PoolHeatingCostCalculatorInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
 
@@ -95,9 +123,9 @@ const PoolHeatingCostCalculatorInner = () => {
     description:
       'Free pool heating cost calculator — enter pool size and target temp to compare gas heater vs. electric heat pump costs. Built by Florida pool pros.',
     canonicalPath: '/tools/pool-heating-cost-calculator/',
+    jsonLd: PAGE_SCHEMA,
   });
 
-  usePageSchema();
 
   const [gallons, setGallons] = useState('15000');
   const [startTemp, setStartTemp] = useState('72');
@@ -443,52 +471,6 @@ const PoolHeatingCostCalculatorInner = () => {
 // and canonical come from usePageMeta (so they're in the prerendered HTML);
 // usePageMeta doesn't do JSON-LD, so this effect adds it after mount. Google
 // re-renders and picks it up. (Same pattern as the city pages — CLAUDE.md #9.)
-const usePageSchema = () => {
-  useEffect(() => {
-    const ld = document.createElement('script');
-    ld.type = 'application/ld+json';
-    ld.text = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@graph': [
-        {
-          '@type': 'LocalBusiness',
-          '@id': 'https://suncoastpoolpros.com/#business',
-          name: 'Suncoast Pool Pros',
-          telephone: '+1-727-295-3621',
-          url: 'https://suncoastpoolpros.com/',
-          areaServed: { '@type': 'City', name: 'St. Petersburg', addressRegion: 'FL' },
-          priceRange: '$$',
-        },
-        {
-          '@type': 'FAQPage',
-          mainEntity: FAQS.map((f) => ({
-            '@type': 'Question',
-            name: f.q,
-            acceptedAnswer: { '@type': 'Answer', text: f.a },
-          })),
-        },
-      ],
-    });
-    document.head.appendChild(ld);
-
-    const bc = document.createElement('script');
-    bc.type = 'application/ld+json';
-    bc.text = JSON.stringify(
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Pool Tools', path: '/tools/' },
-        { name: 'Pool Heating Cost Calculator', path: '/tools/pool-heating-cost-calculator/' },
-      ]),
-    );
-    document.head.appendChild(bc);
-
-    return () => {
-      document.head.removeChild(ld);
-      document.head.removeChild(bc);
-    };
-  }, []);
-};
-
 export const PoolHeatingCostCalculatorPage = () => (
   <QuoteSheetProvider>
     <PoolHeatingCostCalculatorInner />

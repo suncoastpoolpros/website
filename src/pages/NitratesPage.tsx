@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -151,6 +151,19 @@ const faqSchema = {
   })),
 };
 
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
+      howToSchema,
+      faqSchema,
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Care', path: '/pool-care/' },
+        { name: 'Pool Nitrates', path: '/pool-care/nitrates/' },
+      ]),
+    ];
+
 const NitratesPageInner = () => {
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
@@ -159,25 +172,8 @@ const NitratesPageInner = () => {
     description:
       'What are pool nitrates? Dissolved nitrogen that feeds algae and burns up chlorine — and no chemical removes it. The causes, signs & how to lower them.',
     canonicalPath: '/pool-care/nitrates/',
+    jsonLd: PAGE_SCHEMA,
   });
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify([
-      howToSchema,
-      faqSchema,
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Pool Care', path: '/pool-care/' },
-        { name: 'Pool Nitrates', path: '/pool-care/nitrates/' },
-      ]),
-    ]);
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
 
   return (
     <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">

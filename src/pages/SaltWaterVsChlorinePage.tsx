@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -143,6 +143,18 @@ const faqSchema = {
   })),
 };
 
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
+      faqSchema,
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Care', path: '/pool-care/' },
+        { name: 'Salt Water vs. Chlorine', path: '/pool-care/salt-water-vs-chlorine/' },
+      ]),
+    ];
+
 const SaltWaterVsChlorinePageInner = () => {
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
@@ -151,24 +163,8 @@ const SaltWaterVsChlorinePageInner = () => {
     description:
       'A salt system makes chlorine nonstop, holding a steady level instead of the spike-and-crash of liquid jugs — gentler on skin and eyes, no harsh smell.',
     canonicalPath: '/pool-care/salt-water-vs-chlorine/',
+    jsonLd: PAGE_SCHEMA,
   });
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify([
-      faqSchema,
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Pool Care', path: '/pool-care/' },
-        { name: 'Salt Water vs. Chlorine', path: '/pool-care/salt-water-vs-chlorine/' },
-      ]),
-    ]);
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
 
   return (
     <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -160,6 +160,19 @@ const faqSchema = {
   })),
 };
 
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
+      howToSchema,
+      faqSchema,
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Care', path: '/pool-care/' },
+        { name: 'Green Pool', path: '/pool-care/green-pool/' },
+      ]),
+    ];
+
 const GreenPoolPageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
   const [openFaq, setOpenFaq] = useState<string | null>(null);
@@ -169,25 +182,8 @@ const GreenPoolPageInner = () => {
     description:
       'Why your pool turned green and how to clear it fast — ID the algae, then balance, brush, shock & filter it back to blue. From working St. Pete pool pros.',
     canonicalPath: '/pool-care/green-pool/',
+    jsonLd: PAGE_SCHEMA,
   });
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify([
-      howToSchema,
-      faqSchema,
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Pool Care', path: '/pool-care/' },
-        { name: 'Green Pool', path: '/pool-care/green-pool/' },
-      ]),
-    ]);
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
 
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();

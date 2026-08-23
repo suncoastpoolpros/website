@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -181,6 +181,18 @@ const faqSchema = {
   })),
 };
 
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
+      faqSchema,
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Care', path: '/pool-care/' },
+        { name: 'Pool Service vs. DIY', path: '/pool-care/pool-service-vs-diy/' },
+      ]),
+    ];
+
 const PoolServiceVsDiyPageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
   const [openFaq, setOpenFaq] = useState<string | null>(null);
@@ -190,24 +202,8 @@ const PoolServiceVsDiyPageInner = () => {
     description:
       'Pool service vs. doing it yourself: the real cost in time and money in Florida — and why DIY saves less than you think. An honest look from St. Pete pros.',
     canonicalPath: '/pool-care/pool-service-vs-diy/',
+    jsonLd: PAGE_SCHEMA,
   });
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify([
-      faqSchema,
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Pool Care', path: '/pool-care/' },
-        { name: 'Pool Service vs. DIY', path: '/pool-care/pool-service-vs-diy/' },
-      ]),
-    ]);
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
 
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();

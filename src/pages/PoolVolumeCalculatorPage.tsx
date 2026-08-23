@@ -667,6 +667,11 @@ const SimpleSpaDiagram: React.FC<SimpleSpaDiagramProps> = ({ topW, depth, unitLa
 // ── URL serialization ────────────────────────────────────────────
 const SHARE_KEYS = ['shape', 'l', 'w', 'd', 's', 'deep', 'shallow', 'u', 'v', 'mode'] as const;
 
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [howToSchema, faqPageSchema];
+
 const PoolVolumeCalculatorInner = () => {
   // SEO meta via usePageMeta so title/description/canonical/OG land in the
   // PRERENDERED HTML (runs synchronously during renderToString). Previously
@@ -679,6 +684,7 @@ const PoolVolumeCalculatorInner = () => {
     description:
       'Free pool volume calculator — instantly get gallons or liters for rectangle, round, oval, kidney, freeform pools, plus spas. No email required.',
     canonicalPath: '/tools/pool-volume-calculator/',
+    jsonLd: PAGE_SCHEMA,
   });
 
   const { open: openQuoteSheet } = useQuoteSheet();
@@ -817,39 +823,6 @@ const PoolVolumeCalculatorInner = () => {
     if (params.get('s')) setAvgDepth(params.get('s')!);
     if (params.get('shallow')) setShallowDepth(params.get('shallow')!);
     if (params.get('deep')) setDeepDepth(params.get('deep')!);
-  }, []);
-
-  // HowTo + FAQPage JSON-LD (two structured-data signals on one page). Injected
-  // client-side — usePageMeta (above) handles title/description/canonical/OG in
-  // the prerendered HTML, but doesn't emit JSON-LD, so this slim effect adds it
-  // (same pattern as the city pages' usePageSchema). See CLAUDE.md #9.
-  useEffect(() => {
-    const howToScript = document.createElement('script');
-    howToScript.type = 'application/ld+json';
-    howToScript.text = JSON.stringify(howToSchema);
-    document.head.appendChild(howToScript);
-
-    const faqScript = document.createElement('script');
-    faqScript.type = 'application/ld+json';
-    faqScript.text = JSON.stringify(faqPageSchema);
-    document.head.appendChild(faqScript);
-
-    const breadcrumbScript = document.createElement('script');
-    breadcrumbScript.type = 'application/ld+json';
-    breadcrumbScript.text = JSON.stringify(
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Pool Tools', path: '/tools/' },
-        { name: 'Pool Volume Calculator', path: '/tools/pool-volume-calculator/' },
-      ]),
-    );
-    document.head.appendChild(breadcrumbScript);
-
-    return () => {
-      howToScript.remove();
-      faqScript.remove();
-      breadcrumbScript.remove();
-    };
   }, []);
 
   // Resolved depth in feet (handles avg vs slope mode).

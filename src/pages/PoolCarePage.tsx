@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -257,23 +257,10 @@ const GuideCard: React.FC<{ g: Guide; i: number }> = ({ g, i }) => (
   </m.div>
 );
 
-const PoolCarePageInner = () => {
-  const { open: openQuoteSheet } = useQuoteSheet();
-
-  usePageMeta({
-    title: 'Pool Care Guides — Water Chemistry, Explained',
-    description:
-      'Plain-English pool care guides from St. Petersburg techs — green and cloudy water, the chlorine smell, water chemistry, and DIY vs. a pro. Free to read.',
-    canonicalPath: '/pool-care/',
-  });
-
-  // BreadcrumbList + an ItemList of the published guides, injected client-side —
-  // usePageMeta handles title/description/canonical in the prerendered HTML but
-  // doesn't emit JSON-LD (the documented exception, CLAUDE.md #9).
-  useEffect(() => {
-    const ld = document.createElement('script');
-    ld.type = 'application/ld+json';
-    ld.text = JSON.stringify([
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
       breadcrumbSchema([
         { name: 'Home', path: '/' },
         { name: 'Pool Care', path: '/pool-care/' },
@@ -289,11 +276,22 @@ const PoolCarePageInner = () => {
           url: `https://suncoastpoolpros.com${g.to}`,
         })),
       },
-    ]);
-    document.head.appendChild(ld);
-    return () => ld.remove();
-  }, []);
+    ];
 
+const PoolCarePageInner = () => {
+  const { open: openQuoteSheet } = useQuoteSheet();
+
+  usePageMeta({
+    title: 'Pool Care Guides — Water Chemistry, Explained',
+    description:
+      'Plain-English pool care guides from St. Petersburg techs — green and cloudy water, the chlorine smell, water chemistry, and DIY vs. a pro. Free to read.',
+    canonicalPath: '/pool-care/',
+    jsonLd: PAGE_SCHEMA,
+  });
+
+  // BreadcrumbList + an ItemList of the published guides, injected client-side —
+  // usePageMeta handles title/description/canonical in the prerendered HTML but
+  // doesn't emit JSON-LD (the documented exception, CLAUDE.md #9).
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     openQuoteSheet();

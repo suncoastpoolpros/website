@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -138,6 +138,19 @@ const toneStyles: Record<string, string> = {
   bad: 'text-red-300',
 };
 
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
+      articleSchema,
+      faqSchema,
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Care', path: '/pool-care/' },
+        { name: 'Cyanuric Acid', path: '/pool-care/cyanuric-acid/' },
+      ]),
+    ];
+
 const CyanuricAcidPageInner = () => {
   const [openFaq, setOpenFaq] = useState<string | null>(null);
   // Interactive FC:CYA ratio calculator. Initial 40 renders identically on the
@@ -153,25 +166,8 @@ const CyanuricAcidPageInner = () => {
     description:
       'How does cyanuric acid affect chlorine? CYA shields it from the sun but too much locks it up — and the FC:CYA ratio decides if your pool is sanitized.',
     canonicalPath: '/pool-care/cyanuric-acid/',
+    jsonLd: PAGE_SCHEMA,
   });
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify([
-      articleSchema,
-      faqSchema,
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Pool Care', path: '/pool-care/' },
-        { name: 'Cyanuric Acid', path: '/pool-care/cyanuric-acid/' },
-      ]),
-    ]);
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
 
   return (
     <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">

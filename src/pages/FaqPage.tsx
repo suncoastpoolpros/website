@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search,
@@ -49,6 +49,11 @@ const CATEGORY_COUNTS: Record<FaqCategory, number> = FAQ_CATEGORIES.reduce(
   {} as Record<FaqCategory, number>,
 );
 
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [faqSchema];
+
 const FaqPageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
   const [query, setQuery] = useState('');
@@ -60,19 +65,10 @@ const FaqPageInner = () => {
     description:
       "Straight answers on flat-rate weekly pool service — what’s included, how pricing works, and what happens if your water turns green. No sales fluff.",
     canonicalPath: '/faq/',
+    jsonLd: PAGE_SCHEMA,
   });
 
   // Inject FAQPage JSON-LD for this route.
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify(faqSchema);
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
-
   // A FAQ is *shown* when it matches the search query (across every category) or,
   // with no query, belongs to the active category tab. Every FAQ is still
   // rendered into the DOM (see the list below) — this only toggles visibility,

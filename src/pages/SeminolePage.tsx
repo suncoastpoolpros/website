@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { m } from 'motion/react';
 import { Phone, MapPin, Star, Camera, CalendarCheck, Wallet } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
@@ -159,11 +159,10 @@ const HeroSection = () => {
 // description, canonical, and OG are handled by usePageMeta (which runs during
 // SSR so they land in the prerendered HTML); usePageMeta doesn't do JSON-LD, so
 // this effect adds it. See CLAUDE.md #9.
-const usePageSchema = () => {
-  useEffect(() => {
-    const ld = document.createElement('script');
-    ld.type = 'application/ld+json';
-    ld.textContent = JSON.stringify([
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
       {
         '@context': 'https://schema.org',
         '@type': 'LocalBusiness',
@@ -194,11 +193,7 @@ const usePageSchema = () => {
         { name: 'Home', path: '/' },
         { name: 'Seminole', path: '/seminole-fl/' },
       ]),
-    ]);
-    document.head.appendChild(ld);
-    return () => ld.remove();
-  }, []);
-};
+    ];
 
 export const SeminolePage = () => {
   usePageMeta({
@@ -223,8 +218,8 @@ export const SeminolePage = () => {
       FONTS.montserrat400,
       { href: FONTS.montserrat900, media: '(min-width: 768px)' },
     ],
+    jsonLd: PAGE_SCHEMA,
   });
-  usePageSchema();
 
   return (
     <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">

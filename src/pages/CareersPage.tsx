@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { m } from 'motion/react';
 import {
   Mail,
@@ -406,17 +406,11 @@ const ApplyCta = () => (
   </section>
 );
 
-export const CareersPage = () => {
-  usePageMeta({
-    title: PAGE_TITLE,
-    description: PAGE_DESC,
-    canonicalPath: '/careers/',
-  });
-
-  useEffect(() => {
-    const ld = document.createElement('script');
-    ld.type = 'application/ld+json';
-    ld.textContent = JSON.stringify({
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
+  {
       '@context': 'https://schema.org',
       '@type': 'JobPosting',
       title: 'Pool Service Technician',
@@ -439,13 +433,16 @@ export const CareersPage = () => {
         },
       ],
       applicantLocationRequirements: { '@type': 'AdministrativeArea', name: 'Pinellas County, FL' },
-    });
-    document.head.appendChild(ld);
+    },
+];
 
-    return () => {
-      ld.remove();
-    };
-  }, []);
+export const CareersPage = () => {
+  usePageMeta({
+    title: PAGE_TITLE,
+    description: PAGE_DESC,
+    canonicalPath: '/careers/',
+    jsonLd: PAGE_SCHEMA,
+  });
 
   return (
     <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#1669AE] selection:text-white">

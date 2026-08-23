@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -44,6 +44,14 @@ const TOOLS: Tool[] = [
   },
 ];
 
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Tools', path: '/tools/' },
+      ])];
+
 const ToolsPageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
 
@@ -52,24 +60,12 @@ const ToolsPageInner = () => {
     description:
       'Free pool calculators for volume, chemistry dosing & salt levels — built by working pool techs. No email, no signup, just answers.',
     canonicalPath: '/tools/',
+    jsonLd: PAGE_SCHEMA,
   });
 
   // BreadcrumbList JSON-LD injected client-side — usePageMeta handles
   // title/description/canonical in the prerendered HTML but doesn't emit
   // JSON-LD (the documented exception, CLAUDE.md #9).
-  useEffect(() => {
-    const ld = document.createElement('script');
-    ld.type = 'application/ld+json';
-    ld.text = JSON.stringify(
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Pool Tools', path: '/tools/' },
-      ]),
-    );
-    document.head.appendChild(ld);
-    return () => ld.remove();
-  }, []);
-
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     openQuoteSheet();

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
 import {
@@ -167,6 +167,19 @@ const faqSchema = {
   })),
 };
 
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
+      howToSchema,
+      faqSchema,
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'Pool Care', path: '/pool-care/' },
+        { name: 'Pool Smells Like Chlorine', path: '/pool-care/pool-smells-like-chlorine/' },
+      ]),
+    ];
+
 const PoolSmellPageInner = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
   const [openFaq, setOpenFaq] = useState<string | null>(null);
@@ -176,25 +189,8 @@ const PoolSmellPageInner = () => {
     description:
       'Why does your pool smell like chlorine? It’s not too much — it’s chloramines, which means too little. What it is and how to clear the smell fast.',
     canonicalPath: '/pool-care/pool-smells-like-chlorine/',
+    jsonLd: PAGE_SCHEMA,
   });
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify([
-      howToSchema,
-      faqSchema,
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Pool Care', path: '/pool-care/' },
-        { name: 'Pool Smells Like Chlorine', path: '/pool-care/pool-smells-like-chlorine/' },
-      ]),
-    ]);
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
 
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();

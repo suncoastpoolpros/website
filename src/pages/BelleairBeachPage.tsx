@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { m } from 'motion/react';
 import { Phone, Star, MapPin, ShieldCheck } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
@@ -148,41 +148,36 @@ const HeroSection = () => {
 // canonical, and OG are handled by usePageMeta (which runs during SSR so they
 // land in the prerendered HTML); usePageMeta doesn't do JSON-LD, so this effect
 // adds it.
-const usePageSchema = () => {
-  useEffect(() => {
-    const ld = document.createElement('script');
-    ld.type = 'application/ld+json';
-    ld.textContent = JSON.stringify([
-      {
-        '@context': 'https://schema.org',
-        '@type': 'LocalBusiness',
-        '@id': 'https://suncoastpoolpros.com/#business',
-        name: 'Suncoast Pool Pros',
-        url: PAGE_URL,
-        telephone: '+1-727-295-3621',
-        priceRange: '$$',
-        areaServed: { '@type': 'City', name: 'Belleair Beach', addressRegion: 'FL' },
-        description:
-          'Discreet, reliable weekly pool cleaning and maintenance for Belleair Beach waterfront and seasonal homes.',
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: belleairBeachFaqs.map((f) => ({
-          '@type': 'Question',
-          name: f.q,
-          acceptedAnswer: { '@type': 'Answer', text: f.a },
-        })),
-      },
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Belleair Beach', path: '/belleair-beach-fl/' },
-      ]),
-    ]);
-    document.head.appendChild(ld);
-    return () => ld.remove();
-  }, []);
-};
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': 'https://suncoastpoolpros.com/#business',
+    name: 'Suncoast Pool Pros',
+    url: PAGE_URL,
+    telephone: '+1-727-295-3621',
+    priceRange: '$$',
+    areaServed: { '@type': 'City', name: 'Belleair Beach', addressRegion: 'FL' },
+    description:
+      'Discreet, reliable weekly pool cleaning and maintenance for Belleair Beach waterfront and seasonal homes.',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: belleairBeachFaqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+  breadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Belleair Beach', path: '/belleair-beach-fl/' },
+  ]),
+];
 
 export const BelleairBeachPage = () => {
   usePageMeta({
@@ -200,8 +195,8 @@ export const BelleairBeachPage = () => {
     // hero headline (Montserrat 900), hero H1 (font-display font-normal =
     // Montserrat 400).
     fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat400, FONTS.montserrat900],
+    jsonLd: PAGE_SCHEMA,
   });
-  usePageSchema();
 
   // Mobile JS-motion stripping is handled globally by the app-level MotionConfig
   // in App.tsx (+ the force-visible mobile CSS in index.css).

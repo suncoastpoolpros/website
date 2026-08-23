@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { m } from 'motion/react';
 import { Phone, Star, MapPin, ShieldCheck, Gem } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
@@ -160,11 +160,10 @@ const PhoneShowcaseMobile = () => (
 // JSON-LD (LocalBusiness + FAQPage) injected client-side. usePageMeta handles
 // title/description/canonical/OG in the prerendered HTML; this slim effect adds
 // the JSON-LD (the documented exception — CLAUDE.md #9).
-const usePageSchema = () => {
-  useEffect(() => {
-    const ld = document.createElement('script');
-    ld.type = 'application/ld+json';
-    ld.textContent = JSON.stringify([
+// Page JSON-LD. Passed through the page-meta hook so it lands in the
+// PRERENDERED head — an effect never runs during renderToString, so the HTML
+// a crawler reads on first fetch would otherwise carry none of these nodes.
+const PAGE_SCHEMA = [
       {
         '@context': 'https://schema.org',
         '@type': 'LocalBusiness',
@@ -190,11 +189,7 @@ const usePageSchema = () => {
         { name: 'Home', path: '/' },
         { name: 'Snell Isle', path: '/snell-isle-fl/' },
       ]),
-    ]);
-    document.head.appendChild(ld);
-    return () => ld.remove();
-  }, []);
-};
+    ];
 
 export const SnellIslePage = () => {
   usePageMeta({
@@ -212,8 +207,8 @@ export const SnellIslePage = () => {
       FONTS.montserrat400,
       { href: FONTS.montserrat900, media: '(min-width: 768px)' },
     ],
+    jsonLd: PAGE_SCHEMA,
   });
-  usePageSchema();
 
   return (
     <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
