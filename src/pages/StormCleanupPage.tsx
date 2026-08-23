@@ -411,6 +411,35 @@ const StormCleanupPageInner = () => {
           </Container>
         </section>
 
+        {/* ── Photo interlude ───────────────────────────────────── */}
+        {/* The one light band is spoken for, and a second would break the
+            site's one-per-page rule. This is the OTHER device the city pages
+            already use for exactly this problem: a full-bleed photo that
+            interrupts a long dark run without going light. Reuses the existing
+            Pinellas interlude image set — no new asset, and a regional image is
+            right for a page that is not about one city. */}
+        <section className="relative h-[38vh] min-h-[320px] md:h-[44vh] md:min-h-[400px] overflow-hidden">
+          <div className="interlude-bg-pinellas-desktop absolute inset-0 hidden md:block bg-cover bg-center" aria-hidden />
+          <div className="interlude-bg-pinellas-mobile absolute inset-0 md:hidden bg-cover bg-center" aria-hidden />
+          <div className="interlude-tint-pinellas absolute inset-0 pointer-events-none" aria-hidden />
+
+          {/* Fades to #07111c on both edges so the join is seamless. */}
+          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#07111c] to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#07111c] to-transparent pointer-events-none" />
+
+          <div className="relative h-full flex items-center justify-center">
+            <m.p
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-15%' }}
+              transition={{ duration: 1, ease: 'easeOut' }}
+              className="text-shadow-interlude font-display italic text-white/90 text-2xl sm:text-3xl md:text-[2.25rem] leading-snug text-center px-6 max-w-2xl tracking-tight"
+            >
+              The storm is the easy part to see. What it left behind is not.
+            </m.p>
+          </div>
+        </section>
+
         {/* ── What the cleanup covers ───────────────────────────── */}
         <section className="py-16 md:py-24 relative overflow-hidden">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
@@ -541,7 +570,11 @@ const StormCleanupPageInner = () => {
         </section>
 
         {/* ── Response & pricing ────────────────────────────────── */}
-        <section className="py-16 md:py-24 relative overflow-hidden">
+        {/* #02050a — the footer's tier, the only surface on the site darker
+            than the page base. Used here so the commercial moment reads as a
+            distinct block. Going DOWN a step separates it without competing
+            with the light band for attention. */}
+        <section className="py-16 md:py-24 relative overflow-hidden bg-[#02050a]">
           <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[80%] h-[100%] bg-brand-blue/[0.07] rounded-full blur-[150px] pointer-events-none" />
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent pointer-events-none" />
           <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
