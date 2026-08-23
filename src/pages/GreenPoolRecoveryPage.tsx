@@ -78,10 +78,10 @@ const TIERS: Array<{
     headline: 'Dark, still, and living',
     see: 'Dark green to near-black, a debris layer on the bottom, and often frogs or mosquito larvae.',
     whatHappened:
-      'Months without service. At this point the water chemistry is usually past the point where chlorine alone is the economical answer.',
-    timeline: 'One to two weeks — and sometimes a partial drain is the honest call',
+      'Months without service. There is a real layer of sludge on the floor now, and that has to come out physically before any chemistry is worth adding.',
+    timeline: 'Usually one to two weeks',
     takes:
-      'Debris removal first, a real look at stabilizer levels, then either an extended shock-and-hold or a partial drain and refill if the numbers say that is faster and cheaper.',
+      'The sludge layer gets vacuumed out first with our own filtered vacuum — water stays in the pool — then an extended shock-and-hold while the water clears. Even at this state we very rarely drain.',
   },
 ];
 
@@ -91,13 +91,13 @@ const PROCESS = [
     icon: TestTube,
     title: 'Test before anything else',
     body:
-      "Specifically stabilizer. If cyanuric acid has climbed high enough, chlorine is chemically locked and you can pour it in all week for nothing. That single number decides whether this is a treatment job or a partial-drain job, and it's the step most people skip.",
+      "Specifically stabilizer. If cyanuric acid has climbed high enough, chlorine is chemically locked and you can pour it in all week for nothing. Knowing that number up front is the difference between a plan that works and a fortnight of wasted shock — and it's the step most people skip.",
   },
   {
     icon: Sparkles,
-    title: 'Get the debris out',
+    title: 'Vacuum the sludge out — not the water',
     body:
-      'Leaves and sludge on the floor consume chlorine faster than the algae does. Anything that can be netted or vacuumed out comes out first, so the chemistry is working on the water instead of the pile.',
+      "We run vacuums with their own integrated filtration, so the leaf litter and dead-algae sludge on the floor comes out of the pool instead of being pushed through your filter or flushed out with the water. It's the reason we can clean pools other services quote a drain on, and why the chemistry then works on water rather than on a pile of debris.",
   },
   {
     icon: Droplets,
@@ -113,9 +113,9 @@ const PROCESS = [
   },
   {
     icon: Filter,
-    title: 'Run and clean the filter, over and over',
+    title: 'Keep filtering what is left in suspension',
     body:
-      "Once the algae dies, the filter has to physically remove it — that's the part that takes days. A filter loaded with dead algae stops passing water, so it gets cleaned or backwashed repeatedly through the recovery, not once at the end.",
+      "Our vacuum takes out everything that has settled. What stays behind is the fine dead algae still suspended in the water, and that has to clear through the filter — which is the part that takes days. It gets cleaned or backwashed as it loads up, not once at the end.",
   },
   {
     icon: CalendarClock,
@@ -129,12 +129,12 @@ const GREEN_FAQ: Array<{ question: string; answer: string }> = [
   {
     question: 'How long does it take to clear a green pool?',
     answer:
-      "It depends entirely on how far gone it is. A pool that's just hazy and tinted is usually clear in two to three days. A solid green pool where you can't see the steps is more like four to seven. A dark, neglected pool with debris on the bottom can take one to two weeks, and sometimes a partial drain is genuinely the faster, cheaper route. Anyone promising 24 hours regardless of what's in your pool is guessing.",
+      "It depends entirely on how far gone it is. A pool that's just hazy and tinted is usually clear in two to three days. A solid green pool where you can't see the steps is more like four to seven. A dark, neglected pool with a debris layer on the bottom can take one to two weeks, most of which is filtration time after we've vacuumed the sludge out. Anyone promising 24 hours regardless of what's in your pool is guessing.",
   },
   {
     question: 'Do I have to drain the pool?',
     answer:
-      "Usually not, and we'd rather not — draining a pool in saturated Florida ground carries real risk, and most green pools come back with chemistry, brushing, and filtration alone. The exception is when stabilizer has climbed so high that chlorine is chemically locked, or the debris load is beyond what a filter can process. In those cases a partial drain is the honest answer, and we'll tell you which situation you're in after we test.",
+      "Very rarely, and it's usually the wrong answer. We run vacuums with integrated filtration, which means we pull the dead algae and sludge out of the pool directly rather than draining the water to get rid of it — so pools that other services quote a full drain and acid wash on generally come back with cleaning and chemistry instead. Draining also carries real risk in saturated Florida ground. The one situation where dilution genuinely is the fix is a stabilizer level so high that chlorine can't work at any dose, and that's uncommon.",
   },
   {
     question: "Can't I just shock it myself?",
@@ -352,9 +352,9 @@ const GreenPoolRecoveryPageInner = () => {
               ))}
             </div>
 
-            {/* Contextual link to the stabilizer guide — the single number that
-                decides treat-vs-drain, so this is the natural place to send
-                anyone who wants the science. */}
+            {/* Contextual link to the stabilizer guide. High CYA is the one
+                genuine case for dilution — and the thing competitors point at
+                when they quote a drain — so this is where the science belongs. */}
             <m.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -362,9 +362,9 @@ const GreenPoolRecoveryPageInner = () => {
               className="mt-6 rounded-2xl border border-brand-orange/20 bg-brand-orange/[0.04] p-6 md:p-7 flex flex-col sm:flex-row sm:items-center gap-5"
             >
               <p className="text-gray-300 leading-relaxed text-[15px] flex-1">
-                Stabilizer is the number that decides whether your pool gets treated or partly
-                drained — and it&rsquo;s the one most services never mention until they&rsquo;re
-                quoting a drain. Here&rsquo;s what it actually does to chlorine.
+                Stabilizer is the number that decides whether your chlorine can work at all —
+                and it&rsquo;s the one most services never mention until they&rsquo;re quoting you
+                a drain for it. Here&rsquo;s what it actually does.
               </p>
               <SmartLink
                 to="/pool-care/cyanuric-acid/"
@@ -391,9 +391,9 @@ const GreenPoolRecoveryPageInner = () => {
                   It is not a one-visit job, and nobody should tell you it is.
                 </h2>
                 <p className="section-subtext mb-6">
-                  Killing the algae is the fast part — often the first afternoon. Physically
-                  removing it from the water is what takes days, and it happens through your
-                  filter, which will clog repeatedly while it does.
+                  Killing the algae is the fast part — often the first afternoon. Our vacuum
+                  pulls the settled sludge straight out, but the fine material left suspended in
+                  the water still has to clear through the filter, and that is what takes days.
                 </p>
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500 mb-2">
@@ -413,7 +413,7 @@ const GreenPoolRecoveryPageInner = () => {
                 </p>
                 <ul className="flex flex-col gap-4">
                   {[
-                    'Day one — test, debris out, pH corrected, first shock. The colour often shifts within hours.',
+                    'Day one — test, vacuum the sludge out with our filtered unit, correct pH, first shock. The colour often shifts within hours.',
                     'Day two — green turns grey or milky. Brush again, hold the chlorine, filter runs continuously.',
                     'Day three onward — the filter does the work. Cleaned or backwashed each time it loads up.',
                     'Then — chlorine drops back into normal range and holds there. That is when it is finished, not when it first looks blue.',
@@ -457,7 +457,7 @@ const GreenPoolRecoveryPageInner = () => {
                   icon: Search,
                   title: 'What moves the number',
                   body:
-                    'Pool size, which tier it is in, what shape the filter is in, and whether the stabilizer reading forces a partial drain.',
+                    'Pool size, which tier it is in, how deep the debris layer is, and what shape the filter is in once the water starts clearing.',
                 },
                 {
                   icon: ShieldCheck,
