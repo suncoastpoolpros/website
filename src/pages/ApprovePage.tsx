@@ -920,13 +920,21 @@ export const ApprovePage = () => {
                  what makes it a separate zone rather than a third option, and
                  it puts a little more distance between the exit and the
                  decision without hiding it. */
-              <div className="mt-10 rounded-2xl border border-[#e3e8ef] bg-[#f7f9fc] px-5 py-5 text-center">
+              /* RECESSED, not elevated. It was #f7f9fc — three per cent
+                 LIGHTER than the page's #eef2f7 — so it was reaching for the
+                 same floating-card treatment as the two plans and missing,
+                 which is why it read as washed out rather than deliberate.
+                 Going darker than the page puts it on the opposite axis: the
+                 plans lift off the surface, this sinks into it. It stops
+                 competing with them and starts looking like an aside, which is
+                 exactly what it is. */
+              <div className="mt-10 rounded-2xl border border-[#d3dfeb] bg-[#e3eaf3] px-5 py-5 text-center">
                 {/* A speech bubble, deliberately not an exclamation mark.
                     An exclamation is the vocabulary of warnings and form
                     errors — on a page that also carries a signature form it
                     would read as something gone wrong, which is the opposite
                     of the tone this box needs. A bubble says "tell us". */}
-                <span className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full border border-[#d6e3ef] bg-white text-brand-blue">
+                <span className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full border border-[#cddaea] bg-white text-brand-blue">
                   <MessageSquare className="h-[18px] w-[18px]" />
                 </span>
                 <p className="text-[15px] font-semibold text-[#1f2937]">Going a different route?</p>
