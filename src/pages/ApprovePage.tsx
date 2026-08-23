@@ -837,16 +837,16 @@ export const ApprovePage = () => {
             </p>
             <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
               {tiers.map((tier, i) => {
-                const on = plan === tier.name;
                 /**
-                 * The recommendation is only styled while nothing is chosen.
-                 * Once someone picks the other plan, a still-highlighted
-                 * "recommended" card argues with the choice they just made —
-                 * two cards competing for the same "this one" reading. The
-                 * RECOMMENDED badge stays either way: that's information about
-                 * the plan, not a claim about what's selected.
+                 * NOTHING ON THIS SCREEN IS "SELECTED".
+                 *
+                 * Select takes the customer straight to the signature, so a
+                 * selected state would exist for a few milliseconds on the way
+                 * out and never be seen. Everything that served it is gone: the
+                 * radio circle, the ring, the border swap, the button changing
+                 * colour. What is left describes the PLANS — recommended or
+                 * not — rather than the state of a choice being made.
                  */
-                const promote = tier.recommended && !plan;
                 return (
                   <div
                     key={i}
@@ -863,26 +863,21 @@ export const ApprovePage = () => {
                          Desktop only — stacked on a phone there is no row to
                          rise above, and a negative margin would just crowd
                          whatever sits over it. */
-                      tier.recommended ? "order-first sm:order-none sm:-mt-5" : ""
+                      tier.recommended
+                        ? "order-first sm:order-none sm:-mt-5"
+                        : ""
                     } ${
-                      on
-                        ? "border-[#1669AE] bg-white ring-2 ring-[#1669AE]/30"
-                        : promote
-                          ? "border-[#1669AE] bg-white shadow-lg shadow-[#1669AE]/15 ring-1 ring-[#1669AE]/20 hover:border-[#0f4d80]"
-                          : "border-[#e3e8ef] bg-white hover:border-[#9fb3c8]"
+                      tier.recommended
+                        ? "border-[#1669AE] bg-white shadow-lg shadow-[#1669AE]/15 ring-1 ring-[#1669AE]/20 hover:border-[#0f4d80]"
+                        : "border-[#e3e8ef] bg-white hover:border-[#9fb3c8]"
                     }`}
                   >
-                    {/* Selection covers the whole card, as a stretched button
-                        rather than the card BEING one — the footer below is a
-                        real button now, and a button inside a button is invalid
-                        HTML. Everything non-interactive sits under this; the
-                        footer sits above it on z-10. */}
-                    <button
-                      onClick={() => selectPlan(tier.name)}
-                      className="absolute inset-0 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1669AE]"
-                    >
-                      <span className="sr-only">Choose {tier.name}</span>
-                    </button>
+                    {/* The card is NOT a click target. A stretched button
+                        used to cover it, so the whole panel selected the plan —
+                        which meant a stray tap while reading the features, or a
+                        thumb steadying a phone, sent you to a signature page
+                        you had not asked for. One deliberate control per card:
+                        the button. */}
                     {/* A banner on the card's top EDGE, not a pill inside it.
                         The pill pushed the plan name down and spent interior
                         space saying one word; flush to the edge it is more
@@ -895,13 +890,7 @@ export const ApprovePage = () => {
                         chosen, so a solid blue bar never sits on a card the
                         customer has just decided against. */}
                     {tier.recommended && (
-                      <div
-                        className={`py-2.5 text-center text-[12.5px] font-bold uppercase tracking-wider transition-colors ${
-                          promote || on
-                            ? "bg-[#1669AE] text-white"
-                            : "bg-[#eef4fa] text-[#5c7a99]"
-                        }`}
-                      >
+                      <div className="bg-[#1669AE] py-2.5 text-center text-[12.5px] font-bold uppercase tracking-wider text-white">
                         Best value
                       </div>
                     )}
@@ -923,22 +912,9 @@ export const ApprovePage = () => {
                       </div>
                     )}
                     <div className="flex flex-1 flex-col p-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h3 className="font-display text-lg font-bold">
-                            {tier.name}
-                          </h3>
-                        </div>
-                        <span
-                          className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
-                            on
-                              ? "border-[#1669AE] bg-[#1669AE] text-white"
-                              : "border-[#c3cedb]"
-                          }`}
-                        >
-                          {on && <Check className="h-4 w-4" strokeWidth={3} />}
-                        </span>
-                      </div>
+                      <h3 className="font-display text-lg font-bold">
+                        {tier.name}
+                      </h3>
                       {tier.tagline && (
                         <p className="mt-1 text-sm text-[#6b7280]">
                           {tier.tagline}
@@ -980,27 +956,10 @@ export const ApprovePage = () => {
                           )}
                         </div>
                       )}
-                      <span className="relative z-10 block pt-5">
+                      <span className="block pt-5">
                         <button
-                          onClick={() =>
-                            selectPlan(tier.name)
-                          }
-                          className={`flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-bold transition-colors ${
-                            /* Solid dark on BOTH cards, not an outline. A
-                               ghost button asks to be considered; a filled one
-                               asks to be pressed, and this is the only thing on
-                               the card anybody has to do. #0a1628 is the site's
-                               own near-black rather than pure #000, so it reads
-                               as black without leaving the palette.
-
-                               Selected flips to brand blue: dark means "choose
-                               this", blue means "chosen — continue". The colour
-                               carries the state so the label need not work
-                               alone. */
-                            on
-                              ? "border-[#1669AE] bg-gradient-to-r from-brand-blue to-brand-blue-dark text-white shadow-md shadow-[#1669AE]/25"
-                              : "border-[#0a1628] bg-[#0a1628] text-white hover:border-[#16283f] hover:bg-[#16283f]"
-                          }`}
+                          onClick={() => selectPlan(tier.name)}
+                          className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#0a1628] bg-[#0a1628] py-2.5 text-sm font-bold text-white transition-colors hover:border-[#16283f] hover:bg-[#16283f]"
                         >
                           Select
                           <span className="sr-only"> {tier.name}</span>
