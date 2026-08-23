@@ -829,17 +829,20 @@ export const ApprovePage = () => {
                 decision, not the pitch. The download below keeps the full
                 document one click away. */}
 
-            {/* Extra room below on desktop = the base gap PLUS the lift.
-                The recommended card's top edge is a full banner-height (40px)
-                above the row, so at mb-4 its banner came up level with this
-                line and read as a collision. mb-14 restores the same visual
-                gap the unlifted card has.
+            {/* sm:mt-10 is the lift's clearance, which used to live on the
+                "choose the plan" line above. That line is gone — two priced
+                cards with Select buttons do not need to be told they are a
+                choice — but the lifted card still has to buy its 40px from
+                somewhere, and now it is the customer block above.
 
-                Tied to the lift: if -mt-10 changes, this changes with it. */}
-            <p className="mb-4 text-center text-[#6b7280] sm:mb-14">
-              Choose the plan that works best for you.
-            </p>
-            <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
+                Wider gutter side by side than stacked. At gap-4 the two cards
+                read as one block with a seam down it, and the lifted card's
+                shadow ran straight into its neighbour. Doubling it lets each
+                card be its own object — which is the point, since the customer
+                is being asked to tell them apart. Vertical spacing on a phone
+                stays as it was: stacked, they are already unmistakably two
+                things. */}
+            <div className="grid grid-cols-1 items-start gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-8">
               {tiers.map((tier, i) => {
                 /**
                  * NOTHING ON THIS SCREEN IS "SELECTED".
