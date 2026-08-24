@@ -34,6 +34,7 @@ import {
   showsExtrasTable,
   trustHeading,
 } from "./jobKinds";
+import { cadenceLabel } from "./serviceCadence";
 import { filterTypeLabel } from "./filterService";
 import {
   EXTRAS_COL_THEIRS,
@@ -353,6 +354,15 @@ const styles = StyleSheet.create({
     color: BLUE_DARK,
     marginTop: 6,
   },
+  tierCadence: {
+    fontSize: 7,
+    lineHeight: 1.3,
+    fontFamily: "Helvetica-Bold",
+    color: MUTED,
+    marginTop: 2,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
   tierDeltaText: {
     fontSize: 8.5,
     lineHeight: 1.3,
@@ -494,6 +504,7 @@ const TierCard = ({
   buildsOn,
   baseIncludes = [],
   delta,
+  cadence,
 }: {
   tier: Tier;
   /** Name of the cheaper tier, when this one builds on it. */
@@ -502,6 +513,8 @@ const TierCard = ({
   baseIncludes?: string[];
   /** Pre-formatted upgrade cost, e.g. "+$12/mo". */
   delta?: string;
+  /** "Weekly service" / "Every other week", under the rate. Empty = omit. */
+  cadence?: string;
 }) => {
   const split = splitTierIncludes(tier, baseIncludes);
   const items = [...split.shared, ...split.extras];
@@ -527,6 +540,10 @@ const TierCard = ({
       {tier.price.trim() ? (
         <Text style={styles.tierPrice}>{formatPrice(tier.price)}</Text>
       ) : null}
+      {/* The cadence directly under the rate — the divisor for the number
+          above it, same as the approve page. On both cards, because it is the
+          same service either way. */}
+      {cadence ? <Text style={styles.tierCadence}>{cadence}</Text> : null}
       {/* An explicit note beats the computed delta: an annual plan shown at its
           effective monthly rate needs "$1,958 billed once", not "+$X more". */}
       {tier.priceNote.trim() ? (
@@ -900,6 +917,7 @@ export const ProposalDocument = ({
                       buildsOn={i > 0 ? tiers[i - 1].name.trim() : undefined}
                       baseIncludes={i > 0 ? tiers[i - 1].includes : []}
                       delta={i > 0 ? delta : ""}
+                      cadence={cadenceLabel(proposal.cadence)}
                     />
                   </View>
                 ))}
@@ -946,6 +964,14 @@ export const ProposalDocument = ({
               <Text style={styles.priceValue}>
                 {formatPrice(proposal.price)}
               </Text>
+              {/* Same divisor as the tier cards: a single-price recurring
+                  quote is "$165/mo" too. Empty on one-time jobs and on
+                  quotes from before the field existed, so nothing prints. */}
+              {cadenceLabel(proposal.cadence) ? (
+                <Text style={styles.tierCadence}>
+                  {cadenceLabel(proposal.cadence)}
+                </Text>
+              ) : null}
             </View>
           </View>
         ) : null}

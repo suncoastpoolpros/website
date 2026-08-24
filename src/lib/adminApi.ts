@@ -65,6 +65,17 @@ export type ProposalData = {
      */
     jobKind?: string;
     /**
+     * How often we come, on a recurring quote — 'weekly' | 'biweekly'.
+     *
+     * Prints under the rate on the plan cards and the PDF, because a monthly
+     * price with no cadence is a number with nothing to divide it by. Absent
+     * on one-time quotes and on everything stored before this existed; unlike
+     * jobKind it is NOT defaulted for old quotes — cadenceOf returns null and
+     * the documents print nothing, because "probably weekly" is not a promise
+     * we put under a bi-weekly customer's price. See serviceCadence.ts.
+     */
+    cadence?: string;
+    /**
      * A personal note that appears in the EMAIL ONLY, never in the PDF. The PDF
      * is the formal document and gets filed or forwarded; this is the covering
      * message — "great meeting you Tuesday", "here's the pricing we discussed".
@@ -305,6 +316,11 @@ export const emptyProposal = (): ProposalData => ({
     addOns: [],
     includeBenefits: true,
     jobKind: 'recurring',
+    // Weekly on a FRESH draft is a statement, not a guess: it is what the
+    // business sells by default, the chips sit at the top of the form to
+    // change it, and the Bi-Weekly scope template moves it too. The
+    // no-default rule above is about quotes that predate the field.
+    cadence: 'weekly',
     emailNote: '',
     // Single-price stays the default, so nothing about an ordinary proposal
     // changes until the admin explicitly switches to tiers.

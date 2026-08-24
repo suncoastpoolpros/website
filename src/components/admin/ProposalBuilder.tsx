@@ -51,6 +51,7 @@ import { PhotoPicker } from "./PhotoPicker";
 import { EmailReview } from "./EmailReview";
 import { SANITIZATION_TYPES } from "./sanitization";
 import { SCOPE_TEMPLATES } from "./scopeTemplates";
+import { CADENCES, cadenceOf } from "./serviceCadence";
 import {
   JOB_KINDS,
   jobAssurances,
@@ -192,6 +193,7 @@ export const ProposalBuilder = ({
   // blank line) when scope already has text, so templates can be combined and
   // nothing the admin typed gets clobbered.
   const jobKind: JobKind = jobKindOf(data.proposal.jobKind);
+  const cadence = cadenceOf(data.proposal.cadence);
 
   const insertScopeTemplate = (label: string) => {
     const tpl = SCOPE_TEMPLATES.find((t) => t.label === label);
@@ -211,6 +213,10 @@ export const ProposalBuilder = ({
     // FIRST template: once scope has text the operator is combining templates,
     // and the second one should not silently reclassify the document.
     if (!current) update("proposal", "jobKind", tpl.kind);
+    // And the cadence with it, for the same reason and under the same
+    // first-template rule. Only the two recurring templates carry one, so
+    // inserting a green-to-clean never puts a frequency on a one-off job.
+    if (!current && tpl.cadence) update("proposal", "cadence", tpl.cadence);
   };
 
   // --- Additional-services (add-on) line items ---
@@ -865,6 +871,42 @@ export const ProposalBuilder = ({
                   );
                 })}
               </div>
+              {/* The cadence, asked ONLY once the answer is "recurring" — a
+                  green-to-clean has no frequency, so showing the chips there
+                  would be a question with no correct answer. It prints under
+                  the rate on the plan cards and the PDF, because "$165/mo"
+                  with nothing to divide it by was the most price-relevant
+                  fact missing from the proposal. Inserting a Weekly or
+                  Bi-Weekly scope template sets this for you. */}
+              {jobKind === "recurring" && (
+                <div
+                  role="radiogroup"
+                  aria-label="How often"
+                  className="flex items-center gap-2"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    How often
+                  </span>
+                  {CADENCES.map((c) => {
+                    const picked = cadence === c.key;
+                    return (
+                      <button
+                        key={c.key}
+                        role="radio"
+                        aria-checked={picked}
+                        onClick={() => update("proposal", "cadence", c.key)}
+                        className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${
+                          picked
+                            ? "border-brand-blue bg-brand-blue/10 font-semibold text-white"
+                            : "border-white/10 bg-white/5 text-gray-300 hover:border-white/20"
+                        }`}
+                      >
+                        {c.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               {jobKind !== "recurring" && (
                 <p className="text-xs leading-relaxed text-gray-500">
                   The proposal drops the weekly-service promises and the monthly

@@ -24,6 +24,7 @@ export type ScopeContext = {
 };
 
 import type { JobKind } from './jobKinds';
+import type { ServiceCadence } from './serviceCadence';
 
 export type ScopeTemplate = {
   label: string;
@@ -36,6 +37,19 @@ export type ScopeTemplate = {
    * weekly-service promises. See jobKinds.ts.
    */
   kind: JobKind;
+  /**
+   * How often we come, on the two templates that say so in their prose.
+   *
+   * Same argument as `kind`, applied to the other thing a template already
+   * decides: inserting "Bi-Weekly Pool Cleaning" is the operator stating the
+   * cadence, and the pricing card should not need them to state it twice. The
+   * alternative — reading the cadence back out of the scope text — is a regex
+   * against prose the operator is free to rewrite.
+   *
+   * Absent on the one-time templates: a green-to-clean has no cadence, and
+   * giving it one would put "Weekly service" under a single-job price.
+   */
+  cadence?: ServiceCadence;
   build: (ctx: ScopeContext) => string;
 };
 
@@ -94,6 +108,7 @@ export const SCOPE_TEMPLATES: ScopeTemplate[] = [
   {
     label: 'Weekly Pool Cleaning (recurring)',
     kind: 'recurring',
+    cadence: 'weekly',
     build: (ctx) =>
       [
         'Weekly full-service pool maintenance, performed once per week:',
@@ -114,6 +129,7 @@ export const SCOPE_TEMPLATES: ScopeTemplate[] = [
   {
     label: 'Bi-Weekly Pool Cleaning (recurring)',
     kind: 'recurring',
+    cadence: 'biweekly',
     build: (ctx) =>
       [
         'Bi-weekly (every other week) full-service pool maintenance:',

@@ -13,6 +13,7 @@ import { usePageMeta } from "@/lib/usePageMeta";
 import { type ParsedQuoteLink, parseQuoteLink } from "@/lib/quoteLinks";
 import { PRICING_CONDITION_TERM } from "@/components/admin/proposalTerms";
 import { jobKindOf, showsConditionTerm } from "@/components/admin/jobKinds";
+import { cadenceLabel } from "@/components/admin/serviceCadence";
 import { splitTierIncludes } from "@/lib/adminApi";
 import { currentTagline, shortBullet } from "@/components/admin/tierPresets";
 import {
@@ -119,6 +120,9 @@ type Quote = {
      *  kinds existed — jobKindOf coerces those to recurring, which is what they
      *  were built as. */
     jobKind?: string;
+    /** 'weekly' | 'biweekly'. Absent before the field existed — cadenceOf
+     *  returns null there and the cards print no cadence, deliberately. */
+    cadence?: string;
     /** 'link' when the quote was never emailed — see the breakdown step. */
     deliveredBy?: string;
   };
@@ -991,6 +995,20 @@ export const ApprovePage = () => {
                             </p>
                           )}
                         </div>
+                      )}
+                      {/* What the monthly rate BUYS, directly under the rate.
+                          Ten bullets on this card and none of them said how
+                          often we come — the one fact a customer holding a
+                          competitor's bi-weekly quote divides the price by.
+                          Same line on both cards (it is the same service), so
+                          the button row stays level; on quotes stored before
+                          the field existed cadenceLabel is empty on both and
+                          nothing renders — "probably weekly" is not printed
+                          under anyone's price. */}
+                      {cadenceLabel(quote.proposal.cadence) && (
+                        <p className="mt-0.5 text-[13px] font-semibold uppercase tracking-wide text-[#5b6b7c]">
+                          {cadenceLabel(quote.proposal.cadence)}
+                        </p>
                       )}
                       <span className="block pt-5">
                         <button
