@@ -1672,9 +1672,6 @@ export const ProposalBuilder = ({
               scroll the entire form past it. Only the preview scrolls — the Send
               button and its validation hint stay pinned below it. */}
           <div className="lg:sticky lg:top-8 lg:self-start lg:flex lg:max-h-[calc(100dvh-4rem)] lg:flex-col">
-            <p className="mb-2 shrink-0 text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Live preview
-            </p>
             <div className="admin-scroll lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
               <ProposalPreview
                 data={data}
