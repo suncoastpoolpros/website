@@ -1024,9 +1024,20 @@ export const ApprovePage = () => {
                                prices at identical weight ask the customer to do
                                the comparison themselves; the point of
                                recommending one is to have already done it. */
+                            /* SEMIBOLD, not bold, and a size up to pay for it.
+                               At 700 the rate read as a heavy block — the
+                               thing the eye bounced off rather than the thing
+                               it read. Inter is variable here, so 600 keeps
+                               the presence while opening the counters up.
+                               tabular-nums puts the digits on a fixed grid so
+                               "$155" and "$151" line up character for
+                               character across the cards, which is exactly the
+                               comparison the row is for. */
                             <p
-                              className={`font-bold text-[#0f4d80] ${
-                                tier.recommended ? "text-3xl" : "text-2xl"
+                              className={`font-semibold tabular-nums text-[#0f4d80] ${
+                                tier.recommended
+                                  ? "text-[2.125rem] leading-none"
+                                  : "text-[1.75rem] leading-none"
                               }`}
                             >
                               {formatPrice(tier.price)}
