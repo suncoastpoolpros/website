@@ -336,7 +336,25 @@ export const composeProposalEmail = (
     // customer as "Hello maria,".
     return first.charAt(0).toUpperCase() + first.slice(1);
   };
-  const defaultGreeting = firstNameOf(name) ? `Hello ${firstNameOf(name)},` : 'Hello,';
+  /**
+   * The builder now STATES what the name is (customer.nameMode), so the
+   * marker regex above is only the fallback for quotes sent by an older
+   * client. Stated beats guessed: 'company' is never greeted by its first
+   * word even when no marker word appears ("Blue Horizon"), and 'person'
+   * greets from the explicit first-name field — so an operator who filled in
+   * only a last name gets "Hello," rather than "Hello Timms,".
+   */
+  const nameMode = String((p.customer as { nameMode?: unknown } | undefined)?.nameMode ?? '');
+  const explicitFirst = String(
+    (p.customer as { firstName?: unknown } | undefined)?.firstName ?? '',
+  ).trim();
+  const greetName =
+    nameMode === 'company'
+      ? ''
+      : nameMode === 'person'
+        ? firstNameOf(explicitFirst)
+        : firstNameOf(name);
+  const defaultGreeting = greetName ? `Hello ${greetName},` : 'Hello,';
   // A blank override means "nothing typed", not "no greeting" — an email that
   // opens on the customer's own note with no salutation reads as a fragment.
   const greeting = safe(String(p.overrides?.greeting ?? '').trim(), 120) || defaultGreeting;

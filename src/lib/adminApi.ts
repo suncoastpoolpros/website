@@ -10,11 +10,41 @@
 // report) so the two builders describe a pool the same way. Each document then
 // adds its own section on top.
 export type CustomerInfo = {
+  /**
+   * The composed, customer-facing name — what prints on the PDF, the email,
+   * the approve page and the D1 column. ALWAYS derived: the builder writes the
+   * structured fields below and recomputes this in the same state update
+   * (composeCustomerName), so the dozen downstream consumers never changed
+   * when the name became structured.
+   */
   name: string;
   address: string;
   email: string;
   phone: string;
+  /**
+   * Who the proposal is addressed to — 'person' | 'company'. A company must
+   * not be greeted like a person ("Hello Blue," for Blue Horizon), and the
+   * server-side COMPANY_MARKER regex only catches names containing giveaway
+   * words. This makes it a stated fact instead of a guess. Absent on drafts
+   * and quotes from before the field existed; treat absent as unknown and
+   * fall back to the heuristic.
+   */
+  nameMode?: string;
+  /** Person mode. Both optional — a first name alone is fine. */
+  firstName?: string;
+  lastName?: string;
+  /** Company mode: the managing company's name, printed verbatim. */
+  company?: string;
 };
+
+/** The one place the display name is assembled from the structured fields. */
+export const composeCustomerName = (c: CustomerInfo): string =>
+  (c.nameMode ?? 'person') === 'company'
+    ? (c.company ?? '').trim()
+    : [c.firstName ?? '', c.lastName ?? '']
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .join(' ');
 
 export type PoolInfo = {
   gallons: string;
@@ -294,7 +324,16 @@ export const splitTierIncludes = (
 };
 
 export const emptyProposal = (): ProposalData => ({
-  customer: { name: '', address: '', email: '', phone: '' },
+  customer: {
+    name: '',
+    address: '',
+    email: '',
+    phone: '',
+    nameMode: 'person',
+    firstName: '',
+    lastName: '',
+    company: '',
+  },
   pool: {
     gallons: '',
     length: '',
@@ -315,12 +354,13 @@ export const emptyProposal = (): ProposalData => ({
     price: '',
     addOns: [],
     includeBenefits: true,
-    jobKind: 'recurring',
-    // Weekly on a FRESH draft is a statement, not a guess: it is what the
-    // business sells by default, the chips sit at the top of the form to
-    // change it, and the Bi-Weekly scope template moves it too. The
-    // no-default rule above is about quotes that predate the field.
-    cadence: 'weekly',
+    // BOTH deliberately unanswered on a fresh draft. The builder shows
+    // nothing below the chooser until they are, so a salesperson (or sun on
+    // the screen) can never ship a document built on an answer nobody gave.
+    // Old stored quotes still coerce to recurring/weekly-silence via
+    // jobKindOf/cadenceOf — this blank is about new drafts only.
+    jobKind: '',
+    cadence: '',
     emailNote: '',
     // Single-price stays the default, so nothing about an ordinary proposal
     // changes until the admin explicitly switches to tiers.

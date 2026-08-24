@@ -32,6 +32,7 @@ import {
   formatPrice,
   tierDelta,
   type EmailOverrides,
+  composeCustomerName,
   type CustomerInfo,
   type PricingMode,
   splitTierIncludes,
@@ -117,6 +118,48 @@ export const ProposalBuilder = ({
   const { data, setData, update, clearDraft } = useProposalDraft();
 
   /**
+   * Edit a structured name field and recompose customer.name IN THE SAME
+   * update. `name` is what everything downstream reads (PDF, email, D1,
+   * filename), so it must never be a render behind the fields it is built
+   * from.
+   */
+  const setNameParts = (patch: Partial<CustomerInfo>) =>
+    setData((p) => {
+      const customer = { ...p.customer, ...patch };
+      return { ...p, customer: { ...customer, name: composeCustomerName(customer) } };
+    });
+
+  /**
+   * A draft saved before the name was structured has only the composed string.
+   * Seed the fields from it once — first word into first name, the rest into
+   * last — so nothing typed disappears when this UI replaces the single input.
+   * The operator is looking at the result and can fix an odd split; person
+   * mode is the right guess because the old single field was labelled "Full
+   * name". Runs once: emptyProposal seeds nameMode, so a fresh draft skips it.
+   */
+  const nameSeededRef = useRef(false);
+  useEffect(() => {
+    if (nameSeededRef.current) return;
+    nameSeededRef.current = true;
+    setData((p) => {
+      if (p.customer.nameMode !== undefined) return p;
+      const t = p.customer.name.trim();
+      const first = t ? t.split(/\s+/)[0] : "";
+      const last = t ? t.split(/\s+/).slice(1).join(" ") : "";
+      return {
+        ...p,
+        customer: {
+          ...p.customer,
+          nameMode: "person",
+          firstName: first,
+          lastName: last,
+          company: "",
+        },
+      };
+    });
+  }, [setData]);
+
+  /**
    * Bring untouched preset wording up to date, once, when a draft is restored.
    *
    * A draft stores its plan cards, so improving a preset did nothing to a
@@ -194,6 +237,24 @@ export const ProposalBuilder = ({
   // nothing the admin typed gets clobbered.
   const jobKind: JobKind = jobKindOf(data.proposal.jobKind);
   const cadence = cadenceOf(data.proposal.cadence);
+  /**
+   * Whether "What are you quoting?" has actually been ANSWERED — from the raw
+   * draft value, because jobKindOf coerces an unset draft to 'recurring',
+   * which is the correct reading of an old stored quote and the wrong reading
+   * of a form nobody has touched yet.
+   *
+   * Nothing below the chooser renders until this is true (and recurring also
+   * needs its cadence picked). A fresh draft starts with nothing selected: a
+   * default that is right 80% of the time is a default that ships wrong
+   * documents the other 20%, silently — a salesperson, or sun on the screen,
+   * never notices the answer they didn't give. Requiring the tap costs two
+   * seconds; unwinding a proposal built on the wrong template does not.
+   */
+  const rawKind = data.proposal.jobKind;
+  const kindChosen =
+    rawKind === "recurring" || rawKind === "recovery" || rawKind === "repair";
+  const chooserComplete =
+    kindChosen && (rawKind !== "recurring" || cadence !== null);
 
   const insertScopeTemplate = (label: string) => {
     const tpl = SCOPE_TEMPLATES.find((t) => t.label === label);
@@ -848,7 +909,7 @@ export const ProposalBuilder = ({
                 className="grid grid-cols-1 gap-3 sm:grid-cols-3"
               >
                 {JOB_KINDS.map((k) => {
-                  const picked = jobKind === k.key;
+                  const picked = rawKind === k.key;
                   return (
                     <button
                       key={k.key}
@@ -878,7 +939,7 @@ export const ProposalBuilder = ({
                   with nothing to divide it by was the most price-relevant
                   fact missing from the proposal. Inserting a Weekly or
                   Bi-Weekly scope template sets this for you. */}
-              {jobKind === "recurring" && (
+              {rawKind === "recurring" && (
                 <div
                   role="radiogroup"
                   aria-label="How often"
@@ -907,7 +968,7 @@ export const ProposalBuilder = ({
                   })}
                 </div>
               )}
-              {jobKind !== "recurring" && (
+              {(rawKind === "recovery" || rawKind === "repair") && (
                 <p className="text-xs leading-relaxed text-gray-500">
                   The proposal drops the weekly-service promises and the monthly
                   comparison table, and answers what a one-off buyer actually
@@ -938,23 +999,108 @@ export const ProposalBuilder = ({
                 </span>
                 <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-gray-600 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-blue-light" />
               </button>
+              {/* The rest of the form waits for the answer — see
+                  chooserComplete above. The hint names the missing step so an
+                  untouched form never reads as broken. */}
+              {!chooserComplete && (
+                <p className="text-sm text-gray-500">
+                  {kindChosen
+                    ? "Pick how often we'll come and the rest of the form opens."
+                    : "Pick one and the rest of the form opens."}
+                </p>
+              )}
             </Section>
 
+            {chooserComplete && (
+              <>
             <Section title="Customer">
-              <FieldShell id="c-name" label="Full name">
-                <input
-                  id="c-name"
-                  className={fieldClass}
-                  placeholder=" "
-                  autoComplete="off"
-                  autoCapitalize="words"
-                  value={data.customer.name}
-                  onChange={(e) => update("customer", "name", e.target.value)}
-                  onBlur={(e) =>
-                    update("customer", "name", toTitleCase(e.target.value))
-                  }
-                />
-              </FieldShell>
+              {/* WHO this is addressed to. A rental or HOA pool is often
+                  managed by a company, and the document should carry the
+                  company's name — while the email greeting must NOT then
+                  open "Hello Blue," at Blue Horizon. The toggle states the
+                  fact; the fields compose customer.name so everything
+                  downstream (PDF, email, approve page) is unchanged. */}
+              <div
+                role="radiogroup"
+                aria-label="Prepared for"
+                className="flex items-center gap-2"
+              >
+                <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Prepared for
+                </span>
+                {(
+                  [
+                    { key: "person", label: "Person" },
+                    { key: "company", label: "Company" },
+                  ] as const
+                ).map((m) => {
+                  const picked = (data.customer.nameMode ?? "person") === m.key;
+                  return (
+                    <button
+                      key={m.key}
+                      role="radio"
+                      aria-checked={picked}
+                      onClick={() => setNameParts({ nameMode: m.key })}
+                      className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${
+                        picked
+                          ? "border-brand-blue bg-brand-blue/10 font-semibold text-white"
+                          : "border-white/10 bg-white/5 text-gray-300 hover:border-white/20"
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {(data.customer.nameMode ?? "person") === "company" ? (
+                <FieldShell id="c-company" label="Company name">
+                  {/* No title-case blur here — "ABC Property Management LLC"
+                      must not become "Llc". Companies are typed as they are. */}
+                  <input
+                    id="c-company"
+                    className={fieldClass}
+                    placeholder=" "
+                    autoComplete="off"
+                    value={data.customer.company ?? ""}
+                    onChange={(e) => setNameParts({ company: e.target.value })}
+                  />
+                </FieldShell>
+              ) : (
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <FieldShell id="c-first" label="First name">
+                    <input
+                      id="c-first"
+                      className={fieldClass}
+                      placeholder=" "
+                      autoComplete="off"
+                      autoCapitalize="words"
+                      value={data.customer.firstName ?? ""}
+                      onChange={(e) =>
+                        setNameParts({ firstName: e.target.value })
+                      }
+                      onBlur={(e) =>
+                        setNameParts({ firstName: toTitleCase(e.target.value) })
+                      }
+                    />
+                  </FieldShell>
+                  <FieldShell id="c-last" label="Last name">
+                    <input
+                      id="c-last"
+                      className={fieldClass}
+                      placeholder=" "
+                      autoComplete="off"
+                      autoCapitalize="words"
+                      value={data.customer.lastName ?? ""}
+                      onChange={(e) =>
+                        setNameParts({ lastName: e.target.value })
+                      }
+                      onBlur={(e) =>
+                        setNameParts({ lastName: toTitleCase(e.target.value) })
+                      }
+                    />
+                  </FieldShell>
+                </div>
+              )}
               <FieldShell id="c-addr" label="Service address">
                 <input
                   id="c-addr"
@@ -1664,6 +1810,8 @@ export const ProposalBuilder = ({
                 + Custom line
               </button>
             </Section>
+              </>
+            )}
           </div>
 
           {/* ---- Live preview + send ---- */}
@@ -1671,6 +1819,7 @@ export const ProposalBuilder = ({
               the viewport, and before this the only way to see its foot was to
               scroll the entire form past it. Only the preview scrolls — the Send
               button and its validation hint stay pinned below it. */}
+          {chooserComplete && (
           <div className="lg:sticky lg:top-8 lg:self-start lg:flex lg:max-h-[calc(100dvh-4rem)] lg:flex-col">
             <div className="admin-scroll lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-1">
               <ProposalPreview
@@ -1751,6 +1900,7 @@ export const ProposalBuilder = ({
               </p>
             )}
           </div>
+          )}
         </div>
       </div>
     </div>
