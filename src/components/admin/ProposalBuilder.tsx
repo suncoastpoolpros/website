@@ -462,6 +462,48 @@ export const ProposalBuilder = ({
       },
     }));
 
+  /**
+   * The pricing shape as ONE value, because the operator thinks in one.
+   *
+   * Underneath it is still pricingMode ('single' | 'tiers') plus whether a
+   * tier carries `essentials` — two independent flags that were surfaced as
+   * two separate controls in two different places. The chips read and write
+   * this instead.
+   */
+  const planShape: "single" | "two" | "three" =
+    data.proposal.pricingMode !== "tiers"
+      ? "single"
+      : data.proposal.tiers.some((t) => t.essentials)
+        ? "three"
+        : "two";
+
+  /** Three plans need a filter service to leave out — see setEssentialsPlan. */
+  const canOfferEssentials =
+    data.pool.filterServiceIncluded === "yes" &&
+    supportsFilterService(data.pool.filterType);
+
+  const setPlanShape = (next: "single" | "two" | "three") => {
+    if (next === planShape) return;
+    if (next === "single") {
+      setPricingMode("single");
+      return;
+    }
+    // Rebuilding replaces every card, so warn once there is something to lose.
+    const rebuilds = data.proposal.tiers.length > 0 && planShape !== "single";
+    if (
+      rebuilds &&
+      !window.confirm(
+        next === "three"
+          ? "Add the Essentials plan? All three plans are rebuilt from the preset, so any wording you edited is lost."
+          : "Remove the Essentials plan? The remaining two plans are rebuilt from the preset, so any wording you edited is lost.",
+      )
+    )
+      return;
+    setPricingMode("tiers");
+    if (data.proposal.tiers.length === 0 && next === "two") return;
+    setEssentialsPlan(next === "three");
+  };
+
   const updateTier = (idx: number, patch: Partial<Tier>) =>
     setData((p) => ({
       ...p,
@@ -566,7 +608,6 @@ export const ProposalBuilder = ({
       },
     }));
 
-  const hasEssentials = data.proposal.tiers.some((t) => t.essentials);
 
   // An unanswered filter question can't be sent: the quote would silently omit
   // a promise that was meant to be there, and nothing downstream would flag it.
@@ -1777,23 +1818,43 @@ export const ProposalBuilder = ({
                 />
               </FieldShell>
 
-              {/* Single price vs. two plans. */}
+              {/* THREE SHAPES, ONE ROW.
+                  The comparison plan used to live in a checkbox inside the
+                  Plans section below — invisible until you had already picked
+                  "Two plans", and invisible even then unless the filter
+                  question said yes. An option nobody can see is an option
+                  nobody uses. It is a peer chip now, and when it is not
+                  available it still SHOWS, disabled, saying what it needs:
+                  a missing option reads as "we don't do that", a disabled one
+                  reads as "not yet". */}
               <div className="flex flex-wrap items-center gap-2">
-                {[
-                  { mode: "single" as const, label: "One price" },
-                  { mode: "tiers" as const, label: "Two plans" },
-                ].map(({ mode, label }) => {
-                  const on = data.proposal.pricingMode === mode;
+                {(
+                  [
+                    { key: "single", label: "One price" },
+                    { key: "two", label: "Two plans" },
+                    { key: "three", label: "Three plans" },
+                  ] as const
+                ).map(({ key, label }) => {
+                  const on = planShape === key;
+                  const blocked = key === "three" && !canOfferEssentials;
                   return (
                     <button
-                      key={mode}
+                      key={key}
                       type="button"
                       aria-pressed={on}
-                      onClick={() => setPricingMode(mode)}
+                      disabled={blocked}
+                      title={
+                        blocked
+                          ? "Adds an Essentials plan without filter parts — needs the filter service included in the monthly price."
+                          : undefined
+                      }
+                      onClick={() => setPlanShape(key)}
                       className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
-                        on
-                          ? "border-brand-blue-light bg-brand-blue/25 text-white"
-                          : "border-white/15 text-gray-300 hover:border-brand-blue-light hover:text-white"
+                        blocked
+                          ? "cursor-not-allowed border-white/10 text-gray-600"
+                          : on
+                            ? "border-brand-blue-light bg-brand-blue/25 text-white"
+                            : "border-white/15 text-gray-300 hover:border-brand-blue-light hover:text-white"
                       }`}
                     >
                       {label}
@@ -1848,48 +1909,6 @@ export const ProposalBuilder = ({
 
             {data.proposal.pricingMode === "tiers" && (
               <Section title="Plans">
-                {/* The comparison plan, opt-in per quote.
-                    NOT a default: shown to everyone, some share of customers
-                    picks the cheaper card who would never have asked for it.
-                    Offered deliberately — on a call where the customer says
-                    they are holding other quotes — it stays a discount granted
-                    rather than a menu they self-served from. Only meaningful
-                    when filter parts are actually bundled, since otherwise
-                    the two cards ARE the essentials rate. */}
-                {data.pool.filterServiceIncluded === "yes" &&
-                  supportsFilterService(data.pool.filterType) && (
-                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
-                      <input
-                        type="checkbox"
-                        checked={hasEssentials}
-                        onChange={(e) => {
-                          if (
-                            data.proposal.tiers.length > 0 &&
-                            !window.confirm(
-                              hasEssentials
-                                ? "Remove the Essentials plan? The remaining two plans are rebuilt from the preset, so any wording you edited is lost."
-                                : "Add the Essentials plan? All three plans are rebuilt from the preset, so any wording you edited is lost.",
-                            )
-                          )
-                            return;
-                          setEssentialsPlan(e.target.checked);
-                        }}
-                        className="mt-0.5 h-4 w-4 accent-brand-blue"
-                      />
-                      <span>
-                        <span className="block text-sm font-semibold text-gray-200">
-                          Add an Essentials plan for comparison
-                        </span>
-                        <span className="mt-0.5 block text-xs leading-relaxed text-gray-500">
-                          A third, cheaper card with filter parts left out —
-                          the rate other companies quote. Cleaning and
-                          backwashing stay included; parts are quoted at cost
-                          and approved first. Priced automatically from the
-                          base rate.
-                        </span>
-                      </span>
-                    </label>
-                  )}
                 <p className="text-xs leading-relaxed text-gray-500">
                   The PDF shows the upgrade as &ldquo;Everything in{" "}
                   {data.proposal.tiers[0]?.name || "the first plan"},
