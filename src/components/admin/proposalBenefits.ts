@@ -29,13 +29,23 @@ export const BENEFITS_HEADING = 'The Suncoast Difference';
  * three-plan quote page one was promising, in writing, things the plan on page
  * two removes.
  *
- * One sentence fixes it, and it does a second job while it is there: page one
- * now reads as the specification of the plan we actually want chosen, with the
- * cheaper card defined as a subtraction from it. That is the right order —
- * establish the full service, then show what comes off.
+ * IT ALSO HAS TO SOUND LIKE SOMETHING. The first version — "Everything below
+ * is included in Complete. The Essentials plan leaves out the items marked on
+ * its card." — scoped correctly and read like a compliance footnote. This one
+ * leads with the principle in eight words and then does the same scoping as a
+ * consequence of it.
+ *
+ * WHAT IT DELIBERATELY DOES NOT SAY is that Complete is the transparent plan.
+ * Essentials is equally transparent — the customer is told today exactly what
+ * gets billed later. The real distinction is prepaid versus billed-when-due,
+ * and that is the stronger claim because it is true of both plans and the
+ * customer can check it.
+ *
+ * It also puts page one in the right order: the specification of the plan we
+ * want chosen, with the cheaper card defined as a subtraction from it.
  */
 export const BENEFITS_PLAN_SCOPE =
-  'Everything below is included in Complete. The Essentials plan leaves out the items marked on its card.';
+  'A rate should tell you what the year actually costs. Complete puts everything below into one; Essentials is lower up front, with the items marked on its card billed at cost when they’re due.';
 
 /**
  * The chemicals bullet — named, not summarised.
