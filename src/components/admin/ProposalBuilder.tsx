@@ -989,7 +989,7 @@ export const ProposalBuilder = ({
                 <Building2 className="mt-0.5 h-5 w-5 shrink-0 text-gray-500 group-hover:text-brand-blue-light" />
                 <span className="flex-1">
                   <span className="block text-sm font-semibold text-gray-200">
-                    An HOA, condo association or property manager?
+                    An HOA, condo association or commercial pool?
                   </span>
                   <span className="mt-0.5 block text-xs leading-relaxed text-gray-500">
                     That needs the Commercial Bid — every body of water priced
