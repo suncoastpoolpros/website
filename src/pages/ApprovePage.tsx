@@ -14,7 +14,7 @@ import { type ParsedQuoteLink, parseQuoteLink } from "@/lib/quoteLinks";
 import { PRICING_CONDITION_TERM } from "@/components/admin/proposalTerms";
 import { jobKindOf, showsConditionTerm } from "@/components/admin/jobKinds";
 import { splitTierIncludes } from "@/lib/adminApi";
-import { shortBullet } from "@/components/admin/tierPresets";
+import { currentTagline, shortBullet } from "@/components/admin/tierPresets";
 import {
   DECLINE_REASONS,
   declineReply,
@@ -935,7 +935,7 @@ export const ApprovePage = () => {
                       </h3>
                       {tier.tagline && (
                         <p className="mt-1 text-sm text-[#6b7280]">
-                          {tier.tagline}
+                          {currentTagline(tier.tagline)}
                         </p>
                       )}
                       {/* Price and saving on ONE line, so the rate and the

@@ -257,6 +257,43 @@ const SHORT_FORMS: Record<string, string> = {
     "One payment for the year",
 };
 
+/**
+ * Taglines we have written before, mapped to what they say now — for the WEB
+ * PAGE only.
+ *
+ * A tagline lives in proposal_json, so a quote sent last week carries the
+ * wording it was sent with, and the annual card's old line ("The full service,
+ * with one month free") restates the badge underneath it instead of answering
+ * the objection that actually stops the sale.
+ *
+ * Upgrading it on the page is safe in a way that backfilling the row is not.
+ * Nothing stored moves, no signed record changes, and the two wordings do not
+ * contradict: the new line says something the old one left out, and everything
+ * it claims is already on the same card in the bullets. Print keeps what was
+ * sent — same rule as the short bullets.
+ *
+ * ONLY strings we know we wrote. An operator who typed their own tagline keeps
+ * it, which is the whole reason this is a lookup and not a heuristic.
+ */
+const TAGLINE_UPGRADES: Record<string, string> = {
+  "Everything above, billed month to month.":
+    "The full service, month to month.",
+  "The full service, billed month to month.":
+    "The full service, month to month.",
+  "The same service, paid annually.":
+    "Nothing locked in — cancel any time, unused months refunded.",
+  "Everything above, paid annually.":
+    "Nothing locked in — cancel any time, unused months refunded.",
+  "The full service, with one month free.":
+    "Nothing locked in — cancel any time, unused months refunded.",
+};
+
+/** The page's version of a tagline. Anything hand-written passes through. */
+export const currentTagline = (tagline: string): string => {
+  const t = tagline.trim();
+  return TAGLINE_UPGRADES[t] ?? t;
+};
+
 /** The page's version of a bullet. Unrecognised text is returned untouched. */
 export const shortBullet = (item: string): string => {
   const t = item.trim();
