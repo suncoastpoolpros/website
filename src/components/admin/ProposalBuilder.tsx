@@ -15,6 +15,9 @@ import {
   Link2,
   Building2,
   ArrowRight,
+  Repeat,
+  Sparkles,
+  Wrench,
 } from "lucide-react";
 import {
   FieldShell,
@@ -909,25 +912,45 @@ export const ProposalBuilder = ({
                 aria-label="What are you quoting?"
                 className="grid grid-cols-1 gap-3 sm:grid-cols-3"
               >
+                {/* TITLE-ONLY. The three labels explain themselves, and the
+                    explanatory sentences made a three-way tap read like a
+                    form to study — this is the one control an operator hits
+                    on every quote, often on a phone in the sun. The hints
+                    stay in JOB_KINDS (they document the kinds) but are not
+                    rendered here. The icon carries the selected state as
+                    strongly as the border, so the answer reads at a glance
+                    from across a truck cab. */}
                 {JOB_KINDS.map((k) => {
                   const picked = rawKind === k.key;
+                  const Icon =
+                    k.key === "recurring"
+                      ? Repeat
+                      : k.key === "recovery"
+                        ? Sparkles
+                        : Wrench;
                   return (
                     <button
                       key={k.key}
                       role="radio"
                       aria-checked={picked}
                       onClick={() => update("proposal", "jobKind", k.key)}
-                      className={`rounded-xl border p-4 text-left transition-colors ${
+                      className={`group flex flex-col items-center gap-2.5 rounded-xl border px-4 py-5 transition-all ${
                         picked
-                          ? "border-brand-blue bg-brand-blue/10"
-                          : "border-white/10 bg-white/5 hover:border-white/20"
+                          ? "border-brand-blue bg-brand-blue/15 shadow-lg shadow-brand-blue/10"
+                          : "border-white/10 bg-white/5 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.08]"
                       }`}
                     >
-                      <span className="block font-display text-sm font-bold text-white">
-                        {k.label}
+                      <span
+                        className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${
+                          picked
+                            ? "bg-brand-blue text-white"
+                            : "bg-white/10 text-gray-400 group-hover:text-gray-200"
+                        }`}
+                      >
+                        <Icon className="h-5 w-5" />
                       </span>
-                      <span className="mt-1 block text-xs leading-relaxed text-gray-400">
-                        {k.hint}
+                      <span className="text-center font-display text-sm font-bold text-white">
+                        {k.label}
                       </span>
                     </button>
                   );
