@@ -24,9 +24,24 @@ export type IncludedExtra = {
   typical: string;
   /** What the figure depends on, set small after the price. */
   basis: string;
+  /**
+   * Whether the ESSENTIALS plan covers this row. Only set on three-plan
+   * quotes, where the table grows a third column — elsewhere every row is
+   * covered by every plan and the flag would mean nothing.
+   */
+  essentialsCovers?: boolean;
 };
 
-export const EXTRAS_HEADING = 'What Others Charge Extra For';
+/*
+ * "LEAVE OUT OF THE PRICE", not "charge extra for".
+ *
+ * Same rows, opposite subject. "Charge extra" is about their invoice; "leave
+ * out of the price" is about the NUMBER the customer is holding next to ours,
+ * which is the actual comparison being made. It also stops the section reading
+ * as a boast about our generosity and starts it reading as a warning about a
+ * quote that looks cheaper than it is.
+ */
+export const EXTRAS_HEADING = 'What Others Leave Out Of The Price';
 
 /**
  * The reasoning, stated before the table. The rows prove the claim; this says
@@ -50,10 +65,27 @@ export const EXTRAS_INTRO =
  * cheaper rate is only defensible if the customer was told what makes it
  * cheaper BEFORE the first element invoice, not after.
  */
-export const extrasIntroFor = (filterIncluded: boolean): string =>
-  filterIncluded
+export const extrasIntroFor = (
+  filterIncluded: boolean,
+  /** Three-plan quote: the all-inclusive claim belongs to Complete alone. */
+  hasEssentials = false,
+): string => {
+  /*
+   * THREE PLANS NEEDS ITS OWN OPENING. "We build our service to be
+   * all-inclusive on purpose" is true of Complete and not of the card sitting
+   * furthest left, so on a three-plan quote the blanket version contradicts
+   * the table underneath it. This one names the market first, then our two
+   * answers to it — which is also the order the table's columns run in.
+   */
+  if (hasEssentials) {
+    return filterIncluded
+      ? 'Most companies quote a monthly rate with these left out, then invoice them when they come due — which is what makes a cheaper quote look cheaper. Complete prices them in, so the rate you are quoted is the rate you pay. Essentials is our version of that leaner rate, for anyone who would rather pay for parts only when they are needed.'
+      : 'Most companies quote a monthly rate with these left out, then invoice them when they come due. Chemicals and routine treatments are priced into your rate here either way; filter parts are quoted at cost when due, and never fitted without your approval.';
+  }
+  return filterIncluded
     ? EXTRAS_INTRO
     : 'We build our service to be all-inclusive where it counts: chemicals and routine treatments are priced into your monthly cost rather than invoiced separately, because splitting those out only makes a rate look cheaper than it really is. Filter parts are the one thing this quote keeps separate — when an element or media change comes due, we quote it at cost first, and nothing is replaced without your approval.';
+};
 
 /**
  * The carve-out. Names storm and construction clean-up explicitly rather than
@@ -77,7 +109,7 @@ export const extrasIntroFor = (filterIncluded: boolean): string =>
  * detail; this only stops the table contradicting them.
  */
 export const EXTRAS_PLAN_QUALIFIER =
-  'Every item above is included on Complete. The Essentials plan leaves out the items marked on its card, which is what makes it cheaper.';
+  'Essentials matches what most companies quote — those rows are billed when needed, at cost, always approved first. Complete is the plan that closes the gap.';
 
 export const EXTRAS_NOTE =
   'The figures above are what you would typically be quoted for these elsewhere. Routine treatments are included. Heavy clean-ups outside routine service are quoted separately — a green-to-clean recovery, or debris left by a storm or nearby construction.';
@@ -86,6 +118,22 @@ export const EXTRAS_NOTE =
 export const EXTRAS_COL_THEIRS = 'Others charge';
 export const EXTRAS_COL_YOURS = 'Your cost';
 export const EXTRAS_INCLUDED_LABEL = 'Included';
+/*
+ * The three-plan headers. A single "Your cost: Included" column was a per-PLAN
+ * fact printed as a per-QUOTE fact: the customer read "Cartridge filter
+ * replacement — Included" here and then met a red ✗ against that same item on
+ * the first card they saw, with the reconciling sentence at the very bottom.
+ *
+ * Splitting the column is not a concession — it is the argument. Essentials is
+ * deliberately built to match what this market quotes, so showing it beside
+ * "others charge" proves the claim the section is making, and the upgrade
+ * becomes arithmetic the customer does themselves rather than a line they have
+ * to take on trust.
+ */
+export const EXTRAS_COL_ESSENTIALS = 'Essentials';
+export const EXTRAS_COL_COMPLETE = 'Complete';
+/** What an Essentials cell says on a row it does not cover. */
+export const EXTRAS_EXCLUDED_LABEL = 'Extra';
 
 /**
  * Universal rows — true of any pool, so they read as generic and sit LAST.
@@ -144,10 +192,21 @@ const SPLIT_TREATMENT_EXTRAS: IncludedExtra[] = [
  * the two filter costs read as one story — the annual teardown plus the powder
  * it burns through in between — instead of looking like the same charge twice.
  */
+/**
+ * Rows the Essentials plan does NOT cover, matched by label prefix.
+ *
+ * Deliberately the same three items as essentialsExclusions() and the ✗ rows
+ * on the card — one list of exclusions expressed three ways, and they must
+ * never disagree. Prefix rather than exact so the filter row matches whichever
+ * filter this pool has.
+ */
+const NOT_ON_ESSENTIALS = /^(Cartridge filter replacement|DE filter split|Sand media|Salt cell acid wash|Phosphate remover)/;
+
 export const includedExtras = (
   filter: FilterOption,
   sanitization = '',
-  /** The quote offers an Essentials plan, so the treatments row splits. */
+  /** The quote offers an Essentials plan: split the treatments row, and mark
+   *  every row with whether Essentials covers it. */
   hasEssentials = false,
 ): IncludedExtra[] => {
   const rows: IncludedExtra[] = [];
@@ -256,5 +315,7 @@ export const includedExtras = (
     });
   }
   rows.push(...(hasEssentials ? SPLIT_TREATMENT_EXTRAS : BASE_EXTRAS));
-  return rows;
+  return hasEssentials
+    ? rows.map((r) => ({ ...r, essentialsCovers: !NOT_ON_ESSENTIALS.test(r.label) }))
+    : rows;
 };

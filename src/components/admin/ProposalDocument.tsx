@@ -42,7 +42,10 @@ import {
 import { cadenceLabel } from "./serviceCadence";
 import { filterTypeLabel } from "./filterService";
 import {
+  EXTRAS_COL_COMPLETE,
+  EXTRAS_COL_ESSENTIALS,
   EXTRAS_COL_THEIRS,
+  EXTRAS_EXCLUDED_LABEL,
   extrasIntroFor,
   EXTRAS_COL_YOURS,
   EXTRAS_HEADING,
@@ -248,6 +251,16 @@ const styles = StyleSheet.create({
     lineHeight: 1.3,
     fontFamily: "Helvetica-Bold",
     color: GREEN,
+    textAlign: "right",
+  },
+  // The Essentials column on a three-plan quote. Same metrics as the Complete
+  // column so the two read as a pair the eye compares straight across.
+  extraEssentialsOff: {
+    width: 54,
+    fontSize: 8,
+    lineHeight: 1.3,
+    fontFamily: "Helvetica-Bold",
+    color: EXCLUDED_RED,
     textAlign: "right",
   },
   extrasIntro: { fontSize: 8.5, lineHeight: 1.4, color: INK, marginBottom: 9 },
@@ -695,11 +708,8 @@ export const ProposalDocument = ({
       pool.filterServiceIncluded === "yes" ||
       (pool.filterServiceIncluded as unknown) === true,
   };
-  const extras = includedExtras(
-    filterOption,
-    pool.sanitization,
-    proposal.tiers.some((t) => t.essentials),
-  );
+  const hasEssentials = proposal.tiers.some((t) => t.essentials);
+  const extras = includedExtras(filterOption, pool.sanitization, hasEssentials);
   const tiers = tiered ? proposal.tiers : [];
   const [baseTier, upgradeTier] = tiers;
   const delta = tierDelta(baseTier, upgradeTier);
@@ -902,7 +912,7 @@ export const ProposalDocument = ({
                     <View>
                       <Text style={styles.sectionLabel}>{EXTRAS_HEADING}</Text>
                       <Text style={styles.extrasIntro}>
-                        {extrasIntroFor(filterOption.included)}
+                        {extrasIntroFor(filterOption.included, hasEssentials)}
                       </Text>
                       <View style={styles.extraHeadRow}>
                         <Text
@@ -919,6 +929,17 @@ export const ProposalDocument = ({
                         >
                           {EXTRAS_COL_THEIRS}
                         </Text>
+                        {hasEssentials ? (
+                          <Text
+                            style={[
+                              styles.extraIncluded,
+                              styles.extraHeadCell,
+                              { color: FAINT },
+                            ]}
+                          >
+                            {EXTRAS_COL_ESSENTIALS}
+                          </Text>
+                        ) : null}
                         <Text
                           style={[
                             styles.extraIncluded,
@@ -926,7 +947,9 @@ export const ProposalDocument = ({
                             { color: FAINT },
                           ]}
                         >
-                          {EXTRAS_COL_YOURS}
+                          {hasEssentials
+                            ? EXTRAS_COL_COMPLETE
+                            : EXTRAS_COL_YOURS}
                         </Text>
                       </View>
                     </View>
@@ -942,6 +965,19 @@ export const ProposalDocument = ({
                       <Text style={styles.extraBasis}>{x.basis}</Text>
                     </View>
                     <Text style={styles.extraPrice}>{x.typical}</Text>
+                    {hasEssentials ? (
+                      <Text
+                        style={
+                          x.essentialsCovers
+                            ? styles.extraIncluded
+                            : styles.extraEssentialsOff
+                        }
+                      >
+                        {x.essentialsCovers
+                          ? EXTRAS_INCLUDED_LABEL
+                          : EXTRAS_EXCLUDED_LABEL}
+                      </Text>
+                    ) : null}
                     <Text style={styles.extraIncluded}>
                       {EXTRAS_INCLUDED_LABEL}
                     </Text>

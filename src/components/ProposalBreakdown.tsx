@@ -32,8 +32,11 @@ import {
   includedBenefits,
 } from '@/components/admin/proposalBenefits';
 import {
+  EXTRAS_COL_COMPLETE,
+  EXTRAS_COL_ESSENTIALS,
   EXTRAS_COL_THEIRS,
   EXTRAS_COL_YOURS,
+  EXTRAS_EXCLUDED_LABEL,
   EXTRAS_HEADING,
   EXTRAS_INCLUDED_LABEL,
   extrasIntroFor,
@@ -178,11 +181,20 @@ export const ProposalBreakdown = ({
       {extras.length > 0 && (
         <Card title={EXTRAS_HEADING}>
           <p className="max-w-3xl text-sm leading-relaxed text-[#374151]">
-            {extrasIntroFor(filter.included)}
+            {extrasIntroFor(filter.included, hasEssentials)}
           </p>
+          {/* A third column on three-plan quotes: Essentials sits between what
+              others charge and what Complete covers, because that is exactly
+              where the plan sits. One "Your cost: Included" column was a
+              per-plan fact printed as a per-quote fact. */}
           <div className="mt-4 flex items-baseline justify-end gap-6 text-[11px] uppercase tracking-wider text-[#6b7280]">
             <span className="w-24 text-right">{EXTRAS_COL_THEIRS}</span>
-            <span className="w-20 text-right">{EXTRAS_COL_YOURS}</span>
+            {hasEssentials && (
+              <span className="w-20 text-right">{EXTRAS_COL_ESSENTIALS}</span>
+            )}
+            <span className="w-20 text-right">
+              {hasEssentials ? EXTRAS_COL_COMPLETE : EXTRAS_COL_YOURS}
+            </span>
           </div>
           <ul className="divide-y divide-[#eef1f5] border-t border-[#eef1f5]">
             {extras.map((x, i) => (
@@ -194,6 +206,15 @@ export const ProposalBreakdown = ({
                 <span className="w-24 shrink-0 text-right text-sm text-[#6b7280] line-through">
                   {x.typical}
                 </span>
+                {hasEssentials && (
+                  <span
+                    className={`w-20 shrink-0 text-right text-sm font-bold ${
+                      x.essentialsCovers ? 'text-[#1d7a33]' : 'text-[#c0392b]'
+                    }`}
+                  >
+                    {x.essentialsCovers ? EXTRAS_INCLUDED_LABEL : EXTRAS_EXCLUDED_LABEL}
+                  </span>
+                )}
                 <span className="w-20 shrink-0 text-right text-sm font-bold text-[#1d7a33]">
                   {EXTRAS_INCLUDED_LABEL}
                 </span>

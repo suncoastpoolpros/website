@@ -2387,7 +2387,7 @@ const ProposalPreview = ({
           extras.length > 0 && (
             <PreviewBlock label={EXTRAS_HEADING}>
               <p className="mb-2 text-[12px] leading-relaxed text-stone-700">
-                {extrasIntroFor(filterOption.included)}
+                {extrasIntroFor(filterOption.included, data.proposal.tiers.some((t) => t.essentials))}
               </p>
               <div>
                 <div className="flex gap-2 border-b border-stone-200 pb-1 text-[8px] uppercase tracking-wide text-stone-400">
