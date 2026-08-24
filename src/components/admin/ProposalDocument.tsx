@@ -299,6 +299,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     flexDirection: "column",
   },
+  // Three plans share the same row. Width is set explicitly rather than by
+  // flex because @react-pdf sizes flex children by content, which made the
+  // longest card the widest — see the note in react-pdf gotchas.
+  tierColThird: {
+    width: "33.333%",
+    flexShrink: 0,
+    paddingHorizontal: 3.5,
+    flexDirection: "column",
+  },
   // NOTE: no `height: '100%'` here. The parent column has no definite height,
   // so the percentage resolves against nothing and corrupts the layout for the
   // WHOLE page — the masthead clipped its own title and every row's leading
@@ -927,12 +936,41 @@ export const ProposalDocument = ({
               <Text style={styles.sectionLabel}>Choose Your Plan</Text>
               <View style={styles.tierRow}>
                 {tiers.map((tier, i) => (
-                  <View key={i} style={styles.tierCol}>
+                  <View
+                    key={i}
+                    style={
+                      tiers.length >= 3 ? styles.tierColThird : styles.tierCol
+                    }
+                  >
                     <TierCard
                       tier={tier}
-                      buildsOn={i > 0 ? tiers[i - 1].name.trim() : undefined}
-                      baseIncludes={i > 0 ? tiers[i - 1].includes : []}
-                      delta={i > 0 ? delta : ""}
+                      /*
+                       * The cross-reference works by PREFIX: sharedCount (or a
+                       * base list) splits a card's bullets into shared-then-
+                       * extra. Pay Monthly differs from Essentials by a single
+                       * bullet sitting in the MIDDLE of its list — one filter
+                       * line swapped for another — so a prefix split can't
+                       * express it, and the card printed all six bullets under
+                       * "Everything in Essentials, plus:" as though every one
+                       * were an addition. It stands alone instead; its tagline
+                       * already names the upgrade. Pay Annually keeps the
+                       * reference: its extras genuinely are a suffix.
+                       */
+                      buildsOn={
+                        i > 0 && !(tiers.length >= 3 && i === 1)
+                          ? tiers[i - 1].name.trim()
+                          : undefined
+                      }
+                      baseIncludes={
+                        i > 0 && !(tiers.length >= 3 && i === 1)
+                          ? tiers[i - 1].includes
+                          : []
+                      }
+                      /* The computed "+$X more than Y" delta is only ever
+                         derived for the two-plan pair; on three plans each
+                         card carries its own priceNote and the tagline names
+                         the upgrade, so a delta here would be wrong. */
+                      delta={tiers.length >= 3 ? "" : i > 0 ? delta : ""}
                       cadence={cadenceLabel(proposal.cadence)}
                     />
                   </View>

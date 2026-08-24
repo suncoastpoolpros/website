@@ -868,7 +868,19 @@ export const ApprovePage = () => {
                 is being asked to tell them apart. Vertical spacing on a phone
                 stays as it was: stacked, they are already unmistakably two
                 things. */}
-            <div className="grid grid-cols-1 items-start gap-4 sm:mt-24 sm:grid-cols-2 sm:gap-8">
+            {/* Two columns for the standard proposal, three when the
+                Essentials comparison plan is attached. The two-plan geometry
+                below (banner height, both lifts, the compensating padding) is
+                unchanged — three cards simply share the row, with a tighter
+                gutter because the same gap across three columns squeezed the
+                cards themselves. */}
+            <div
+              className={`grid grid-cols-1 items-start gap-4 ${
+                tiers.length >= 3
+                  ? "lg:mt-24 lg:grid-cols-3 lg:gap-5"
+                  : "sm:mt-24 sm:grid-cols-2 sm:gap-8"
+              }`}
+            >
               {tiers.map((tier, i) => {
                 /**
                  * NOTHING ON THIS SCREEN IS "SELECTED".
@@ -916,9 +928,18 @@ export const ApprovePage = () => {
                          so the buttons still line up, and the rule above holds
                          unchanged. Half of h-12 is mt-6, and p-5 + 24px is
                          pt-11: all four move together or not at all. */
-                      tier.recommended
-                        ? "order-first sm:order-none sm:-mt-12"
-                        : "sm:-mt-6"
+                      /* The breakpoint MUST match the grid's above: three
+                         cards stay stacked until lg, and a negative margin in
+                         a stacked column pulls each card onto the one before
+                         it. Written out in full rather than composed from a
+                         variable — Tailwind only sees literal class names. */
+                      tiers.length >= 3
+                        ? tier.recommended
+                          ? "order-first lg:order-none lg:-mt-12"
+                          : "lg:-mt-6"
+                        : tier.recommended
+                          ? "order-first sm:order-none sm:-mt-12"
+                          : "sm:-mt-6"
                     } ${
                       tier.recommended
                         ? "border-[#1669AE] bg-white shadow-lg shadow-[#1669AE]/15 ring-1 ring-[#1669AE]/20 hover:border-[#0f4d80]"
@@ -949,7 +970,11 @@ export const ApprovePage = () => {
                     )}
                     <div
                       className={`flex flex-1 flex-col p-5 ${
-                        tier.recommended ? "" : "sm:pt-11"
+                        tier.recommended
+                          ? ""
+                          : tiers.length >= 3
+                            ? "lg:pt-11"
+                            : "sm:pt-11"
                       }`}
                     >
                       <h3 className="font-display text-lg font-bold">
@@ -975,7 +1000,7 @@ export const ApprovePage = () => {
                           baseline; centred, a small pill floats oddly against a
                           30px number. */}
                       {(tier.price || tier.priceNote?.trim()) && (
-                        <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-2 sm:min-h-[2.75rem]">
+                        <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-2 sm:min-h-[2.75rem] lg:min-h-[2.75rem]">
                           {tier.price && (
                             /* The recommended price is set a size larger. Two
                                prices at identical weight ask the customer to do
@@ -1063,9 +1088,23 @@ export const ApprovePage = () => {
                            silently understate what is being bought. Composed
                            here rather than backfilled: the stored row is the
                            record of what was sent, some of them signed. */
+                        /*
+                         * The legacy-shape rebuild compares against the card
+                         * to the left, which only works when the two lists
+                         * differ by a SUFFIX. In the three-plan layout Pay
+                         * Monthly differs from Essentials by one bullet in the
+                         * middle — a filter line swapped, not appended — so
+                         * the rebuild put Essentials' "filter cleaning" line
+                         * into Pay Monthly's shared section, showing a bullet
+                         * that is not in that card's own list. Three-plan
+                         * tiers are all current-shape (they carry sharedCount
+                         * where it applies), so they never need the rebuild.
+                         */
                         const { shared, extras } = splitTierIncludes(
                           tier,
-                          i > 0 ? (tiers[i - 1]?.includes ?? []) : [],
+                          i > 0 && tiers.length < 3
+                            ? (tiers[i - 1]?.includes ?? [])
+                            : [],
                         );
                         /* Short forms here and NOWHERE else. The PDF keeps
                            the long ones: it is read once and carefully, often

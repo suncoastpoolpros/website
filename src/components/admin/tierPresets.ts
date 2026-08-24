@@ -22,6 +22,7 @@
  */
 import type { Tier } from "@/lib/adminApi";
 import {
+  FILTER_SERVICE,
   ALL_FILTER_LINES,
   ALL_PLAN_FILTER_LINES,
   planFilterBullet,
@@ -76,7 +77,11 @@ export const ANNUAL_MONTHS_CHARGED = 11;
 /* 9: the plan card's filter bullet now names the filter (Cartridge / DE /
    Sand) instead of a generic "Filter care included", so it can be recognised
    and removed when the answer or the type changes. */
-export const PRESET_VERSION = 9;
+/* 10: the optional three-plan layout (Essentials / Pay Monthly / Pay
+   Annually), plus the excluded-filter value note replacing the old
+   "genuinely all-in" fallback. Two-plan quotes are unaffected in wording;
+   the bump exists so drafts pick up the corrected excluded note. */
+export const PRESET_VERSION = 10;
 
 /** Terms specific to prepaying for the year. */
 /**
@@ -466,8 +471,19 @@ export const syncTierPrices = (
   filter: FilterOption,
 ): Tier[] => {
   if (tiers.length === 0) return tiers;
-  const before = buildTiers(oldBase, filter);
-  const after = buildTiers(newBase, filter);
+  /*
+   * Rebuild the SAME SHAPE the draft is in.
+   *
+   * These two arrays are compared to the stored tiers index by index, so a
+   * three-plan draft measured against a two-plan preset lines Essentials up
+   * with Pay Monthly — and the cheaper card silently inherits the full rate
+   * the moment the base price is edited. The shape has to match.
+   */
+  const build = tiers.some((t) => t.essentials)
+    ? buildTiersWithEssentials
+    : buildTiers;
+  const before = build(oldBase, filter);
+  const after = build(newBase, filter);
   return tiers.map((tier, i) => {
     const was = before[i];
     const now = after[i];
@@ -604,6 +620,106 @@ export const buildTiers = (
       finePrint: ANNUAL_FINE_PRINT,
     },
   ];
+};
+
+/**
+ * The optional THIRD plan: the same weekly service with filter parts left out.
+ *
+ * WHY IT EXISTS. No other company in this market includes filter elements or
+ * the annual DE teardown in a monthly rate — so our all-in number is being
+ * compared against quotes that quietly exclude a $120–150/yr item. This card
+ * puts the apples-to-apples figure on our own document, immediately beside
+ * what the difference actually buys. The customer holding two other quotes
+ * gets to make the comparison correctly rather than guessing.
+ *
+ * WHAT IT DOES NOT CHANGE. buildTiers is untouched: a two-plan proposal is
+ * byte-for-byte what it was. This is opt-in per quote.
+ *
+ * THE LADDER IS HONEST. Essentials → Monthly adds the filter parts; Monthly →
+ * Annual adds the free twelfth month. Each step up is one added thing, which
+ * is the only arrangement where "recommended" on the middle or right card
+ * reads as advice rather than an upsell.
+ *
+ * CLEANING IS NOT THE CARVE-OUT. Routine cleaning and backwashing stay in
+ * every plan — only parts move. essentialsIncludes says so explicitly, because
+ * a customer who reads "filter" in an exclusion assumes the whole thing.
+ */
+const essentialsIncludes = (filter: FilterOption): string[] => [
+  "All chemicals included in your set monthly rate",
+  // The distinction the whole card turns on, stated as an inclusion rather
+  // than left for the fine print to walk back.
+  "Filter cleaning and backwashing included",
+  "One flat rate — it doesn’t rise in summer",
+  "A GPS-stamped service report after every visit",
+  "Two-week 100% money-back guarantee",
+  "No contract — cancel any time with 30 days notice",
+];
+
+/**
+ * What the essentials rate should be, given the full rate.
+ *
+ * The full rate absorbs the filter service, so backing it out is a
+ * subtraction, not a guess — FILTER_SERVICE carries the annual value and it is
+ * spread over twelve months, rounded to the dollar. Cartridge ($120/yr) lands
+ * at $10/mo and DE ($150/yr) at about $13/mo, which is the $10–12 band this
+ * was scoped around. Uncosted filter types fall back to $10 so the operator
+ * still gets a sane starting number to type over.
+ */
+export const essentialsMonthly = (base: string, type: string): number | null => {
+  const monthly = monthlyAmount(base);
+  if (monthly == null) return null;
+  const annual = FILTER_SERVICE[type]?.value ?? 120;
+  return Math.max(0, Math.round(monthly - annual / 12));
+};
+
+/**
+ * Seed all THREE plans. Plans 2 and 3 are exactly buildTiers' output, so the
+ * two-plan and three-plan proposals can never drift apart in wording.
+ */
+export const buildTiersWithEssentials = (
+  basePrice = "",
+  filter: FilterOption = { type: "", included: false },
+): Tier[] => {
+  const full = buildTiers(basePrice, filter);
+  const cut = essentialsMonthly(basePrice, filter.type);
+  const label = filterPartsLabel(filter.type);
+  return [
+    {
+      name: "Essentials",
+      essentials: true,
+      price: cut != null ? `${formatAmount(cut)}/mo` : "",
+      // Names the comparison outright. A customer with two other quotes on the
+      // table already suspects they are not comparing like with like; saying
+      // so first is what makes the next card's price legible.
+      tagline: "The rate other companies quote — filter parts not included.",
+      priceNote: "",
+      billingNote: "",
+      includes: essentialsIncludes(filter),
+      recommended: false,
+      valueNote: excludedFilterValueNote(filter.type),
+      finePrint: filterServiceTerms({ type: filter.type, included: false }),
+    },
+    {
+      ...full[0],
+      // Says what the extra buys, in the words of this pool's own filter.
+      tagline: `Everything in Essentials, plus ${label}.`,
+    },
+    full[1],
+  ];
+};
+
+/** "your cartridge elements" / "your DE split & clean" / "your sand media". */
+const filterPartsLabel = (type: string): string => {
+  switch (type) {
+    case "Cartridge":
+      return "your cartridge elements";
+    case "DE":
+      return "your annual DE split & clean";
+    case "Sand":
+      return "your sand media";
+    default:
+      return "your filter parts";
+  }
 };
 
 /** Leading number in a monthly price ("165/mo" → 165). null when not numeric. */

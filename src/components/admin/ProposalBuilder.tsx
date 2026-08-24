@@ -79,6 +79,7 @@ import {
 import {
   PRESET_VERSION,
   buildTiers,
+  buildTiersWithEssentials,
   syncFilterService,
   syncTierPrices,
   upgradeTierWording,
@@ -426,13 +427,41 @@ export const ProposalBuilder = ({
       ...p,
       proposal: {
         ...p.proposal,
-        tiers: buildTiers(p.proposal.price, {
+        // Rebuild the shape the proposal is already in — resetting wording
+        // should not silently drop the comparison plan.
+        tiers: (p.proposal.tiers.some((t) => t.essentials)
+          ? buildTiersWithEssentials
+          : buildTiers)(p.proposal.price, {
           type: p.pool.filterType,
           included: p.pool.filterServiceIncluded === "yes",
         }),
         presetVersion: PRESET_VERSION,
       },
     }));
+
+  /**
+   * Add or remove the Essentials comparison plan.
+   *
+   * Rebuilds from the preset rather than splicing, so the three cards are
+   * always the seeded set — the ladder (Essentials → parts → free month) only
+   * reads correctly if the middle card's tagline names the upgrade, and that
+   * tagline is generated. Any per-customer wording on the OTHER two cards is
+   * therefore lost, which is why the control warns before it fires.
+   */
+  const setEssentialsPlan = (on: boolean) =>
+    setData((p) => ({
+      ...p,
+      proposal: {
+        ...p.proposal,
+        tiers: (on ? buildTiersWithEssentials : buildTiers)(p.proposal.price, {
+          type: p.pool.filterType,
+          included: p.pool.filterServiceIncluded === "yes",
+        }),
+        presetVersion: PRESET_VERSION,
+      },
+    }));
+
+  const hasEssentials = data.proposal.tiers.some((t) => t.essentials);
 
   // An unanswered filter question can't be sent: the quote would silently omit
   // a promise that was meant to be there, and nothing downstream would flag it.
@@ -1662,6 +1691,48 @@ export const ProposalBuilder = ({
 
             {data.proposal.pricingMode === "tiers" && (
               <Section title="Plans">
+                {/* The comparison plan, opt-in per quote.
+                    NOT a default: shown to everyone, some share of customers
+                    picks the cheaper card who would never have asked for it.
+                    Offered deliberately — on a call where the customer says
+                    they are holding other quotes — it stays a discount granted
+                    rather than a menu they self-served from. Only meaningful
+                    when filter parts are actually bundled, since otherwise
+                    the two cards ARE the essentials rate. */}
+                {data.pool.filterServiceIncluded === "yes" &&
+                  supportsFilterService(data.pool.filterType) && (
+                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+                      <input
+                        type="checkbox"
+                        checked={hasEssentials}
+                        onChange={(e) => {
+                          if (
+                            data.proposal.tiers.length > 0 &&
+                            !window.confirm(
+                              hasEssentials
+                                ? "Remove the Essentials plan? The remaining two plans are rebuilt from the preset, so any wording you edited is lost."
+                                : "Add the Essentials plan? All three plans are rebuilt from the preset, so any wording you edited is lost.",
+                            )
+                          )
+                            return;
+                          setEssentialsPlan(e.target.checked);
+                        }}
+                        className="mt-0.5 h-4 w-4 accent-brand-blue"
+                      />
+                      <span>
+                        <span className="block text-sm font-semibold text-gray-200">
+                          Add an Essentials plan for comparison
+                        </span>
+                        <span className="mt-0.5 block text-xs leading-relaxed text-gray-500">
+                          A third, cheaper card with filter parts left out —
+                          the rate other companies quote. Cleaning and
+                          backwashing stay included; parts are quoted at cost
+                          and approved first. Priced automatically from the
+                          base rate.
+                        </span>
+                      </span>
+                    </label>
+                  )}
                 <p className="text-xs leading-relaxed text-gray-500">
                   The PDF shows the upgrade as &ldquo;Everything in{" "}
                   {data.proposal.tiers[0]?.name || "the first plan"},
