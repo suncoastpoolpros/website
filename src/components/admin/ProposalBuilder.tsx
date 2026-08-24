@@ -950,6 +950,12 @@ export const ProposalBuilder = ({
                       aria-checked={picked}
                       onClick={() => update("proposal", "jobKind", k.key)}
                       className={`group flex flex-col items-center gap-2.5 rounded-xl border px-4 py-5 transition-all ${
+                        /* Taller while the chooser has the whole screen: at
+                           full width the same padding reads squat. Returns to
+                           py-5 when the form opens and the cards share a
+                           column with everything else. */
+                        chooserComplete ? "" : "lg:gap-3.5 lg:py-10"
+                      } ${
                         picked
                           ? "border-brand-blue bg-brand-blue/15 shadow-lg shadow-brand-blue/10"
                           : "border-white/10 bg-white/5 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.08]"
