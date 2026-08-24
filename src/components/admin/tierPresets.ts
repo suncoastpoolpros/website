@@ -747,9 +747,17 @@ export const buildTiersWithEssentials = (
    * RENAMED, in three-plan mode only. "Pay Monthly" beside "Essentials" mixes
    * two axes — one names a service level, the other a payment term — leaving
    * the customer to work out that two of the three are the same service.
-   * Naming both All-Inclusive says it outright. The two-plan proposal keeps
-   * "Pay Monthly" / "Pay Annually", where the payment term IS the only
-   * difference between the cards.
+   * A shared family name, split by payment term, says it outright.
+   *
+   * "Complete" rather than "All-Inclusive": all-inclusive is what every
+   * competitor claims in prose, so it works as the ARGUMENT (which is where
+   * the extras intro still uses it) and not as a name. Complete is a product,
+   * it is short enough for a card, and it lets page one say "everything here
+   * is included in Complete" — the sentence that makes the first page work
+   * once a plan exists that does not include all of it.
+   *
+   * The two-plan proposal keeps "Pay Monthly" / "Pay Annually", where the
+   * payment term IS the only difference between the cards.
    */
   return [
     {
@@ -774,8 +782,8 @@ export const buildTiersWithEssentials = (
      * card to the left, so these two cards never drift from the two-plan
      * proposal and a customer holding both documents sees the same wording.
      */
-    { ...full[0], name: "All-Inclusive Monthly" },
-    { ...full[1], name: "All-Inclusive Annual" },
+    { ...full[0], name: "Complete Monthly" },
+    { ...full[1], name: "Complete Annual" },
   ];
 };
 

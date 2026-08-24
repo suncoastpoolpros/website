@@ -20,6 +20,24 @@ import { isSaltwater } from './sanitization';
 export const BENEFITS_HEADING = 'The Suncoast Difference';
 
 /**
+ * WHICH PLAN page one is describing — only on a quote that offers Essentials.
+ *
+ * The Difference box and the value-stack table are written as flat statements:
+ * "All service chemicals included", "Cartridge filter replacement included",
+ * "Salt cell acid washing — both included", and a table whose every row reads
+ * Included. All of that is true of Complete and NOT of Essentials, so on a
+ * three-plan quote page one was promising, in writing, things the plan on page
+ * two removes.
+ *
+ * One sentence fixes it, and it does a second job while it is there: page one
+ * now reads as the specification of the plan we actually want chosen, with the
+ * cheaper card defined as a subtraction from it. That is the right order —
+ * establish the full service, then show what comes off.
+ */
+export const BENEFITS_PLAN_SCOPE =
+  'Everything below is included in Complete. The Essentials plan leaves out the items marked on its card.';
+
+/**
  * The chemicals bullet — named, not summarised.
  *
  * This is the one line on the list a customer can price against another quote,

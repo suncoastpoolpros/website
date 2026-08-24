@@ -24,7 +24,12 @@ import {
   splitTierIncludes,
   tierDelta,
 } from "@/lib/adminApi";
-import {benefitsFootnote, BENEFITS_HEADING, includedBenefits} from "./proposalBenefits";
+import {
+  benefitsFootnote,
+  BENEFITS_HEADING,
+  BENEFITS_PLAN_SCOPE,
+  includedBenefits,
+} from "./proposalBenefits";
 import { sanitizationLabel } from "./sanitization";
 import { PRICING_CONDITION_TERM_SHORT } from "./proposalTerms";
 import {
@@ -172,6 +177,12 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
     fontSize: 8.5,
     lineHeight: 1.45,
+  },
+  includedScope: {
+    fontSize: 7.6,
+    lineHeight: 1.35,
+    color: BRAND_BLUE,
+    marginBottom: 6,
   },
   includedFootnote: {
     marginTop: 6,
@@ -831,6 +842,13 @@ export const ProposalDocument = ({
             <Text style={styles.includedHeading}>
               {kind === "recurring" ? BENEFITS_HEADING : trustHeading(kind)}
             </Text>
+            {/* Names the plan these promises belong to. Without it page one
+                states "all chemicals included" and "cartridge replacement
+                included" on a quote whose Essentials card removes exactly
+                those — see BENEFITS_PLAN_SCOPE. */}
+            {kind === "recurring" && tiers.some((t) => t.essentials) ? (
+              <Text style={styles.includedScope}>{BENEFITS_PLAN_SCOPE}</Text>
+            ) : null}
             {(kind === "recurring"
               ? includedBenefits(filterOption, pool.sanitization)
               : jobAssurances(kind)

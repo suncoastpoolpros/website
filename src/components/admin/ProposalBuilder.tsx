@@ -66,7 +66,12 @@ import {
   type JobKind,
 } from "./jobKinds";
 import { ADDON_PRESETS } from "./addonPresets";
-import {benefitsFootnote, BENEFITS_HEADING, includedBenefits} from "./proposalBenefits";
+import {
+  benefitsFootnote,
+  BENEFITS_HEADING,
+  BENEFITS_PLAN_SCOPE,
+  includedBenefits,
+} from "./proposalBenefits";
 import {
   EXTRAS_COL_THEIRS,
   extrasIntroFor,
@@ -2190,6 +2195,12 @@ const ProposalPreview = ({
                 ? BENEFITS_HEADING
                 : trustHeading(previewKind)}
             </div>
+            {previewKind === "recurring" &&
+              data.proposal.tiers.some((t) => t.essentials) && (
+                <p className="mb-2 text-[12px] font-semibold leading-relaxed text-brand-blue-dark">
+                  {BENEFITS_PLAN_SCOPE}
+                </p>
+              )}
             <ul className="space-y-1">
               {(previewKind === "recurring"
                 ? includedBenefits(filterOption, pool.sanitization)

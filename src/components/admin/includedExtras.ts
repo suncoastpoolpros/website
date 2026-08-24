@@ -77,7 +77,7 @@ export const extrasIntroFor = (filterIncluded: boolean): string =>
  * detail; this only stops the table contradicting them.
  */
 export const EXTRAS_PLAN_QUALIFIER =
-  'These are included on the All-Inclusive plans. The Essentials plan leaves out the items marked on its card, which is what makes it cheaper.';
+  'Every item above is included on Complete. The Essentials plan leaves out the items marked on its card, which is what makes it cheaper.';
 
 export const EXTRAS_NOTE =
   'The figures above are what you would typically be quoted for these elsewhere. Routine treatments are included. Heavy clean-ups outside routine service are quoted separately — a green-to-clean recovery, or debris left by a storm or nearby construction.';

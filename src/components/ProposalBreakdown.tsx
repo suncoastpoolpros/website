@@ -19,7 +19,12 @@
  */
 import React from 'react';
 import { Check } from 'lucide-react';
-import { BENEFITS_HEADING, benefitsFootnote, includedBenefits } from '@/components/admin/proposalBenefits';
+import {
+  BENEFITS_HEADING,
+  BENEFITS_PLAN_SCOPE,
+  benefitsFootnote,
+  includedBenefits,
+} from '@/components/admin/proposalBenefits';
 import {
   EXTRAS_COL_THEIRS,
   EXTRAS_COL_YOURS,
@@ -132,6 +137,11 @@ export const ProposalBreakdown = ({
 
       {benefits.length > 0 && (
         <Card title={BENEFITS_HEADING}>
+          {hasEssentials && (
+            <p className="mb-4 text-sm font-semibold leading-relaxed text-[#1669AE]">
+              {BENEFITS_PLAN_SCOPE}
+            </p>
+          )}
           {/* CSS columns, not a grid: a grid aligns rows, so a two-line bullet
               opposite a one-line one leaves a hole under the short one. */}
           <ul className="sm:columns-2 sm:gap-x-8">
