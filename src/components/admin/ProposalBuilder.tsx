@@ -47,7 +47,7 @@ import {
   renderProposalPdf,
 } from "@/lib/proposalPdf";
 import { toTitleCase, formatUsPhone } from "@/lib/textFormat";
-import { Section, PreviewBlock, PreviewRow } from "./adminUi";
+import { Section, PreviewBlock, PreviewRow, CollapsibleSection} from "./adminUi";
 import { PhotoPicker } from "./PhotoPicker";
 import { EmailReview } from "./EmailReview";
 import { SANITIZATION_TYPES } from "./sanitization";
@@ -1185,7 +1185,20 @@ export const ProposalBuilder = ({
               )}
             </Section>
 
-            <Section title="Pool — Size & Volume">
+            {/* Shut by default: quotes are mostly written off site, without
+                the dimensions. Opens itself when a restored draft already has
+                any of them, so collapsing never hides typed data. */}
+            <CollapsibleSection
+              title="Pool — Size & Volume"
+              hint="Optional"
+              defaultOpen={Boolean(
+                data.pool.gallons.trim() ||
+                  data.pool.shape.trim() ||
+                  data.pool.length.trim() ||
+                  data.pool.width.trim() ||
+                  data.pool.avgDepth.trim(),
+              )}
+            >
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <FieldShell id="p-gal" label="Volume (gallons)">
                   <input
@@ -1253,7 +1266,7 @@ export const ProposalBuilder = ({
                 <Calculator className="h-4 w-4" /> Open the volume calculator
                 (your draft is saved)
               </a>
-            </Section>
+            </CollapsibleSection>
 
             <Section title="Pool — Sanitization & Equipment">
               <FieldShell id="p-san" label="Sanitization" floated>
