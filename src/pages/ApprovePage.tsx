@@ -885,7 +885,7 @@ export const ApprovePage = () => {
                       // to beat. Side by side on desktop, natural order reads
                       // cheaper-then-better — which only works as anchoring if
                       // the better one visually dominates, hence the ring below.
-                      /* Lifted by EXACTLY the banner's height (h-10 / -mt-10).
+                      /* Lifted by EXACTLY the banner's height (h-12 / -mt-12).
                          That is what makes the two cards line up, rather than
                          compensating paddings that break the moment a tagline
                          wraps: the banner occupies the space the lift creates,
@@ -898,9 +898,23 @@ export const ApprovePage = () => {
 
                          Desktop only: stacked on a phone there is no row to
                          rise above. */
+                      /* And the PLAIN card rises HALF the banner (-mt-5), so
+                         its top edge cuts the blue bar through the middle
+                         instead of stopping at its lower edge. Two card tops
+                         and a banner edge on three different lines read as
+                         drift; landing one of them mid-banner reads as a
+                         deliberate stagger.
+
+                         The 24px is given straight back as top padding on the
+                         body below (sm:pt-11 against a p-5 base), so the box
+                         grows upward and the heading does not move. That is the
+                         whole trick — the bodies still begin on the same line,
+                         so the buttons still line up, and the rule above holds
+                         unchanged. Half of h-12 is mt-6, and p-5 + 24px is
+                         pt-11: all four move together or not at all. */
                       tier.recommended
-                        ? "order-first sm:order-none sm:-mt-10"
-                        : ""
+                        ? "order-first sm:order-none sm:-mt-12"
+                        : "sm:-mt-6"
                     } ${
                       tier.recommended
                         ? "border-[#1669AE] bg-white shadow-lg shadow-[#1669AE]/15 ring-1 ring-[#1669AE]/20 hover:border-[#0f4d80]"
@@ -925,11 +939,15 @@ export const ApprovePage = () => {
                         chosen, so a solid blue bar never sits on a card the
                         customer has just decided against. */}
                     {tier.recommended && (
-                      <div className="flex h-10 items-center justify-center bg-[#1669AE] text-[12.5px] font-bold uppercase tracking-wider text-white">
+                      <div className="flex h-12 items-center justify-center bg-[#1669AE] text-[12.5px] font-bold uppercase tracking-wider text-white">
                         Best value
                       </div>
                     )}
-                    <div className="flex flex-1 flex-col p-5">
+                    <div
+                      className={`flex flex-1 flex-col p-5 ${
+                        tier.recommended ? "" : "sm:pt-11"
+                      }`}
+                    >
                       <h3 className="font-display text-lg font-bold">
                         {tier.name}
                       </h3>
