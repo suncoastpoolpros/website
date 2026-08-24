@@ -19,13 +19,13 @@
  */
 import React from 'react';
 import { Check } from 'lucide-react';
-import { BENEFITS_HEADING, includedBenefits } from '@/components/admin/proposalBenefits';
+import { BENEFITS_HEADING, benefitsFootnote, includedBenefits } from '@/components/admin/proposalBenefits';
 import {
   EXTRAS_COL_THEIRS,
   EXTRAS_COL_YOURS,
   EXTRAS_HEADING,
   EXTRAS_INCLUDED_LABEL,
-  EXTRAS_INTRO,
+  extrasIntroFor,
   EXTRAS_NOTE,
   includedExtras,
 } from '@/components/admin/includedExtras';
@@ -68,7 +68,12 @@ export const ProposalBreakdown = ({
   // `=== 'yes'` exactly, matching how the PDF read the same field. Anything else
   // means the question wasn't answered, and an unanswered question must not
   // become a promise.
-  const filter = { type: str(pool.filterType), included: pool.filterServiceIncluded === 'yes' };
+  // Boolean true is the legacy stored shape (send-proposal accepted both);
+  // comparing === 'yes' alone rendered those quotes as if nothing was bundled.
+  const filter = {
+    type: str(pool.filterType),
+    included: pool.filterServiceIncluded === 'yes' || pool.filterServiceIncluded === true,
+  };
   const benefits = includeBenefits ? includedBenefits(filter, str(pool.sanitization)) : [];
   const extras = includeBenefits ? includedExtras(filter, str(pool.sanitization)) : [];
 
@@ -135,12 +140,23 @@ export const ProposalBreakdown = ({
               </li>
             ))}
           </ul>
+          {/* Same disclosure the PDF's Difference box carries, same condition:
+              this card says "Filter cleaning — included", and for link-only
+              leads this page is the ONLY document — nothing else tells an
+              excluded-filter customer that parts are quoted separately. */}
+          {!filter.included && benefitsFootnote(filter) && (
+            <p className="mt-4 border-t border-[#eef1f5] pt-3 text-xs leading-relaxed text-[#6b7280]">
+              {benefitsFootnote(filter)}
+            </p>
+          )}
         </Card>
       )}
 
       {extras.length > 0 && (
         <Card title={EXTRAS_HEADING}>
-          <p className="max-w-3xl text-sm leading-relaxed text-[#374151]">{EXTRAS_INTRO}</p>
+          <p className="max-w-3xl text-sm leading-relaxed text-[#374151]">
+            {extrasIntroFor(filter.included)}
+          </p>
           <div className="mt-4 flex items-baseline justify-end gap-6 text-[11px] uppercase tracking-wider text-[#6b7280]">
             <span className="w-24 text-right">{EXTRAS_COL_THEIRS}</span>
             <span className="w-20 text-right">{EXTRAS_COL_YOURS}</span>

@@ -37,6 +37,25 @@ export const EXTRAS_INTRO =
   'We build our service to be all-inclusive on purpose. When something is a known maintenance item — a filter element, a treatment your pool needs every year — we price it into your monthly cost rather than invoicing it separately. Splitting those out only makes a monthly rate look cheaper than it really is, and it costs you time approving work your pool was always going to need.';
 
 /**
+ * The intro the customer actually reads, chosen by the filter answer.
+ *
+ * EXTRAS_INTRO promises, in writing, that "a filter element … we price it into
+ * your monthly cost" — and it rendered UNCONDITIONALLY, including on quotes
+ * where filter service was deliberately excluded. On those quotes it claimed
+ * the exact thing the rate leaves out, on the document the customer keeps.
+ *
+ * The excluded variant makes the same all-inclusive argument for what IS in
+ * the rate (chemicals, routine treatments) and then states the filter-parts
+ * carve-out affirmatively — quoted at cost, approved first — because the
+ * cheaper rate is only defensible if the customer was told what makes it
+ * cheaper BEFORE the first element invoice, not after.
+ */
+export const extrasIntroFor = (filterIncluded: boolean): string =>
+  filterIncluded
+    ? EXTRAS_INTRO
+    : 'We build our service to be all-inclusive where it counts: chemicals and routine treatments are priced into your monthly cost rather than invoiced separately, because splitting those out only makes a rate look cheaper than it really is. Filter parts are the one thing this quote keeps separate — when an element or media change comes due, we quote it at cost first, and nothing is replaced without your approval.';
+
+/**
  * The carve-out. Names storm and construction clean-up explicitly rather than
  * leaving "major remediation" to be interpreted after a hurricane, which is the
  * worst possible moment to be establishing what was included.

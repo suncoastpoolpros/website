@@ -66,10 +66,10 @@ import {
   type JobKind,
 } from "./jobKinds";
 import { ADDON_PRESETS } from "./addonPresets";
-import { BENEFITS_HEADING, includedBenefits } from "./proposalBenefits";
+import {benefitsFootnote, BENEFITS_HEADING, includedBenefits} from "./proposalBenefits";
 import {
   EXTRAS_COL_THEIRS,
-  EXTRAS_INTRO,
+  extrasIntroFor,
   EXTRAS_COL_YOURS,
   EXTRAS_HEADING,
   EXTRAS_INCLUDED_LABEL,
@@ -2092,6 +2092,13 @@ const ProposalPreview = ({
                 </li>
               ))}
             </ul>
+            {/* Mirrors the PDF's excluded-filter disclosure so the operator
+                previews exactly what the customer will read. */}
+            {previewKind === "recurring" && !filterOption.included && (
+              <p className="mt-3 border-t border-stone-200 pt-2 text-[11px] leading-relaxed text-stone-500">
+                {benefitsFootnote(filterOption)}
+              </p>
+            )}
           </div>
         )}
 
@@ -2100,7 +2107,7 @@ const ProposalPreview = ({
           extras.length > 0 && (
             <PreviewBlock label={EXTRAS_HEADING}>
               <p className="mb-2 text-[12px] leading-relaxed text-stone-700">
-                {EXTRAS_INTRO}
+                {extrasIntroFor(filterOption.included)}
               </p>
               <div>
                 <div className="flex gap-2 border-b border-stone-200 pb-1 text-[8px] uppercase tracking-wide text-stone-400">

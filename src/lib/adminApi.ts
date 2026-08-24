@@ -138,6 +138,13 @@ export type PricingMode = 'single' | 'tiers';
 
 export type Tier = {
   name: string;
+  /**
+   * Marks the no-filter-parts comparison plan in the three-plan layout.
+   * syncFilterService must never insert a filter bullet into this card —
+   * excluding that service is the card's entire identity. Absent on every
+   * two-plan tier and on all quotes stored before the layout existed.
+   */
+  essentials?: boolean;
   /** Free text like "150" or "$150/mo" — formatPrice adds the $ when bare. */
   price: string;
   /** One line under the name, e.g. "Everything your pool needs, every week." */

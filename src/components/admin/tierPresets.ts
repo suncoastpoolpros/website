@@ -31,6 +31,8 @@ import {
   filterServiceTerms,
   filterServiceValueNote,
   supportsFilterService,
+  excludedFilterValueNote,
+  ALL_FILTER_VALUE_NOTES,
 } from "./filterService";
 
 /**
@@ -122,8 +124,21 @@ export const syncFilterService = (
   // sentence here put the same paragraph in two places on one document.
   const line = planFilterBullet(filter);
   const terms = filterServiceTerms(filter);
-  return tiers.map((tier, i) => {
-    if (i !== 0) return tier;
+  return tiers.map((tier) => {
+    /*
+     * EVERY tier, not just tiers[0].
+     *
+     * This used to bail on `i !== 0`, written when only the monthly card
+     * carried the service list. The annual card now carries the same shared
+     * lines (sharedCount) — so flipping the filter answer stripped the promise
+     * from the monthly card and left it standing, verbatim, on the annual one.
+     * A customer choosing Pay Annually was still being promised replacements
+     * the quote had withdrawn.
+     *
+     * The essentials card is the deliberate exception: excluding filter parts
+     * IS that card, so it never receives the bullet whatever the answer.
+     */
+    const wantsLine = line && !tier.essentials;
     /*
      * Strip BOTH families of filter bullet, then re-insert at most one.
      *
@@ -139,20 +154,60 @@ export const syncFilterService = (
         !ALL_PLAN_FILTER_LINES.includes(b.trim()),
     );
     let includes = kept;
-    if (line) {
+    let inserted = false;
+    if (wantsLine) {
       // Back where monthlyIncludes puts it: directly after the chemicals line.
       const anchor = kept.findIndex((b) => /all chemicals/i.test(b));
       includes =
         anchor === -1
-          ? [...kept, line]
-          : [...kept.slice(0, anchor + 1), line, ...kept.slice(anchor + 1)];
+          ? [...kept, line as string]
+          : [
+              ...kept.slice(0, anchor + 1),
+              line as string,
+              ...kept.slice(anchor + 1),
+            ];
+      inserted = anchor !== -1;
     }
+    /*
+     * sharedCount must follow the list it indexes.
+     *
+     * It is the split point between the lines both cards share and this card's
+     * own extras. Adding or removing a shared bullet without moving it silently
+     * reclassified a line — the annual card's first extra became a shared row,
+     * or an annual-only perk got printed as if the monthly plan had it too.
+     */
+    const removedShared = tier.includes.length - kept.length;
+    const sharedCount =
+      tier.sharedCount == null
+        ? tier.sharedCount
+        : Math.max(
+            0,
+            Math.min(
+              includes.length,
+              tier.sharedCount - removedShared + (inserted ? 1 : 0),
+            ),
+          );
     const finePrint =
       ALL_FILTER_TERMS.includes(tier.finePrint.trim()) ||
       tier.finePrint.trim() === ""
         ? terms
         : tier.finePrint;
-    return { ...tier, includes, finePrint };
+    /*
+     * Retire a value note this module generated for the OTHER answer.
+     *
+     * Nothing did this before, so "your cartridge filter replacement is built
+     * into the monthly cost … a random $120 bill never lands in your inbox"
+     * kept rendering after the answer flipped to no. Exact match only: an
+     * operator's own wording is never touched. The annual card's note is about
+     * prepaying, not filters, so it matches nothing here and survives.
+     */
+    const generated = ALL_FILTER_VALUE_NOTES.includes(tier.valueNote.trim());
+    const valueNote = generated
+      ? tier.essentials
+        ? excludedFilterValueNote(filter.type)
+        : filterServiceValueNote(filter) || excludedFilterValueNote(filter.type)
+      : tier.valueNote;
+    return { ...tier, includes, sharedCount, finePrint, valueNote };
   });
 };
 
@@ -461,9 +516,16 @@ export const buildTiers = (
       // Answers "why is this more than the quote down the road?" before the
       // customer asks it — the honest answer is that parts other companies
       // invoice separately are already in the number.
+      /*
+       * The excluded branch is no longer a generic "genuinely all-in — no
+       * surprise fees on top". That sentence rendered on exactly the quotes
+       * where a $120–150 parts bill would later arrive as a fee on top, and it
+       * promised salt-cell cleaning on chlorine pools that have no cell.
+       * excludedFilterValueNote argues the all-in case for what the rate does
+       * cover, then states the parts carve-out — see filterService.ts.
+       */
       valueNote:
-        filterServiceValueNote(filter) ||
-        "This rate is genuinely all-in — your chemicals, filter cleans and salt-cell cleaning are all part of it, with no surprise fees on top.",
+        filterServiceValueNote(filter) || excludedFilterValueNote(filter.type),
       finePrint: filterServiceTerms(filter),
     },
     {

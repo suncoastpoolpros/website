@@ -24,7 +24,7 @@ import {
   splitTierIncludes,
   tierDelta,
 } from "@/lib/adminApi";
-import { BENEFITS_HEADING, includedBenefits } from "./proposalBenefits";
+import {benefitsFootnote, BENEFITS_HEADING, includedBenefits} from "./proposalBenefits";
 import { sanitizationLabel } from "./sanitization";
 import { PRICING_CONDITION_TERM_SHORT } from "./proposalTerms";
 import {
@@ -38,7 +38,7 @@ import { cadenceLabel } from "./serviceCadence";
 import { filterTypeLabel } from "./filterService";
 import {
   EXTRAS_COL_THEIRS,
-  EXTRAS_INTRO,
+  extrasIntroFor,
   EXTRAS_COL_YOURS,
   EXTRAS_HEADING,
   EXTRAS_INCLUDED_LABEL,
@@ -804,6 +804,20 @@ export const ProposalDocument = ({
                 <Text style={styles.includedItemText}>{b}</Text>
               </View>
             ))}
+            {/* THE EXCLUDED-FILTER DISCLOSURE, finally rendered. The box above
+                says "Filter cleaning — included", and benefitsFootnote was
+                written precisely so that can't be misread as elements-included
+                — then never wired to any surface (this style sat unused). On
+                an excluded quote it is the only sentence in the Difference box
+                telling the customer parts are quoted separately, which is what
+                makes the lower rate defensible when the first element comes
+                due. Included quotes keep their fuller terms in the plan-card
+                fine print; repeating them here said everything twice. */}
+            {kind === "recurring" && !filterOption.included ? (
+              <Text style={styles.includedFootnote}>
+                {benefitsFootnote(filterOption)}
+              </Text>
+            ) : null}
           </View>
         ) : null}
 
@@ -820,7 +834,9 @@ export const ProposalDocument = ({
                   {i === 0 ? (
                     <View>
                       <Text style={styles.sectionLabel}>{EXTRAS_HEADING}</Text>
-                      <Text style={styles.extrasIntro}>{EXTRAS_INTRO}</Text>
+                      <Text style={styles.extrasIntro}>
+                        {extrasIntroFor(filterOption.included)}
+                      </Text>
                       <View style={styles.extraHeadRow}>
                         <Text
                           style={[styles.extraLabelCol, styles.extraHeadCell]}

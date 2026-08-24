@@ -436,7 +436,7 @@ export const composeProposalEmail = (
   <!-- Hidden inbox-preview line -->
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#eef2f7;">${escapeHtml(
     numberLabel,
-  )} from Suncoast Pool Pros — everything included, ready to read.</div>
+  )} from Suncoast Pool Pros — your rate and the full scope, ready to read.</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f7;padding:28px 12px;">
     <tr><td align="center">
       <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e3e8ef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">

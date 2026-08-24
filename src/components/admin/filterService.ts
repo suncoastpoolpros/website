@@ -194,6 +194,50 @@ export const ALL_FILTER_TERMS: string[] = [
 ].filter(Boolean);
 
 /**
+ * The monthly card's explainer when filter service is NOT bundled.
+ *
+ * The old behaviour fell through to a "genuinely all-in — no surprise fees on
+ * top" line — on precisely the quote where a $120–150 parts bill will later
+ * arrive as a separate invoice. This is its replacement: it still argues the
+ * all-in case for what the rate DOES cover, then states the parts carve-out
+ * affirmatively. Quoted-first-and-approved is the load-bearing clause — it is
+ * what stops the lower rate reading as bait-and-switch when the first element
+ * comes due.
+ *
+ * Also the ESSENTIALS plan's explainer in the three-plan layout: that card and
+ * an excluded-filter monthly card are making the identical promise.
+ */
+export const excludedFilterValueNote = (type: string): string => {
+  const priced = FILTER_SERVICE[type];
+  const cost = priced ? ` — typically $${priced.value}, ${priced.basis} —` : '';
+  switch (type) {
+    case 'Cartridge':
+      return `Your chemicals, routine filter cleaning and weekly service are all in this rate. Filter parts are kept out of it: when your cartridge elements are due${cost} we quote them at cost first, and nothing is replaced without your approval.`;
+    case 'DE':
+      return `Your chemicals, routine backwashing and weekly service are all in this rate. The annual filter teardown is kept out of it: when your DE split, clean and recharge is due${cost} we quote it first, and nothing is done without your approval.`;
+    case 'Sand':
+      return `Your chemicals, routine backwashing and weekly service are all in this rate. Filter media is kept out of it: when your sand media is due we quote it at cost first, and nothing is replaced without your approval.`;
+    default:
+      return `Your chemicals and weekly service are all in this rate. Filter parts are kept out of it: anything the filter needs beyond routine cleaning is quoted at cost first, and nothing is replaced without your approval.`;
+  }
+};
+
+/**
+ * Every value note this module has ever generated, so syncFilterService can
+ * recognise a note as untouched machine text and retire it when the answer
+ * changes. The audit found the gap this closes: flipping included → no swapped
+ * the bullet and the fine print but left "a random $120 bill never lands in
+ * your inbox" rendering on a quote that had just started sending that bill.
+ * Same exact-match rule as everywhere else: an edited note is hand-written and
+ * survives.
+ */
+export const ALL_FILTER_VALUE_NOTES: string[] = [
+  ...FILTER_TYPES.map((type) => filterServiceValueNote({ type, included: true })),
+  ...FILTER_TYPES.map((type) => excludedFilterValueNote(type)),
+  excludedFilterValueNote(''),
+].filter(Boolean);
+
+/**
  * How the filter type reads on a CUSTOMER-FACING document.
  *
  * "Cartridge" is the name of a part; "Cartridge Filter" is the name of a thing
