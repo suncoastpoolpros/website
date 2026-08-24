@@ -198,12 +198,29 @@ Parts and labor as detailed above. Manufacturer warranty applies to new equipmen
   {
     label: 'Filter Clean / Rebuild',
     kind: 'repair',
-    build: () => `Filter cleaning / rebuild:
+    /*
+     * Names THIS pool's internals when the filter type is known. The generic
+     * "cartridges/grids (or media for sand filters)" covered every filter by
+     * covering none — a cartridge customer read about DE grids and sand media
+     * on their own quote, which is the templated tell this file exists to
+     * remove. Unknown type keeps the generic line: better vague than wrong.
+     */
+    build: ({ filterType }) => {
+      const internals =
+        filterType === 'Cartridge'
+          ? 'the cartridge elements'
+          : filterType === 'DE'
+            ? 'the DE grids'
+            : filterType === 'Sand'
+              ? 'the sand media bed'
+              : 'cartridges, grids or media as fitted';
+      return `Filter cleaning / rebuild:
 
 • Disassemble the filter and inspect internal components.
-• Deep-clean cartridges/grids (or media for sand filters) to restore flow.
+• Deep-clean ${internals} to restore flow.
 • Replace worn O-rings, gaskets, or damaged elements as needed.
-• Reassemble, restart the system, and confirm correct pressure and flow.`,
+• Reassemble, restart the system, and confirm correct pressure and flow.`;
+    },
   },
   {
     label: 'Commercial / HOA Service',

@@ -155,18 +155,25 @@ export const ALL_FILTER_LINES: string[] = FILTER_TYPES.map((type) =>
 export const filterServiceTerms = ({ type, included }: FilterOption): string => {
   if (!included || !supportsFilterService(type)) {
     /*
-     * DE NEEDS ITS OWN SENTENCE. The generic wording excludes "elements, grids
-     * or media" — and DE powder IS media, so on a DE pool it withdrew the very
-     * consumable routine backwashing depends on. The powder is a few dollars a
-     * recharge every 4–8 weeks, has no trigger event to quote against, and our
-     * own included-service terms already promise "routine backwashing and DE
-     * replenishment throughout the year". It is included; only the annual
-     * teardown and the grids are not.
+     * TYPE-SPECIFIC, because the generic sentence named parts the pool does
+     * not have. "Replacement filter elements, grids or media are quoted
+     * separately" went out on every excluded quote — so a cartridge customer
+     * read about DE grids and sand media, which is exactly the templated,
+     * nobody-looked-at-this tell the whole proposal is built to avoid.
      */
-    if (type === 'DE') {
-      return 'Routine backwashing is included in your service, along with the DE powder it consumes through the year. The annual split, disassembly and clean, DE grid replacement and filter housing parts are quoted separately, and always before any work is done.';
+    switch (type) {
+      case 'Cartridge':
+        return 'Routine filter cleaning and backwashing are included in your service. Replacement cartridge elements are quoted separately, and always before any work is done.';
+      case 'DE':
+        // The powder is a consumable of the backwashing we include; only the
+        // annual teardown and the grids are not. See the DE note in
+        // excludedFilterValueNote.
+        return 'Routine backwashing is included in your service, along with the DE powder it consumes through the year. The annual split, disassembly and clean, DE grid replacement and filter housing parts are quoted separately, and always before any work is done.';
+      case 'Sand':
+        return 'Routine filter cleaning and backwashing are included in your service. Replacement sand media is quoted separately, and always before any work is done.';
+      default:
+        return 'Routine filter cleaning and backwashing are included in your service. Replacement filter parts are quoted separately, and always before any work is done.';
     }
-    return 'Routine filter cleaning and backwashing are included in your service. Replacement filter elements, grids or media are quoted separately, and always before any work is done.';
   }
   switch (type) {
     case 'Cartridge':
@@ -299,6 +306,23 @@ export const essentialsExclusions = (
   }
   return out;
 };
+
+/**
+ * Every ✓ differentiator this module can emit, across filter types and both
+ * sanitization cases — so syncFilterService can strip the whole block and
+ * rebuild it when the pool changes. Without this the salt-cell row survived a
+ * switch to a chlorine pool, which is precisely the leak the block exists to
+ * avoid.
+ */
+export const ALL_COMPLETE_DIFFERENTIATORS: string[] = Array.from(
+  new Set(
+    [...FILTER_TYPES, ''].flatMap((type) => [
+      ...completeDifferentiators(type, 'Saltwater'),
+      ...completeDifferentiators(type, 'Chlorine'),
+    ]),
+  ),
+);
+
 
 /**
  * The monthly card's explainer when filter service is NOT bundled.

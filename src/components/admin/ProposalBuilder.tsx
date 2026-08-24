@@ -1406,8 +1406,29 @@ export const ProposalBuilder = ({
                   id="p-san"
                   className={selectClass}
                   value={data.pool.sanitization}
+                  /* Re-syncs the tiers in the SAME update. The salt-cell rows
+                     on the three-plan cards are derived from this field, and a
+                     plain update() left them stored as built — switch a salt
+                     pool to chlorine and "Salt-cell acid cleaning included"
+                     stayed on the Complete cards. Same one-state-change rule
+                     as the filter controls; sync only touches machine text, so
+                     an edited card is still safe. */
                   onChange={(e) =>
-                    update("pool", "sanitization", e.target.value)
+                    setData((p) => ({
+                      ...p,
+                      pool: { ...p.pool, sanitization: e.target.value },
+                      proposal: {
+                        ...p.proposal,
+                        tiers: syncFilterService(
+                          p.proposal.tiers,
+                          {
+                            type: p.pool.filterType,
+                            included: p.pool.filterServiceIncluded === "yes",
+                          },
+                          e.target.value,
+                        ),
+                      },
+                    }))
                   }
                 >
                   <option value=""></option>

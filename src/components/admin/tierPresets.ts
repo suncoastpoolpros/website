@@ -22,6 +22,8 @@
  */
 import type { Tier } from "@/lib/adminApi";
 import {
+  FILTER_TYPES,
+  ALL_COMPLETE_DIFFERENTIATORS,
   completeDifferentiators,
   essentialsExclusions,
   FILTER_SERVICE,
@@ -120,6 +122,37 @@ export const serviceIncludes = (filter: FilterOption): string[] => {
 };
 
 /**
+ * Every list the three-plan presets can produce, as joined strings.
+ *
+ * WHY WHOLESALE, not line by line. A three-plan card's bullets are entirely
+ * generated, and several of them move together when the pool changes: the
+ * filter row, the "DE top-ups" wording on row 2, the salt-cell differentiator.
+ * Patching one line at a time left the others stale — a chlorine pool kept
+ * "Salt-cell acid cleaning included", which is the exact leak this file is
+ * supposed to prevent.
+ *
+ * So: if the stored list is EXACTLY something the presets produced for some
+ * pool, it is untouched machine text and is rebuilt for the current pool. If
+ * it matches nothing, the operator edited it and it is left alone — the same
+ * rule as everywhere else, applied to the list instead of the line.
+ */
+const SANS = ["Saltwater", "Chlorine"];
+const presetLists = (build: (f: FilterOption, san: string) => string[]) =>
+  new Set(
+    [...FILTER_TYPES, ""].flatMap((type) =>
+      SANS.map((san) => build({ type, included: true }, san).join("\u0000")),
+    ),
+  );
+/* Lazy: the list builders are declared further down the file, so computing
+   these at module load would hit the temporal dead zone. First call pays. */
+let essentialsListsCache: Set<string> | null = null;
+let completeListsCache: Set<string> | null = null;
+const ESSENTIALS_LISTS = () =>
+  (essentialsListsCache ??= presetLists((f) => essentialsIncludes(f)));
+const COMPLETE_LISTS = () =>
+  (completeListsCache ??= presetLists((f, san) => completeIncludes(f, san)));
+
+/**
  * Swap a stale filter bullet and terms for the current ones after the admin
  * changes the filter type or the inclusion toggle, WITHOUT disturbing anything
  * typed by hand: only lines this module could itself have generated are touched.
@@ -143,6 +176,33 @@ export const syncFilterService = (
    * time the operator changed the filter type.
    */
   const threePlan = tiers.some((t) => t.essentials);
+  const recognisedTerms = (v: string) =>
+    ALL_FILTER_TERMS.includes(v.trim()) || v.trim() === "";
+  const currentTerms = (t: Tier) =>
+    t.essentials ? filterServiceTerms({ type: filter.type, included: false }) : terms;
+  /*
+   * Retire a value note this module generated for a DIFFERENT pool.
+   *
+   * PREFIX match, not exact. The Essentials note has a computed sentence
+   * appended when prepaying beats it ("…works out to $151 a month"), so the
+   * stored string is base + suffix and never equalled a known note — which
+   * meant a cartridge quote switched to DE kept "when your cartridge elements
+   * are due — typically $120" verbatim. The suffix is preserved; only the
+   * pool-specific base is rebuilt. Anything matching no known base is
+   * operator-written and left alone.
+   */
+  const refreshValueNote = (t: Tier) => {
+    const stored = t.valueNote.trim();
+    const next = t.essentials
+      ? excludedFilterValueNote(filter.type)
+      : filterServiceValueNote(filter) || excludedFilterValueNote(filter.type);
+    for (const known of ALL_FILTER_VALUE_NOTES) {
+      if (!known) continue;
+      if (stored === known) return next;
+      if (stored.startsWith(known)) return next + stored.slice(known.length);
+    }
+    return t.valueNote;
+  };
   return tiers.map((tier) => {
     /*
      * EVERY tier, not just tiers[0].
@@ -157,6 +217,34 @@ export const syncFilterService = (
      * The essentials card is the deliberate exception: excluding filter parts
      * IS that card, so it never receives the bullet whatever the answer.
      */
+    /*
+     * THREE-PLAN CARDS REBUILD WHOLESALE — see the note on ESSENTIALS_LISTS.
+     * Returns early, so none of the two-plan line surgery below runs on them.
+     */
+    if (threePlan) {
+      const tail = tier.sharedCount != null ? tier.includes.slice(tier.sharedCount) : [];
+      const head = tier.sharedCount != null ? tier.includes.slice(0, tier.sharedCount) : tier.includes;
+      const key = head.join("\u0000");
+      const known = tier.essentials
+        ? ESSENTIALS_LISTS().has(key)
+        : COMPLETE_LISTS().has(key);
+      const rebuilt = tier.essentials
+        ? essentialsIncludes(filter)
+        : completeIncludes(filter, sanitization);
+      const includes = known ? [...rebuilt, ...tail] : tier.includes;
+      const sharedCount =
+        tier.sharedCount == null ? tier.sharedCount : known ? rebuilt.length : tier.sharedCount;
+      return {
+        ...tier,
+        includes,
+        sharedCount,
+        excludes: tier.essentials
+          ? essentialsExclusions(filter.type, sanitization)
+          : tier.excludes,
+        finePrint: recognisedTerms(tier.finePrint) ? currentTerms(tier) : tier.finePrint,
+        valueNote: refreshValueNote(tier),
+      };
+    }
     const wantsLine = line && !tier.essentials;
     /*
      * Strip BOTH families of filter bullet, then re-insert at most one.
