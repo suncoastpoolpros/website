@@ -106,7 +106,7 @@ const saltLine = ({ sanitization }: ScopeContext): string[] =>
 
 export const SCOPE_TEMPLATES: ScopeTemplate[] = [
   {
-    label: 'Weekly Pool Cleaning (recurring)',
+    label: 'Weekly Pool Cleaning',
     kind: 'recurring',
     cadence: 'weekly',
     build: (ctx) =>
@@ -127,7 +127,7 @@ export const SCOPE_TEMPLATES: ScopeTemplate[] = [
       ].join('\n'),
   },
   {
-    label: 'Bi-Weekly Pool Cleaning (recurring)',
+    label: 'Bi-Weekly Pool Cleaning',
     kind: 'recurring',
     cadence: 'biweekly',
     build: (ctx) =>
@@ -147,7 +147,7 @@ export const SCOPE_TEMPLATES: ScopeTemplate[] = [
       ].join('\n'),
   },
   {
-    label: 'Green Pool Recovery (one-time)',
+    label: 'Green Pool Recovery',
     kind: 'recovery',
     build: () => `One-time green-to-clean pool recovery:
 

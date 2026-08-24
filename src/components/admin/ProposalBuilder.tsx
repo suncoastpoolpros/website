@@ -1301,11 +1301,29 @@ export const ProposalBuilder = ({
                   }}
                 >
                   <option value="">Choose a service to add details…</option>
-                  {SCOPE_TEMPLATES.map((t) => (
-                    <option key={t.label} value={t.label}>
-                      {t.label}
-                    </option>
-                  ))}
+                  {/* GROUPED by job kind, under the same words as the chips at
+                      the top — the menu teaches the classification instead of
+                      hiding behind suffixes. Deliberately NOT filtered by the
+                      current answer: a fresh draft defaults to recurring, so a
+                      filtered menu would hide Green Pool Recovery until the
+                      chips were flipped — yet picking the template is supposed
+                      to BE how the chips get flipped. And templates combine
+                      across kinds (recover it, then keep it weekly), which a
+                      filtered list would forbid. */}
+                  {JOB_KINDS.map((k) => {
+                    const group = SCOPE_TEMPLATES.filter(
+                      (t) => t.kind === k.key,
+                    );
+                    return group.length ? (
+                      <optgroup key={k.key} label={k.label}>
+                        {group.map((t) => (
+                          <option key={t.label} value={t.label}>
+                            {t.label}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ) : null;
+                  })}
                 </select>
               </FieldShell>
               <FieldShell id="pr-scope" label="Scope of work" multiline>
