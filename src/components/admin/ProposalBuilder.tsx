@@ -338,7 +338,7 @@ export const ProposalBuilder = ({
         pool: { ...p.pool, filterType: type, filterServiceIncluded: answer },
         proposal: {
           ...p.proposal,
-          tiers: syncFilterService(p.proposal.tiers, filter),
+          tiers: syncFilterService(p.proposal.tiers, filter, p.pool.sanitization),
         },
       };
     });
@@ -349,10 +349,11 @@ export const ProposalBuilder = ({
       pool: { ...p.pool, filterServiceIncluded: answer },
       proposal: {
         ...p.proposal,
-        tiers: syncFilterService(p.proposal.tiers, {
-          type: p.pool.filterType,
-          included: answer === "yes",
-        }),
+        tiers: syncFilterService(
+          p.proposal.tiers,
+          { type: p.pool.filterType, included: answer === "yes" },
+          p.pool.sanitization,
+        ),
       },
     }));
 

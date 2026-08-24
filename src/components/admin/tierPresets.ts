@@ -22,6 +22,7 @@
  */
 import type { Tier } from "@/lib/adminApi";
 import {
+  completeDifferentiators,
   essentialsExclusions,
   FILTER_SERVICE,
   ALL_FILTER_LINES,
@@ -78,11 +79,14 @@ export const ANNUAL_MONTHS_CHARGED = 11;
 /* 9: the plan card's filter bullet now names the filter (Cartridge / DE /
    Sand) instead of a generic "Filter care included", so it can be recognised
    and removed when the answer or the type changes. */
-/* 10: the optional three-plan layout (Essentials / Pay Monthly / Pay
+/* 11: three-plan Complete cards carry ✓ rows that pair one-for-one with the
+   Essentials ✗ rows; the annual perk narrows to "20% off equipment upgrade
+   labor".
+   10: the optional three-plan layout (Essentials / Pay Monthly / Pay
    Annually), plus the excluded-filter value note replacing the old
    "genuinely all-in" fallback. Two-plan quotes are unaffected in wording;
    the bump exists so drafts pick up the corrected excluded note. */
-export const PRESET_VERSION = 10;
+export const PRESET_VERSION = 11;
 
 /** Terms specific to prepaying for the year. */
 /**
@@ -92,7 +96,7 @@ export const PRESET_VERSION = 10;
  * completing the year. Mirrors the Cancellation Policy in the service agreement.
  */
 export const ANNUAL_FINE_PRINT =
-  "Your twelfth month is free and applied at the end of the term. Cancel at any time and we refund every month you have not used, at the standard monthly rate. Repair labour discount applies to our own labour and excludes work performed by subcontractors.";
+  "Your twelfth month is free and applied at the end of the term. Cancel at any time and we refund every month you have not used, at the standard monthly rate. The equipment upgrade labor discount applies to our own labor and excludes work performed by subcontractors.";
 
 const BASE_SERVICE_INCLUDES = [
   "Weekly cleaning — brushing, skimming, netting and vacuuming",
@@ -123,6 +127,7 @@ export const serviceIncludes = (filter: FilterOption): string[] => {
 export const syncFilterService = (
   tiers: Tier[],
   filter: FilterOption,
+  sanitization = "",
 ): Tier[] => {
   if (tiers.length === 0) return tiers;
   // The PLAN CARD's bullet, not the Difference box's costed sentence: this
@@ -130,6 +135,14 @@ export const syncFilterService = (
   // sentence here put the same paragraph in two places on one document.
   const line = planFilterBullet(filter);
   const terms = filterServiceTerms(filter);
+  /*
+   * In the three-plan layout the filter bullet is the FIRST of three
+   * differentiators at the foot of the Complete cards, level with the ✗ rows
+   * opposite. Re-inserting it after the chemicals line — which is right for a
+   * two-plan card — would slide it to row 2 and break that pairing the first
+   * time the operator changed the filter type.
+   */
+  const threePlan = tiers.some((t) => t.essentials);
   return tiers.map((tier) => {
     /*
      * EVERY tier, not just tiers[0].
@@ -162,17 +175,19 @@ export const syncFilterService = (
     let includes = kept;
     let inserted = false;
     if (wantsLine) {
-      // Back where monthlyIncludes puts it: directly after the chemicals line.
-      const anchor = kept.findIndex((b) => /all chemicals/i.test(b));
-      includes =
-        anchor === -1
-          ? [...kept, line as string]
-          : [
-              ...kept.slice(0, anchor + 1),
-              line as string,
-              ...kept.slice(anchor + 1),
-            ];
-      inserted = anchor !== -1;
+      // Three-plan: immediately BEFORE the salt-cell / phosphate rows, so the
+      // three differentiators stay together and stay level with the ✗ column.
+      // Two-plan: back where monthlyIncludes puts it, after the chemicals line.
+      const anchor = threePlan
+        ? kept.findIndex((b) =>
+            /^(Salt-cell acid cleaning|Phosphate remover and specialty)/.test(
+              b.trim(),
+            ),
+          )
+        : kept.findIndex((b) => /all chemicals/i.test(b)) + 1;
+      const at = anchor < 0 ? kept.length : anchor;
+      includes = [...kept.slice(0, at), line as string, ...kept.slice(at)];
+      inserted = at !== kept.length;
     }
     /*
      * sharedCount must follow the list it indexes.
@@ -207,13 +222,21 @@ export const syncFilterService = (
      * operator's own wording is never touched. The annual card's note is about
      * prepaying, not filters, so it matches nothing here and survives.
      */
+    /*
+     * The ✗ rows name the filter by type ("Replacement cartridge elements"),
+     * so they go stale the moment the operator switches to a DE pool. They are
+     * wholly generated — never operator-typed — so regenerating is safe.
+     */
+    const excludes = tier.essentials
+      ? essentialsExclusions(filter.type, sanitization)
+      : tier.excludes;
     const generated = ALL_FILTER_VALUE_NOTES.includes(tier.valueNote.trim());
     const valueNote = generated
       ? tier.essentials
         ? excludedFilterValueNote(filter.type)
         : filterServiceValueNote(filter) || excludedFilterValueNote(filter.type)
       : tier.valueNote;
-    return { ...tier, includes, sharedCount, finePrint, valueNote };
+    return { ...tier, includes, excludes, sharedCount, finePrint, valueNote };
   });
 };
 
@@ -272,7 +295,9 @@ export const monthlyIncludes = (filter: FilterOption): string[] => [
  */
 export const ANNUAL_EXTRAS = [
   "Your 12th month free — pay for 11, the last one is on us",
-  "20% off repair labour on repairs and upgrades",
+  // Narrowed on request: the discount is for equipment upgrades, not for
+  // every repair. Old quotes keep the wording they were sent — see SHORT_FORMS.
+  "20% off equipment upgrade labor",
   "Cancel any time — unused months refunded",
   "One payment for the year — nothing to remember each month",
 ];
@@ -297,6 +322,35 @@ export const ANNUAL_EXTRAS = [
  */
 const SHORT_FORMS: Record<string, string> = {
   "All chemicals included in your set monthly rate": "All chemicals included",
+  "All routine chemicals included — chlorine, acid, shock, stabilizer and algaecide":
+    "All routine chemicals included",
+  "Salt-cell acid cleaning included — never a separate invoice":
+    "Salt-cell acid cleaning included",
+  "Phosphate remover and specialty treatments included when needed":
+    "Phosphate remover included",
+  /*
+   * The ✗ rows, shortened to the BARE LABEL of their ✓ twin.
+   *
+   * On the page these sit directly opposite "Cartridge replacements included"
+   * and friends, and the pairing only reads if both rows occupy one line: the
+   * long forms wrapped to three lines and pushed the last two crosses 46 and
+   * 68px below the checks they were meant to sit beside. The mark carries the
+   * meaning here — the qualifier ("quoted at cost when due, approved first")
+   * is in the value note under the same card, and the PDF keeps the long form
+   * where there is room for it.
+   */
+  "Replacement cartridge elements (about $120) — quoted at cost when due, approved first":
+    "Cartridge replacements",
+  "The annual DE split, clean & recharge (about $150) — quoted when due, approved first":
+    "DE split, clean & recharge",
+  "Sand media replacement — quoted at cost when due, approved first":
+    "Sand media replacement",
+  "Replacement filter elements or media — quoted at cost when due, approved first":
+    "Replacement filter parts",
+  "Salt-cell acid cleaning — $25 each time the cell needs it":
+    "Salt-cell acid cleaning",
+  "Phosphate remover and specialty treatments — quoted only if your pool needs them":
+    "Phosphate remover",
   "Filter care included — never a separate invoice": "Filter care included",
   "One flat rate — it doesn’t rise in summer": "One flat rate, even in summer",
   "A GPS-stamped service report after every visit":
@@ -320,7 +374,10 @@ const SHORT_FORMS: Record<string, string> = {
     "No contract, cancel any time",
   "Your 12th month free — pay for 11, the last one is on us":
     "Your 12th month free",
+  // Superseded wording, kept so quotes sent with it still shorten. NOT
+  // upgraded to the new line: that would narrow a promise already made.
   "20% off repair labour on repairs and upgrades": "20% off repair labour",
+  "20% off equipment upgrade labor": "20% off upgrade labor",
   "Cancel any time — unused months refunded":
     "Cancel any time, months refunded",
   "One payment for the year — nothing to remember each month":
@@ -662,28 +719,31 @@ export const buildTiers = (
  * every plan — only parts move. essentialsIncludes says so explicitly, because
  * a customer who reads "filter" in an exclusion assumes the whole thing.
  */
+/**
+ * The six rows Essentials shares with Complete, in the same order.
+ *
+ * Only ROW ONE differs in wording, and it has to: Complete includes phosphate
+ * remover, so "all chemicals" is true there and not here. Everything below it
+ * is identical text, so the two cards read as one table with a column missing
+ * rather than as two unrelated lists.
+ *
+ * What Essentials does NOT get lives in `excludes` — the same three items
+ * Complete lists as ✓, at the same position, marked ✗.
+ */
 const essentialsIncludes = (filter: FilterOption): string[] => [
-  /*
-   * ROW-ALIGNED WITH monthlyIncludes, deliberately.
-   *
-   * Both cards carry six bullets in the same order, and exactly two of them
-   * differ — rows 1 and 2. A customer scanning left to right hits the
-   * difference immediately instead of comparing two lists of different
-   * lengths. What is missing lives below, in `excludes`, as muted ✗ rows.
-   */
-  // Row 1. Names algaecide explicitly: it is the chemical a customer checks
-  // for, and it IS included here — only phosphate remover is not.
   "All routine chemicals included — chlorine, acid, shock, stabilizer and algaecide",
-  /*
-   * Row 2, against the other cards' filter-parts bullet. Cleaning is standard
-   * service on every plan; saying so as an inclusion stops "filter parts not
-   * included" being read as no filter care at all.
-   *
-   * DE names the powder. It is a continuous consumable — 5–6 lb every 4–8
-   * weeks, with no trigger event to quote against — so it is included rather
-   * than billed, and the card has to say so or a DE customer will assume it
-   * left with the annual teardown listed two rows below.
-   */
+  ...sharedPlanRows(filter),
+];
+
+/**
+ * Rows 2–6, identical on every card in the three-plan layout.
+ *
+ * DE names the powder: it is a continuous consumable with no trigger event to
+ * quote against, so it is included on every plan, and a DE customer reading
+ * "the annual split is extra" three rows below would otherwise assume the
+ * powder went with it.
+ */
+const sharedPlanRows = (filter: FilterOption): string[] => [
   filter.type === "DE"
     ? "Filter cleaning, backwashing and DE top-ups included"
     : "Filter cleaning and backwashing included",
@@ -691,6 +751,21 @@ const essentialsIncludes = (filter: FilterOption): string[] => [
   "A GPS-stamped service report after every visit",
   "Two-week 100% money-back guarantee",
   "No contract — cancel any time with 30 days notice",
+];
+
+/**
+ * Complete's list: the same six rows, then the three the cheaper card marks ✗.
+ *
+ * The differentiators go LAST rather than woven in, so the two cards align row
+ * for row down the shared block and then diverge in one place — three green
+ * checks against three grey crosses, level. That is the comparison the layout
+ * exists to make, and it is worth more than keeping the filter bullet in its
+ * two-plan position.
+ */
+const completeIncludes = (filter: FilterOption, sanitization: string): string[] => [
+  "All chemicals included in your set monthly rate",
+  ...sharedPlanRows(filter),
+  ...completeDifferentiators(filter.type, sanitization),
 ];
 
 /**
@@ -786,13 +861,28 @@ export const buildTiersWithEssentials = (
       finePrint: filterServiceTerms({ type: filter.type, included: false }),
     },
     /*
-     * Bullets, price and value note are EXACTLY buildTiers' output — only the
-     * name changes. The comparison is carried entirely by the ✗ rows on the
-     * card to the left, so these two cards never drift from the two-plan
-     * proposal and a customer holding both documents sees the same wording.
+     * Price, tagline and value note are EXACTLY buildTiers' output; only the
+     * name and the bullet list change, and the list changes only to put the
+     * three differentiators last so they sit level with the ✗ rows opposite.
+     *
+     * sharedCount on the annual card counts the WHOLE Complete list, so its
+     * four annual-only perks still hang below the divider and the two Complete
+     * cards stay row-aligned with each other as well as with Essentials.
      */
-    { ...full[0], name: "Complete Monthly" },
-    { ...full[1], name: "Complete Annual" },
+    {
+      ...full[0],
+      name: "Complete Monthly",
+      includes: completeIncludes(filter, sanitization),
+    },
+    {
+      ...full[1],
+      name: "Complete Annual",
+      includes: [
+        ...completeIncludes(filter, sanitization),
+        ...ANNUAL_EXTRAS,
+      ],
+      sharedCount: completeIncludes(filter, sanitization).length,
+    },
   ];
 };
 

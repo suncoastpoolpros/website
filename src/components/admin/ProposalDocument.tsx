@@ -622,7 +622,8 @@ const TierCard = ({
           they kept, before they chose. */}
       {tier.excludes?.length ? (
         <>
-          <View style={styles.tierRule} />
+          {/* No rule, for the same reason as the page: these rows pair with ✓
+              rows at the same position on the card alongside. */}
           {tier.excludes.map((item, i) => (
             <View key={i} style={styles.tierItem}>
               <Text style={styles.tierExcludeMark}>×</Text>

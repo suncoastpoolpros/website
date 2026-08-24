@@ -233,6 +233,35 @@ export const ALL_FILTER_TERMS: string[] = [
  * absent: "quoted at cost, approved first" is the difference between a
  * cheaper plan and a bait-and-switch.
  */
+/**
+ * The ✓ rows on Complete that pair, one for one and in the same order, with
+ * the ✗ rows on Essentials.
+ *
+ * The conversion mechanic is the MATCHED PAIR: a green check and a grey cross
+ * on the same line of two adjacent cards. Listing the items only as absences
+ * on the cheap card makes it look shorter; listing them as presences only on
+ * the expensive card makes it look longer. Showing both, level, is what makes
+ * the $10 legible as three specific things rather than a number.
+ *
+ * Kept in lockstep with essentialsExclusions below — same conditions, same
+ * order. Change one, change the other.
+ */
+export const completeDifferentiators = (
+  type: string,
+  sanitization = '',
+): string[] => {
+  const out: string[] = [];
+  // The filter bullet is planFilterBullet's string verbatim, so the short
+  // forms and the sync machinery already recognise it.
+  const parts = planFilterBullet({ type, included: true });
+  if (parts) out.push(parts);
+  if (isSaltwater(sanitization)) {
+    out.push('Salt-cell acid cleaning included — never a separate invoice');
+  }
+  out.push('Phosphate remover and specialty treatments included when needed');
+  return out;
+};
+
 export const essentialsExclusions = (
   type: string,
   sanitization = '',

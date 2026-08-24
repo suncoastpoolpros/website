@@ -1188,15 +1188,21 @@ export const ApprovePage = () => {
                                 existing quote renders one of these. */}
                             {(tier.excludes?.length ?? 0) > 0 && (
                               <>
-                                <div className="mt-5 border-t border-[#e9eef4]" />
-                                <ul className="mt-5 space-y-2">
+                                {/* NO divider, and the same row spacing as the
+                                    list above. These rows pair one-for-one with
+                                    ✓ rows in the same positions on the Complete
+                                    card beside it, and a rule here would push
+                                    them ~20px out of line — losing the exact
+                                    comparison they exist to make. The ✗ and the
+                                    grey already mark the change. */}
+                                <ul className="mt-2 space-y-2">
                                   {tier.excludes?.map((item, j) => (
                                     <li
                                       key={j}
                                       className="flex gap-2 text-sm leading-relaxed text-[#8a94a1]"
                                     >
                                       <X className="mt-0.5 h-4 w-4 shrink-0 text-[#b6bec9]" />
-                                      {item}
+                                      {shortBullet(item)}
                                     </li>
                                   ))}
                                 </ul>
