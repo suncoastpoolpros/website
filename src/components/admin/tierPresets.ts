@@ -240,6 +240,15 @@ const SHORT_FORMS: Record<string, string> = {
   "One flat rate — it doesn’t rise in summer": "One flat rate, even in summer",
   "A GPS-stamped service report after every visit":
     "GPS-stamped service report after every visit",
+  // Superseded wordings of the same bullet. Both already claim the GPS stamp,
+  // so this is the "photo report" → "service report" swap catching up with
+  // quotes that were sent before it — not a new promise. A quote whose bullet
+  // never mentioned GPS is deliberately absent: upgrading that one would add a
+  // claim the customer's PDF does not make, which is a different thing entirely.
+  "A GPS-stamped photo report after every visit":
+    "GPS-stamped service report after every visit",
+  "GPS-verified service report after every visit":
+    "GPS-stamped service report after every visit",
   "Cartridge replacements included — never a separate invoice":
     "Cartridge replacements included",
   "DE split, clean & recharge included — never a separate invoice":
