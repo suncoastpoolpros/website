@@ -897,7 +897,22 @@ export const ProposalBuilder = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        {/* One column until the chooser is answered: the preview is gated on
+            the same condition, and a half-width question beside a blank half
+            reads as a broken page rather than a first step. The grid splits
+            at the exact moment the preview exists to fill the other side. */}
+        <div
+          className={`grid grid-cols-1 gap-8 ${
+            chooserComplete
+              ? "lg:grid-cols-2"
+              : /* Centered in the leftover viewport as well as full width: a
+                   lone question hugging the top of an empty screen reads as
+                   the page having failed to load the rest. The calc leaves
+                   room for the header block above; desktop only, because a
+                   phone has no leftover height to centre in. */
+                "lg:min-h-[calc(100dvh-12rem)] lg:content-center"
+          }`}
+        >
           {/* ---- Form ---- */}
           <div className="space-y-8">
             {/* FIRST, above the customer, because it decides what the whole
