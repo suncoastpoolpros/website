@@ -106,6 +106,12 @@ export type ProposalData = {
      */
     cadence?: string;
     /**
+     * "<filterType>|<sanitization>" as they were when a scope template was
+     * inserted. Purely an operator-facing staleness check — the builder warns
+     * when the pool has moved on since. Never rendered to a customer.
+     */
+    scopePool?: string;
+    /**
      * A personal note that appears in the EMAIL ONLY, never in the PDF. The PDF
      * is the formal document and gets filed or forwarded; this is the covering
      * message — "great meeting you Tuesday", "here's the pricing we discussed".

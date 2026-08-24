@@ -117,9 +117,17 @@ export const proposalDataFromQuote = (quote: {
       sanitization: str(pool.sanitization),
       pump: str(pool.pump),
       filterType: str(pool.filterType),
-      // Tri-state, and a legacy boolean must not become a promise: only the
-      // literal 'yes' means the quote said the filter service was included.
-      filterServiceIncluded: pool.filterServiceIncluded === 'yes' ? 'yes' : pool.filterServiceIncluded === 'no' ? 'no' : '',
+      // Tri-state. Boolean true IS the old stored shape of 'yes' — the send
+      // endpoint accepted both — so honouring it is faithful, not invented.
+      // Dropping it to '' made the re-downloaded PDF render filter service as
+      // unanswered while the approve page beside it showed it included: the
+      // same quote, two answers. Only an explicit no is 'no'.
+      filterServiceIncluded:
+        pool.filterServiceIncluded === 'yes' || pool.filterServiceIncluded === true
+          ? 'yes'
+          : pool.filterServiceIncluded === 'no' || pool.filterServiceIncluded === false
+            ? 'no'
+            : '',
       filter: str(pool.filter),
       heater: str(pool.heater),
       automation: str(pool.automation),
@@ -135,6 +143,14 @@ export const proposalDataFromQuote = (quote: {
           }))
         : [],
       includeBenefits: p.includeBenefits !== false,
+      /*
+       * jobKind and cadence MUST survive the round trip. Omitting jobKind let
+       * jobKindOf coerce every re-downloaded PDF to 'recurring' — a one-time
+       * cleanup came back as a recurring-service document carrying the weekly
+       * promises the job never made. Cadence prints under the rate.
+       */
+      jobKind: str(p.jobKind),
+      cadence: str(p.cadence),
       emailNote: str(p.emailNote),
       pricingMode: p.pricingMode === 'tiers' ? 'tiers' : 'single',
       tiers: tiers.map(
@@ -144,7 +160,21 @@ export const proposalDataFromQuote = (quote: {
           tagline: str(t?.tagline),
           priceNote: str(t?.priceNote),
           billingNote: str(t?.billingNote),
-          extrasCount: Number(t?.extrasCount) || 0,
+          /*
+           * The split counts pass through ONLY when actually stored.
+           * `Number(t?.extrasCount) || 0` manufactured a 0 on every tier,
+           * which drove splitTierIncludes down the legacy branch and erased
+           * the annual card's divider on the re-downloaded PDF. And dropping
+           * sharedCount/essentials/excludes stripped the Essentials card of
+           * its ✗ rows — the re-download affirmatively claimed the excluded
+           * services were included.
+           */
+          ...(typeof t?.sharedCount === 'number' ? { sharedCount: t.sharedCount } : {}),
+          ...(typeof t?.extrasCount === 'number' ? { extrasCount: t.extrasCount } : {}),
+          ...(t?.essentials === true ? { essentials: true } : {}),
+          ...(Array.isArray(t?.excludes)
+            ? { excludes: (t.excludes as unknown[]).map(str).filter(Boolean) }
+            : {}),
           includes: Array.isArray(t?.includes) ? (t.includes as unknown[]).map(str) : [],
           recommended: t?.recommended === true,
           valueNote: str(t?.valueNote),

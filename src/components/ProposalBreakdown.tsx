@@ -20,6 +20,12 @@
 import React from 'react';
 import { Check } from 'lucide-react';
 import {
+  jobAssurances,
+  jobKindOf,
+  showsExtrasTable,
+  trustHeading,
+} from '@/components/admin/jobKinds';
+import {
   BENEFITS_HEADING,
   BENEFITS_PLAN_SCOPE,
   benefitsFootnote,

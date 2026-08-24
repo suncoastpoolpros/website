@@ -21,6 +21,7 @@
  * Everything here is a starting point the admin edits per proposal.
  */
 import type { Tier } from "@/lib/adminApi";
+import { isSaltwater } from "./sanitization";
 import {
   FILTER_TYPES,
   ALL_COMPLETE_DIFFERENTIATORS,
@@ -136,6 +137,23 @@ export const serviceIncludes = (filter: FilterOption): string[] => {
  * it matches nothing, the operator edited it and it is left alone — the same
  * rule as everywhere else, applied to the list instead of the line.
  */
+/**
+ * Every wording row 2 has ever had, so the line surgery below can recognise
+ * and re-tailor it on an edited card. Includes the superseded generic.
+ */
+const ROW2_VARIANTS = [
+  "Filter cleaning, backwashing and DE top-ups included",
+  "Filter cleaning included",
+  "Filter cleaning and backwashing included",
+];
+const currentRow2 = (filter: FilterOption): string =>
+  filter.type === "DE"
+    ? "Filter cleaning, backwashing and DE top-ups included"
+    : filter.type === "Cartridge"
+      ? "Filter cleaning included"
+      : "Filter cleaning and backwashing included";
+const SALT_DIFFERENTIATOR = "Salt-cell acid cleaning included — never a separate invoice";
+
 const SANS = ["Saltwater", "Chlorine"];
 const presetLists = (build: (f: FilterOption, san: string) => string[]) =>
   new Set(
@@ -231,9 +249,63 @@ export const syncFilterService = (
       const rebuilt = tier.essentials
         ? essentialsIncludes(filter)
         : completeIncludes(filter, sanitization);
-      const includes = known ? [...rebuilt, ...tail] : tier.includes;
+      /*
+       * FALLBACK SURGERY when the list is NOT recognised.
+       *
+       * Wholesale rebuild alone meant one edited bullet froze every generated
+       * row on that card: append a line to Complete Monthly, then correct the
+       * filter type, and the card kept "DE split, clean & recharge included"
+       * on a cartridge pool while the cards either side of it rebuilt — and
+       * its own value note, refreshed below, contradicted its bullets.
+       *
+       * So an unrecognised list still gets the POOL-SPECIFIC rows re-tailored
+       * in place: row 2's filter-care wording, the filter differentiator, and
+       * the salt-cell row. Every other line — including whatever was typed —
+       * keeps its position and its text. Editing a card can change what it
+       * says; it must never freeze what pool it is describing.
+       */
+      const retailor = (list: string[]): string[] => {
+        const out = list.map((b) =>
+          ROW2_VARIANTS.includes(b.trim())
+            ? currentRow2(filter)
+            : ALL_PLAN_FILTER_LINES.includes(b.trim()) && line
+              ? (line as string)
+              : b,
+        );
+        // Filter differentiator: drop it when nothing is bundled, add it back
+        // (ahead of the salt/phosphate rows) when it is bundled and missing.
+        const hasFilterLine = out.some((b) => ALL_PLAN_FILTER_LINES.includes(b.trim()));
+        let next = line
+          ? hasFilterLine
+            ? out
+            : (() => {
+                const at = out.findIndex((b) =>
+                  /^(Salt-cell acid cleaning|Phosphate remover and specialty)/.test(b.trim()),
+                );
+                return at < 0 ? [...out, line] : [...out.slice(0, at), line, ...out.slice(at)];
+              })()
+          : out.filter((b) => !ALL_PLAN_FILTER_LINES.includes(b.trim()));
+        // Salt-cell row follows the pool, never the stored value.
+        const salty = isSaltwater(sanitization);
+        const hasSalt = next.some((b) => b.trim() === SALT_DIFFERENTIATOR);
+        if (salty && !hasSalt) {
+          const at = next.findIndex((b) => /^Phosphate remover and specialty/.test(b.trim()));
+          next = at < 0 ? [...next, SALT_DIFFERENTIATOR] : [...next.slice(0, at), SALT_DIFFERENTIATOR, ...next.slice(at)];
+        } else if (!salty && hasSalt) {
+          next = next.filter((b) => b.trim() !== SALT_DIFFERENTIATOR);
+        }
+        return next;
+      };
+      // Essentials never carries the ✓ differentiators — excluding them is the
+      // card. Its ✗ rows are regenerated below regardless.
+      const newHead = known
+        ? rebuilt
+        : tier.essentials
+          ? head.map((b) => (ROW2_VARIANTS.includes(b.trim()) ? currentRow2(filter) : b))
+          : retailor(head);
+      const includes = [...newHead, ...tail];
       const sharedCount =
-        tier.sharedCount == null ? tier.sharedCount : known ? rebuilt.length : tier.sharedCount;
+        tier.sharedCount == null ? tier.sharedCount : newHead.length;
       return {
         ...tier,
         includes,
@@ -832,9 +904,17 @@ const essentialsIncludes = (filter: FilterOption): string[] => [
  * powder went with it.
  */
 const sharedPlanRows = (filter: FilterOption): string[] => [
+  /*
+   * Row 2 names what routine filter care means for THIS filter. Cartridge
+   * deliberately does not say "backwashing": an element is pulled and rinsed,
+   * never backwashed, and the derived Difference bullet (equipmentCareLine)
+   * already draws that line — the card must not blur it back.
+   */
   filter.type === "DE"
     ? "Filter cleaning, backwashing and DE top-ups included"
-    : "Filter cleaning and backwashing included",
+    : filter.type === "Cartridge"
+      ? "Filter cleaning included"
+      : "Filter cleaning and backwashing included",
   "One flat rate — it doesn’t rise in summer",
   "A GPS-stamped service report after every visit",
   "Two-week 100% money-back guarantee",

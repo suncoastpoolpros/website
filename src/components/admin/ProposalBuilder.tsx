@@ -202,10 +202,18 @@ export const ProposalBuilder = ({
       // an untouched draft isn't marked dirty just by being opened.
       const changed = tiers.some((t, i) => t !== p.proposal.tiers[i]);
       if (!changed) return p;
-      return {
-        ...p,
-        proposal: { ...p.proposal, tiers, presetVersion: PRESET_VERSION },
-      };
+      /*
+       * DO NOT stamp presetVersion here.
+       *
+       * upgradeTierWording only repairs lines that exactly match a previous
+       * preset; it cannot touch anything edited, and it knows nothing about
+       * the preset revisions it did not implement. Stamping the current
+       * version because it fixed a tagline told the form the whole draft was
+       * up to date, which permanently suppressed the amber "reset to preset"
+       * prompt — so genuinely superseded wording it could NOT repair went out
+       * unchallenged. The prompt is the safety net; leave it armed.
+       */
+      return { ...p, proposal: { ...p.proposal, tiers } };
     });
   }, [setData]);
   const [status, setStatus] = useState<SendStatus>({ kind: "idle" });
@@ -267,6 +275,32 @@ export const ProposalBuilder = ({
   const chooserComplete =
     kindChosen && (rawKind !== "recurring" || cadence !== null);
 
+  /**
+   * The pool has moved on since a scope template was inserted. Null when no
+   * template was inserted, or when the stamp still matches — a hand-written
+   * scope is never nagged about.
+   */
+  const scopeStale = useMemo(() => {
+    const stamp = data.proposal.scopePool;
+    if (!stamp || !data.proposal.scope.trim()) return null;
+    const [filterType = "", sanitization = ""] = stamp.split("|");
+    const same =
+      filterType === data.pool.filterType &&
+      sanitization === data.pool.sanitization;
+    return same ? null : { filterType, sanitization };
+  }, [
+    data.proposal.scopePool,
+    data.proposal.scope,
+    data.pool.filterType,
+    data.pool.sanitization,
+  ]);
+
+  /** Bracket placeholders the templates ship, still unedited. */
+  const scopePlaceholders = useMemo(
+    () => data.proposal.scope.match(/\[[^\]\n]{3,80}\]/g) ?? [],
+    [data.proposal.scope],
+  );
+
   const insertScopeTemplate = (label: string) => {
     const tpl = SCOPE_TEMPLATES.find((t) => t.label === label);
     if (!tpl) return;
@@ -278,6 +312,20 @@ export const ProposalBuilder = ({
     });
     const current = data.proposal.scope.trim();
     update("proposal", "scope", current ? `${current}\n\n${text}` : text);
+    /*
+     * Remember which pool this text was built FROM.
+     *
+     * The scope is free text after insertion, so nothing re-tailors it when
+     * the pool is corrected later — an inserted weekly scope keeps the old
+     * filter's language and the salt-cell bullet forever, while the Difference
+     * block beside it rebuilds. Stamping the pool lets the form say so
+     * instead of letting the two halves of one page disagree in silence.
+     */
+    update(
+      "proposal",
+      "scopePool",
+      `${data.pool.filterType}|${data.pool.sanitization}`,
+    );
     // Picking a template IS the operator saying what this job is, so it moves
     // the answer at the top of the form with it. Without this the two could
     // disagree — a green-recovery scope under the weekly-service promises,
@@ -324,6 +372,29 @@ export const ProposalBuilder = ({
   // wording immediately, so a quote can't go out promising cartridge elements to
   // a DE pool. syncFilterService only rewrites lines it generated itself, so
   // anything typed by hand survives.
+  /**
+   * An Essentials plan only exists in contrast to bundled filter parts — the
+   * whole card is "the same service without them". When the answer stops
+   * being yes, the three-plan layout is incoherent: the Complete cards'
+   * differentiator row promises parts the quote no longer includes, and the
+   * audit caught exactly that going out. So the layout COLLAPSES to the
+   * two-plan preset in the same state change, and the operator is told
+   * afterwards rather than interrupted with a confirm mid-answer — the
+   * checkbox in Plans re-adds the third card in one click if the answer was
+   * a slip.
+   */
+  const collapseIfNoEssentialsBasis = (
+    p: ProposalData,
+    tiers: Tier[],
+    included: boolean,
+  ): Tier[] =>
+    !included && tiers.some((t) => t.essentials)
+      ? buildTiers(p.proposal.price, {
+          type: p.pool.filterType,
+          included: false,
+        })
+      : tiers;
+
   const setFilterType = (type: string) =>
     setData((p) => {
       // A type that can't carry the service (Other/blank) can't have it
@@ -333,29 +404,39 @@ export const ProposalBuilder = ({
         ? p.pool.filterServiceIncluded
         : "";
       const filter = { type, included: answer === "yes" };
+      const next = { ...p, pool: { ...p.pool, filterType: type, filterServiceIncluded: answer } };
       return {
-        ...p,
-        pool: { ...p.pool, filterType: type, filterServiceIncluded: answer },
+        ...next,
         proposal: {
           ...p.proposal,
-          tiers: syncFilterService(p.proposal.tiers, filter, p.pool.sanitization),
+          tiers: collapseIfNoEssentialsBasis(
+            next,
+            syncFilterService(p.proposal.tiers, filter, p.pool.sanitization),
+            filter.included,
+          ),
         },
       };
     });
 
   const setFilterIncluded = (answer: string) =>
-    setData((p) => ({
-      ...p,
-      pool: { ...p.pool, filterServiceIncluded: answer },
-      proposal: {
-        ...p.proposal,
-        tiers: syncFilterService(
-          p.proposal.tiers,
-          { type: p.pool.filterType, included: answer === "yes" },
-          p.pool.sanitization,
-        ),
-      },
-    }));
+    setData((p) => {
+      const next = { ...p, pool: { ...p.pool, filterServiceIncluded: answer } };
+      return {
+        ...next,
+        proposal: {
+          ...p.proposal,
+          tiers: collapseIfNoEssentialsBasis(
+            next,
+            syncFilterService(
+              p.proposal.tiers,
+              { type: p.pool.filterType, included: answer === "yes" },
+              p.pool.sanitization,
+            ),
+            answer === "yes",
+          ),
+        },
+      };
+    });
 
   // --- Pricing tiers ---
   // Switching to tiers seeds both plans from the preset, using whatever base
@@ -1648,6 +1729,37 @@ export const ProposalBuilder = ({
                   onChange={(e) => update("proposal", "scope", e.target.value)}
                 />
               </FieldShell>
+              {/* TWO THINGS THE SCOPE CANNOT FIX ITSELF.
+                  It is free text after insertion, so nothing re-tailors it
+                  when the pool changes, and nothing notices a bracket
+                  placeholder that was never filled in. Both reach the customer
+                  verbatim. Warnings rather than blocks: the operator may have
+                  rewritten the scope deliberately, and a hard gate on free
+                  text would fire on false positives forever. */}
+              {scopeStale && (
+                <p className="flex items-start gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs leading-relaxed text-amber-200">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>
+                    The pool changed after this scope was inserted — it still
+                    describes a{" "}
+                    {scopeStale.filterType || "filter type not yet set"} filter
+                    {scopeStale.sanitization
+                      ? ` on a ${scopeStale.sanitization} pool`
+                      : ""}
+                    . Re-insert the template, or edit the text to match.
+                  </span>
+                </p>
+              )}
+              {scopePlaceholders.length > 0 && (
+                <p className="flex items-start gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs leading-relaxed text-amber-200">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>
+                    Unfilled placeholder{scopePlaceholders.length > 1 ? "s" : ""}{" "}
+                    still in the scope: {scopePlaceholders.join(", ")}. The
+                    customer sees these exactly as written.
+                  </span>
+                </p>
+              )}
               <FieldShell
                 id="pr-price"
                 label={

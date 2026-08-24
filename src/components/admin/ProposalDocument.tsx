@@ -685,7 +685,12 @@ export const ProposalDocument = ({
   // sand-filter customer never reads a promise about cartridge elements.
   const filterOption = {
     type: pool.filterType,
-    included: pool.filterServiceIncluded === "yes",
+    // Boolean true is the legacy stored shape — the send endpoint accepted
+    // both. Reading only 'yes' made the PDF show filter service as excluded
+    // while the approve page it was downloaded from showed it included.
+    included:
+      pool.filterServiceIncluded === "yes" ||
+      (pool.filterServiceIncluded as unknown) === true,
   };
   const extras = includedExtras(
     filterOption,

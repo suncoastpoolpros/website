@@ -163,7 +163,9 @@ export const filterServiceTerms = ({ type, included }: FilterOption): string => 
      */
     switch (type) {
       case 'Cartridge':
-        return 'Routine filter cleaning and backwashing are included in your service. Replacement cartridge elements are quoted separately, and always before any work is done.';
+        // No backwashing claim: a cartridge element is pulled and rinsed,
+        // never backwashed — same distinction equipmentCareLine draws.
+        return 'Routine filter cleaning is included in your service. Replacement cartridge elements are quoted separately, and always before any work is done.';
       case 'DE':
         // The powder is a consumable of the backwashing we include; only the
         // annual teardown and the grids are not. See the DE note in
@@ -216,6 +218,8 @@ export const filterServiceValueNote = ({ type, included }: FilterOption): string
  */
 const LEGACY_FILTER_TERMS: string[] = [
   'Routine filter cleaning and backwashing are included in your service. Replacement filter elements, grids or media are quoted separately, and always before any work is done.',
+  // Cartridge wording that briefly claimed backwashing.
+  'Routine filter cleaning and backwashing are included in your service. Replacement cartridge elements are quoted separately, and always before any work is done.',
 ];
 
 export const ALL_FILTER_TERMS: string[] = [

@@ -34,7 +34,7 @@ export const EXTRAS_HEADING = 'What Others Charge Extra For';
  * three quotes has no other way to learn.
  */
 export const EXTRAS_INTRO =
-  'We build our service to be all-inclusive on purpose. When something is a known maintenance item — a filter element, a treatment your pool needs every year — we price it into your monthly cost rather than invoicing it separately. Splitting those out only makes a monthly rate look cheaper than it really is, and it costs you time approving work your pool was always going to need.';
+  'We build our service to be all-inclusive on purpose. When something is a known maintenance item — a filter part, a treatment your pool needs every year — we price it into your monthly cost rather than invoicing it separately. Splitting those out only makes a monthly rate look cheaper than it really is, and it costs you time approving work your pool was always going to need.';
 
 /**
  * The intro the customer actually reads, chosen by the filter answer.
@@ -241,11 +241,20 @@ export const includedExtras = (
    * understates what a company billing this as a "specialty chemical" would
    * charge. That reasoning stays here now that the row no longer shows it.
    */
-  rows.push({
-    label: 'Stabilizer (cyanuric acid)',
-    typical: '$20–$40',
-    basis: 'typically topped up once or twice a year',
-  });
+  /*
+   * NOT ON A BROMINE POOL. Cyanuric acid stabilises chlorine against UV; it
+   * does nothing for bromine, which has no equivalent stabiliser. Quoting a
+   * bromine owner $20–$40 of annual value for a chemical their pool never
+   * takes is a claim they can catch, and this table only works while every
+   * figure in it survives checking.
+   */
+  if (!/bromine/i.test(sanitization)) {
+    rows.push({
+      label: 'Stabilizer (cyanuric acid)',
+      typical: '$20–$40',
+      basis: 'typically topped up once or twice a year',
+    });
+  }
   rows.push(...(hasEssentials ? SPLIT_TREATMENT_EXTRAS : BASE_EXTRAS));
   return rows;
 };
