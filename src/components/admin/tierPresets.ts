@@ -674,10 +674,19 @@ const essentialsIncludes = (filter: FilterOption): string[] => [
   // Row 1. Names algaecide explicitly: it is the chemical a customer checks
   // for, and it IS included here — only phosphate remover is not.
   "All routine chemicals included — chlorine, acid, shock, stabilizer and algaecide",
-  // Row 2, against the other cards' filter-parts bullet. Cleaning is standard
-  // service on every plan; saying so as an inclusion stops "filter parts not
-  // included" being read as no filter care at all.
-  "Filter cleaning and backwashing included",
+  /*
+   * Row 2, against the other cards' filter-parts bullet. Cleaning is standard
+   * service on every plan; saying so as an inclusion stops "filter parts not
+   * included" being read as no filter care at all.
+   *
+   * DE names the powder. It is a continuous consumable — 5–6 lb every 4–8
+   * weeks, with no trigger event to quote against — so it is included rather
+   * than billed, and the card has to say so or a DE customer will assume it
+   * left with the annual teardown listed two rows below.
+   */
+  filter.type === "DE"
+    ? "Filter cleaning, backwashing and DE top-ups included"
+    : "Filter cleaning and backwashing included",
   "One flat rate — it doesn’t rise in summer",
   "A GPS-stamped service report after every visit",
   "Two-week 100% money-back guarantee",

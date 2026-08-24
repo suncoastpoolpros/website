@@ -154,6 +154,18 @@ export const ALL_FILTER_LINES: string[] = FILTER_TYPES.map((type) =>
  */
 export const filterServiceTerms = ({ type, included }: FilterOption): string => {
   if (!included || !supportsFilterService(type)) {
+    /*
+     * DE NEEDS ITS OWN SENTENCE. The generic wording excludes "elements, grids
+     * or media" — and DE powder IS media, so on a DE pool it withdrew the very
+     * consumable routine backwashing depends on. The powder is a few dollars a
+     * recharge every 4–8 weeks, has no trigger event to quote against, and our
+     * own included-service terms already promise "routine backwashing and DE
+     * replenishment throughout the year". It is included; only the annual
+     * teardown and the grids are not.
+     */
+    if (type === 'DE') {
+      return 'Routine backwashing is included in your service, along with the DE powder it consumes through the year. The annual split, disassembly and clean, DE grid replacement and filter housing parts are quoted separately, and always before any work is done.';
+    }
     return 'Routine filter cleaning and backwashing are included in your service. Replacement filter elements, grids or media are quoted separately, and always before any work is done.';
   }
   switch (type) {
@@ -190,9 +202,21 @@ export const filterServiceValueNote = ({ type, included }: FilterOption): string
   }
 };
 
+/**
+ * Superseded terms, kept ONLY so syncFilterService can still recognise a draft
+ * holding them as untouched machine text. Same rule as the tier wording: an
+ * exact match proves nobody edited it, so it is safe to replace.
+ */
+const LEGACY_FILTER_TERMS: string[] = [
+  'Routine filter cleaning and backwashing are included in your service. Replacement filter elements, grids or media are quoted separately, and always before any work is done.',
+];
+
 export const ALL_FILTER_TERMS: string[] = [
+  // Every EXCLUDED variant, not just the generic one — DE now has its own.
+  ...FILTER_TYPES.map((type) => filterServiceTerms({ type, included: false })),
   filterServiceTerms({ type: '', included: false }),
   ...FILTER_TYPES.map((type) => filterServiceTerms({ type, included: true })),
+  ...LEGACY_FILTER_TERMS,
 ].filter(Boolean);
 
 /**
@@ -279,7 +303,13 @@ export const excludedFilterValueNote = (type: string): string => {
    * which would read as below-market when the rate is meant to read as level
    * with the market.
    */
-  return `Your weekly service, chemicals and algaecide are all in this rate, and routine filter cleaning stays included. Two things are kept out to hold the price down: ${parts}, and phosphate remover is used only if your pool actually needs it. Nothing is added without your approval.`;
+  // Naming the powder matters most on DE: it is the one consumable a customer
+  // could reasonably assume went out with the annual teardown.
+  const cleaning =
+    type === 'DE'
+      ? 'routine backwashing and the DE powder it uses stay included'
+      : 'routine filter cleaning stays included';
+  return `Your weekly service, chemicals and algaecide are all in this rate, and ${cleaning}. Two things are kept out to hold the price down: ${parts}, and phosphate remover is used only if your pool actually needs it. Nothing is added without your approval.`;
 };
 
 /**
