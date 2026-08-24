@@ -40,8 +40,13 @@ import {
   trustHeading,
 } from "./jobKinds";
 import { cadenceLabel } from "./serviceCadence";
-import { filterTypeLabel } from "./filterService";
 import {
+  ALL_COMPLETE_DIFFERENTIATORS,
+  filterTypeLabel,
+} from "./filterService";
+import {
+  EXTRAS_ALSO_INCLUDED_HEADING,
+  EXTRAS_NOT_INCLUDED_HEADING,
   EXTRAS_COL_COMPLETE,
   EXTRAS_COL_ESSENTIALS,
   EXTRAS_COL_THEIRS,
@@ -446,6 +451,17 @@ const styles = StyleSheet.create({
     color: EXCLUDED_RED,
   },
   tierExcludeText: { flex: 1, fontSize: 7.8, color: FAINT, lineHeight: 1.28 },
+  // "ALSO INCLUDED" / "NOT INCLUDED" — twins at the same position on every
+  // card, so the ✓ and ✗ rows they head stay level across the comparison.
+  tierBlockLabel: {
+    fontSize: 6.4,
+    lineHeight: 1.3,
+    fontFamily: "Helvetica-Bold",
+    color: FAINT,
+    letterSpacing: 0.5,
+    marginTop: 5,
+    marginBottom: 2,
+  },
   // Terms render FULL WIDTH beneath the comparison, not inside the cards. The
   // same sentence wraps to ~2 lines across the page but 6–7 inside a 250pt
   // column, and that height was enough to push the whole (unbreakable)
@@ -553,6 +569,7 @@ const TierCard = ({
   baseIncludes = [],
   delta,
   cadence,
+  blockLabel,
 }: {
   tier: Tier;
   /** Name of the cheaper tier, when this one builds on it. */
@@ -563,6 +580,8 @@ const TierCard = ({
   delta?: string;
   /** "Weekly service" / "Every other week", under the rate. Empty = omit. */
   cadence?: string;
+  /** "ALSO INCLUDED", on three-plan Complete cards only. */
+  blockLabel?: string;
 }) => {
   const split = splitTierIncludes(tier, baseIncludes);
   const items = [...split.shared, ...split.extras];
@@ -626,12 +645,28 @@ const TierCard = ({
       {buildsOn ? (
         <Text style={styles.tierBuildsOn}>Everything in {buildsOn}, plus:</Text>
       ) : null}
-      {shown.map((item, i) => (
-        <View key={i} style={styles.tierItem}>
-          <Text style={styles.tierCheck}>•</Text>
-          <Text style={styles.tierItemText}>{item}</Text>
-        </View>
-      ))}
+      {shown.map((item, i) => {
+        // The first differentiator opens the labelled block — its twin is the
+        // "NOT INCLUDED" label on the Essentials card at the same position.
+        const opensBlock =
+          !!blockLabel &&
+          ALL_COMPLETE_DIFFERENTIATORS.includes(item.trim()) &&
+          !ALL_COMPLETE_DIFFERENTIATORS.includes((shown[i - 1] ?? "").trim());
+        // An ARRAY, not a Fragment: this file never imports React (the
+        // @react-pdf JSX runtime is automatic), and a keyed array renders the
+        // optional label and its row as siblings just the same.
+        return [
+          opensBlock ? (
+            <Text key={`l${i}`} style={styles.tierBlockLabel}>
+              {blockLabel}
+            </Text>
+          ) : null,
+          <View key={i} style={styles.tierItem}>
+            <Text style={styles.tierCheck}>•</Text>
+            <Text style={styles.tierItemText}>{item}</Text>
+          </View>,
+        ];
+      })}
       {/* WHAT THIS PLAN LEAVES OUT — Essentials only. The print version of the
           page's ✗ rows, and the reason the cheaper rate is defensible when the
           first parts invoice arrives: the customer was told, on the document
@@ -639,7 +674,11 @@ const TierCard = ({
       {tier.excludes?.length ? (
         <>
           {/* No rule, for the same reason as the page: these rows pair with ✓
-              rows at the same position on the card alongside. */}
+              rows at the same position on the card alongside. The label is
+              that pairing's other half. */}
+          <Text style={styles.tierBlockLabel}>
+            {EXTRAS_NOT_INCLUDED_HEADING.toUpperCase()}
+          </Text>
           {tier.excludes.map((item, i) => (
             <View key={i} style={styles.tierItem}>
               <Text style={styles.tierExcludeMark}>×</Text>
@@ -1071,6 +1110,11 @@ export const ProposalDocument = ({
                          the upgrade, so a delta here would be wrong. */
                       delta={tiers.length >= 3 ? "" : i > 0 ? delta : ""}
                       cadence={cadenceLabel(proposal.cadence)}
+                      blockLabel={
+                        hasEssentials && !tier.essentials
+                          ? EXTRAS_ALSO_INCLUDED_HEADING.toUpperCase()
+                          : undefined
+                      }
                     />
                   </View>
                 ))}

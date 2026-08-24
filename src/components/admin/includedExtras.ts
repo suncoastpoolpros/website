@@ -132,6 +132,27 @@ export const EXTRAS_INCLUDED_LABEL = 'Included';
  */
 export const EXTRAS_COL_ESSENTIALS = 'Essentials';
 export const EXTRAS_COL_COMPLETE = 'Complete';
+/**
+ * The quiet label above an Essentials card's ✗ block.
+ *
+ * The rows sat flush against the ✓ rows with identical spacing, so the card
+ * read as nine items in one list rather than six things you get and three you
+ * do not. Naming the block lets the eye take it in once and skip it, and it
+ * makes the group deliberate rather than a run of rows that happen to be
+ * greyed out. Costs one line; the ✓/✗ pairing across the cards is unaffected.
+ */
+export const EXTRAS_NOT_INCLUDED_HEADING = 'Not included';
+/**
+ * Its twin on the Complete cards, at the SAME position in the list.
+ *
+ * Labelling only the Essentials block would push its ✗ rows a line below the
+ * ✓ rows they pair with — and that pairing, level across the cards, is the
+ * comparison the whole layout exists to make. Labelling both keeps them level
+ * and turns the grouping into the point: here is the service, and here is the
+ * part that differs.
+ */
+export const EXTRAS_ALSO_INCLUDED_HEADING = 'Also included';
+
 /** What an Essentials cell says on a row it does not cover. */
 export const EXTRAS_EXCLUDED_LABEL = 'Extra';
 

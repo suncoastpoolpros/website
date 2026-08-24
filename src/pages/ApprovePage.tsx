@@ -16,6 +16,11 @@ import { jobKindOf, showsConditionTerm } from "@/components/admin/jobKinds";
 import { cadenceLabel } from "@/components/admin/serviceCadence";
 import { splitTierIncludes } from "@/lib/adminApi";
 import {
+  EXTRAS_ALSO_INCLUDED_HEADING,
+  EXTRAS_NOT_INCLUDED_HEADING,
+} from "@/components/admin/includedExtras";
+import { ALL_COMPLETE_DIFFERENTIATORS } from "@/components/admin/filterService";
+import {
   currentTagline,
   shortBillingNote,
   shortBullet,
@@ -384,6 +389,16 @@ export const ApprovePage = () => {
    */
   const contactInHeaderRow = !!quote;
   const tiers = quote?.proposal.tiers ?? [];
+  /** The Essentials layout — the only shape with labelled comparison blocks. */
+  const threePlan = tiers.some((t) => t.essentials);
+  /*
+   * Both block labels share these metrics so the rows beneath them start at
+   * the same height on every card. "Not included" and "Also included" are
+   * twins: label one block and its rows drop a line below the rows they pair
+   * with, which is the alignment the whole comparison rests on.
+   */
+  const blockLabelClass =
+    "mt-5 text-[10px] font-semibold uppercase tracking-wider text-[#a3acb8]";
   const chosen = tiers.find((t) => t.name === plan);
 
   /**
@@ -1166,11 +1181,46 @@ export const ApprovePage = () => {
                         );
                         return (
                           <>
-                            {shared.length > 0 && (
-                              <ul className="mt-4 space-y-2">
-                                {shared.map(row)}
-                              </ul>
-                            )}
+                            {/* THE SHARED BLOCK, SPLIT AT THE DIFFERENTIATORS.
+                                On a three-plan quote the last rows of a
+                                Complete card are the three items Essentials
+                                marks ✗. Labelling them "Also included" —
+                                opposite "Not included" at the same height on
+                                the card alongside — turns the grouping into
+                                the comparison instead of leaving nine rows in
+                                one undifferentiated list. Two-plan quotes have
+                                no such block and are untouched. */}
+                            {shared.length > 0 &&
+                              (() => {
+                                const at = threePlan
+                                  ? shared.findIndex((b) =>
+                                      ALL_COMPLETE_DIFFERENTIATORS.includes(
+                                        b.trim(),
+                                      ),
+                                    )
+                                  : -1;
+                                if (at < 0)
+                                  return (
+                                    <ul className="mt-4 space-y-2">
+                                      {shared.map(row)}
+                                    </ul>
+                                  );
+                                return (
+                                  <>
+                                    <ul className="mt-4 space-y-2">
+                                      {shared.slice(0, at).map(row)}
+                                    </ul>
+                                    <p className={blockLabelClass}>
+                                      {EXTRAS_ALSO_INCLUDED_HEADING}
+                                    </p>
+                                    <ul className="mt-2 space-y-2">
+                                      {shared
+                                        .slice(at)
+                                        .map((b, j) => row(b, at + j))}
+                                    </ul>
+                                  </>
+                                );
+                              })()}
                             {extras.length > 0 && (
                               <>
                                 {/* A rule, not a heading. "Additional benefits"
@@ -1212,13 +1262,14 @@ export const ApprovePage = () => {
                                 existing quote renders one of these. */}
                             {(tier.excludes?.length ?? 0) > 0 && (
                               <>
-                                {/* NO divider, and the same row spacing as the
-                                    list above. These rows pair one-for-one with
-                                    ✓ rows in the same positions on the Complete
-                                    card beside it, and a rule here would push
-                                    them ~20px out of line — losing the exact
-                                    comparison they exist to make. The ✗ and the
-                                    grey already mark the change. */}
+                                {/* Labelled, and its twin sits at the SAME
+                                    position on the Complete cards — see
+                                    blockLabel above. Both or neither: a label
+                                    on one card only would push these rows a
+                                    line below the ✓ rows they pair with. */}
+                                <p className={blockLabelClass}>
+                                  {EXTRAS_NOT_INCLUDED_HEADING}
+                                </p>
                                 <ul className="mt-2 space-y-2">
                                   {tier.excludes?.map((item, j) => (
                                     <li
