@@ -15,7 +15,11 @@ import { PRICING_CONDITION_TERM } from "@/components/admin/proposalTerms";
 import { jobKindOf, showsConditionTerm } from "@/components/admin/jobKinds";
 import { cadenceLabel } from "@/components/admin/serviceCadence";
 import { splitTierIncludes } from "@/lib/adminApi";
-import { currentTagline, shortBullet } from "@/components/admin/tierPresets";
+import {
+  currentTagline,
+  shortBillingNote,
+  shortBullet,
+} from "@/components/admin/tierPresets";
 import {
   DECLINE_REASONS,
   declineReply,
@@ -1082,11 +1086,20 @@ export const ApprovePage = () => {
                           NOT omitted — burying the figure would only move the
                           surprise to the invoice, where it costs far more than
                           a moment's pause here. */}
-                      {tier.billingNote?.trim() && (
-                        <p className="mt-2 text-center text-xs leading-relaxed text-[#6b7280]">
-                          {tier.billingNote.trim()}
-                        </p>
-                      )}
+                      {/* A RESERVED STRIP, not a conditional line.
+                          Only the annual card has a billing note, so rendering
+                          it only there pushed that card's whole bullet list
+                          down — six rows that are identical across the cards
+                          stopped lining up, which is the one thing the layout
+                          is for. The slot is now the same height on every
+                          card and empty where there is nothing to say. */}
+                      <p
+                        className={`mt-2 text-center text-xs leading-relaxed text-[#6b7280] ${
+                          tiers.length > 1 ? "sm:min-h-[1.125rem]" : ""
+                        }`}
+                      >
+                        {shortBillingNote(tier.billingNote ?? "")}
+                      </p>
                       {/* A rule under the button, not a bare gap. Above it the
                         card is making an offer; below it the card is
                         justifying one, and the line is what tells you the

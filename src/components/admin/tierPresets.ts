@@ -581,6 +581,26 @@ export const currentTagline = (tagline: string): string => {
   return TAGLINE_UPGRADES[t] ?? t;
 };
 
+/**
+ * The page's version of the billing note — the total, and nothing else.
+ *
+ * The stored note reads "$1,815 billed once — 11 months paid, your 12th free."
+ * which wraps to two lines in a card column and repeats a bullet already on
+ * the same card ("Your 12th month free"). The disclosure that has to be here
+ * is the four-figure total, so that is what stays; the rest is three rows
+ * below it.
+ *
+ * Render-time, like the taglines and short bullets: the PDF keeps what was
+ * sent, and quotes already in inboxes tighten up without their stored data
+ * moving. Anything hand-written passes through untouched.
+ */
+export const shortBillingNote = (note: string): string => {
+  const t = note.trim();
+  if (!t) return "";
+  const m = /^(\$[\d,]+ billed once)\b/.exec(t);
+  return m ? m[1] : t;
+};
+
 /** The page's version of a bullet. Unrecognised text is returned untouched. */
 export const shortBullet = (item: string): string => {
   const t = item.trim();
