@@ -53,6 +53,7 @@ import { EmailReview } from "./EmailReview";
 import { SANITIZATION_TYPES } from "./sanitization";
 import { SCOPE_TEMPLATES } from "./scopeTemplates";
 import { CADENCES, cadenceOf } from "./serviceCadence";
+import { suggestGallonsRange } from "./poolVolume";
 import {
   JOB_KINDS,
   jobAssurances,
@@ -1259,6 +1260,40 @@ export const ProposalBuilder = ({
                   />
                 </FieldShell>
               </div>
+              {/* The dimensions above already say what the volume is — so say
+                  it, as a RANGE, and let one tap put it in the field. Never a
+                  bare number: see poolVolume.ts. Never auto-filled either —
+                  the operator stays the author of what the document claims. */}
+              {(() => {
+                const range = suggestGallonsRange(data.pool);
+                if (!range) return null;
+                const label = `${range} gallons`;
+                const applied = data.pool.gallons.trim() === label;
+                return (
+                  <p className="flex flex-wrap items-center gap-2 text-sm text-gray-400">
+                    <span>
+                      These dimensions work out to about{" "}
+                      <span className="font-semibold text-gray-200">
+                        {label}
+                      </span>
+                      .
+                    </span>
+                    {applied ? (
+                      <span className="text-xs text-gray-500">
+                        In the volume field.
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => update("pool", "gallons", label)}
+                        className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-gray-200 transition-colors hover:border-brand-blue/50 hover:bg-white/10"
+                      >
+                        {data.pool.gallons.trim() ? "Replace volume" : "Use it"}
+                      </button>
+                    )}
+                  </p>
+                );
+              })()}
               <a
                 href="/tools/pool-volume-calculator/"
                 className="inline-flex items-center gap-2 text-sm font-semibold text-brand-blue-light hover:text-white"
