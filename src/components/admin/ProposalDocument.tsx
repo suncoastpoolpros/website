@@ -62,6 +62,9 @@ const LINE = "#e6e9ef";
 const TINT = "#f1f7fc";
 const TINT_BORDER = "#d4e6f4";
 const GREEN = "#1d7a33";
+// The ✗ on an Essentials row. Deep enough to read as "not included" at 7.8pt
+// without turning the card into an error state — the text beside it stays muted.
+const EXCLUDED_RED = "#c0392b";
 
 // Uniform page margins (so continuation pages get clean top/side margins too).
 const MARGIN_X = 46;
@@ -427,7 +430,7 @@ const styles = StyleSheet.create({
     width: 10,
     fontSize: 7.8,
     lineHeight: 1.28,
-    color: FAINT,
+    color: EXCLUDED_RED,
   },
   tierExcludeText: { flex: 1, fontSize: 7.8, color: FAINT, lineHeight: 1.28 },
   // Terms render FULL WIDTH beneath the comparison, not inside the cards. The

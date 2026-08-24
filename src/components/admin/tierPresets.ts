@@ -563,6 +563,10 @@ const SHORT_FORMS: Record<string, string> = {
  * it, which is the whole reason this is a lookup and not a heuristic.
  */
 const TAGLINE_UPGRADES: Record<string, string> = {
+  // Superseded Essentials line. Not a narrowing: the replacement states the
+  // parts carve-out the ✗ rows on the same card already spell out.
+  "The rate other companies quote.":
+    "The same weekly service — parts billed separately.",
   "Everything above, billed month to month.":
     "The full service, month to month.",
   "The full service, billed month to month.":
@@ -1036,10 +1040,18 @@ export const buildTiersWithEssentials = (
       name: "Essentials",
       essentials: true,
       price: suggested != null ? `${formatAmount(suggested)}/mo` : "",
-      // Names the comparison outright. A customer with two other quotes on the
-      // table already suspects they are not comparing like with like; saying
-      // so is what makes the two cards beside it legible.
-      tagline: "The rate other companies quote.",
+      /*
+       * Says what the plan IS, not who else sells it.
+       *
+       * "The rate other companies quote" made the card about the competition
+       * — a line the customer cannot check, in the one place the document
+       * should be plainest. It also left the actual difference to the ✗ rows
+       * alone. This states both halves: the service is identical, the parts
+       * are not in the price. "The same weekly service" is doing the heavier
+       * work — the fear with a cheaper tier is getting less service, and it
+       * is answered before it forms.
+       */
+      tagline: "The same weekly service — parts billed separately.",
       priceNote: "",
       billingNote: "",
       includes: essentialsIncludes(filter),

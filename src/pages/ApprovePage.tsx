@@ -1225,7 +1225,16 @@ export const ApprovePage = () => {
                                       key={j}
                                       className="flex gap-2 text-sm leading-relaxed text-[#8a94a1]"
                                     >
-                                      <X className="mt-0.5 h-4 w-4 shrink-0 text-[#b6bec9]" />
+                                      {/* Red, at the operator's call: a grey ✗
+                                          beside a green ✓ reads as "quieter",
+                                          not as "no". The LABEL stays muted so
+                                          the row is still clearly the
+                                          secondary column — only the mark
+                                          carries the verdict. */}
+                                      <X
+                                        className="mt-0.5 h-4 w-4 shrink-0 text-[#c0392b]"
+                                        strokeWidth={2.5}
+                                      />
                                       {shortBullet(item)}
                                     </li>
                                   ))}
