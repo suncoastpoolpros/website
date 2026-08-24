@@ -66,6 +66,19 @@ export const extrasIntroFor = (filterIncluded: boolean): string =>
  * reading about what IS included, so the two documents agree in plain sight.
  * No TERMS_VERSION bump for the same reason — nothing new is being excluded.
  */
+/**
+ * Appended to the note when the quote offers an Essentials plan.
+ *
+ * Every "Included" in the table above is true of the all-inclusive plans and
+ * NOT of Essentials — the table is quote-level, the plans are not. Without
+ * this line a customer choosing Essentials has read a table telling them
+ * filter parts and phosphate treatments are included. One sentence, rather
+ * than a second table, because the ✗ rows on the card already carry the
+ * detail; this only stops the table contradicting them.
+ */
+export const EXTRAS_PLAN_QUALIFIER =
+  'These are included on the All-Inclusive plans. The Essentials plan leaves out the items marked on its card, which is what makes it cheaper.';
+
 export const EXTRAS_NOTE =
   'The figures above are what you would typically be quoted for these elsewhere. Routine treatments are included. Heavy clean-ups outside routine service are quoted separately — a green-to-clean recovery, or debris left by a storm or nearby construction.';
 

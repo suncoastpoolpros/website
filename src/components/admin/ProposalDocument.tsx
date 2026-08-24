@@ -43,6 +43,7 @@ import {
   EXTRAS_HEADING,
   EXTRAS_INCLUDED_LABEL,
   EXTRAS_NOTE,
+  EXTRAS_PLAN_QUALIFIER,
   includedExtras,
 } from "./includedExtras";
 
@@ -407,6 +408,17 @@ const styles = StyleSheet.create({
     lineHeight: 1.28,
   },
   tierItemText: { flex: 1, fontSize: 7.8, color: INK, lineHeight: 1.28 },
+  // The ✗ rows: same metrics as an included row so the columns stay on a grid,
+  // muted so the eye reads a block of yes and a block of no without comparing
+  // wording. FAINT rather than a red — this is a plan's scope, not an error.
+  tierExcludeMark: {
+    fontFamily: "Helvetica-Bold",
+    width: 10,
+    fontSize: 7.8,
+    lineHeight: 1.28,
+    color: FAINT,
+  },
+  tierExcludeText: { flex: 1, fontSize: 7.8, color: FAINT, lineHeight: 1.28 },
   // Terms render FULL WIDTH beneath the comparison, not inside the cards. The
   // same sentence wraps to ~2 lines across the page but 6–7 inside a 250pt
   // column, and that height was enough to push the whole (unbreakable)
@@ -593,6 +605,21 @@ const TierCard = ({
           <Text style={styles.tierItemText}>{item}</Text>
         </View>
       ))}
+      {/* WHAT THIS PLAN LEAVES OUT — Essentials only. The print version of the
+          page's ✗ rows, and the reason the cheaper rate is defensible when the
+          first parts invoice arrives: the customer was told, on the document
+          they kept, before they chose. */}
+      {tier.excludes?.length ? (
+        <>
+          <View style={styles.tierRule} />
+          {tier.excludes.map((item, i) => (
+            <View key={i} style={styles.tierItem}>
+              <Text style={styles.tierExcludeMark}>×</Text>
+              <Text style={styles.tierExcludeText}>{item}</Text>
+            </View>
+          ))}
+        </>
+      ) : null}
     </View>
   );
 };
@@ -890,7 +917,12 @@ export const ProposalDocument = ({
                   </View>
                 </View>
               ))}
-              <Text style={styles.extrasNote}>{EXTRAS_NOTE}</Text>
+              <Text style={styles.extrasNote}>
+                {EXTRAS_NOTE}
+                {tiers.some((t) => t.essentials)
+                  ? ` ${EXTRAS_PLAN_QUALIFIER}`
+                  : ""}
+              </Text>
             </View>
           </View>
         ) : null}
@@ -957,12 +989,12 @@ export const ProposalDocument = ({
                        * reference: its extras genuinely are a suffix.
                        */
                       buildsOn={
-                        i > 0 && !(tiers.length >= 3 && i === 1)
+                        i > 0 && !tier.essentials && !tiers[i - 1].essentials
                           ? tiers[i - 1].name.trim()
                           : undefined
                       }
                       baseIncludes={
-                        i > 0 && !(tiers.length >= 3 && i === 1)
+                        i > 0 && !tier.essentials && !tiers[i - 1].essentials
                           ? tiers[i - 1].includes
                           : []
                       }

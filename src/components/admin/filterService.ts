@@ -12,6 +12,8 @@
  * Function can't import from the client src tree) — keep them in sync.
  */
 
+import { isSaltwater } from './sanitization';
+
 export const FILTER_TYPES = ['Cartridge', 'DE', 'Sand', 'Other'] as const;
 
 /**
@@ -194,6 +196,58 @@ export const ALL_FILTER_TERMS: string[] = [
 ].filter(Boolean);
 
 /**
+ * What the Essentials plan leaves out, as card rows.
+ *
+ * TWO ITEMS, NOT THREE. Algaecide stays INCLUDED on every plan: the Pinellas
+ * market treats it as part of a flat rate, so excluding it would put
+ * Essentials BELOW the going rate rather than level with it — the opposite of
+ * what the card is for. Phosphate remover is the specialty treatment
+ * competitors here genuinely bill separately, and filter parts is the item
+ * even the "all chemicals included" companies carve out.
+ *
+ * Each line says what happens when the thing is needed, not merely that it is
+ * absent: "quoted at cost, approved first" is the difference between a
+ * cheaper plan and a bait-and-switch.
+ */
+export const essentialsExclusions = (
+  type: string,
+  sanitization = '',
+): string[] => {
+  const priced = FILTER_SERVICE[type];
+  const cost = priced ? ` (about $${priced.value})` : '';
+  const parts =
+    type === 'DE'
+      ? `The annual DE split, clean & recharge${cost} — quoted when due, approved first`
+      : type === 'Sand'
+        ? 'Sand media replacement — quoted at cost when due, approved first'
+        : type === 'Cartridge'
+          ? `Replacement cartridge elements${cost} — quoted at cost when due, approved first`
+          : 'Replacement filter elements or media — quoted at cost when due, approved first';
+  const out = [
+    parts,
+    'Phosphate remover and specialty treatments — quoted only if your pool needs them',
+  ];
+  /*
+   * SALT POOLS ONLY. A chlorine pool has no cell, so listing a cell wash as
+   * "not included" would be excluding something the customer could never have
+   * needed — which reads as padding the exclusions to make the other cards
+   * look better.
+   *
+   * $25 is the same figure the value-stack table already quotes ("$25 a wash,
+   * typically washed quarterly"), so the two sections of the same document
+   * cannot disagree about the price of the same job.
+   */
+  if (isSaltwater(sanitization)) {
+    out.splice(
+      1,
+      0,
+      'Salt-cell acid cleaning — $25 each time the cell needs it',
+    );
+  }
+  return out;
+};
+
+/**
  * The monthly card's explainer when filter service is NOT bundled.
  *
  * The old behaviour fell through to a "genuinely all-in — no surprise fees on
@@ -210,16 +264,22 @@ export const ALL_FILTER_TERMS: string[] = [
 export const excludedFilterValueNote = (type: string): string => {
   const priced = FILTER_SERVICE[type];
   const cost = priced ? ` — typically $${priced.value}, ${priced.basis} —` : '';
-  switch (type) {
-    case 'Cartridge':
-      return `Your chemicals, routine filter cleaning and weekly service are all in this rate. Filter parts are kept out of it: when your cartridge elements are due${cost} we quote them at cost first, and nothing is replaced without your approval.`;
-    case 'DE':
-      return `Your chemicals, routine backwashing and weekly service are all in this rate. The annual filter teardown is kept out of it: when your DE split, clean and recharge is due${cost} we quote it first, and nothing is done without your approval.`;
-    case 'Sand':
-      return `Your chemicals, routine backwashing and weekly service are all in this rate. Filter media is kept out of it: when your sand media is due we quote it at cost first, and nothing is replaced without your approval.`;
-    default:
-      return `Your chemicals and weekly service are all in this rate. Filter parts are kept out of it: anything the filter needs beyond routine cleaning is quoted at cost first, and nothing is replaced without your approval.`;
-  }
+  const parts =
+    type === 'DE'
+      ? `when your DE split, clean and recharge is due${cost} we quote it first`
+      : type === 'Sand'
+        ? 'when your sand media is due we quote it at cost first'
+        : type === 'Cartridge'
+          ? `when your cartridge elements are due${cost} we quote them at cost first`
+          : 'anything the filter needs beyond routine cleaning is quoted at cost first';
+  /*
+   * Algaecide is named as INCLUDED on purpose. It is the chemical a customer
+   * comparing quotes checks for, and leaving it unsaid beside "specialty
+   * treatments are extra" invites them to assume it went out with the rest —
+   * which would read as below-market when the rate is meant to read as level
+   * with the market.
+   */
+  return `Your weekly service, chemicals and algaecide are all in this rate, and routine filter cleaning stays included. Two things are kept out to hold the price down: ${parts}, and phosphate remover is used only if your pool actually needs it. Nothing is added without your approval.`;
 };
 
 /**

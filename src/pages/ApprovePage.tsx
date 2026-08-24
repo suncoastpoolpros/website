@@ -79,6 +79,10 @@ type Tier = {
   extrasCount?: number;
   tagline: string;
   includes: string[];
+  /** The Essentials comparison plan — never set on a two-plan quote. */
+  essentials?: boolean;
+  /** What that plan leaves out, shown as muted ✗ rows under the inclusions. */
+  excludes?: string[];
   recommended: boolean;
   /** The tailored persuasion line, e.g. why a $120 cartridge bill never lands. */
   valueNote?: string;
@@ -784,6 +788,7 @@ export const ApprovePage = () => {
             </div>
 
             <ProposalBreakdown
+              hasEssentials={tiers.some((t) => t.essentials)}
               pool={quote.pool}
               scope={quote.proposal.scope}
               includeBenefits={quote.proposal.includeBenefits !== false}
@@ -981,7 +986,20 @@ export const ApprovePage = () => {
                         {tier.name}
                       </h3>
                       {tier.tagline && (
-                        <p className="mt-1 text-sm text-[#6b7280]">
+                        /* Two lines RESERVED in the three-column layout.
+                           Narrower cards wrap the annual card's tagline to two
+                           lines while the other two fit on one, which pushed
+                           its Select button 20px below the others — the exact
+                           misalignment the banner/lift chain exists to
+                           prevent. Reserving the second line costs nothing on
+                           the cards that don't need it. Two-plan cards are
+                           wide enough that all taglines sit on one line, so
+                           they keep their natural height. */
+                        <p
+                          className={`mt-1 text-sm text-[#6b7280] ${
+                            tiers.length >= 3 ? "lg:min-h-[2.5rem]" : ""
+                          }`}
+                        >
                           {currentTagline(tier.tagline)}
                         </p>
                       )}
@@ -1102,7 +1120,7 @@ export const ApprovePage = () => {
                          */
                         const { shared, extras } = splitTierIncludes(
                           tier,
-                          i > 0 && tiers.length < 3
+                          i > 0 && !tier.essentials && !tiers[i - 1]?.essentials
                             ? (tiers[i - 1]?.includes ?? [])
                             : [],
                         );
@@ -1155,6 +1173,32 @@ export const ApprovePage = () => {
                                   {extras.map((item, j) =>
                                     row(item, shared.length + j),
                                   )}
+                                </ul>
+                              </>
+                            )}
+                            {/* WHAT THIS PLAN LEAVES OUT.
+                                Only the Essentials card carries these, and it
+                                carries them on purpose: a cheaper plan whose
+                                document is merely silent about its exclusions
+                                is indefensible the first time a parts invoice
+                                lands. Muted, with a ✗ and no green — the eye
+                                reads the column as "six things yes, two
+                                things no" without having to compare lists.
+                                Every other tier has no `excludes`, so no
+                                existing quote renders one of these. */}
+                            {(tier.excludes?.length ?? 0) > 0 && (
+                              <>
+                                <div className="mt-5 border-t border-[#e9eef4]" />
+                                <ul className="mt-5 space-y-2">
+                                  {tier.excludes?.map((item, j) => (
+                                    <li
+                                      key={j}
+                                      className="flex gap-2 text-sm leading-relaxed text-[#8a94a1]"
+                                    >
+                                      <X className="mt-0.5 h-4 w-4 shrink-0 text-[#b6bec9]" />
+                                      {item}
+                                    </li>
+                                  ))}
                                 </ul>
                               </>
                             )}

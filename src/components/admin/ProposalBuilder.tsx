@@ -74,6 +74,7 @@ import {
   EXTRAS_HEADING,
   EXTRAS_INCLUDED_LABEL,
   EXTRAS_NOTE,
+  EXTRAS_PLAN_QUALIFIER,
   includedExtras,
 } from "./includedExtras";
 import {
@@ -418,6 +419,7 @@ export const ProposalBuilder = ({
             type: p.pool.filterType,
             included: p.pool.filterServiceIncluded === "yes",
           },
+          p.pool.sanitization,
         ),
       },
     }));
@@ -429,12 +431,19 @@ export const ProposalBuilder = ({
         ...p.proposal,
         // Rebuild the shape the proposal is already in — resetting wording
         // should not silently drop the comparison plan.
-        tiers: (p.proposal.tiers.some((t) => t.essentials)
-          ? buildTiersWithEssentials
-          : buildTiers)(p.proposal.price, {
-          type: p.pool.filterType,
-          included: p.pool.filterServiceIncluded === "yes",
-        }),
+        tiers: p.proposal.tiers.some((t) => t.essentials)
+          ? buildTiersWithEssentials(
+              p.proposal.price,
+              {
+                type: p.pool.filterType,
+                included: p.pool.filterServiceIncluded === "yes",
+              },
+              p.pool.sanitization,
+            )
+          : buildTiers(p.proposal.price, {
+              type: p.pool.filterType,
+              included: p.pool.filterServiceIncluded === "yes",
+            }),
         presetVersion: PRESET_VERSION,
       },
     }));
@@ -453,10 +462,19 @@ export const ProposalBuilder = ({
       ...p,
       proposal: {
         ...p.proposal,
-        tiers: (on ? buildTiersWithEssentials : buildTiers)(p.proposal.price, {
-          type: p.pool.filterType,
-          included: p.pool.filterServiceIncluded === "yes",
-        }),
+        tiers: on
+          ? buildTiersWithEssentials(
+              p.proposal.price,
+              {
+                type: p.pool.filterType,
+                included: p.pool.filterServiceIncluded === "yes",
+              },
+              p.pool.sanitization,
+            )
+          : buildTiers(p.proposal.price, {
+              type: p.pool.filterType,
+              included: p.pool.filterServiceIncluded === "yes",
+            }),
         presetVersion: PRESET_VERSION,
       },
     }));
@@ -1801,9 +1819,31 @@ export const ProposalBuilder = ({
                             }
                           />
                         </FieldShell>
-                        {/* Read-only: both plans price off the base rate above, so
-                        there's nothing to type here and no way for the two to
-                        disagree. */}
+                        {/* The Essentials rate is the one price that is NOT
+                            derived. How much comes off depends on this pool —
+                            a heavy-debris pool burns more phosphate remover
+                            and more filter life than a screened one — so it is
+                            a judgement, not a formula. Seeded from the base
+                            rate and left alone once typed over. */}
+                        {tier.essentials ? (
+                          <FieldShell
+                            id={`tier-price-${i}`}
+                            label="Essentials rate (e.g. 155/mo)"
+                          >
+                            <input
+                              id={`tier-price-${i}`}
+                              className={fieldClass}
+                              placeholder=" "
+                              value={tier.price}
+                              onChange={(e) =>
+                                updateTier(i, { price: e.target.value })
+                              }
+                            />
+                          </FieldShell>
+                        ) : (
+                        /* Read-only: both all-inclusive plans price off the
+                        base rate above, so there's nothing to type here and no
+                        way for the two to disagree. */
                         <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                           <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                             Price
@@ -1833,6 +1873,7 @@ export const ProposalBuilder = ({
                             Calculated from the base rate.
                           </p>
                         </div>
+                        )}
                         <FieldShell
                           id={`tier-tagline-${i}`}
                           label="One-line tagline"
@@ -2211,6 +2252,9 @@ const ProposalPreview = ({
                 ))}
                 <p className="mt-1.5 text-[10px] italic leading-snug text-stone-400">
                   {EXTRAS_NOTE}
+                  {data.proposal.tiers.some((t) => t.essentials)
+                    ? ` ${EXTRAS_PLAN_QUALIFIER}`
+                    : ""}
                 </p>
               </div>
             </PreviewBlock>

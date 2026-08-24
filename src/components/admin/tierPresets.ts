@@ -22,6 +22,7 @@
  */
 import type { Tier } from "@/lib/adminApi";
 import {
+  essentialsExclusions,
   FILTER_SERVICE,
   ALL_FILTER_LINES,
   ALL_PLAN_FILTER_LINES,
@@ -469,6 +470,7 @@ export const syncTierPrices = (
   oldBase: string,
   newBase: string,
   filter: FilterOption,
+  sanitization = "",
 ): Tier[] => {
   if (tiers.length === 0) return tiers;
   /*
@@ -479,11 +481,13 @@ export const syncTierPrices = (
    * with Pay Monthly — and the cheaper card silently inherits the full rate
    * the moment the base price is edited. The shape has to match.
    */
-  const build = tiers.some((t) => t.essentials)
-    ? buildTiersWithEssentials
-    : buildTiers;
-  const before = build(oldBase, filter);
-  const after = build(newBase, filter);
+  const hasEssentials = tiers.some((t) => t.essentials);
+  const build = (b: string) =>
+    hasEssentials
+      ? buildTiersWithEssentials(b, filter, sanitization)
+      : buildTiers(b, filter);
+  const before = build(oldBase);
+  const after = build(newBase);
   return tiers.map((tier, i) => {
     const was = before[i];
     const now = after[i];
@@ -492,8 +496,22 @@ export const syncTierPrices = (
       tier[field] === was[field] ? now[field] : tier[field];
     return {
       ...tier,
-      // Price and its sub-line are always derived — they aren't editable.
-      price: now.price,
+      /*
+       * The two all-inclusive prices are always derived from the base rate —
+       * there is nothing to type and no way for them to disagree with it.
+       *
+       * ESSENTIALS IS DIFFERENT. How much comes off is a judgement about THIS
+       * pool: a heavy-debris pool burns more phosphate remover and more filter
+       * life than a screened one, so the discount is the operator's call, not
+       * a formula. The seeded figure follows the base rate only while it is
+       * still untouched — the same carry rule the wording fields use. Once it
+       * is typed over it is the operator's number and stays put.
+       */
+      price: tier.essentials
+        ? tier.price === was.price
+          ? now.price
+          : tier.price
+        : now.price,
       priceNote: now.priceNote,
       billingNote: now.billingNote,
       tagline: carry("tagline"),
@@ -645,9 +663,20 @@ export const buildTiers = (
  * a customer who reads "filter" in an exclusion assumes the whole thing.
  */
 const essentialsIncludes = (filter: FilterOption): string[] => [
-  "All chemicals included in your set monthly rate",
-  // The distinction the whole card turns on, stated as an inclusion rather
-  // than left for the fine print to walk back.
+  /*
+   * ROW-ALIGNED WITH monthlyIncludes, deliberately.
+   *
+   * Both cards carry six bullets in the same order, and exactly two of them
+   * differ — rows 1 and 2. A customer scanning left to right hits the
+   * difference immediately instead of comparing two lists of different
+   * lengths. What is missing lives below, in `excludes`, as muted ✗ rows.
+   */
+  // Row 1. Names algaecide explicitly: it is the chemical a customer checks
+  // for, and it IS included here — only phosphate remover is not.
+  "All routine chemicals included — chlorine, acid, shock, stabilizer and algaecide",
+  // Row 2, against the other cards' filter-parts bullet. Cleaning is standard
+  // service on every plan; saying so as an inclusion stops "filter parts not
+  // included" being read as no filter care at all.
   "Filter cleaning and backwashing included",
   "One flat rate — it doesn’t rise in summer",
   "A GPS-stamped service report after every visit",
@@ -679,48 +708,77 @@ export const essentialsMonthly = (base: string, type: string): number | null => 
 export const buildTiersWithEssentials = (
   basePrice = "",
   filter: FilterOption = { type: "", included: false },
+  sanitization = "",
 ): Tier[] => {
   const full = buildTiers(basePrice, filter);
-  const cut = essentialsMonthly(basePrice, filter.type);
-  const label = filterPartsLabel(filter.type);
+  const suggested = essentialsMonthly(basePrice, filter.type);
+  const annual = monthlyAmount(full[1].price);
+  /*
+   * THE NUDGE, and it appears only when it is TRUE.
+   *
+   * Prepaying works out at 11/12 of the rate, so on most quotes the
+   * all-inclusive annual plan costs LESS per month than the stripped one —
+   * $151 against $155. That is the whole argument for paying annually, and
+   * the place it changes a decision is on the Essentials card, at the moment
+   * somebody is tempted by the cheaper number.
+   *
+   * A larger operator-set discount flips it (a $20 cut puts Essentials at
+   * $145, under the annual rate), so it is computed rather than written, and
+   * simply absent when it would be false.
+   */
+  const nudge =
+    annual != null && suggested != null && annual <= suggested
+      ? ` Worth knowing: our all-inclusive plan paid annually works out to $${formatAmount(
+          annual,
+        )} a month — less than this, with nothing left out.`
+      : "";
+  /*
+   * ORDER: cheapest and least complete FIRST, best value last.
+   *
+   * The stripped card is the anchor — the customer reads what other companies
+   * quote, sees the ✗ rows against it, and every card to the right is an
+   * upgrade from there. Opening on the full service and burying the cheap
+   * option at the end would make the document argue downwards.
+   *
+   * Mobile keeps its own rule: the recommended card is pulled to the top by
+   * `order-first` on the page, so a phone leads with Best Value rather than
+   * with the plan the layout is arguing against.
+   *
+   * RENAMED, in three-plan mode only. "Pay Monthly" beside "Essentials" mixes
+   * two axes — one names a service level, the other a payment term — leaving
+   * the customer to work out that two of the three are the same service.
+   * Naming both All-Inclusive says it outright. The two-plan proposal keeps
+   * "Pay Monthly" / "Pay Annually", where the payment term IS the only
+   * difference between the cards.
+   */
   return [
     {
       name: "Essentials",
       essentials: true,
-      price: cut != null ? `${formatAmount(cut)}/mo` : "",
+      price: suggested != null ? `${formatAmount(suggested)}/mo` : "",
       // Names the comparison outright. A customer with two other quotes on the
       // table already suspects they are not comparing like with like; saying
-      // so first is what makes the next card's price legible.
-      tagline: "The rate other companies quote — filter parts not included.",
+      // so is what makes the two cards beside it legible.
+      tagline: "The rate other companies quote.",
       priceNote: "",
       billingNote: "",
       includes: essentialsIncludes(filter),
+      excludes: essentialsExclusions(filter.type, sanitization),
       recommended: false,
-      valueNote: excludedFilterValueNote(filter.type),
+      valueNote: excludedFilterValueNote(filter.type) + nudge,
       finePrint: filterServiceTerms({ type: filter.type, included: false }),
     },
-    {
-      ...full[0],
-      // Says what the extra buys, in the words of this pool's own filter.
-      tagline: `Everything in Essentials, plus ${label}.`,
-    },
-    full[1],
+    /*
+     * Bullets, price and value note are EXACTLY buildTiers' output — only the
+     * name changes. The comparison is carried entirely by the ✗ rows on the
+     * card to the left, so these two cards never drift from the two-plan
+     * proposal and a customer holding both documents sees the same wording.
+     */
+    { ...full[0], name: "All-Inclusive Monthly" },
+    { ...full[1], name: "All-Inclusive Annual" },
   ];
 };
 
-/** "your cartridge elements" / "your DE split & clean" / "your sand media". */
-const filterPartsLabel = (type: string): string => {
-  switch (type) {
-    case "Cartridge":
-      return "your cartridge elements";
-    case "DE":
-      return "your annual DE split & clean";
-    case "Sand":
-      return "your sand media";
-    default:
-      return "your filter parts";
-  }
-};
 
 /** Leading number in a monthly price ("165/mo" → 165). null when not numeric. */
 const monthlyAmount = (basePrice: string): number | null => {

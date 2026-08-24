@@ -145,6 +145,17 @@ export type Tier = {
    * two-plan tier and on all quotes stored before the layout existed.
    */
   essentials?: boolean;
+  /**
+   * Lines shown with a muted ✗ under this card's inclusions — what the plan
+   * deliberately leaves out.
+   *
+   * Only the Essentials card carries these. A cheaper plan whose document is
+   * merely SILENT about what it excludes is indefensible the first time a
+   * parts invoice lands; stating it on the card is what makes the lower rate
+   * an honest choice rather than a trap. Absent on every other tier, so no
+   * existing quote renders a single ✗.
+   */
+  excludes?: string[];
   /** Free text like "150" or "$150/mo" — formatPrice adds the $ when bare. */
   price: string;
   /** One line under the name, e.g. "Everything your pool needs, every week." */

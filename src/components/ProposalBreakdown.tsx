@@ -27,6 +27,7 @@ import {
   EXTRAS_INCLUDED_LABEL,
   extrasIntroFor,
   EXTRAS_NOTE,
+  EXTRAS_PLAN_QUALIFIER,
   includedExtras,
 } from '@/components/admin/includedExtras';
 import { sanitizationLabel } from '@/components/admin/sanitization';
@@ -60,10 +61,14 @@ export const ProposalBreakdown = ({
   pool,
   scope,
   includeBenefits = true,
+  hasEssentials = false,
 }: {
   pool: Pool;
   scope?: string;
   includeBenefits?: boolean;
+  /** The quote offers an Essentials plan, so the extras table needs to say
+   *  which plans its "Included" column is describing. */
+  hasEssentials?: boolean;
 }) => {
   // `=== 'yes'` exactly, matching how the PDF read the same field. Anything else
   // means the question wasn't answered, and an unanswered question must not
@@ -177,7 +182,10 @@ export const ProposalBreakdown = ({
               </li>
             ))}
           </ul>
-          <p className="mt-3 max-w-3xl text-xs leading-relaxed text-[#6b7280]">{EXTRAS_NOTE}</p>
+          <p className="mt-3 max-w-3xl text-xs leading-relaxed text-[#6b7280]">
+            {EXTRAS_NOTE}
+            {hasEssentials ? ` ${EXTRAS_PLAN_QUALIFIER}` : ''}
+          </p>
         </Card>
       )}
 
