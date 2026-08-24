@@ -100,6 +100,32 @@ const BASE_EXTRAS: IncludedExtra[] = [
 ];
 
 /**
+ * The same row SPLIT, for quotes that offer Essentials.
+ *
+ * Combined, the row is imprecise the moment a plan exists that includes one
+ * half and not the other: algaecide is in every plan, phosphate remover is
+ * Complete only. A customer reading "Algaecide & phosphate treatments —
+ * Included" beside an Essentials card whose ✗ row says only "Phosphate
+ * remover" has to work out for themselves whether the algaecide went with it.
+ *
+ * Split, each row says one thing, and the card's ✗ rows line up with the
+ * table one for one. Only on three-plan quotes — a two-plan proposal has no
+ * such distinction to draw, and the combined row reads better there.
+ */
+const SPLIT_TREATMENT_EXTRAS: IncludedExtra[] = [
+  {
+    label: 'Algaecide treatments',
+    typical: '$35–$150',
+    basis: 'depending on severity and pool size',
+  },
+  {
+    label: 'Phosphate remover & specialty treatments',
+    typical: '$50–$400',
+    basis: 'depending on phosphate load and pool size',
+  },
+];
+
+/**
  * The list with this pool's filter service and sanitization rows in front,
  * priced from the same map the rest of the proposal uses. Sand is skipped: its
  * media replacement isn't costed, and a row with no number defeats the point of
@@ -118,7 +144,12 @@ const BASE_EXTRAS: IncludedExtra[] = [
  * the two filter costs read as one story — the annual teardown plus the powder
  * it burns through in between — instead of looking like the same charge twice.
  */
-export const includedExtras = (filter: FilterOption, sanitization = ''): IncludedExtra[] => {
+export const includedExtras = (
+  filter: FilterOption,
+  sanitization = '',
+  /** The quote offers an Essentials plan, so the treatments row splits. */
+  hasEssentials = false,
+): IncludedExtra[] => {
   const rows: IncludedExtra[] = [];
   if (filter.included && supportsFilterService(filter.type)) {
     const priced = FILTER_SERVICE[filter.type];
@@ -215,6 +246,6 @@ export const includedExtras = (filter: FilterOption, sanitization = ''): Include
     typical: '$20–$40',
     basis: 'typically topped up once or twice a year',
   });
-  rows.push(...BASE_EXTRAS);
+  rows.push(...(hasEssentials ? SPLIT_TREATMENT_EXTRAS : BASE_EXTRAS));
   return rows;
 };

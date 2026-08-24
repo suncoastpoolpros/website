@@ -2141,7 +2141,11 @@ const ProposalPreview = ({
     type: pool.filterType,
     included: pool.filterServiceIncluded === "yes",
   };
-  const extras = includedExtras(filterOption, pool.sanitization);
+  const extras = includedExtras(
+    filterOption,
+    pool.sanitization,
+    data.proposal.tiers.some((t) => t.essentials),
+  );
   const tiers = tiered ? proposal.tiers : [];
   const delta = tierDelta(tiers[0], tiers[1]);
   const recommended =

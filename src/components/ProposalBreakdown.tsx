@@ -85,7 +85,9 @@ export const ProposalBreakdown = ({
     included: pool.filterServiceIncluded === 'yes' || pool.filterServiceIncluded === true,
   };
   const benefits = includeBenefits ? includedBenefits(filter, str(pool.sanitization)) : [];
-  const extras = includeBenefits ? includedExtras(filter, str(pool.sanitization)) : [];
+  const extras = includeBenefits
+    ? includedExtras(filter, str(pool.sanitization), hasEssentials)
+    : [];
 
   const dims = [
     str(pool.length) && `${str(pool.length)} ft L`,

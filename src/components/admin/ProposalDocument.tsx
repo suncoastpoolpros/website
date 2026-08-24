@@ -687,7 +687,11 @@ export const ProposalDocument = ({
     type: pool.filterType,
     included: pool.filterServiceIncluded === "yes",
   };
-  const extras = includedExtras(filterOption, pool.sanitization);
+  const extras = includedExtras(
+    filterOption,
+    pool.sanitization,
+    proposal.tiers.some((t) => t.essentials),
+  );
   const tiers = tiered ? proposal.tiers : [];
   const [baseTier, upgradeTier] = tiers;
   const delta = tierDelta(baseTier, upgradeTier);
