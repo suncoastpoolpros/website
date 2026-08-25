@@ -213,10 +213,13 @@ export const ProposalBreakdown = ({
                     says what it means to anyone not looking at it. */}
                 {hasEssentials && (
                   <span className="flex w-20 shrink-0 justify-end">
+                    {/* A size up from the plan cards' 16px marks: those sit
+                        beside their own label, these carry a whole cell on
+                        their own and are scanned down a column. */}
                     {x.essentialsCovers ? (
-                      <Check className="h-4 w-4 text-[#1d7a33]" strokeWidth={2.5} />
+                      <Check className="h-5 w-5 text-[#1d7a33]" strokeWidth={2.5} />
                     ) : (
-                      <X className="h-4 w-4 text-[#c0392b]" strokeWidth={2.5} />
+                      <X className="h-5 w-5 text-[#c0392b]" strokeWidth={2.5} />
                     )}
                     <span className="sr-only">
                       {x.essentialsCovers ? EXTRAS_INCLUDED_LABEL : EXTRAS_EXCLUDED_LABEL}
@@ -224,7 +227,7 @@ export const ProposalBreakdown = ({
                   </span>
                 )}
                 <span className="flex w-20 shrink-0 justify-end">
-                  <Check className="h-4 w-4 text-[#1d7a33]" strokeWidth={2.5} />
+                  <Check className="h-5 w-5 text-[#1d7a33]" strokeWidth={2.5} />
                   <span className="sr-only">{EXTRAS_INCLUDED_LABEL}</span>
                 </span>
               </li>

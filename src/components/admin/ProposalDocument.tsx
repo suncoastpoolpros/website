@@ -583,12 +583,14 @@ const Row = ({
  * so they match the page's icons and stay crisp at any zoom.
  */
 const MarkTick = () => (
-  <Svg width={9} height={9} viewBox="0 0 24 24">
+  // 11.5pt against the 8pt row text — these carry a cell alone and are read
+  // down a column, so they sit a size above the bullets on the plan cards.
+  <Svg width={11.5} height={11.5} viewBox="0 0 24 24">
     <Path d="M20 6 L9 17 L4 12" stroke={GREEN} strokeWidth={3.5} fill="none" />
   </Svg>
 );
 const MarkCross = () => (
-  <Svg width={9} height={9} viewBox="0 0 24 24">
+  <Svg width={11.5} height={11.5} viewBox="0 0 24 24">
     <Path d="M18 6 L6 18" stroke={EXCLUDED_RED} strokeWidth={3.5} fill="none" />
     <Path d="M6 6 L18 18" stroke={EXCLUDED_RED} strokeWidth={3.5} fill="none" />
   </Svg>
