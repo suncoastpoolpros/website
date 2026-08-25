@@ -12,8 +12,6 @@
  * Function can't import from the client src tree) — keep them in sync.
  */
 
-import { isSaltwater } from './sanitization';
-
 export const FILTER_TYPES = ['Cartridge', 'DE', 'Sand', 'Other'] as const;
 
 /**
@@ -257,10 +255,7 @@ export const ALL_FILTER_TERMS: string[] = [
  * Kept in lockstep with essentialsExclusions below — same conditions, same
  * order. Change one, change the other.
  */
-export const completeDifferentiators = (
-  type: string,
-  sanitization = '',
-): string[] => {
+export const completeDifferentiators = (type: string): string[] => {
   const out: string[] = [];
   // The filter bullet is planFilterBullet's string verbatim, so the short
   // forms and the sync machinery already recognise it.
@@ -270,10 +265,7 @@ export const completeDifferentiators = (
   return out;
 };
 
-export const essentialsExclusions = (
-  type: string,
-  sanitization = '',
-): string[] => {
+export const essentialsExclusions = (type: string): string[] => {
   const priced = FILTER_SERVICE[type];
   const cost = priced ? ` (about $${priced.value})` : '';
   const parts =
@@ -316,12 +308,7 @@ export const essentialsExclusions = (
  * avoid.
  */
 export const ALL_COMPLETE_DIFFERENTIATORS: string[] = Array.from(
-  new Set(
-    [...FILTER_TYPES, ''].flatMap((type) => [
-      ...completeDifferentiators(type, 'Saltwater'),
-      ...completeDifferentiators(type, 'Chlorine'),
-    ]),
-  ),
+  new Set([...FILTER_TYPES, ''].flatMap((type) => completeDifferentiators(type))),
 );
 
 

@@ -56,6 +56,11 @@ import { EmailReview } from "./EmailReview";
 import { SANITIZATION_TYPES } from "./sanitization";
 import { SCOPE_TEMPLATES } from "./scopeTemplates";
 import { CADENCES, cadenceOf } from "./serviceCadence";
+import { ALL_COMPLETE_DIFFERENTIATORS } from "./filterService";
+import {
+  EXTRAS_ALSO_INCLUDED_HEADING,
+  EXTRAS_NOT_INCLUDED_HEADING,
+} from "./includedExtras";
 import { suggestGallonsRange } from "./poolVolume";
 import {
   JOB_KINDS,
@@ -76,6 +81,8 @@ import {
   includedBenefits,
 } from "./proposalBenefits";
 import {
+  EXTRAS_COL_COMPLETE,
+  EXTRAS_COL_ESSENTIALS,
   EXTRAS_COL_THEIRS,
   extrasIntroFor,
   EXTRAS_COL_YOURS,
@@ -89,6 +96,7 @@ import {
   PRESET_VERSION,
   buildTiers,
   buildTiersWithEssentials,
+  currentExcludes,
   syncFilterService,
   syncTierPrices,
   upgradeTierWording,
@@ -1923,13 +1931,17 @@ export const ProposalBuilder = ({
             {data.proposal.pricingMode === "tiers" && (
               <Section title="Plans">
                 <p className="text-xs leading-relaxed text-gray-500">
-                  The PDF shows the upgrade as &ldquo;Everything in{" "}
-                  {data.proposal.tiers[0]?.name || "the first plan"},
-                  plus&rdquo; its own extras, because both cards sit side by
-                  side there. The web page lists everything in each card instead
-                  &mdash; a phone stacks them with the recommended one first,
-                  where a backward reference would point at something not yet
-                  read.
+                  {/* Interpolating tiers[0].name made this claim the PDF
+                      prints "Everything in Essentials, plus" on a three-plan
+                      quote — the one cross-reference the PDF deliberately does
+                      NOT print, because Essentials and Complete Monthly differ
+                      by a row in the middle of their lists and the reference is
+                      a prefix split. The explainer now describes each shape. */}
+                  {data.proposal.tiers.some((t) => t.essentials)
+                    ? "Complete Annual shows only what it adds to Complete Monthly. Essentials and Complete Monthly each carry their whole list, because they differ by a row in the middle rather than at the end — and the ✗ rows opposite are what make that difference readable."
+                    : `The PDF shows the upgrade as “Everything in ${
+                        data.proposal.tiers[0]?.name || "the first plan"
+                      }, plus” its own extras, because both cards sit side by side there. The web page lists everything in each card instead — a phone stacks them with the recommended one first, where a backward reference would point at something not yet read.`}
                 </p>
                 {data.proposal.tiers.map((tier, i) => (
                   <div
@@ -2333,10 +2345,11 @@ const ProposalPreview = ({
     type: pool.filterType,
     included: pool.filterServiceIncluded === "yes",
   };
+  const previewHasEssentials = data.proposal.tiers.some((t) => t.essentials);
   const extras = includedExtras(
     filterOption,
     pool.sanitization,
-    data.proposal.tiers.some((t) => t.essentials),
+    previewHasEssentials,
   );
   const tiers = tiered ? proposal.tiers : [];
   const delta = tierDelta(tiers[0], tiers[1]);
@@ -2458,7 +2471,21 @@ const ProposalPreview = ({
                 <div className="flex gap-2 border-b border-stone-200 pb-1 text-[8px] uppercase tracking-wide text-stone-400">
                   <span className="flex-1" />
                   <span className="w-16 text-right">{EXTRAS_COL_THEIRS}</span>
-                  <span className="w-12 text-right">{EXTRAS_COL_YOURS}</span>
+                  {/* The third column, matching both customer surfaces. The
+                      preview already received essentialsCovers on every row —
+                      it just never showed it, so the operator's only check
+                      before sending showed one "Included" column where the
+                      customer sees two. */}
+                  {previewHasEssentials && (
+                    <span className="w-12 text-right">
+                      {EXTRAS_COL_ESSENTIALS}
+                    </span>
+                  )}
+                  <span className="w-12 text-right">
+                    {previewHasEssentials
+                      ? EXTRAS_COL_COMPLETE
+                      : EXTRAS_COL_YOURS}
+                  </span>
                 </div>
                 {extras.map((x, i) => (
                   <div
@@ -2478,8 +2505,17 @@ const ProposalPreview = ({
                     <span className="w-16 text-right text-[12px] text-stone-500 line-through">
                       {x.typical}
                     </span>
+                    {previewHasEssentials && (
+                      <span
+                        className={`w-12 text-right text-[11px] font-bold ${
+                          x.essentialsCovers ? "text-green-700" : "text-red-600"
+                        }`}
+                      >
+                        {x.essentialsCovers ? "✓" : "✕"}
+                      </span>
+                    )}
                     <span className="w-12 text-right text-[11px] font-bold text-green-700">
-                      {EXTRAS_INCLUDED_LABEL}
+                      {previewHasEssentials ? "✓" : EXTRAS_INCLUDED_LABEL}
                     </span>
                   </div>
                 ))}
@@ -2581,30 +2617,83 @@ const ProposalPreview = ({
                   {(tier.includes.some((x) => x.trim()) || i > 0) && (
                     <div className="my-1.5 h-px bg-stone-200" />
                   )}
-                  {/* Mirrors the PDF, which is what this preview IS: the
-                      cross-reference and only this plan's own extras. The
-                      customer-facing web page lists everything in both cards
-                      instead — see ProposalDocument for why the two differ. */}
-                  {i > 0 && tiers[i - 1]?.name?.trim() && (
-                    <div className="mb-1 text-[10px] font-bold text-navy">
-                      Everything in {tiers[i - 1].name.trim()}, plus:
-                    </div>
-                  )}
+                  {/* MIRRORS THE PDF, and has to keep doing so — this is the
+                      only look the operator gets at the document before it is
+                      sent, so anything the preview quietly omits is something
+                      nobody checks.
+
+                      The three-plan rules are the PDF's, verbatim: no
+                      cross-reference on an Essentials card or the card beside
+                      it (their lists differ by a row in the MIDDLE, which a
+                      prefix split cannot express), an "ALSO INCLUDED" label on
+                      the Complete differentiator block, and the ✗ rows. */}
                   {(() => {
+                    const threeUp = tiers.some((t) => t.essentials);
+                    const ladder =
+                      i > 0 &&
+                      !tier.essentials &&
+                      !tiers[i - 1]?.essentials &&
+                      !!tiers[i - 1]?.name?.trim();
                     const sp = splitTierIncludes(
                       tier,
-                      i > 0 ? (tiers[i - 1]?.includes ?? []) : [],
+                      ladder ? (tiers[i - 1]?.includes ?? []) : [],
                     );
-                    return sp.extras.length ? sp.extras : sp.shared;
-                  })().map((item, j) => (
-                    <div
-                      key={j}
-                      className="flex gap-1.5 text-[10px] leading-snug text-stone-700"
-                    >
-                      <span className="text-green-600">•</span>
-                      <span>{item}</span>
-                    </div>
-                  ))}
+                    const shown = sp.extras.length ? sp.extras : sp.shared;
+                    const labelAt =
+                      threeUp && !tier.essentials
+                        ? shown.findIndex((b) =>
+                            ALL_COMPLETE_DIFFERENTIATORS.includes(b.trim()),
+                          )
+                        : -1;
+                    const row = (item: string, j: number) => (
+                      <div
+                        key={j}
+                        className="flex gap-1.5 text-[10px] leading-snug text-stone-700"
+                      >
+                        <span className="text-green-600">•</span>
+                        <span>{item}</span>
+                      </div>
+                    );
+                    const label = (t: string) => (
+                      <div className="mb-0.5 mt-1 text-[8px] font-bold uppercase tracking-wider text-stone-400">
+                        {t}
+                      </div>
+                    );
+                    return (
+                      <>
+                        {ladder && (
+                          <div className="mb-1 text-[10px] font-bold text-navy">
+                            Everything in {tiers[i - 1].name.trim()}, plus:
+                          </div>
+                        )}
+                        {labelAt < 0
+                          ? shown.map(row)
+                          : [
+                              ...shown.slice(0, labelAt).map(row),
+                              <div key="lbl">
+                                {label(EXTRAS_ALSO_INCLUDED_HEADING)}
+                              </div>,
+                              ...shown
+                                .slice(labelAt)
+                                .map((b, j) => row(b, labelAt + j)),
+                            ]}
+                        {currentExcludes(tier.excludes).length > 0 && (
+                          <>
+                            {label(EXTRAS_NOT_INCLUDED_HEADING)}
+                            {currentExcludes(tier.excludes).map((item, j) => (
+                              <div
+                                key={`x${j}`}
+                                className="flex gap-1.5 text-[10px] leading-snug text-stone-400"
+                              >
+                                <span className="text-red-600">✕</span>
+                                <span>{item}</span>
+                              </div>
+                            ))}
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               ))}
             </div>

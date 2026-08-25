@@ -104,26 +104,6 @@ export const PRESET_VERSION = 12;
 export const ANNUAL_FINE_PRINT =
   "Your twelfth month is free and applied at the end of the term. Cancel at any time and we refund every month you have not used, at the standard monthly rate. The equipment upgrade labor discount applies to our own labor and excludes work performed by subcontractors.";
 
-const BASE_SERVICE_INCLUDES = [
-  "Weekly cleaning — brushing, skimming, netting and vacuuming",
-  "All standard chemicals included",
-  "Filter cleaning, backwashing and salt-cell cleaning",
-  "Full equipment check on every visit",
-  "A photo service report in your inbox after every visit",
-];
-
-/**
- * The weekly service, with this pool's filter-service line inserted right after
- * the routine filter-cleaning bullet — and omitted entirely when nothing is
- * bundled, so a sand pool is never shown a cartridge promise.
- */
-export const serviceIncludes = (filter: FilterOption): string[] => {
-  const line = filterServiceLine(filter);
-  if (!line) return [...BASE_SERVICE_INCLUDES];
-  const out = [...BASE_SERVICE_INCLUDES];
-  out.splice(3, 0, line);
-  return out;
-};
 
 /**
  * Every list the three-plan presets can produce, as joined strings.
@@ -149,6 +129,7 @@ const ROW2_VARIANTS = [
   "Filter cleaning included",
   "Filter cleaning and backwashing included",
 ];
+/** Row 2 for THIS pool — the current member of ROW2_VARIANTS above. */
 const currentRow2 = (filter: FilterOption): string =>
   filter.type === "DE"
     ? "Filter cleaning, backwashing and DE top-ups included"
@@ -362,7 +343,7 @@ export const syncFilterService = (
         includes,
         sharedCount,
         excludes: tier.essentials
-          ? essentialsExclusions(filter.type, sanitization)
+          ? essentialsExclusions(filter.type)
           : tier.excludes,
         finePrint: recognisedTerms(tier.finePrint) ? currentTerms(tier) : tier.finePrint,
         valueNote: refreshValueNote(tier),
@@ -439,7 +420,7 @@ export const syncFilterService = (
      * wholly generated — never operator-typed — so regenerating is safe.
      */
     const excludes = tier.essentials
-      ? essentialsExclusions(filter.type, sanitization)
+      ? essentialsExclusions(filter.type)
       : tier.excludes;
     const generated = ALL_FILTER_VALUE_NOTES.includes(tier.valueNote.trim());
     const valueNote = generated
@@ -1073,7 +1054,7 @@ const sharedPlanRows = (
 const completeIncludes = (filter: FilterOption, sanitization: string): string[] => [
   "All chemicals included in your set monthly rate",
   ...sharedPlanRows(filter, sanitization),
-  ...completeDifferentiators(filter.type, sanitization),
+  ...completeDifferentiators(filter.type),
 ];
 
 /**
@@ -1176,7 +1157,7 @@ export const buildTiersWithEssentials = (
       priceNote: "",
       billingNote: "",
       includes: essentialsIncludes(filter, sanitization),
-      excludes: essentialsExclusions(filter.type, sanitization),
+      excludes: essentialsExclusions(filter.type),
       recommended: false,
       valueNote: excludedFilterValueNote(filter.type, true) + nudge,
       finePrint: filterServiceTerms({ type: filter.type, included: false }),
