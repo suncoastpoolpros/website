@@ -67,6 +67,11 @@ const CHECKS = [
   ['src/components/admin/includedExtras.ts',
    /const NOT_ON_ESSENTIALS = \/\^\(Cartridge filter replacement\|DE filter split\|Sand media\|Phosphate remover\)\//,
    'the value stack must not mark the salt-cell wash as Essentials-excluded'],
+  // Conversion changes that a refactor could quietly undo.
+  ['src/pages/ApprovePage.tsx', /Pricing held until/,
+   'the plans screen must state when the pricing expires'],
+  ['src/pages/ApprovePage.tsx', /agreeRequirements: agree\.all/,
+   'the single consent box must still record all three agreements'],
   ['src/components/admin/tierPresets.ts', /const RETIRED_EXCLUSIONS = \[/,
    'retired exclusions must be reconciled at render for already-sent quotes'],
   ['src/components/admin/ProposalBuilder.tsx', /p\.proposal\.price,\n\s*value,/,

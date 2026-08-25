@@ -313,11 +313,8 @@ export const ApprovePage = () => {
 
   const [preferredStart, setPreferredStart] = useState("");
   const [accessNotes, setAccessNotes] = useState("");
-  const [agree, setAgree] = useState({
-    requirements: false,
-    service: false,
-    privacy: false,
-  });
+  /** One box, covering all three documents named in its label. */
+  const [agree, setAgree] = useState({ all: false });
   const [signature, setSignature] = useState("");
   /** Only asked for when the quote carries no address — i.e. it was texted. */
   const [contactEmail, setContactEmail] = useState("");
@@ -551,9 +548,7 @@ export const ApprovePage = () => {
 
   const canSubmit =
     !!plan &&
-    agree.requirements &&
-    agree.service &&
-    agree.privacy &&
+    agree.all &&
     signature.trim().length >= 2 &&
     (!needsEmail || emailOk);
 
@@ -578,9 +573,11 @@ export const ApprovePage = () => {
               : {}),
             preferredStart,
             accessNotes,
-            agreeRequirements: agree.requirements,
-            agreeService: agree.service,
-            agreePrivacy: agree.privacy,
+            // One box in the UI, three on the record — the label names all
+            // three documents, and accept.ts still demands each one.
+            agreeRequirements: agree.all,
+            agreeService: agree.all,
+            agreePrivacy: agree.all,
             signature: signature.trim(),
           },
         }),
@@ -900,6 +897,33 @@ export const ApprovePage = () => {
                 the email, once in the attached PDF — and this page's job is the
                 decision, not the pitch. The download below keeps the full
                 document one click away. */}
+
+            {/* THE ONE FACT THIS PAGE WAS MISSING: that the number has a
+                shelf life.
+                Until now the page answered "do I have to decide today?" with
+                silence, and silence means later — which is where quotes die.
+                The date is already on every quote (expires_at, 30 days) and
+                already enforced server-side; it was simply never shown.
+
+                "Held", not "good until". The LINK does not expire — after the
+                window the page still loads and asks them to call, and it says
+                so in its own words a few hundred pixels below. Held is also
+                the truer verb for what the business does: it reads as a
+                reservation being kept for them rather than a deadline being
+                enforced on them, and it is the one we would actually honour a
+                day or two past.
+
+                Hidden once the window has passed, where the amber stale-price
+                notice takes over and a second date would only confuse. */}
+            {!pricingStale && quote.expiresAt && (
+              <p className="mb-4 text-center text-sm text-[#6b7280] sm:mb-0">
+                Pricing held until{" "}
+                <span className="font-semibold text-[#0a1628]">
+                  {proposalDateLabel(quote.expiresAt)}
+                </span>
+                .
+              </p>
+            )}
 
             {/* sm:mt-24 is the lift's clearance, which used to live on the
                 "choose the plan" line above. That line is gone — two priced
@@ -1619,64 +1643,50 @@ export const ApprovePage = () => {
               <h2 className="mb-3 font-display text-base font-bold">
                 Service agreement
               </h2>
-              <div className="space-y-3">
-                {[
-                  {
-                    key: "requirements" as const,
-                    label:
-                      "I’ve read and agree to the service requirements — access to the pool, an operational pump and filter, and a working outside hose.",
-                  },
-                  {
-                    key: "service" as const,
-                    label: (
-                      <>
-                        I’ve read and agree to the{" "}
-                        <a
-                          href="/service-agreement/"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[#0f4d80] underline"
-                        >
-                          Service Agreement
-                        </a>
-                        .
-                      </>
-                    ),
-                  },
-                  {
-                    key: "privacy" as const,
-                    label: (
-                      <>
-                        I’ve read and agree to the{" "}
-                        <a
-                          href="/privacy-policy/"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[#0f4d80] underline"
-                        >
-                          Privacy Policy
-                        </a>
-                        .
-                      </>
-                    ),
-                  },
-                ].map((item) => (
-                  <label
-                    key={item.key}
-                    className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-[#1f2937]"
+              {/* ONE box, three consents on the record.
+                  Three separate ticks put four micro-decisions between a
+                  customer who has already chosen a plan and the signature —
+                  and every one is a place to stall at the highest-intent
+                  moment on the whole page. A single consent that NAMES each
+                  document is the standard pattern and is no weaker for it:
+                  what makes consent informed is that the terms were
+                  identified and reachable, not the number of boxes.
+
+                  The stored record is unchanged. accept.ts still requires
+                  agreeRequirements, agreeService and agreePrivacy
+                  independently, and submit() still sends all three — so the
+                  audit trail says exactly what it said before. */}
+              <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-[#1f2937]">
+                <input
+                  type="checkbox"
+                  checked={agree.all}
+                  onChange={(e) => setAgree({ all: e.target.checked })}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-brand-blue"
+                />
+                <span>
+                  I&rsquo;ve read and agree to the service requirements
+                  &mdash; access to the pool, an operational pump and filter,
+                  and a working outside hose &mdash; and to the{" "}
+                  <a
+                    href="/service-agreement/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[#0f4d80] underline"
                   >
-                    <input
-                      type="checkbox"
-                      checked={agree[item.key]}
-                      onChange={(e) =>
-                        setAgree({ ...agree, [item.key]: e.target.checked })
-                      }
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-brand-blue"
-                    />
-                    <span>{item.label}</span>
-                  </label>
-                ))}
-              </div>
+                    Service Agreement
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="/privacy-policy/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[#0f4d80] underline"
+                  >
+                    Privacy Policy
+                  </a>
+                  .
+                </span>
+              </label>
 
               {/* The chosen plan's own terms, on the screen where the signature
                   happens. They used to sit in a collapsed block on step 1 — a
