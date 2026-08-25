@@ -221,7 +221,13 @@ const SPLIT_TREATMENT_EXTRAS: IncludedExtra[] = [
  * never disagree. Prefix rather than exact so the filter row matches whichever
  * filter this pool has.
  */
-const NOT_ON_ESSENTIALS = /^(Cartridge filter replacement|DE filter split|Sand media|Salt cell acid wash|Phosphate remover)/;
+/*
+ * "Salt cell acid wash" is deliberately ABSENT — it is included on every plan
+ * now. Essentials tops the salt up and carries the water guarantee, so
+ * declining to clean the cell that sanitises it was excluding the task that
+ * protects a promise the plan still makes.
+ */
+const NOT_ON_ESSENTIALS = /^(Cartridge filter replacement|DE filter split|Sand media|Phosphate remover)/;
 
 export const includedExtras = (
   filter: FilterOption,

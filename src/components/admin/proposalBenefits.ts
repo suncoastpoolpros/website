@@ -222,17 +222,18 @@ export const splitBenefits = (
       // treatment Essentials leaves out, and it cannot stay buried in a list
       // that every plan is supposed to deliver in full.
       'All routine chemicals included — chlorine, muriatic acid, shock, stabilizer and algaecide',
-      // The salt itself is in every plan; only the cell wash moves.
-      ...(salty ? ['Your salt — topped up as it dilutes out, included'] : []),
+      // Salt care is wholly an every-plan promise now: the salt AND the cell
+      // wash that turns it into chlorine. Splitting them left Essentials
+      // guaranteeing the water while declining to maintain what sanitises it.
+      ...(salty
+        ? ['Salt cell acid washing and your salt — both included']
+        : []),
       equipmentCareLine(filter),
       ...BASE_BENEFITS,
       GUARANTEE_BENEFIT,
     ],
     complete: [
       ...(filterServiceLine(filter) ? [filterServiceLine(filter) as string] : []),
-      ...(salty
-        ? ['Salt cell acid washing — a $25 job each time, included']
-        : []),
       'Phosphate remover and specialty treatments — used whenever your pool needs them',
     ],
   };

@@ -266,9 +266,6 @@ export const completeDifferentiators = (
   // forms and the sync machinery already recognise it.
   const parts = planFilterBullet({ type, included: true });
   if (parts) out.push(parts);
-  if (isSaltwater(sanitization)) {
-    out.push('Salt-cell acid cleaning included — never a separate invoice');
-  }
   out.push('Phosphate remover and specialty treatments included when needed');
   return out;
 };
@@ -292,22 +289,22 @@ export const essentialsExclusions = (
     'Phosphate remover and specialty treatments — quoted only if your pool needs them',
   ];
   /*
-   * SALT POOLS ONLY. A chlorine pool has no cell, so listing a cell wash as
-   * "not included" would be excluding something the customer could never have
-   * needed — which reads as padding the exclusions to make the other cards
-   * look better.
+   * THE CELL WASH IS NOT EXCLUDED — it moved into every plan.
    *
-   * $25 is the same figure the value-stack table already quotes ("$25 a wash,
-   * typically washed quarterly"), so the two sections of the same document
-   * cannot disagree about the price of the same job.
+   * Essentials tops the salt up and carries a two-week water guarantee, then
+   * would have declined to clean the cell that turns that salt into chlorine.
+   * A scaled cell drops output, the water goes off, and it lands on the
+   * guarantee — so the one task protecting a promise the plan still makes was
+   * being sold separately, two rows below the promise.
+   *
+   * It also failed the carve-out's own rule. Everything Essentials leaves out
+   * is a physical consumable you buy: elements, media, phosphate remover. A
+   * cell wash is twenty minutes and acid already on the truck. A carve-out
+   * that is not one rule is a carve-out customers argue with.
+   *
+   * Costs nothing in the seeded price either: essentialsMonthly derives the
+   * discount from FILTER_SERVICE alone, and the wash was never in that sum.
    */
-  if (isSaltwater(sanitization)) {
-    out.splice(
-      1,
-      0,
-      'Salt-cell acid cleaning — $25 each time the cell needs it',
-    );
-  }
   return out;
 };
 

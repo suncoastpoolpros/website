@@ -82,14 +82,17 @@ export const ANNUAL_MONTHS_CHARGED = 11;
 /* 9: the plan card's filter bullet now names the filter (Cartridge / DE /
    Sand) instead of a generic "Filter care included", so it can be recognised
    and removed when the answer or the type changes. */
-/* 11: three-plan Complete cards carry ✓ rows that pair one-for-one with the
+/* 12: salt-cell acid cleaning moved OUT of the Essentials exclusions and into
+   every plan — it is labour that protects the water guarantee Essentials still
+   carries, not a part the customer buys.
+   11: three-plan Complete cards carry ✓ rows that pair one-for-one with the
    Essentials ✗ rows; the annual perk narrows to "20% off equipment upgrade
    labor".
    10: the optional three-plan layout (Essentials / Pay Monthly / Pay
    Annually), plus the excluded-filter value note replacing the old
    "genuinely all-in" fallback. Two-plan quotes are unaffected in wording;
    the bump exists so drafts pick up the corrected excluded note. */
-export const PRESET_VERSION = 11;
+export const PRESET_VERSION = 12;
 
 /** Terms specific to prepaying for the year. */
 /**
@@ -166,7 +169,7 @@ const presetLists = (build: (f: FilterOption, san: string) => string[]) =>
 let essentialsListsCache: Set<string> | null = null;
 let completeListsCache: Set<string> | null = null;
 const ESSENTIALS_LISTS = () =>
-  (essentialsListsCache ??= presetLists((f) => essentialsIncludes(f)));
+  (essentialsListsCache ??= presetLists((f, san) => essentialsIncludes(f, san)));
 const COMPLETE_LISTS = () =>
   (completeListsCache ??= presetLists((f, san) => completeIncludes(f, san)));
 
@@ -247,7 +250,7 @@ export const syncFilterService = (
         ? ESSENTIALS_LISTS().has(key)
         : COMPLETE_LISTS().has(key);
       const rebuilt = tier.essentials
-        ? essentialsIncludes(filter)
+        ? essentialsIncludes(filter, sanitization)
         : completeIncludes(filter, sanitization);
       /*
        * FALLBACK SURGERY when the list is NOT recognised.
@@ -914,9 +917,12 @@ export const buildTiers = (
  * What Essentials does NOT get lives in `excludes` — the same three items
  * Complete lists as ✓, at the same position, marked ✗.
  */
-const essentialsIncludes = (filter: FilterOption): string[] => [
+const essentialsIncludes = (
+  filter: FilterOption,
+  sanitization = "",
+): string[] => [
   "All routine chemicals included — chlorine, acid, shock, stabilizer and algaecide",
-  ...sharedPlanRows(filter),
+  ...sharedPlanRows(filter, sanitization),
 ];
 
 /**
@@ -927,7 +933,10 @@ const essentialsIncludes = (filter: FilterOption): string[] => [
  * "the annual split is extra" three rows below would otherwise assume the
  * powder went with it.
  */
-const sharedPlanRows = (filter: FilterOption): string[] => [
+const sharedPlanRows = (
+  filter: FilterOption,
+  sanitization = "",
+): string[] => [
   /*
    * Row 2 names what routine filter care means for THIS filter. Cartridge
    * deliberately does not say "backwashing": an element is pulled and rinsed,
@@ -939,6 +948,10 @@ const sharedPlanRows = (filter: FilterOption): string[] => [
     : filter.type === "Cartridge"
       ? "Filter cleaning included"
       : "Filter cleaning and backwashing included",
+  // Salt pools only, and on EVERY plan — see the note in essentialsExclusions.
+  ...(isSaltwater(sanitization)
+    ? ["Salt-cell acid cleaning included — never a separate invoice"]
+    : []),
   "One flat rate — it doesn’t rise in summer",
   "A GPS-stamped service report after every visit",
   "Two-week 100% money-back guarantee",
@@ -956,7 +969,7 @@ const sharedPlanRows = (filter: FilterOption): string[] => [
  */
 const completeIncludes = (filter: FilterOption, sanitization: string): string[] => [
   "All chemicals included in your set monthly rate",
-  ...sharedPlanRows(filter),
+  ...sharedPlanRows(filter, sanitization),
   ...completeDifferentiators(filter.type, sanitization),
 ];
 
@@ -1054,7 +1067,7 @@ export const buildTiersWithEssentials = (
       tagline: "The same weekly service — parts billed separately.",
       priceNote: "",
       billingNote: "",
-      includes: essentialsIncludes(filter),
+      includes: essentialsIncludes(filter, sanitization),
       excludes: essentialsExclusions(filter.type, sanitization),
       recommended: false,
       valueNote: excludedFilterValueNote(filter.type) + nudge,
