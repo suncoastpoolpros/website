@@ -189,6 +189,39 @@ const leadsWithBreakdown = (
   return quote.proposal?.deliveredBy === "link";
 };
 
+/**
+ * Whether to OPEN on the breakdown — a narrower question than whether the
+ * breakdown is reachable at all.
+ *
+ * A three-plan quote never opens there. That screen exists to argue one thing
+ * — everything is in your rate, nobody invoices you later — and it is the one
+ * argument a three-plan quote deliberately complicates, because the card on
+ * the left is the plan that does bill you later. Making the customer read the
+ * all-inclusive case before showing them a plan that opts out of it sells
+ * against the page that follows.
+ *
+ * It is also no longer needed there. The comparison the breakdown used to
+ * carry now lives on the cards themselves — ✓ against ✗, row for row — so the
+ * plans screen makes the argument and takes the decision in one place.
+ *
+ * ?full=1 still wins, and the breakdown stays REACHABLE for anyone who would
+ * otherwise have landed on it: see showsBreakdown, which is what keeps the
+ * value stack one click away for a texted lead who has no PDF.
+ */
+const opensOnBreakdown = (
+  quote: { proposal?: { deliveredBy?: string; tiers?: unknown[] } },
+  link: ParsedQuoteLink | null,
+): boolean => {
+  if (!leadsWithBreakdown(quote, link)) return false;
+  if (
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("full") === "1"
+  )
+    return true;
+  const tiers = quote.proposal?.tiers;
+  return !(Array.isArray(tiers) && tiers.length >= 3);
+};
+
 /** Links in the footer lines: colour and weight, with the underline held back
  *  for hover. Four underlined links in two sentences read as clutter. */
 const quietLink =
@@ -347,7 +380,7 @@ export const ApprovePage = () => {
             setState({ kind: "ready", quote: q });
             // Set here rather than in the initial useState: whether this quote
             // was emailed isn't known until it has loaded.
-            if (leadsWithBreakdown(q, link)) setStep(0);
+            if (opensOnBreakdown(q, link)) setStep(0);
           }
           return;
         }
