@@ -155,8 +155,6 @@ const currentRow2 = (filter: FilterOption): string =>
     : filter.type === "Cartridge"
       ? "Filter cleaning included"
       : "Filter cleaning and backwashing included";
-const SALT_DIFFERENTIATOR = "Salt-cell acid cleaning included — never a separate invoice";
-
 const SANS = ["Saltwater", "Chlorine"];
 const presetLists = (build: (f: FilterOption, san: string) => string[]) =>
   new Set(
@@ -172,6 +170,30 @@ const ESSENTIALS_LISTS = () =>
   (essentialsListsCache ??= presetLists((f, san) => essentialsIncludes(f, san)));
 const COMPLETE_LISTS = () =>
   (completeListsCache ??= presetLists((f, san) => completeIncludes(f, san)));
+
+/**
+ * Every individual ROW the three-plan presets can emit, across every pool.
+ *
+ * DERIVED, not listed — so it cannot fall behind the builders the way a
+ * hand-maintained set of positional anchors did. syncFilterService uses it to
+ * tell a generated row from something the operator typed: generated rows are
+ * discarded and re-emitted for the current pool, typed rows are kept.
+ *
+ * Both filter answers are enumerated, because a card can be edited while the
+ * service is bundled and synced after it has been withdrawn.
+ */
+let presetRowsCache: Set<string> | null = null;
+const ALL_PRESET_ROWS = () =>
+  (presetRowsCache ??= new Set(
+    [...FILTER_TYPES, ""].flatMap((type) =>
+      SANS.flatMap((san) =>
+        [true, false].flatMap((included) => [
+          ...essentialsIncludes({ type, included }, san),
+          ...completeIncludes({ type, included }, san),
+        ]),
+      ),
+    ),
+  ));
 
 /**
  * Swap a stale filter bullet and terms for the current ones after the admin
@@ -267,45 +289,41 @@ export const syncFilterService = (
        * keeps its position and its text. Editing a card can change what it
        * says; it must never freeze what pool it is describing.
        */
-      const retailor = (list: string[]): string[] => {
-        const out = list.map((b) =>
-          ROW2_VARIANTS.includes(b.trim())
-            ? currentRow2(filter)
-            : ALL_PLAN_FILTER_LINES.includes(b.trim()) && line
-              ? (line as string)
-              : b,
+      /*
+       * RE-EMIT, don't patch.
+       *
+       * This used to walk the stored list swapping rows in place, with anchors
+       * like "insert the salt row before the phosphate row". Every one of those
+       * anchors encoded where a row happened to sit at the time it was written,
+       * so moving salt-cell cleaning out of the differentiators and into the
+       * shared block silently broke three of them at once: an edited Essentials
+       * card never dropped the salt row at all (it kept "Salt-cell acid
+       * cleaning included" on a chlorine pool), and on a Complete card both the
+       * salt row and the filter row were re-inserted into the wrong block.
+       *
+       * Positional patching cannot survive the list being reordered, and the
+       * list will be reordered again. So the generated rows are simply
+       * DISCARDED and re-emitted from the current preset, in preset order, with
+       * anything the operator typed kept and appended after them.
+       *
+       * The trade is that a custom line written into the middle of the list
+       * moves to the end when the pool changes. That is visible, harmless and
+       * predictable — against a silent wrong-pool promise, which is what the
+       * clever version produced.
+       */
+      const generated = ALL_PRESET_ROWS();
+      const isGenerated = (b: string) => {
+        const t = b.trim();
+        return (
+          generated.has(t) ||
+          ROW2_VARIANTS.includes(t) ||
+          ALL_PLAN_FILTER_LINES.includes(t) ||
+          ALL_FILTER_LINES.includes(t)
         );
-        // Filter differentiator: drop it when nothing is bundled, add it back
-        // (ahead of the salt/phosphate rows) when it is bundled and missing.
-        const hasFilterLine = out.some((b) => ALL_PLAN_FILTER_LINES.includes(b.trim()));
-        let next = line
-          ? hasFilterLine
-            ? out
-            : (() => {
-                const at = out.findIndex((b) =>
-                  /^(Salt-cell acid cleaning|Phosphate remover and specialty)/.test(b.trim()),
-                );
-                return at < 0 ? [...out, line] : [...out.slice(0, at), line, ...out.slice(at)];
-              })()
-          : out.filter((b) => !ALL_PLAN_FILTER_LINES.includes(b.trim()));
-        // Salt-cell row follows the pool, never the stored value.
-        const salty = isSaltwater(sanitization);
-        const hasSalt = next.some((b) => b.trim() === SALT_DIFFERENTIATOR);
-        if (salty && !hasSalt) {
-          const at = next.findIndex((b) => /^Phosphate remover and specialty/.test(b.trim()));
-          next = at < 0 ? [...next, SALT_DIFFERENTIATOR] : [...next.slice(0, at), SALT_DIFFERENTIATOR, ...next.slice(at)];
-        } else if (!salty && hasSalt) {
-          next = next.filter((b) => b.trim() !== SALT_DIFFERENTIATOR);
-        }
-        return next;
       };
-      // Essentials never carries the ✓ differentiators — excluding them is the
-      // card. Its ✗ rows are regenerated below regardless.
       const newHead = known
         ? rebuilt
-        : tier.essentials
-          ? head.map((b) => (ROW2_VARIANTS.includes(b.trim()) ? currentRow2(filter) : b))
-          : retailor(head);
+        : [...rebuilt, ...head.filter((b) => !isGenerated(b))];
       const includes = [...newHead, ...tail];
       const sharedCount =
         tier.sharedCount == null ? tier.sharedCount : newHead.length;
