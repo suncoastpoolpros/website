@@ -26,10 +26,13 @@ import {
   trustHeading,
 } from '@/components/admin/jobKinds';
 import {
-  BENEFITS_HEADING,
   BENEFITS_PLAN_SCOPE,
+  BENEFITS_COMPLETE_HEADING,
+  BENEFITS_EVERY_HEADING,
+  BENEFITS_HEADING,
   benefitsFootnote,
   includedBenefits,
+  splitBenefits,
 } from '@/components/admin/proposalBenefits';
 import {
   EXTRAS_COL_COMPLETE,
@@ -76,13 +79,16 @@ export const ProposalBreakdown = ({
   scope,
   includeBenefits = true,
   hasEssentials = false,
+  jobKind,
 }: {
   pool: Pool;
   scope?: string;
   includeBenefits?: boolean;
-  /** The quote offers an Essentials plan, so the extras table needs to say
-   *  which plans its "Included" column is describing. */
+  /** The quote offers an Essentials plan, so the benefits split into two
+   *  groups and the extras table gains a third column. */
   hasEssentials?: boolean;
+  /** 'recurring' | 'recovery' | 'repair'. Absent coerces to recurring. */
+  jobKind?: string;
 }) => {
   // `=== 'yes'` exactly, matching how the PDF read the same field. Anything else
   // means the question wasn't answered, and an unanswered question must not
@@ -93,10 +99,41 @@ export const ProposalBreakdown = ({
     type: str(pool.filterType),
     included: pool.filterServiceIncluded === 'yes' || pool.filterServiceIncluded === true,
   };
-  const benefits = includeBenefits ? includedBenefits(filter, str(pool.sanitization)) : [];
-  const extras = includeBenefits
-    ? includedExtras(filter, str(pool.sanitization), hasEssentials)
-    : [];
+  /*
+   * JOB KIND GATES THIS BLOCK, exactly as it gates the PDF's.
+   *
+   * ProposalDocument swaps the recurring Difference bullets for jobAssurances()
+   * on a one-time job and suppresses the value-stack table entirely. This page
+   * did neither, so a green-to-clean or a repair quote showed weekly filter and
+   * salt-cell promises the job never made — and for a texted, link-only lead
+   * this page IS the whole document.
+   */
+  const kind = jobKindOf(jobKind);
+  const benefits = !includeBenefits
+    ? []
+    : kind === 'recurring'
+      ? includedBenefits(filter, str(pool.sanitization))
+      : jobAssurances(kind);
+  const extras =
+    includeBenefits && showsExtrasTable(kind)
+      ? includedExtras(filter, str(pool.sanitization), hasEssentials)
+      : [];
+  /*
+   * THE TWO-GROUP LAYOUT, three-plan recurring quotes only.
+   *
+   * One flat list asked the reader to carry "…but three of these are
+   * Complete's" across eight bullets — and two of those bullets were only
+   * PARTLY Complete's: the chemicals line hid phosphate remover inside a list
+   * of six, and the salt line bundled the cell wash with the salt itself. No
+   * scoping sentence above a list can fix a bullet that is half true. Split,
+   * every line is wholly true of the group it sits in.
+   */
+  const splitGroups =
+    includeBenefits && kind === 'recurring' && hasEssentials && filter.included
+      ? splitBenefits(filter, str(pool.sanitization))
+      : null;
+  const groupHeadingClass =
+    'mb-3 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]';
 
   const dims = [
     str(pool.length) && `${str(pool.length)} ft L`,
@@ -147,30 +184,43 @@ export const ProposalBreakdown = ({
       )}
 
       {benefits.length > 0 && (
-        <Card title={BENEFITS_HEADING}>
-          {hasEssentials && (
-            <p className="mb-4 text-sm font-semibold leading-relaxed text-[#1669AE]">
-              {BENEFITS_PLAN_SCOPE}
-            </p>
-          )}
+        <Card title={kind === 'recurring' ? BENEFITS_HEADING : trustHeading(kind)}>
           {/* CSS columns, not a grid: a grid aligns rows, so a two-line bullet
               opposite a one-line one leaves a hole under the short one. */}
-          <ul className="sm:columns-2 sm:gap-x-8">
-            {benefits.map((b, i) => (
-              <li
-                key={i}
-                className="mb-4 flex break-inside-avoid gap-2 text-sm leading-relaxed text-[#1f2937]"
-              >
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
-                <span>{b}</span>
-              </li>
-            ))}
-          </ul>
+          {(() => {
+            const list = (items: string[]) => (
+              <ul className="sm:columns-2 sm:gap-x-8">
+                {items.map((b, i) => (
+                  <li
+                    key={i}
+                    className="mb-4 flex break-inside-avoid gap-2 text-sm leading-relaxed text-[#1f2937]"
+                  >
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            );
+            if (!splitGroups) return list(benefits);
+            return (
+              <>
+                <p className="mb-4 text-sm font-semibold leading-relaxed text-[#1669AE]">
+                  {BENEFITS_PLAN_SCOPE}
+                </p>
+                <p className={groupHeadingClass}>{BENEFITS_EVERY_HEADING}</p>
+                {list(splitGroups.every)}
+                <p className={groupHeadingClass}>
+                  {BENEFITS_COMPLETE_HEADING}
+                </p>
+                {list(splitGroups.complete)}
+              </>
+            );
+          })()}
           {/* Same disclosure the PDF's Difference box carries, same condition:
               this card says "Filter cleaning — included", and for link-only
               leads this page is the ONLY document — nothing else tells an
               excluded-filter customer that parts are quoted separately. */}
-          {!filter.included && benefitsFootnote(filter) && (
+          {kind === 'recurring' && !filter.included && benefitsFootnote(filter) && (
             <p className="mt-4 border-t border-[#eef1f5] pt-3 text-xs leading-relaxed text-[#6b7280]">
               {benefitsFootnote(filter)}
             </p>

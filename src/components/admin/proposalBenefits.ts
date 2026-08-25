@@ -29,6 +29,13 @@ export const BENEFITS_HEADING = 'The Suncoast Difference';
  * three-plan quote page one was promising, in writing, things the plan on page
  * two removes.
  *
+ * NOW ONLY THE PRINCIPLE. The sentence used to carry the scoping too —
+ * "Complete puts everything below into one; Essentials is lower up front…" —
+ * because the bullets were one flat list that needed qualifying. They are two
+ * labelled groups now, so the list scopes itself and the second half of the
+ * sentence restated a heading three lines below it. What is left is the part
+ * a heading cannot say.
+ *
  * IT ALSO HAS TO SOUND LIKE SOMETHING. The first version — "Everything below
  * is included in Complete. The Essentials plan leaves out the items marked on
  * its card." — scoped correctly and read like a compliance footnote. This one
@@ -45,7 +52,7 @@ export const BENEFITS_HEADING = 'The Suncoast Difference';
  * want chosen, with the cheaper card defined as a subtraction from it.
  */
 export const BENEFITS_PLAN_SCOPE =
-  'A rate should tell you what the year actually costs. Complete puts everything below into one; Essentials is lower up front, with the items marked on its card billed at cost when they’re due.';
+  'A rate should tell you what the year actually costs.';
 
 /**
  * The chemicals bullet — named, not summarised.
@@ -184,6 +191,56 @@ export const includedBenefits = (filter: FilterOption, sanitization = ''): strin
     GUARANTEE_BENEFIT,
   ];
 };
+
+/**
+ * The same promises, SPLIT into what every plan gives you and what Complete
+ * adds — for three-plan quotes only.
+ *
+ * THE PROBLEM WITH ONE FLAT LIST. Read straight through, this box promises
+ * chemicals, filter replacement and salt-cell washing, and three of those are
+ * Complete's alone. A line above it saying "everything below is in Complete"
+ * is accurate and asks the reader to hold a caveat in their head across eight
+ * bullets — which nobody does. Worse, two of the bullets are only PARTLY
+ * Complete's: the chemicals line hides phosphate remover inside a list of six,
+ * and the salt line bundles the cell wash (Complete) with the salt itself
+ * (every plan). No amount of scoping above the list fixes a bullet that is
+ * half true.
+ *
+ * Split, every line is wholly true of the group it sits in, and the box reads
+ * the way the plan cards already do — shared service first, then the upgrade.
+ * The customer meets the same two-part shape three times on one document, and
+ * the caveat disappears because there is nothing left to qualify.
+ */
+export const splitBenefits = (
+  filter: FilterOption,
+  sanitization = '',
+): { every: string[]; complete: string[] } => {
+  const salty = isSaltwater(sanitization);
+  return {
+    every: [
+      // Phosphate remover comes OUT of this line — it is the one specialty
+      // treatment Essentials leaves out, and it cannot stay buried in a list
+      // that every plan is supposed to deliver in full.
+      'All routine chemicals included — chlorine, muriatic acid, shock, stabilizer and algaecide',
+      // The salt itself is in every plan; only the cell wash moves.
+      ...(salty ? ['Your salt — topped up as it dilutes out, included'] : []),
+      equipmentCareLine(filter),
+      ...BASE_BENEFITS,
+      GUARANTEE_BENEFIT,
+    ],
+    complete: [
+      ...(filterServiceLine(filter) ? [filterServiceLine(filter) as string] : []),
+      ...(salty
+        ? ['Salt cell acid washing — a $25 job each time, included']
+        : []),
+      'Phosphate remover and specialty treatments — used whenever your pool needs them',
+    ],
+  };
+};
+
+/** Headings for the two groups above. Same words as the plan cards use. */
+export const BENEFITS_EVERY_HEADING = 'In every plan';
+export const BENEFITS_COMPLETE_HEADING = 'Also in Complete';
 
 // A summary line ("It's all covered in your flat rate — …") used to close this
 // box on every surface. Removed: every bullet above it already ends in

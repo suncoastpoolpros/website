@@ -28,8 +28,11 @@ import {
 } from "@/lib/adminApi";
 import {
   benefitsFootnote,
+  BENEFITS_COMPLETE_HEADING,
+  BENEFITS_EVERY_HEADING,
   BENEFITS_HEADING,
   BENEFITS_PLAN_SCOPE,
+  splitBenefits,
   includedBenefits,
 } from "./proposalBenefits";
 import { sanitizationLabel } from "./sanitization";
@@ -190,6 +193,15 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
     fontSize: 8.5,
     lineHeight: 1.45,
+  },
+  includedGroupLabel: {
+    fontSize: 6.6,
+    lineHeight: 1.3,
+    fontFamily: "Helvetica-Bold",
+    color: FAINT,
+    letterSpacing: 0.5,
+    marginTop: 5,
+    marginBottom: 2,
   },
   includedScope: {
     fontSize: 7.6,
@@ -781,6 +793,11 @@ export const ProposalDocument = ({
       (pool.filterServiceIncluded as unknown) === true,
   };
   const hasEssentials = proposal.tiers.some((t) => t.essentials);
+  /** Non-null only when the two-group Difference layout applies. */
+  const benefitGroups =
+    hasEssentials && filterOption.included
+      ? splitBenefits(filterOption, pool.sanitization)
+      : null;
   const extras = includedExtras(filterOption, pool.sanitization, hasEssentials);
   const tiers = tiered ? proposal.tiers : [];
   const [baseTier, upgradeTier] = tiers;
@@ -937,22 +954,44 @@ export const ProposalDocument = ({
             <Text style={styles.includedHeading}>
               {kind === "recurring" ? BENEFITS_HEADING : trustHeading(kind)}
             </Text>
-            {/* Names the plan these promises belong to. Without it page one
-                states "all chemicals included" and "cartridge replacement
-                included" on a quote whose Essentials card removes exactly
-                those — see BENEFITS_PLAN_SCOPE. */}
-            {kind === "recurring" && tiers.some((t) => t.essentials) ? (
-              <Text style={styles.includedScope}>{BENEFITS_PLAN_SCOPE}</Text>
-            ) : null}
-            {(kind === "recurring"
-              ? includedBenefits(filterOption, pool.sanitization)
-              : jobAssurances(kind)
-            ).map((b, i) => (
-              <View key={i} style={styles.includedItem}>
-                <Text style={styles.includedCheck}>•</Text>
-                <Text style={styles.includedItemText}>{b}</Text>
-              </View>
-            ))}
+            {/* SPLIT INTO TWO GROUPS on a three-plan quote, matching the
+                approve page exactly. One flat list promised chemicals, filter
+                replacement and salt-cell washing when three of those are
+                Complete's alone — and two of the bullets were only PARTLY
+                Complete's, which no scoping sentence above a list can fix. */}
+            {kind === "recurring" && benefitGroups ? (
+              <>
+                <Text style={styles.includedScope}>{BENEFITS_PLAN_SCOPE}</Text>
+                <Text style={styles.includedGroupLabel}>
+                  {BENEFITS_EVERY_HEADING.toUpperCase()}
+                </Text>
+                {benefitGroups.every.map((b, i) => (
+                  <View key={`e${i}`} style={styles.includedItem}>
+                    <Text style={styles.includedCheck}>•</Text>
+                    <Text style={styles.includedItemText}>{b}</Text>
+                  </View>
+                ))}
+                <Text style={styles.includedGroupLabel}>
+                  {BENEFITS_COMPLETE_HEADING.toUpperCase()}
+                </Text>
+                {benefitGroups.complete.map((b, i) => (
+                  <View key={`c${i}`} style={styles.includedItem}>
+                    <Text style={styles.includedCheck}>•</Text>
+                    <Text style={styles.includedItemText}>{b}</Text>
+                  </View>
+                ))}
+              </>
+            ) : (
+              (kind === "recurring"
+                ? includedBenefits(filterOption, pool.sanitization)
+                : jobAssurances(kind)
+              ).map((b, i) => (
+                <View key={i} style={styles.includedItem}>
+                  <Text style={styles.includedCheck}>•</Text>
+                  <Text style={styles.includedItemText}>{b}</Text>
+                </View>
+              ))
+            )}
             {/* THE EXCLUDED-FILTER DISCLOSURE, finally rendered. The box above
                 says "Filter cleaning — included", and benefitsFootnote was
                 written precisely so that can't be misread as elements-included

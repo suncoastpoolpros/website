@@ -15,12 +15,12 @@ export const homepageFaqs = [
     answer: "Consistent technicians, proactive equipment checks, and clear communication. No rotating crews or guessing games."
   },
   {
-    question: "Do you handle repairs or just cleaning?",
-    answer: "Both. We diagnose equipment issues, handle repairs, and keep your pool running smoothly year-round."
+    question: "Do you look at the equipment, or just clean the pool?",
+    answer: "Both. Your pump, heater, filter and salt cell get checked on every visit, and anything starting to go gets flagged in writing while it is still small rather than turning up as a surprise. Where something needs work beyond that, we will tell you exactly what it needs so you are not guessing."
   },
   {
     question: "How much does pool cleaning cost in St. Petersburg, FL?",
-    answer: "An average pool runs approximately $150 per month for weekly cleaning, which includes brushing, skimming, vacuuming, and chemical balancing — though pricing varies based on trees, pool size, and many other factors. That flat rate covers weekly cleaning and all standard chemicals — no surprise surcharges. Storm cleanups and major equipment repairs are billed separately at honest rates, and credit card payments include a small processing fee (ACH bank transfers are free)."
+    answer: "An average pool runs approximately $150 per month for weekly cleaning, which includes brushing, skimming, vacuuming, and chemical balancing — though pricing varies based on trees, pool size, and many other factors. That flat rate covers weekly cleaning and all standard chemicals — no surprise surcharges. Storm cleanups and any larger one-off work are quoted and approved separately at honest rates, and credit card payments include a small processing fee (ACH bank transfers are free)."
   },
   {
     question: "How often should a pool be cleaned in Florida?",

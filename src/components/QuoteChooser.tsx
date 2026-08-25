@@ -457,7 +457,7 @@ export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {})
                   <option value="" disabled>What do you need?</option>
                   <option value="weekly">Weekly Pool Cleaning</option>
                   <option value="green">Green Pool Recovery</option>
-                  <option value="repair">Equipment Repair / Installation</option>
+                  <option value="repair">Equipment Issue / Installation</option>
                   <option value="commercial">Commercial / HOA Pool</option>
                   <option value="other">Something else</option>
                 </select>

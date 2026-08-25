@@ -808,6 +808,7 @@ export const ApprovePage = () => {
 
             <ProposalBreakdown
               hasEssentials={tiers.some((t) => t.essentials)}
+              jobKind={quote.proposal?.jobKind}
               pool={quote.pool}
               scope={quote.proposal.scope}
               includeBenefits={quote.proposal.includeBenefits !== false}

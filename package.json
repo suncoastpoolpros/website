@@ -8,11 +8,12 @@
     "build:client": "vite build",
     "build:ssr": "vite build --ssr src/entry-server.tsx --outDir dist-ssr",
     "prerender": "node scripts/prerender.mjs",
-    "build": "npm run check:mirrors && npm run build:client && npm run build:ssr && npm run prerender",
+    "build": "npm run check:mirrors && npm run lint:fixes && npm run build:client && npm run build:ssr && npm run prerender",
     "preview": "vite preview",
     "clean": "rm -rf dist dist-ssr",
     "lint": "tsc --noEmit",
-    "check:mirrors": "node scripts/check-mirrors.mjs"
+    "check:mirrors": "node scripts/check-mirrors.mjs",
+    "lint:fixes": "node scripts/check-fixes.mjs"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

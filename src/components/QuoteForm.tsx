@@ -152,7 +152,7 @@ export const QuoteForm = () => {
                   <option value="" disabled></option>
                   <option value="weekly">Weekly Pool Cleaning</option>
                   <option value="green">Green Pool Recovery</option>
-                  <option value="repair">Equipment Repair or Installation</option>
+                  <option value="repair">Equipment Issue or Installation</option>
                   <option value="commercial">Commercial / HOA Pool</option>
                   <option value="other">Something else</option>
                 </select>

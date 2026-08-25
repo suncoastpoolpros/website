@@ -68,8 +68,11 @@ import {
 import { ADDON_PRESETS } from "./addonPresets";
 import {
   benefitsFootnote,
+  BENEFITS_COMPLETE_HEADING,
+  BENEFITS_EVERY_HEADING,
   BENEFITS_HEADING,
   BENEFITS_PLAN_SCOPE,
+  splitBenefits,
   includedBenefits,
 } from "./proposalBenefits";
 import {
@@ -2358,20 +2361,45 @@ const ProposalPreview = ({
                   {BENEFITS_PLAN_SCOPE}
                 </p>
               )}
-            <ul className="space-y-1">
-              {(previewKind === "recurring"
-                ? includedBenefits(filterOption, pool.sanitization)
-                : jobAssurances(previewKind)
-              ).map((b, i) => (
-                <li
-                  key={i}
-                  className="flex gap-2 py-[3px] text-[13px] font-semibold leading-relaxed text-stone-800"
-                >
-                  <span className="text-green-600">✓</span>
-                  {b}
-                </li>
-              ))}
-            </ul>
+            {/* Same two-group split the PDF and the approve page use, so the
+                operator previews exactly what the customer will read. */}
+            {(() => {
+              const list = (items: string[], k = "") => (
+                <ul className="space-y-1">
+                  {items.map((b, i) => (
+                    <li
+                      key={k + i}
+                      className="flex gap-2 py-[3px] text-[13px] font-semibold leading-relaxed text-stone-800"
+                    >
+                      <span className="text-green-600">✓</span>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              );
+              const groups =
+                previewKind === "recurring" &&
+                data.proposal.tiers.some((t) => t.essentials) &&
+                filterOption.included
+                  ? splitBenefits(filterOption, pool.sanitization)
+                  : null;
+              if (!groups)
+                return list(
+                  previewKind === "recurring"
+                    ? includedBenefits(filterOption, pool.sanitization)
+                    : jobAssurances(previewKind),
+                );
+              const label =
+                "mb-1 mt-2 text-[10px] font-bold uppercase tracking-wider text-stone-500";
+              return (
+                <>
+                  <p className={label}>{BENEFITS_EVERY_HEADING}</p>
+                  {list(groups.every, "e")}
+                  <p className={label}>{BENEFITS_COMPLETE_HEADING}</p>
+                  {list(groups.complete, "c")}
+                </>
+              );
+            })()}
             {/* Mirrors the PDF's excluded-filter disclosure so the operator
                 previews exactly what the customer will read. */}
             {previewKind === "recurring" && !filterOption.included && (

@@ -178,12 +178,17 @@ export const Services = () => {
           </div>
         </div>
 
-        {/* Pool Cleaning & Equipment Repair Services — header + 6 service cards */}
+        {/* Header + the 6 service cards.
+            The heading used to read "Pool Cleaning & Equipment Repair
+            Services". Repairs are work we take on but not what we lead with,
+            and a section heading is the strongest signal on the page about
+            what this business is. Now headed by the maintenance we actually
+            build the offer around. */}
         <div className="max-w-3xl mb-10 md:mb-16">
           <h2 className="section-heading text-white mb-4 md:mb-6">
             Pool Cleaning & <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue-light to-brand-blue">
-              Equipment Repair Services
+              Maintenance Services
             </span>
           </h2>
           <p className="section-subtext">
