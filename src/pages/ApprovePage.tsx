@@ -1702,7 +1702,17 @@ export const ApprovePage = () => {
                   price on arrival. Removing it from the PDF while leaving it
                   here would have fixed the copy nobody signs and kept it on the
                   one they do. */}
-              <div className="mt-4 rounded-xl border border-[#e3e8ef] bg-[#f7f9fc] p-4">
+              {/* A RULED BLOCK, not a tinted panel.
+                  This card already IS the container. Boxing the terms inside
+                  it made a panel within a panel, and boxing the email field
+                  below made a second one in a different tint — two nested
+                  containers of equal weight, one of which only informs while
+                  the other asks for input. The reader gets no rule for telling
+                  them apart, so the section reads as three competing surfaces
+                  rather than one form.
+                  Fine print earns its quietness from space and a hairline, not
+                  from a fill. */}
+              <div className="mt-5 border-t border-[#eef1f5] pt-4">
                 <h3 className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#6b7280]">
                   {plan ? `${plan} — terms` : "Terms"}
                 </h3>
@@ -1750,8 +1760,13 @@ export const ApprovePage = () => {
                 part of completing the document, which is what it is, rather
                 than as one more thing being collected.
               */}
+              {/* An ordinary labelled field, styled like the two in "Getting
+                  started" above — same label weight, same helper line, same
+                  input. It is a question the form is asking, so it should look
+                  like the other questions the form asks; the tinted box made it
+                  look like a notice. */}
               {needsEmail && (
-                <div className="mt-6 rounded-xl border border-[#dbe6f3] bg-[#f5f9fd] p-4">
+                <div className="mt-5 border-t border-[#eef1f5] pt-4">
                   <label
                     htmlFor="contact-email"
                     className="block text-sm font-semibold text-[#1f2937]"
@@ -1780,7 +1795,10 @@ export const ApprovePage = () => {
                 </div>
               )}
 
-              <div className="mt-6 border-t border-[#e3e8ef] pt-6">
+              {/* The heavier rule: everything above is the agreement being
+                  read, everything below is it being signed. The hairlines
+                  inside the block separate items; this one separates acts. */}
+              <div className="mt-7 border-t border-[#e3e8ef] pt-6">
                 <label
                   htmlFor="signature"
                   className="block text-sm font-semibold text-[#1f2937]"
