@@ -26,6 +26,7 @@ import {
   splitTierIncludes,
   tierDelta,
 } from "@/lib/adminApi";
+import { currentExcludes, currentValueNote } from "./tierPresets";
 import {
   benefitsFootnote,
   BENEFITS_COMPLETE_HEADING,
@@ -716,7 +717,7 @@ const TierCard = ({
           page's ✗ rows, and the reason the cheaper rate is defensible when the
           first parts invoice arrives: the customer was told, on the document
           they kept, before they chose. */}
-      {tier.excludes?.length ? (
+      {currentExcludes(tier.excludes).length ? (
         <>
           {/* No rule, for the same reason as the page: these rows pair with ✓
               rows at the same position on the card alongside. The label is
@@ -724,7 +725,7 @@ const TierCard = ({
           <Text style={styles.tierBlockLabel}>
             {EXTRAS_NOT_INCLUDED_HEADING.toUpperCase()}
           </Text>
-          {tier.excludes.map((item, i) => (
+          {currentExcludes(tier.excludes).map((item, i) => (
             <View key={i} style={styles.tierItem}>
               <Text style={styles.tierExcludeMark}>×</Text>
               <Text style={styles.tierExcludeText}>{item}</Text>
@@ -1196,8 +1197,17 @@ export const ProposalDocument = ({
             </View>
             {/* Every plan's note renders, in card order: the base plan explains
                 what the all-in rate covers, the recommended one sells the offer. */}
-            {tiers.map((tier, i) =>
-              tier.valueNote.trim() ? (
+            {tiers.map((tier, i) => {
+              // Same reconciliation as the page: the annual-beats-Essentials
+              // nudge is dropped when the prices on this document disprove it.
+              const note = currentValueNote(
+                tier.valueNote ?? "",
+                tier.price,
+                tiers.find((t) => t.recommended)?.price ??
+                  tiers[tiers.length - 1]?.price ??
+                  "",
+              ).trim();
+              return note ? (
                 <View
                   key={i}
                   style={[
@@ -1212,11 +1222,11 @@ export const ProposalDocument = ({
                       tier.recommended ? null : styles.valueNoteTextPlain,
                     ]}
                   >
-                    {tier.valueNote.trim()}
+                    {note}
                   </Text>
                 </View>
-              ) : null,
-            )}
+              ) : null;
+            })}
           </View>
         ) : proposal.price.trim() ? (
           <View style={styles.section}>

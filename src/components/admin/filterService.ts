@@ -339,7 +339,23 @@ export const ALL_COMPLETE_DIFFERENTIATORS: string[] = Array.from(
  * Also the ESSENTIALS plan's explainer in the three-plan layout: that card and
  * an excluded-filter monthly card are making the identical promise.
  */
-export const excludedFilterValueNote = (type: string): string => {
+/**
+ * The value note for a card that leaves the FILTER SERVICE out.
+ *
+ * TWO CALLERS, TWO CARVE-OUTS. A two-plan quote with the filter service
+ * unbundled leaves out filter parts and nothing else — phosphate remover is
+ * still in the rate. The Essentials card leaves out both. One shared sentence
+ * that named the phosphate carve-out was therefore telling two-plan customers
+ * a treatment was withheld that they were in fact getting, which understates
+ * the service and invites a question with no good answer.
+ *
+ * `alsoPhosphate` is what separates them, and it is required rather than
+ * defaulted so a future caller has to decide which document it is writing.
+ */
+export const excludedFilterValueNote = (
+  type: string,
+  alsoPhosphate: boolean,
+): string => {
   const priced = FILTER_SERVICE[type];
   const cost = priced ? ` — typically $${priced.value}, ${priced.basis} —` : '';
   const parts =
@@ -363,7 +379,10 @@ export const excludedFilterValueNote = (type: string): string => {
     type === 'DE'
       ? 'routine backwashing and the DE powder it uses stay included'
       : 'routine filter cleaning stays included';
-  return `Your weekly service, chemicals and algaecide are all in this rate, and ${cleaning}. Two things are kept out to hold the price down: ${parts}, and phosphate remover is used only if your pool actually needs it. Nothing is added without your approval.`;
+  const opening = `Your weekly service, chemicals and algaecide are all in this rate, and ${cleaning}.`;
+  return alsoPhosphate
+    ? `${opening} Two things are kept out to hold the price down: ${parts}, and phosphate remover is used only if your pool actually needs it. Nothing is added without your approval.`
+    : `${opening} One thing is kept out to hold the price down: ${parts}. Nothing is replaced without your approval.`;
 };
 
 /**
@@ -377,8 +396,14 @@ export const excludedFilterValueNote = (type: string): string => {
  */
 export const ALL_FILTER_VALUE_NOTES: string[] = [
   ...FILTER_TYPES.map((type) => filterServiceValueNote({ type, included: true })),
-  ...FILTER_TYPES.map((type) => excludedFilterValueNote(type)),
-  excludedFilterValueNote(''),
+  // Both carve-outs, so a note generated for either card is recognised as
+  // machine text and retired when the pool or the plan shape changes.
+  ...FILTER_TYPES.flatMap((type) => [
+    excludedFilterValueNote(type, true),
+    excludedFilterValueNote(type, false),
+  ]),
+  excludedFilterValueNote('', true),
+  excludedFilterValueNote('', false),
 ].filter(Boolean);
 
 /**

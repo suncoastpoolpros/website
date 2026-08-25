@@ -238,8 +238,9 @@ export const syncFilterService = (
   const refreshValueNote = (t: Tier) => {
     const stored = t.valueNote.trim();
     const next = t.essentials
-      ? excludedFilterValueNote(filter.type)
-      : filterServiceValueNote(filter) || excludedFilterValueNote(filter.type);
+      ? excludedFilterValueNote(filter.type, true)
+      : filterServiceValueNote(filter) ||
+        excludedFilterValueNote(filter.type, false);
     for (const known of ALL_FILTER_VALUE_NOTES) {
       if (!known) continue;
       if (stored === known) return next;
@@ -443,8 +444,9 @@ export const syncFilterService = (
     const generated = ALL_FILTER_VALUE_NOTES.includes(tier.valueNote.trim());
     const valueNote = generated
       ? tier.essentials
-        ? excludedFilterValueNote(filter.type)
-        : filterServiceValueNote(filter) || excludedFilterValueNote(filter.type)
+        ? excludedFilterValueNote(filter.type, true)
+        : filterServiceValueNote(filter) ||
+          excludedFilterValueNote(filter.type, false)
       : tier.valueNote;
     return { ...tier, includes, excludes, sharedCount, finePrint, valueNote };
   });
@@ -655,6 +657,59 @@ export const shortBillingNote = (note: string): string => {
   return m ? m[1] : t;
 };
 
+/**
+ * Exclusions we no longer make, mapped away at RENDER time.
+ *
+ * A plan card's ✗ rows are STORED on the quote, while the Difference box and
+ * the value stack are DERIVED from the pool every time the page loads. So
+ * retiring an exclusion changes half of an already-sent quote and not the
+ * other half: after salt-cell cleaning moved into every plan, a quote sent the
+ * day before said "Salt cell acid washing — both included" in the Difference
+ * box and showed a red ✗ against it on the card below.
+ *
+ * Dropping the row is the same render-time reconciliation the taglines and
+ * short bullets already use, and it is safe in the one direction that matters:
+ * it only ever REMOVES an exclusion, so a customer is never newly told
+ * something is withheld — they are told they get MORE than the stored snapshot
+ * claimed, which is what the service actually does.
+ *
+ * ADD TO THIS whenever an exclusion is retired, or sent quotes keep printing
+ * a ✗ against something the business has started including.
+ */
+const RETIRED_EXCLUSIONS = [
+  // v12 — moved into every plan. See essentialsExclusions in filterService.ts.
+  "Salt-cell acid cleaning — $25 each time the cell needs it",
+];
+/** The sentence the nudge always opens with, so it can be found and checked. */
+export const NUDGE_PREFIX =
+  "Worth knowing: our all-inclusive plan paid annually works out to ";
+
+/**
+ * Strip the annual-beats-Essentials nudge when the card no longer proves it.
+ *
+ * The line is baked into valueNote when the plans are seeded, from the
+ * SUGGESTED Essentials price. The operator then types their own rate — that is
+ * the whole point of the field — and a rate at or below the annual one makes
+ * "less than this" false against the price printed on the same card. Checked
+ * at render, where both numbers are known for certain.
+ */
+export const currentValueNote = (
+  note: string,
+  essentialsPrice: string,
+  annualPrice: string,
+): string => {
+  const at = note.indexOf(NUDGE_PREFIX);
+  if (at < 0) return note;
+  const ess = monthlyAmount(essentialsPrice);
+  const ann = monthlyAmount(annualPrice);
+  return ess != null && ann != null && ann <= ess
+    ? note
+    : note.slice(0, at).trimEnd();
+};
+
+export const currentExcludes = (excludes: string[] | undefined): string[] =>
+  (excludes ?? []).filter((b) => !RETIRED_EXCLUSIONS.includes(b.trim()));
+
 /** The page's version of a bullet. Unrecognised text is returned untouched. */
 export const shortBullet = (item: string): string => {
   const t = item.trim();
@@ -850,7 +905,8 @@ export const buildTiers = (
        * cover, then states the parts carve-out — see filterService.ts.
        */
       valueNote:
-        filterServiceValueNote(filter) || excludedFilterValueNote(filter.type),
+        filterServiceValueNote(filter) ||
+        excludedFilterValueNote(filter.type, false),
       finePrint: filterServiceTerms(filter),
     },
     {
@@ -1062,11 +1118,16 @@ export const buildTiersWithEssentials = (
    * $145, under the annual rate), so it is computed rather than written, and
    * simply absent when it would be false.
    */
+  /*
+   * Computed here from the SEEDED Essentials figure, and re-checked at render
+   * against the price actually on the card — see nudgeHolds(). The operator
+   * can type any Essentials rate they like, and a rate below the annual one
+   * turns "less than this" into a claim the same card disproves two lines
+   * above it.
+   */
   const nudge =
     annual != null && suggested != null && annual <= suggested
-      ? ` Worth knowing: our all-inclusive plan paid annually works out to $${formatAmount(
-          annual,
-        )} a month — less than this, with nothing left out.`
+      ? ` ${NUDGE_PREFIX}$${formatAmount(annual)} a month — less than this, with nothing left out.`
       : "";
   /*
    * ORDER: cheapest and least complete FIRST, best value last.
@@ -1117,7 +1178,7 @@ export const buildTiersWithEssentials = (
       includes: essentialsIncludes(filter, sanitization),
       excludes: essentialsExclusions(filter.type, sanitization),
       recommended: false,
-      valueNote: excludedFilterValueNote(filter.type) + nudge,
+      valueNote: excludedFilterValueNote(filter.type, true) + nudge,
       finePrint: filterServiceTerms({ type: filter.type, included: false }),
     },
     /*

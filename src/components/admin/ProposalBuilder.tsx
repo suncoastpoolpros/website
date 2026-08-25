@@ -545,7 +545,17 @@ export const ProposalBuilder = ({
         price: value,
         tiers: syncTierPrices(
           p.proposal.tiers,
-          p.proposal.tiers[0]?.price ?? "",
+          /*
+           * The OLD BASE RATE — which is proposal.price, not tiers[0].price.
+           * On a two-plan quote those happen to be the same string, so this
+           * read like a harmless shorthand; on a three-plan quote tiers[0] is
+           * Essentials, whose price is the DISCOUNTED rate. syncTierPrices
+           * builds its "before" snapshot from this value, so it was comparing
+           * every stored field against a preset generated for the wrong rate,
+           * finding no matches, and treating untouched machine text as
+           * hand-written — which quietly froze the prices it exists to update.
+           */
+          p.proposal.price,
           value,
           {
             type: p.pool.filterType,
@@ -2064,11 +2074,38 @@ export const ProposalBuilder = ({
                             className={textareaClass}
                             placeholder=" "
                             value={tier.includes.join("\n")}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              /*
+                               * sharedCount is an INDEX into this list — the
+                               * point where the rows both cards share end and
+                               * this plan's own extras begin. Rewriting the
+                               * list without moving it silently reclassified
+                               * rows: add a line above the divide and the
+                               * annual card's first perk became a shared row;
+                               * delete one and a shared promise moved under
+                               * "Everything in Complete Monthly, plus".
+                               *
+                               * Kept in range as well as shifted, so deleting
+                               * more rows than the divide can absorb cannot
+                               * leave it pointing past the end.
+                               */
+                              const next = e.target.value.split("\n");
+                              const delta = next.length - tier.includes.length;
                               updateTier(i, {
-                                includes: e.target.value.split("\n"),
-                              })
-                            }
+                                includes: next,
+                                ...(tier.sharedCount != null
+                                  ? {
+                                      sharedCount: Math.max(
+                                        0,
+                                        Math.min(
+                                          next.length,
+                                          tier.sharedCount + delta,
+                                        ),
+                                      ),
+                                    }
+                                  : {}),
+                              });
+                            }}
                           />
                         </FieldShell>
                         {i > 0 && (

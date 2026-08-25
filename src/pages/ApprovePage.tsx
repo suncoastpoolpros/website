@@ -21,7 +21,9 @@ import {
 } from "@/components/admin/includedExtras";
 import { ALL_COMPLETE_DIFFERENTIATORS } from "@/components/admin/filterService";
 import {
+  currentExcludes,
   currentTagline,
+  currentValueNote,
   shortBillingNote,
   shortBullet,
 } from "@/components/admin/tierPresets";
@@ -1294,7 +1296,7 @@ export const ApprovePage = () => {
                                 things no" without having to compare lists.
                                 Every other tier has no `excludes`, so no
                                 existing quote renders one of these. */}
-                            {(tier.excludes?.length ?? 0) > 0 && (
+                            {currentExcludes(tier.excludes).length > 0 && (
                               <>
                                 {/* Labelled, and its twin sits at the SAME
                                     position on the Complete cards — see
@@ -1305,7 +1307,7 @@ export const ApprovePage = () => {
                                   {EXTRAS_NOT_INCLUDED_HEADING}
                                 </p>
                                 <ul className="mt-2 space-y-2">
-                                  {tier.excludes?.map((item, j) => (
+                                  {currentExcludes(tier.excludes).map((item, j) => (
                                     <li
                                       key={j}
                                       className="flex gap-2 text-sm leading-relaxed text-[#8a94a1]"
@@ -1339,11 +1341,25 @@ export const ApprovePage = () => {
                         a note ABOUT the list. Fine print earns its quietness
                         from the space around it. */}
                       <div className="mt-auto">
-                        {tier.valueNote?.trim() && (
-                          <p className="pt-6 text-xs leading-relaxed text-[#6b7280]">
-                            {tier.valueNote.trim()}
-                          </p>
-                        )}
+                        {/* The nudge inside this note claims the annual plan
+                            costs less per month than this card. It was baked in
+                            from the SUGGESTED Essentials price; the operator
+                            then types their own. currentValueNote drops the
+                            claim when the two prices on this page disprove it. */}
+                        {(() => {
+                          const note = currentValueNote(
+                            tier.valueNote ?? "",
+                            tier.price,
+                            tiers.find((t) => t.recommended)?.price ??
+                              tiers[tiers.length - 1]?.price ??
+                              "",
+                          ).trim();
+                          return note ? (
+                            <p className="pt-6 text-xs leading-relaxed text-[#6b7280]">
+                              {note}
+                            </p>
+                          ) : null;
+                        })()}
                         {/* One button, two jobs: "Choose" while unselected,
                           "Continue" once it is. Putting the next step in the
                           card means the decision and the action are in the same
