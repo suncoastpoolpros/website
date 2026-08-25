@@ -18,7 +18,7 @@
  * saying something the document doesn't. Nothing is written twice.
  */
 import React from 'react';
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import {
   jobAssurances,
   jobKindOf,
@@ -206,17 +206,26 @@ export const ProposalBreakdown = ({
                 <span className="w-24 shrink-0 text-right text-sm text-[#6b7280] line-through">
                   {x.typical}
                 </span>
+                {/* MARKS, not words — the same ✓/✗ language as the plan
+                    cards, and a column of them is read at a glance where a
+                    column of "Included / Extra / Included" has to be parsed.
+                    The word goes to screen readers instead, so the cell still
+                    says what it means to anyone not looking at it. */}
                 {hasEssentials && (
-                  <span
-                    className={`w-20 shrink-0 text-right text-sm font-bold ${
-                      x.essentialsCovers ? 'text-[#1d7a33]' : 'text-[#c0392b]'
-                    }`}
-                  >
-                    {x.essentialsCovers ? EXTRAS_INCLUDED_LABEL : EXTRAS_EXCLUDED_LABEL}
+                  <span className="flex w-20 shrink-0 justify-end">
+                    {x.essentialsCovers ? (
+                      <Check className="h-4 w-4 text-[#1d7a33]" strokeWidth={2.5} />
+                    ) : (
+                      <X className="h-4 w-4 text-[#c0392b]" strokeWidth={2.5} />
+                    )}
+                    <span className="sr-only">
+                      {x.essentialsCovers ? EXTRAS_INCLUDED_LABEL : EXTRAS_EXCLUDED_LABEL}
+                    </span>
                   </span>
                 )}
-                <span className="w-20 shrink-0 text-right text-sm font-bold text-[#1d7a33]">
-                  {EXTRAS_INCLUDED_LABEL}
+                <span className="flex w-20 shrink-0 justify-end">
+                  <Check className="h-4 w-4 text-[#1d7a33]" strokeWidth={2.5} />
+                  <span className="sr-only">{EXTRAS_INCLUDED_LABEL}</span>
                 </span>
               </li>
             ))}

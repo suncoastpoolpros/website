@@ -16,6 +16,8 @@ import {
   View,
   Image,
   StyleSheet,
+  Svg,
+  Path,
 } from "@react-pdf/renderer";
 import {
   type ProposalData,
@@ -260,6 +262,14 @@ const styles = StyleSheet.create({
   },
   // The Essentials column on a three-plan quote. Same metrics as the Complete
   // column so the two read as a pair the eye compares straight across.
+  // Same width as the text column it replaces, so the header above still
+  // sits over its own values.
+  extraMarkCol: {
+    width: 54,
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
   extraEssentialsOff: {
     width: 54,
     fontSize: 8,
@@ -563,6 +573,27 @@ const Row = ({
  * "Everything in <base>, plus:" line — so the base plan never reads as the
  * stripped-down option, and the added value is what stands out.
  */
+/**
+ * The value-stack marks, DRAWN rather than typed.
+ *
+ * Standard Helvetica has no glyph for U+2713 ✓, U+2717 ✗ or their heavy
+ * variants — verified by rendering them, where every one came out as an empty
+ * box. Typing a check into this document would silently blank the column on
+ * the printed page while the web version looked fine. These are vector paths,
+ * so they match the page's icons and stay crisp at any zoom.
+ */
+const MarkTick = () => (
+  <Svg width={9} height={9} viewBox="0 0 24 24">
+    <Path d="M20 6 L9 17 L4 12" stroke={GREEN} strokeWidth={3.5} fill="none" />
+  </Svg>
+);
+const MarkCross = () => (
+  <Svg width={9} height={9} viewBox="0 0 24 24">
+    <Path d="M18 6 L6 18" stroke={EXCLUDED_RED} strokeWidth={3.5} fill="none" />
+    <Path d="M6 6 L18 18" stroke={EXCLUDED_RED} strokeWidth={3.5} fill="none" />
+  </Svg>
+);
+
 const TierCard = ({
   tier,
   buildsOn,
@@ -1005,21 +1036,13 @@ export const ProposalDocument = ({
                     </View>
                     <Text style={styles.extraPrice}>{x.typical}</Text>
                     {hasEssentials ? (
-                      <Text
-                        style={
-                          x.essentialsCovers
-                            ? styles.extraIncluded
-                            : styles.extraEssentialsOff
-                        }
-                      >
-                        {x.essentialsCovers
-                          ? EXTRAS_INCLUDED_LABEL
-                          : EXTRAS_EXCLUDED_LABEL}
-                      </Text>
+                      <View style={styles.extraMarkCol}>
+                        {x.essentialsCovers ? <MarkTick /> : <MarkCross />}
+                      </View>
                     ) : null}
-                    <Text style={styles.extraIncluded}>
-                      {EXTRAS_INCLUDED_LABEL}
-                    </Text>
+                    <View style={styles.extraMarkCol}>
+                      <MarkTick />
+                    </View>
                   </View>
                 </View>
               ))}
