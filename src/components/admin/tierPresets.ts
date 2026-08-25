@@ -172,28 +172,29 @@ const COMPLETE_LISTS = () =>
   (completeListsCache ??= presetLists((f, san) => completeIncludes(f, san)));
 
 /**
- * Every individual ROW the three-plan presets can emit, across every pool.
+ * Rows naming equipment THIS pool does not have.
  *
- * DERIVED, not listed — so it cannot fall behind the builders the way a
- * hand-maintained set of positional anchors did. syncFilterService uses it to
- * tell a generated row from something the operator typed: generated rows are
- * discarded and re-emitted for the current pool, typed rows are kept.
+ * The last line of defence on an edited card, and the only place hand-written
+ * text is ever thrown away. Exact-match recognition cannot catch a bullet the
+ * operator reworded, and a reworded row is exactly how "Salt-cell acid
+ * cleaning included (quarterly)" survived onto a chlorine pool — the operator
+ * typed it, so every rule in this file said leave it alone.
  *
- * Both filter answers are enumerated, because a card can be edited while the
- * service is bundled and synced after it has been withdrawn.
+ * Word-boundary anchored so it cannot fire on ordinary prose: \bDE\b never
+ * matches "included", \bsand\b never matches "thousand". Only types the pool
+ * does NOT have are listed, so a cartridge pool keeps its cartridge language.
  */
-let presetRowsCache: Set<string> | null = null;
-const ALL_PRESET_ROWS = () =>
-  (presetRowsCache ??= new Set(
-    [...FILTER_TYPES, ""].flatMap((type) =>
-      SANS.flatMap((san) =>
-        [true, false].flatMap((included) => [
-          ...essentialsIncludes({ type, included }, san),
-          ...completeIncludes({ type, included }, san),
-        ]),
-      ),
-    ),
-  ));
+const wrongPoolRow = (type: string, sanitization: string): RegExp => {
+  const parts: string[] = [];
+  if (type !== "DE") parts.push("\\bDE\\b", "\\bdiatomaceous\\b", "\\bgrids?\\b");
+  if (type !== "Cartridge") parts.push("\\bcartridge\\b");
+  if (type !== "Sand") parts.push("\\bsand\\b");
+  if (!isSaltwater(sanitization))
+    parts.push("\\bsalt[- ]?cell\\b", "\\bchlorine generator\\b");
+  // Nothing to exclude: a regex that matches nothing, rather than an empty
+  // alternation (which matches everything).
+  return parts.length ? new RegExp(parts.join("|"), "i") : /(?!)/;
+};
 
 /**
  * Swap a stale filter bullet and terms for the current ones after the admin
@@ -311,19 +312,47 @@ export const syncFilterService = (
        * predictable — against a silent wrong-pool promise, which is what the
        * clever version produced.
        */
-      const generated = ALL_PRESET_ROWS();
-      const isGenerated = (b: string) => {
-        const t = b.trim();
-        return (
-          generated.has(t) ||
-          ROW2_VARIANTS.includes(t) ||
-          ALL_PLAN_FILTER_LINES.includes(t) ||
-          ALL_FILTER_LINES.includes(t)
-        );
-      };
+      /*
+       * REPLACE AND REMOVE. Never insert.
+       *
+       * Re-emitting the preset and appending unrecognised rows looked clean
+       * and was wrong three ways: a bullet the operator REWORDED came back
+       * alongside their version (two "Filter cleaning included" rows), a
+       * bullet they DELETED was restored against them, and a reworded
+       * salt-cell row — unrecognisable, so treated as their text — survived
+       * onto a chlorine pool.
+       *
+       * So an edited card is now only ever EDITED IN PLACE. Recognised
+       * generated rows are swapped for the current pool's wording and keep
+       * their position; rows that no longer apply are dropped; nothing is
+       * added. A card that is missing a row it could have had simply
+       * understates what the customer gets, which is the safe direction —
+       * whereas inserting rows means guessing where they belong and
+       * second-guessing a deletion.
+       */
+      const wrongPool = wrongPoolRow(filter.type, sanitization);
       const newHead = known
         ? rebuilt
-        : [...rebuilt, ...head.filter((b) => !isGenerated(b))];
+        : head
+            .map((b) => {
+              const t = b.trim();
+              if (ROW2_VARIANTS.includes(t)) return currentRow2(filter);
+              if (
+                ALL_PLAN_FILTER_LINES.includes(t) ||
+                ALL_FILTER_LINES.includes(t)
+              )
+                return line ?? "";
+              return b;
+            })
+            .filter((b) => b !== "")
+            /*
+             * The safety net, and the only place hand-written text is ever
+             * discarded: a row naming a part this pool does not have is wrong
+             * however it was worded. Exact-match recognition cannot catch a
+             * reworded one, and "the operator typed it" is not a reason to
+             * print DE grids on a cartridge pool.
+             */
+            .filter((b) => !wrongPool.test(b));
       const includes = [...newHead, ...tail];
       const sharedCount =
         tier.sharedCount == null ? tier.sharedCount : newHead.length;
