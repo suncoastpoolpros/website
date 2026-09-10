@@ -461,8 +461,8 @@ const RelatedGuidesSection = () => (
           Straight answers, even if you never hire us.
         </h2>
         <p className="section-subtext">
-          We put the questions Largo homeowners ask us most into plain-English
-          guides — no jargon, no upsell. Dig in.
+          The questions Largo homeowners actually ask us, written up straight —
+          no jargon, nothing angling to sell you a heater. Have a read.
         </p>
       </m.div>
 

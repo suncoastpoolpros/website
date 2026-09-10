@@ -14,6 +14,7 @@ import {
 import { QuoteSheetProvider, useQuoteSheet } from '@/components/QuoteSheet';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { ServiceQuoteForm } from '@/components/ServiceQuoteForm';
 import { Container } from '@/components/Container';
 import { SmartLink } from '@/components/SmartLink';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
@@ -422,31 +423,55 @@ const ServicesPageInner = () => {
           </Container>
         </section>
 
-        {/* ── Closing CTA ───────────────────────────────────────── */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-4">
-          <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 text-center border border-white/10 bg-gradient-to-br from-brand-blue/15 via-white/[0.03] to-brand-orange/10">
-            <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-brand-blue/12 blur-3xl pointer-events-none" />
-            <div className="relative">
-              <h2 className="font-display font-bold text-white text-2xl sm:text-3xl mb-3">
-                Tell us about your pool.
-              </h2>
-              <p className="text-gray-400 mb-7 max-w-md mx-auto">
-                Weekly service, a one-off job, or you are not sure which you need — either
-                way you get a straight number back the same day.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a href="#quote" onClick={handleQuoteClick} className="btn btn-orange w-full sm:w-auto">
-                  <MessageSquare className="w-[18px] h-[18px]" />
-                  Get a Free Quote
-                </a>
-                <a href={PHONE_HREF} className="btn btn-glass w-full sm:w-auto">
-                  <Phone className="w-[18px] h-[18px]" />
-                  {PHONE_DISPLAY}
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* ── On-page quote form ────────────────────────────
+            Replaces the old button-only closing CTA. Those buttons opened the
+            QuoteSheet, which is mount-on-open — so this page shipped zero form
+            elements in its prerendered HTML and read as an article ABOUT
+            services rather than a landing page FOR them. The select is built
+            from the services catalog so it can never drift from the nav
+            dropdown, the footer column, or the grid above it. */}
+        <ServiceQuoteForm
+          layout="centered"
+          accent="blue"
+          eyebrow="Request a Quote"
+          heading="Tell us what your pool needs."
+          intro={
+            <>
+              Weekly service, a one-off job, or you&rsquo;re not sure which — send it over and
+              you get a straight number back the same day. Most work can be priced without
+              anyone coming out.
+            </>
+          }
+          points={[
+            'One flat number, not a range and not a price on arrival',
+            'A reply the same day, Mon–Sat, from someone here in Pinellas',
+            'No contract, and no obligation to book',
+          ]}
+          serviceLabel="Which service do you need?"
+          serviceOptions={[
+            ...services.map((s) => ({ value: s.slug, label: s.label })),
+            { value: 'commercial', label: 'Commercial / HOA pool' },
+            { value: 'other', label: 'Something else' },
+          ]}
+          extraFields={[
+            {
+              id: 'timeline',
+              label: 'How soon do you need it?',
+              type: 'select',
+              required: true,
+              options: [
+                { value: 'asap', label: 'As soon as you can' },
+                { value: 'few-weeks', label: 'Within the next couple of weeks' },
+                { value: 'pricing', label: 'Just getting a price for now' },
+              ],
+            },
+          ]}
+          source="services-page-quote-form"
+          submitLabel="Get My Quote"
+          successTitle="Got it — that is with us."
+          successBody="We will come back to you the same day with a flat number for the service you picked, and we will only ask follow-up questions if the job genuinely needs them."
+          footnote="No contract. No obligation. We never sell or share your details."
+        />
 
         <Footer />
       </div>

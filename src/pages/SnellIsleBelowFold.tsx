@@ -64,7 +64,7 @@ const processSteps = [
     icon: Camera,
     step: 'A documented report after every visit',
     body:
-      "Chemistry readings, what was done, and condition photos in your inbox before we leave the property. Whether you're home, traveling, or coordinating with a property manager, you have a clear record of exactly how your pool is being cared for.",
+      "Every visit is written up and emailed the moment it's finished — the readings we took, the work performed, and photographs of the finish and the water. Home, abroad, or working through a property manager, you hold a continuous record of how the pool has been kept.",
   },
   {
     icon: MessageSquareText,
@@ -404,9 +404,9 @@ const WhyUsSection = () => (
           Four ways estate pool service usually slips.
         </h2>
         <p className="section-subtext">
-          If you've owned a Snell Isle pool for a while, you've probably seen at
-          least one of these. Here's why they happen — and how our weekly
-          service is built to avoid them.
+          Own a Snell Isle pool long enough and at least one of these will sound
+          familiar. Here's what's actually behind them, and the way our weekly
+          service heads them off.
         </p>
       </m.div>
 
@@ -483,9 +483,10 @@ const PromiseStrip = () => (
           Clear water. Protected finish. Zero hassle.
         </h2>
         <p className="section-subtext max-w-2xl mx-auto mb-8">
-          A consistent, vetted technician, finish-safe chemistry, full debris
-          and equipment care, and a photo report after every visit — for one
-          flat monthly rate. No contracts, no surprise chemical bills.
+          Weekly attention from a vetted tech, chemistry kept gentle on pebble
+          and tile, canopy debris and equipment handled as a matter of course —
+          billed as one flat monthly figure, with nothing to sign and no
+          chemical charges appearing later.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-300">
           <span className="flex items-center gap-2">

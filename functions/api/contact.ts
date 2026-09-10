@@ -325,9 +325,16 @@ const composeBody = (p: SubmissionPayload): { html: string; text: string } => {
 };
 
 const humanizeService = (slug: string): string => {
+  // Keys must cover every `service` value any form on the site can submit:
+  // the homepage quote form, the QuoteChooser, and the /services/ hub select
+  // (which is generated from src/lib/services.ts, so its slugs live there).
   const map: Record<string, string> = {
     weekly: 'Weekly Cleaning',
     green: 'Green Pool Recovery',
+    storm: 'Storm & Hurricane Cleanup',
+    salt: 'Salt System & Chemistry',
+    filter: 'Filter Service',
+    equipment: 'Equipment Repair',
     repair: 'Equipment Repair',
     commercial: 'Commercial / HOA',
     other: 'Other',

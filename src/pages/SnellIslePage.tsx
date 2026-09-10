@@ -115,7 +115,7 @@ const HeroSection = () => {
               </Glass>
             </div>
             <p className="mt-3 text-[13px] text-gray-400">
-              Home or away for the season — call or text any time, we keep it covered either way.
+              In residence or away for months — reach us by call or text whenever, and the pool is looked after regardless.
             </p>
 
             {/* Trust strip — estate-specific signal */}

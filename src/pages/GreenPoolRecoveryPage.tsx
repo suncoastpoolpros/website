@@ -24,6 +24,7 @@ import {
 import { QuoteSheetProvider, useQuoteSheet } from '@/components/QuoteSheet';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { ServiceQuoteForm } from '@/components/ServiceQuoteForm';
 import { Container } from '@/components/Container';
 import { SmartLink } from '@/components/SmartLink';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
@@ -641,34 +642,62 @@ const GreenPoolRecoveryPageInner = () => {
           </Container>
         </section>
 
-        {/* ── Closing CTA ───────────────────────────────────────── */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-4">
-          <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 text-center border border-white/10 bg-gradient-to-br from-brand-blue/15 via-white/[0.03] to-brand-orange/10">
-            <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-brand-blue/12 blur-3xl pointer-events-none" />
-            <div className="relative">
-              <h2 className="font-display font-bold text-white text-2xl sm:text-3xl mb-3">
-                Send us a photo of it.
-              </h2>
-              <p className="text-gray-400 mb-7 max-w-md mx-auto">
-                We&rsquo;ll tell you which tier it&rsquo;s in, roughly how long it&rsquo;ll take,
-                and what it costs — one flat number, same day.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a href="#quote" onClick={handleQuoteClick} className="btn btn-orange w-full sm:w-auto">
-                  <MessageSquare className="w-[18px] h-[18px]" />
-                  Send a Photo, Get a Quote
-                </a>
-                <a href={PHONE_HREF} className="btn btn-glass w-full sm:w-auto">
-                  <Phone className="w-[18px] h-[18px]" />
-                  {PHONE_DISPLAY}
-                </a>
-              </div>
-              <p className="text-gray-500 text-sm max-w-lg mx-auto mt-6">
-                No obligation, and if it&rsquo;s a tier one we&rsquo;ll say so.
-              </p>
-            </div>
-          </div>
-        </section>
+        {/* ── On-page quote form ────────────────────────────
+            Replaces the button-only closing CTA so the page ships a real form
+            in its prerendered HTML (see ServiceQuoteForm's header comment).
+            Mirrored layout and its own two qualifying questions — both worded
+            straight off the TIERS block above, so an answer usually tells us
+            the tier before we have even opened the photos. */}
+        <ServiceQuoteForm
+          layout="form-left"
+          accent="blue"
+          eyebrow="Green Pool Quote"
+          heading="Have it priced before you touch a thing."
+          intro={
+            <>
+              Answer two questions and we can usually tell you which tier it&rsquo;s in,
+              roughly how long it will take, and what it costs — one flat figure, same
+              day. Nothing you pour in while you wait will change that number.
+            </>
+          }
+          points={[
+            'We vacuum the sludge out — draining is a last resort, not step one',
+            'An honest timeline up front, whether that is three days or two weeks',
+            'If it is a tier one you could clear yourself, we will say so',
+          ]}
+          service={{ value: 'green', label: 'Green pool recovery' }}
+          extraFields={[
+            {
+              id: 'howLongGreen',
+              label: 'How long has it been green?',
+              type: 'select',
+              required: true,
+              options: [
+                { value: 'days', label: 'A few days' },
+                { value: 'weeks', label: 'One or two weeks' },
+                { value: 'month-plus', label: 'A month or more' },
+                { value: 'months', label: 'Honestly, months' },
+              ],
+            },
+            {
+              id: 'howMuchYouCanSee',
+              label: 'How much of the bottom can you see?',
+              type: 'select',
+              required: true,
+              options: [
+                { value: 'tier-one', label: 'Hazy and tinted — the drain is still visible' },
+                { value: 'tier-two', label: 'Solid green — the steps have gone' },
+                { value: 'tier-three', label: 'Dark, with debris on the floor' },
+                { value: 'unsure', label: 'Not sure' },
+              ],
+            },
+          ]}
+          source="green-pool-recovery-quote-form"
+          submitLabel="Get My Recovery Quote"
+          successTitle="Got it — we will size it up today."
+          successBody="We will come back with the tier we think it is in, an honest timeline, and one flat price to get it back to blue."
+          footnote={<>Photos get you a tighter number — text them to {PHONE_DISPLAY} any time.</>}
+        />
 
         <Footer />
       </div>

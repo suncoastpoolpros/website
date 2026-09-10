@@ -178,7 +178,7 @@ const PAGE_SCHEMA = [
           { '@type': 'Place', name: 'Seminole Lake, FL' },
         ],
         description:
-          'Reliable weekly pool service for full-time Seminole, FL homes — families and year-round residents. Consistent vetted technicians, screen-enclosure debris handled, flat rate with chemicals included, photo report after every visit.',
+          'Reliable weekly pool service for full-time Seminole, FL homes — families and year-round residents. Vetted techs on a set day, screen-enclosure debris handled, all standard chemicals inside one flat monthly rate, and photo-documented proof each week.',
       },
       {
         '@context': 'https://schema.org',

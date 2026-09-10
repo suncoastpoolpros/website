@@ -22,15 +22,15 @@ export const largoFaqs = [
   },
   {
     q: 'What is the Always Blue Guarantee?',
-    a: "It's our promise that as long as you're on weekly service, your water stays clear and balanced — not just the day we visit, but all week long. If your pool ever drifts out of balance under our regular care, we come back and make it right at no extra charge. To stand behind that we keep exclusive control of your chemistry, so we just ask that you don't add your own chemicals between visits — that's the most common way a balanced pool gets thrown off. A few things sit outside it because they're beyond normal weekly care, like extreme loss from a leak or a fill hose left running. Everything within normal weekly service is covered, period.",
+    a: "It means clear, balanced water is our responsibility all week, not only on the day your tech is standing there. If the pool slips out of range while we're the ones looking after it, we come back and correct it — and that return trip is free. Two things make that possible. We have to be the only ones putting anything in the water, so please skip the store-bought shock between visits; well-meant as it is, that's far and away the most common reason we pull up to a pool that's suddenly off. And it applies to ordinary weekly maintenance, not accidents — water lost through a leak, or a fill hose nobody shut off. Short of that, if it happened under normal weekly care, putting it right is our problem and not your bill.",
   },
   {
     q: 'What does it cost, and will my bill change month to month?',
-    a: "One flat monthly rate, and your standard weekly chemicals are already in it — no per-visit chemical charges, no 'high-demand' surcharges, no contract. The exact number depends on your pool's size and setup, so the honest answer is we'll quote you a real price after a quick look. Anything bigger than normal weekly care — a repair, a part, a green-pool recovery — is always quoted and approved before we start. The price we quote is the price you pay.",
+    a: "It shouldn't move at all. You're on a flat monthly rate with your standard weekly chemicals already built into it — nothing metered per visit, no seasonal “chlorine costs more right now” line item, and nothing to sign. Where that number lands comes down to the pool itself, which is why we'd rather come look at it than guess over the phone. Work that sits outside weekly maintenance — a failed pump, a replacement part, bringing a green pool back — gets priced and okayed by you before anyone starts. Whatever we hand you at the beginning is what shows up on the invoice.",
   },
   {
     q: 'Will it be the same technician every week?',
-    a: "We assign a background-checked tech to your pool and keep routes consistent, so it's a familiar face who learns your equipment, your gate, the quirks of an older setup — exactly what keeps service reliable on a pool that's been around a while. And every visit is documented, so nothing gets lost if someone ever covers the route.",
+    a: "Routes here stay consistent, so in practice you're seeing a familiar background-checked face rather than a stranger each week — someone who already knows your equipment, your gate, and the handful of quirks that come with a setup that's been in the ground a while. None of that lives in one person's head, either. The whole visit gets written up each time, so on the odd week the route is covered, your pool is handled the same way it always is.",
   },
   {
     q: 'My pool has gone green or I let it slip — can you still take it on?',

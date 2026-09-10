@@ -97,7 +97,7 @@ const livedInPillars = [
     icon: Users,
     title: 'Dosed for real, daily use',
     body:
-      "Kids after school, grandkids on the weekend, your morning laps — a pool that's in the water every day burns through chlorine far faster than one that just sits. We balance for the load your pool actually carries and leave a safe buffer, so it's swim-ready the day after we visit, not just clear-looking.",
+      "Kids after school, grandkids on the weekend, your morning laps — a pool somebody's in daily eats chlorine at a rate a still one never will. We set your levels against that real household traffic and build in enough margin to hold, so the water is fit to swim on Thursday, not only on the Tuesday the truck came.",
   },
   {
     icon: ShieldCheck,
@@ -365,8 +365,9 @@ const ValueSection = () => (
             ))}
           </ul>
           <p className="text-gray-500 text-[13px] mt-6 leading-relaxed border-t border-white/10 pt-5">
-            Bigger work — a pump, a heater, a green-pool recovery — is always quoted
-            and approved before we start. No surprises, ever.
+            Anything larger than weekly care — a pump, a heater, bringing a green
+            pool back — carries its own number, and you sign off on it first.
+            No surprises, ever.
           </p>
         </m.div>
       </div>
@@ -379,12 +380,12 @@ const steps = [
   {
     icon: CalendarCheck,
     title: 'Same day, every week',
-    body: "Your pool goes on a fixed weekly route — same day, same checklist, a tech who knows your pool. No reminding us, no chasing.",
+    body: "Your pool sits on a fixed route with a set day, a set list of work, and a tech who already knows it. Nothing to remind us about, nothing to chase.",
   },
   {
     icon: FileText,
     title: 'Photo report when we leave',
-    body: "Within the hour you get chemistry readings, what was done, and condition photos — emailed, every visit.",
+    body: "An email lands within the hour: where your numbers sat, the work that got done, and photos to prove it. Every single week.",
   },
   {
     icon: MessageSquareText,
@@ -409,11 +410,11 @@ const ProcessTimeline = () => (
           How It Runs
         </span>
         <h2 className="section-heading text-[#0a1628] leading-tight mb-4">
-          You don't manage it. We do.
+          Set it up once, then forget it.
         </h2>
         <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
-          The whole point of weekly service is that it disappears into the
-          background. Three steps, then you stop thinking about your pool.
+          Weekly service earns its keep by vanishing. Three steps at the start,
+          and after that your pool stops being something you think about.
         </p>
       </m.div>
 

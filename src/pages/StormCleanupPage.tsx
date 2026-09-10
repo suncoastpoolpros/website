@@ -26,6 +26,7 @@ import {
 import { QuoteSheetProvider, useQuoteSheet } from '@/components/QuoteSheet';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { ServiceQuoteForm } from '@/components/ServiceQuoteForm';
 import { Container } from '@/components/Container';
 import { SmartLink } from '@/components/SmartLink';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
@@ -878,6 +879,66 @@ const StormCleanupPageInner = () => {
             </div>
           </Container>
         </section>
+
+        {/* ── On-page quote form ────────────────────────────
+            This page had no form at all in its prerendered HTML — every path to
+            us was a JS popup — so it read as a storm article rather than a
+            landing page for storm cleanup. Orange accent and the copy-right
+            layout deliberately break from the two blue pages: after a storm the
+            job is urgent, and this section should not look like the same block
+            pasted a third time. Both questions come off the CLEANUP_STEPS above
+            — debris load decides how long it takes, and pad status decides
+            whether it is a cleanup or a repair. */}
+        <ServiceQuoteForm
+          layout="form-right"
+          accent="orange"
+          eyebrow="Post-Storm Callout"
+          heading="Get on the list after the storm."
+          intro={
+            <>
+              After a named storm we work through Pinellas in the order requests come in.
+              Send this and you have a place in the queue plus a flat number — you do not
+              have to wait on hold to find out where you stand.
+            </>
+          }
+          points={[
+            'Debris comes out before the pump goes back on — that order is what stops a cleanup becoming a repair',
+            'The pad gets checked before anything is switched on',
+            'A return visit is included, because one pass never holds the numbers',
+          ]}
+          service={{ value: 'storm', label: 'Storm & hurricane cleanup' }}
+          extraFields={[
+            {
+              id: 'debrisLoad',
+              label: 'What is in the pool?',
+              type: 'select',
+              required: true,
+              options: [
+                { value: 'light', label: 'Leaves and small debris' },
+                { value: 'heavy', label: 'Branches, mulch or roof debris' },
+                { value: 'silt', label: 'Heavy silt — the water has gone muddy' },
+                { value: 'unsure', label: 'Not sure yet' },
+              ],
+            },
+            {
+              id: 'equipmentPadStatus',
+              label: 'Equipment pad status',
+              type: 'select',
+              required: true,
+              options: [
+                { value: 'running', label: 'Power is back and the pump runs' },
+                { value: 'wont-start', label: 'Power is back but the pump will not start' },
+                { value: 'no-power', label: 'Still no power' },
+                { value: 'flooded', label: 'The pad took water' },
+              ],
+            },
+          ]}
+          source="storm-cleanup-quote-form"
+          submitLabel="Request Storm Cleanup"
+          successTitle="You are on the list."
+          successBody="We will confirm your place in the queue today and send a flat number for the cleanup. If your answers suggest the equipment is at risk, we will call rather than email."
+          footnote={<>If the pump is making a noise it should not, stop it and call {PHONE_DISPLAY}.</>}
+        />
 
         <Footer />
       </div>

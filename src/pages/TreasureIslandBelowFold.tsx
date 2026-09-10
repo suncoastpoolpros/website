@@ -208,10 +208,10 @@ const RentalFailurePillars = () => (
             — even if the pool looked perfect at check-in.
           </p>
           <p className="text-gray-300 leading-relaxed text-[15px] mb-6">
-            We dose for the load your pool actually carries — not the load of a
-            quiet residence — and we leave a chlorine buffer with every weekly
-            visit. The water you serve to a guest is genuinely safe to swim in,
-            not just clear-looking.
+            So we chlorinate against a rental's real traffic rather than a quiet
+            household's, and every weekly visit leaves headroom in reserve to
+            cover the days in between. What your guest steps into is actually
+            sanitary water, not water that only reads clean.
           </p>
 
           <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4">
@@ -369,7 +369,7 @@ const WHY_US_PAIRS: Array<{
       '"High demand this month" fees. "Extra acid" charges. "Storm cleanup" lines you can\'t verify because you weren\'t there. The bill drifts up; the explanation never lands.',
     us: 'One flat monthly rate, all standard chemicals',
     usDetail:
-      "Standard weekly chemicals are included in the rate you were quoted. Anything beyond that — major recovery, parts, storm response — is quoted and approved before any work happens.",
+      "The chemicals your pool goes through week to week are already paid for inside the monthly figure. Anything past that — a real recovery, a part, a storm response — gets priced and approved by you first.",
   },
   {
     failure: "Missed visits that surface during a booking",
@@ -480,9 +480,9 @@ const PromiseStrip = () => (
           Guest-ready. Protected. Off your plate.
         </h2>
         <p className="section-subtext max-w-2xl mx-auto mb-8">
-          A consistent, vetted technician, full chemistry balance, and a
-          photo-verified report after every visit — for one flat monthly rate,
-          no contracts, no surprise chemical bills.
+          One flat monthly rate covers the weekly visit, the chemistry, and the
+          photo proof in your inbox — nothing to sign, nothing tacked on
+          afterward, and no scramble the morning a booking checks in.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-300">
           <span className="flex items-center gap-2">

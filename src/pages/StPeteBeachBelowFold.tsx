@@ -53,7 +53,7 @@ const islandToll = [
     icon: Users,
     title: 'These pools get used',
     body:
-      "Between family, weekend guests, and renters, a St. Pete Beach pool rarely sits quiet for long — and a busy pool burns through sanitizer in a way an empty one never will. We dose for how yours actually gets used, not for some calm, untouched backyard nobody's swimming in.",
+      "Between family, weekend guests, and renters, a St. Pete Beach pool rarely sits quiet for long — and every swimmer takes a bite out of the sanitizer that a still pool never would. We dose for how yours actually gets used, not for some calm, untouched backyard nobody's swimming in.",
   },
 ];
 
@@ -394,9 +394,10 @@ const TwoModesSection = () => (
             and the pool still looks perfect. That's the trap.
           </p>
           <p className="text-gray-300 leading-relaxed text-[15px] mb-6">
-            So we dose for the load your pool actually carries and leave a buffer
-            behind every visit. The water your guests step into is safe to swim
-            in — not just pretty in the listing photo.
+            So the dosing gets set against how hard your pool is really working,
+            with enough held in reserve to carry it to the next visit. What your
+            guests wade into is genuinely sanitary water — not water that merely
+            photographs well.
           </p>
 
           <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4">

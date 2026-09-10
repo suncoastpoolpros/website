@@ -178,7 +178,7 @@ const PAGE_SCHEMA = [
           { '@type': 'Place', name: 'Highland Lakes, FL' },
         ],
         description:
-          'Honest, flat-rate weekly pool service for Largo, FL — the established residential heart of Pinellas. Consistent vetted technicians, aging equipment watched and serviced, chemicals included, photo report after every visit, no commission-driven upsells.',
+          'Honest, flat-rate weekly pool service for Largo, FL — the established residential heart of Pinellas. Vetted local techs, older pumps and heaters watched closely, standard chemicals inside the monthly price, emailed proof of every visit, and no commission-driven upsells.',
       },
       {
         '@context': 'https://schema.org',

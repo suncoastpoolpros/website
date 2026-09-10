@@ -22,7 +22,7 @@ export const seminoleFaqs = [
   },
   {
     q: 'My pool gets heavy use from the kids and grandkids — can you keep up with that?',
-    a: "That's exactly what we dose for. A pool with people in it every afternoon burns through sanitizer far faster than one that just sits — sunscreen, sweat, and Florida sun all eat chlorine. We balance for the load your pool actually carries and leave a healthy buffer, so the water is genuinely safe to swim in the day after we visit, not just clear-looking.",
+    a: "That's exactly what we plan around. Sunscreen, sweat, and Florida sun all consume chlorine, and a pool with somebody in it every afternoon works through sanitizer far quicker than one nobody touches. We set your levels against that real household use and leave enough margin behind that the water is still fit to swim days later — not just clean-looking on the afternoon we came.",
   },
   {
     q: 'Do you send proof of each visit even though I live here?',
