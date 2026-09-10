@@ -195,7 +195,10 @@ export const ProposalBreakdown = ({
                     key={i}
                     className="mb-4 flex break-inside-avoid gap-2 text-sm leading-relaxed text-[#1f2937]"
                   >
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
+                    <Check
+                      className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]"
+                      strokeWidth={3}
+                    />
                     <span>{b}</span>
                   </li>
                 ))}

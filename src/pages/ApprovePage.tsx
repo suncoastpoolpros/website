@@ -1235,7 +1235,10 @@ export const ApprovePage = () => {
                             key={j}
                             className="flex gap-2 text-sm leading-relaxed text-[#374151]"
                           >
-                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]" />
+                            <Check
+                              className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]"
+                              strokeWidth={3}
+                            />
                             {shortBullet(item)}
                           </li>
                         );
