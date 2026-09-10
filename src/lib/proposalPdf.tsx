@@ -101,6 +101,7 @@ export const proposalDataFromQuote = (quote: {
   const pool = (quote.pool ?? {}) as Record<string, unknown>;
   const p = (quote.proposal ?? {}) as Record<string, unknown>;
   const tiers = Array.isArray(p.tiers) ? (p.tiers as Array<Record<string, unknown>>) : [];
+  const build = (p.buildOptions ?? {}) as Record<string, unknown>;
   return {
     customer: {
       name: str(quote.customerName),
@@ -152,7 +153,30 @@ export const proposalDataFromQuote = (quote: {
       jobKind: str(p.jobKind),
       cadence: str(p.cadence),
       emailNote: str(p.emailNote),
-      pricingMode: p.pricingMode === 'tiers' ? 'tiers' : 'single',
+      pricingMode:
+        p.pricingMode === 'tiers' ? 'tiers' : p.pricingMode === 'build' ? 'build' : 'single',
+      /*
+       * buildOptions MUST survive the round trip, for the same reason jobKind
+       * does. Dropped, a re-downloaded build-mode PDF loses the options table
+       * and prints the standard rate as if it were the only price — the
+       * document contradicting the page the customer is reading it from.
+       */
+      buildOptions: {
+        /*
+         * A MISSING FLAG MEANS NOT OFFERED — all three of them.
+         *
+         * These two used to default ON (`!== false`) while the approve page
+         * defaulted them OFF. Same stored quote, two documents: the page
+         * would show no annual option and the PDF's table would list one.
+         * Strict is the safe direction, since the failure it prevents is a
+         * document offering a price the proposal never made.
+         */
+        offerFilter: build.offerFilter === true,
+        filterDelta: str(build.filterDelta),
+        offerAnnual: build.offerAnnual === true,
+        offerPayment: build.offerPayment === true,
+        achDelta: str(build.achDelta),
+      },
       tiers: tiers.map(
         (t): Tier => ({
           name: str(t?.name),

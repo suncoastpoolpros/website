@@ -169,6 +169,56 @@ for (const worker of ['functions/api/admin/send-proposal.ts', 'functions/api/adm
   }
 }
 
+// 7. The configurable quote's wording and arithmetic.
+//
+// functions/api/quote/accept.ts rebuilds the plan summary and re-derives the
+// price the office will bill, because it must not trust the browser's version
+// of either. Both are hand-copied from src/components/admin/planOptions.ts.
+//
+// Drift here is quiet and expensive: the customer's screen and their signed
+// record would describe the same deal in different words, or — worse — the
+// handoff email would name a rate the customer was never shown.
+const optionsMod = await bundle('src/components/admin/planOptions.ts', 'plan-options.mjs');
+const acceptSrc = await readFile(path.join(ROOT, 'functions/api/quote/accept.ts'), 'utf8');
+
+// Every phrase describeChoice can emit, across all eight offer/choice shapes.
+const allOffers = {
+  offerFilter: true,
+  filterDelta: '10',
+  offerAnnual: true,
+  offerPayment: true,
+  achDelta: '5',
+};
+const phrases = new Set();
+for (const filterParts of [true, false]) {
+  for (const term of ['monthly', 'annual']) {
+    for (const payment of ['ach', 'card', 'check']) {
+      const line = optionsMod.describeChoice(allOffers, { filterParts, term, payment });
+      for (const part of line.split(' · ')) phrases.add(part);
+    }
+  }
+}
+for (const phrase of phrases) {
+  check(
+    acceptSrc.includes(`'${phrase}'`),
+    `accept.ts is missing the summary phrase "${phrase}" that describeChoice produces`,
+  );
+}
+// The separator too — joined differently, the record reads as one run-on line.
+check(acceptSrc.includes("join(' · ')"), "accept.ts no longer joins the summary with ' · '");
+
+// The free-month divisor. accept.ts spells 11 out because it cannot import it.
+const annualMonths = optionsMod.ANNUAL_MONTHS_CHARGED ?? null;
+const mirrored = [...acceptSrc.matchAll(/rate \* (\d+)/g)].map((m) => Number(m[1]));
+check(
+  annualMonths !== null,
+  'ANNUAL_MONTHS_CHARGED is not re-exported through planOptions.ts — the mirror check cannot read it',
+);
+check(
+  mirrored.length > 0 && mirrored.every((n) => n === annualMonths),
+  `accept.ts charges ${mirrored.join('/') || 'nothing'} months annually, planOptions says ${annualMonths}`,
+);
+
 await rm(OUT, { recursive: true, force: true });
 
 if (failures.length) {
@@ -181,4 +231,6 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('✓ Mirror check: quote links, token constants and NAP agree across src/ and functions/.');
+console.log(
+  '✓ Mirror check: quote links, token constants, NAP and plan options agree across src/ and functions/.',
+);

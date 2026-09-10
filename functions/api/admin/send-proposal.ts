@@ -66,6 +66,19 @@ type Proposal = {
   emailNote?: string;
   pricingMode?: string;
   tiers?: Tier[];
+  /**
+   * Declared so the stored proposal keeps it. saveQuote writes this object
+   * wholesale, so an undeclared field would still survive — but the approve
+   * page reads buildOptions back to price the quote, and a field the sender
+   * doesn't name is a field nobody notices dropping.
+   */
+  buildOptions?: {
+    offerFilter?: boolean;
+    filterDelta?: string;
+    offerAnnual?: boolean;
+    offerPayment?: boolean;
+    achDelta?: string;
+  };
 };
 
 /**
@@ -250,6 +263,21 @@ const hasTiers = (p: SendProposalPayload): boolean =>
   p.proposal?.pricingMode === 'tiers' && (p.proposal?.tiers?.length ?? 0) > 0;
 
 /**
+ * A build-mode quote the customer actually has to configure.
+ *
+ * Checks the offers, not just the mode: a proposal switched to 'build' with
+ * every option turned off sends as a plain one-price quote, and telling that
+ * customer to "choose your options" points them at a screen with no choices.
+ */
+const hasOptions = (p: SendProposalPayload): boolean => {
+  const b = p.proposal?.buildOptions;
+  return (
+    p.proposal?.pricingMode === 'build' &&
+    (b?.offerFilter === true || b?.offerAnnual === true || b?.offerPayment === true)
+  );
+};
+
+/**
  * The subject line.
  *
  * Short, and it does NOT repeat the sender. The From name already displays
@@ -375,7 +403,11 @@ export const composeProposalEmail = (
    * pick a plan they were never given is the same class of error as promising a
    * salt cell to a chlorine pool.
    */
-  const choose = hasTiers(p) ? 'choose your plan and ' : '';
+  const choose = hasTiers(p)
+    ? 'choose your plan and '
+    : hasOptions(p)
+      ? 'build your plan and '
+      : '';
 
   const text = [
     greeting,

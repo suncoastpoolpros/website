@@ -27,6 +27,7 @@ import {
   tierDelta,
 } from "@/lib/adminApi";
 import { currentExcludes, currentValueNote } from "./tierPresets";
+import { buildOptionRows, offersAnyChoice } from "./planOptions";
 import {
   benefitsFootnote,
   BENEFITS_COMPLETE_HEADING,
@@ -775,6 +776,21 @@ export const ProposalDocument = ({
     (a) => a.label.trim() || a.price.trim(),
   );
   const tiered = proposal.pricingMode === "tiers" && proposal.tiers.length > 0;
+  /**
+   * The configurable quote. Falls through to the single-price branch below
+   * for its headline — the standard rate IS a total, just not the only one —
+   * and adds a table of what each option does to it.
+   *
+   * A PDF cannot be configured, so it does the one thing the web page can't:
+   * it puts every price the customer could land on into a document they can
+   * keep, forward, and hold us to. Printing only the best case would leave
+   * someone reading the attachment alone with a number they may not pay.
+   */
+  const configurable =
+    proposal.pricingMode === "build" && offersAnyChoice(proposal.buildOptions);
+  const optionRows = configurable
+    ? buildOptionRows(proposal.price, proposal.buildOptions)
+    : [];
   const kind = jobKindOf(proposal.jobKind);
   const hasCustomer = [
     customer.name,
@@ -1231,7 +1247,11 @@ export const ProposalDocument = ({
         ) : proposal.price.trim() ? (
           <View style={styles.section}>
             <View style={styles.priceBox}>
-              <Text style={styles.priceLabel}>Total</Text>
+              <Text style={styles.priceLabel}>
+                {/* "Total" is wrong on a configurable quote — it is the
+                    starting point, and the table below moves it. */}
+                {configurable ? "Standard rate" : "Total"}
+              </Text>
               <Text style={styles.priceValue}>
                 {formatPrice(proposal.price)}
               </Text>
@@ -1243,6 +1263,29 @@ export const ProposalDocument = ({
                   {cadenceLabel(proposal.cadence)}
                 </Text>
               ) : null}
+            </View>
+          </View>
+        ) : null}
+
+        {optionRows.length ? (
+          /* wrap={false} with the heading INSIDE: a table of prices split
+             across a page break stops being a comparison, and react-pdf will
+             not break a container's first child — so gluing the heading in
+             here is what stops it stranding at the foot of a page. */
+          <View style={styles.section} wrap={false}>
+            <Text style={styles.sectionLabel}>Your Options</Text>
+            {optionRows.map((r, i) => (
+              <View key={i} style={styles.addonRow}>
+                <Text style={styles.addonLabel}>{r.label}</Text>
+                <Text style={styles.addonPrice}>{r.amount}</Text>
+              </View>
+            ))}
+            <View style={styles.finePrintBlock}>
+              <Text style={styles.finePrintLine}>
+                Options are yours to pick at the link in the email this was
+                attached to, and your rate updates as you choose. Nothing is
+                locked in until you sign.
+              </Text>
             </View>
           </View>
         ) : null}
@@ -1276,7 +1319,9 @@ export const ProposalDocument = ({
 
         <View style={styles.acceptBox} wrap={false}>
           <Text style={styles.acceptText}>
-            {acceptWords.length > 1
+            {configurable
+              ? "To accept, open the link in the email this was attached to, pick the options you'd like, and sign — we'll get you on the schedule."
+              : acceptWords.length > 1
               ? `To accept, simply reply to the email this was attached to with the plan you'd like — ${acceptWords.join(" or ")} — and we'll get you on the schedule.`
               : 'To accept this proposal, simply reply "APPROVED" to the email it was attached to, and we\'ll get you on the schedule.'}
           </Text>

@@ -13,7 +13,7 @@ import {
 } from '@/lib/contact';
 import { usePageMeta } from '@/lib/usePageMeta';
 
-const LAST_UPDATED = '08-17-2026';
+const LAST_UPDATED = '09-09-2026';
 
 // Each block is one clause. `lead` renders a bolded inline label before the text
 // (used for the bulleted definition-style items in the original document).
@@ -216,6 +216,23 @@ const SECTIONS: Section[] = [
               {
                 lead: 'Payment Methods:',
                 text: 'A valid payment method should remain on file unless other terms are agreed to. Certain payment methods may include processing fees reflecting actual transaction costs where permitted by law.',
+              },
+              {
+                /*
+                 * THE AUTO-PAY DISCOUNT HAS TO LIVE HERE.
+                 *
+                 * A proposal that quotes a lower rate for paying by bank
+                 * transfer is making a pricing promise, and a promise the
+                 * signed agreement does not contain is one the customer has
+                 * no way to hold us to — and one we have no clean way to
+                 * apply when the discount later has to come off. Stated as a
+                 * DISCOUNT off the standard rate, never as a card surcharge:
+                 * the money is the same, but a surcharge brings the card
+                 * networks' rules with it (disclosure, a cap at our own
+                 * discount rate, and no surcharging debit at all).
+                 */
+                lead: 'ACH Auto-Pay Discount:',
+                text: 'Where a proposal offers a discounted rate for bank transfer (ACH) on auto-pay, that rate applies for as long as ACH auto-pay remains active on the account. Paying by card or by check is billed at the standard rate quoted — no card fee or surcharge is added. If ACH auto-pay is cancelled or fails repeatedly, billing reverts to the standard rate from the next invoice, and we will tell you before that happens. The discount does not apply to annual prepayment, which already carries the free twelfth month.',
               },
               {
                 lead: 'Returned Payments:',

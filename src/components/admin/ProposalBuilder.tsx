@@ -72,6 +72,14 @@ import {
 } from "./jobKinds";
 import { ADDON_PRESETS } from "./addonPresets";
 import {
+  type BuildOptions,
+  PAYMENT_SHORT,
+  defaultChoice,
+  money,
+  offersAnyChoice,
+  resolvePlan,
+} from "./planOptions";
+import {
   benefitsFootnote,
   BENEFITS_COMPLETE_HEADING,
   BENEFITS_EVERY_HEADING,
@@ -93,6 +101,7 @@ import {
   includedExtras,
 } from "./includedExtras";
 import {
+  ANNUAL_MONTHS_CHARGED,
   PRESET_VERSION,
   buildTiers,
   buildTiersWithEssentials,
@@ -481,22 +490,72 @@ export const ProposalBuilder = ({
    * two separate controls in two different places. The chips read and write
    * this instead.
    */
-  const planShape: "single" | "two" | "three" =
-    data.proposal.pricingMode !== "tiers"
-      ? "single"
-      : data.proposal.tiers.some((t) => t.essentials)
-        ? "three"
-        : "two";
+  const planShape: "single" | "two" | "three" | "build" =
+    data.proposal.pricingMode === "build"
+      ? "build"
+      : data.proposal.pricingMode !== "tiers"
+        ? "single"
+        : data.proposal.tiers.some((t) => t.essentials)
+          ? "three"
+          : "two";
 
   /** Three plans need a filter service to leave out — see setEssentialsPlan. */
   const canOfferEssentials =
     data.pool.filterServiceIncluded === "yes" &&
     supportsFilterService(data.pool.filterType);
 
-  const setPlanShape = (next: "single" | "two" | "three") => {
+  /**
+   * The two ends of what a build-mode customer can configure, for the
+   * operator's sanity check above.
+   *
+   * The floor is not simply "every discount at once": the annual saving is a
+   * proportion of the rate and the ACH discount is a flat amount, so which is
+   * cheaper depends on the numbers typed. Computing both and taking the lower
+   * is the only way this line stays true as the deltas change.
+   */
+  const buildRange = useMemo(() => {
+    const opts = data.proposal.buildOptions;
+    // The cheapest configuration DECLINES parts — but only where declining is
+    // on offer. (This read `noParts` and was passed as `filterParts`, i.e. it
+    // held the opposite of its name. The arithmetic was right; the next person
+    // to touch it would have had no reason to think so.)
+    const filterParts = !opts.offerFilter;
+    const monthly = resolvePlan(data.proposal.price, opts, {
+      ...defaultChoice(),
+      filterParts,
+      payment: "ach",
+    });
+    if (monthly.standard === null || monthly.monthly === null) return null;
+    const annual = opts.offerAnnual
+      ? resolvePlan(data.proposal.price, opts, {
+          ...defaultChoice(),
+          filterParts,
+          term: "annual",
+        })
+      : null;
+    const annualMonthly = annual?.monthly ?? null;
+    const annualWins = annualMonthly !== null && annualMonthly < monthly.monthly;
+    const bits = [
+      opts.offerFilter ? "no filter parts" : "",
+      annualWins ? "paid annually" : opts.offerPayment ? PAYMENT_SHORT.ach : "",
+    ].filter(Boolean);
+    return {
+      standard: monthly.standard,
+      floor: annualWins ? (annualMonthly as number) : monthly.monthly,
+      floorLabel: bits.length ? bits.join(", ") : "no options taken",
+    };
+  }, [data.proposal.price, data.proposal.buildOptions]);
+
+  const setPlanShape = (next: "single" | "two" | "three" | "build") => {
     if (next === planShape) return;
-    if (next === "single") {
-      setPricingMode("single");
+    if (next === "single" || next === "build") {
+      /*
+       * Neither of these touches `tiers`. Switching to build and back leaves
+       * the cards exactly as they were, the same way switching to single and
+       * back already does — the operator can compare the two shapes without
+       * paying for it in lost wording.
+       */
+      setPricingMode(next);
       return;
     }
     // Rebuilding replaces every card, so warn once there is something to lose.
@@ -514,6 +573,26 @@ export const ProposalBuilder = ({
     if (data.proposal.tiers.length === 0 && next === "two") return;
     setEssentialsPlan(next === "three");
   };
+
+  /**
+   * One field of the build-mode option set.
+   *
+   * Deliberately NOT routed through syncTierPrices: these adjustments are
+   * applied to the base rate at render time by resolvePlan, so there is no
+   * derived copy of them anywhere to drift. That is the whole reason the
+   * configurator stores deltas rather than a matrix of finished prices.
+   */
+  const setBuildOption = <K extends keyof BuildOptions>(
+    key: K,
+    value: BuildOptions[K],
+  ) =>
+    setData((p) => ({
+      ...p,
+      proposal: {
+        ...p.proposal,
+        buildOptions: { ...p.proposal.buildOptions, [key]: value },
+      },
+    }));
 
   const updateTier = (idx: number, patch: Partial<Tier>) =>
     setData((p) => ({
@@ -1827,7 +1906,14 @@ export const ProposalBuilder = ({
                 label={
                   data.proposal.pricingMode === "tiers"
                     ? "Base rate — seeds the plans (e.g. 165/mo)"
-                    : "Total price (e.g. $2,400 or $185/mo)"
+                    : data.proposal.pricingMode === "build"
+                      ? /* THE STANDARD RATE, i.e. what someone paying by
+                           check pays. Every option below comes OFF it. Said
+                           plainly here because typing the ACH rate in this
+                           box is the one mistake that prices the whole quote
+                           low without looking wrong anywhere. */
+                        "Standard rate — before options, what a check pays (e.g. 165/mo)"
+                      : "Total price (e.g. $2,400 or $185/mo)"
                 }
               >
                 <input
@@ -1854,6 +1940,7 @@ export const ProposalBuilder = ({
                     { key: "single", label: "One price" },
                     { key: "two", label: "Two plans" },
                     { key: "three", label: "Three plans" },
+                    { key: "build", label: "Build your own" },
                   ] as const
                 ).map(({ key, label }) => {
                   const on = planShape === key;
@@ -1867,7 +1954,9 @@ export const ProposalBuilder = ({
                       title={
                         blocked
                           ? "Adds an Essentials plan without filter parts — needs the filter service included in the monthly price."
-                          : undefined
+                          : key === "build"
+                            ? "The customer picks their own options — filter parts, monthly or annual, and how they pay — and the page prices it live."
+                            : undefined
                       }
                       onClick={() => setPlanShape(key)}
                       className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
@@ -1901,6 +1990,164 @@ export const ProposalBuilder = ({
                   started. Reset to preset to pick it up — that replaces both
                   plans, including any edits you made here.
                 </p>
+              )}
+              {/* BUILD-MODE OPTIONS.
+                  Three switches, each with the money it moves. Nothing here
+                  is a finished price: the customer's rate is computed from
+                  the standard rate above minus whichever of these they pick,
+                  which is why there is no matrix of twelve prices to keep in
+                  agreement. See planOptions.ts. */}
+              {data.proposal.pricingMode === "build" && (
+                <div className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs leading-relaxed text-gray-400">
+                    The customer picks these on the approve page and sees the
+                    rate update as they do. Every amount below comes{" "}
+                    <span className="font-semibold text-gray-200">off</span>{" "}
+                    the standard rate — leave one blank and that option still
+                    shows, priced the same, which is the honest way to offer a
+                    choice that costs us nothing.
+                  </p>
+
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={data.proposal.buildOptions.offerFilter}
+                      disabled={!canOfferEssentials}
+                      onChange={(e) =>
+                        setBuildOption("offerFilter", e.target.checked)
+                      }
+                      className="mt-0.5 h-4 w-4 accent-brand-blue disabled:opacity-40"
+                    />
+                    <span className="text-sm text-gray-200">
+                      Let them decline filter parts
+                      <span className="block text-xs text-gray-400">
+                        {canOfferEssentials
+                          ? "Same carve-out as the Essentials plan — we still service the filter, they buy the elements when due."
+                          : "Needs the filter service included in the monthly price, on a filter type that has parts."}
+                      </span>
+                    </span>
+                  </label>
+                  {data.proposal.buildOptions.offerFilter && (
+                    <FieldShell
+                      id="pr-filter-delta"
+                      label="Comes off when they decline (e.g. 12)"
+                    >
+                      <input
+                        id="pr-filter-delta"
+                        className={fieldClass}
+                        placeholder=" "
+                        inputMode="decimal"
+                        value={data.proposal.buildOptions.filterDelta}
+                        onChange={(e) =>
+                          setBuildOption("filterDelta", e.target.value)
+                        }
+                      />
+                    </FieldShell>
+                  )}
+
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={data.proposal.buildOptions.offerAnnual}
+                      onChange={(e) =>
+                        setBuildOption("offerAnnual", e.target.checked)
+                      }
+                      className="mt-0.5 h-4 w-4 accent-brand-blue"
+                    />
+                    <span className="text-sm text-gray-200">
+                      Offer the annual prepayment
+                      <span className="block text-xs text-gray-400">
+                        {/* No delta field: the annual saving is the free
+                            twelfth month, which is a term in the signed
+                            agreement rather than a number typed per quote.
+                            Making it editable here would let a proposal
+                            promise a discount the agreement does not. */}
+                        {ANNUAL_MONTHS_CHARGED} months charged, the twelfth
+                        free — the rate the agreement already commits to.
+                      </span>
+                    </span>
+                  </label>
+
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={data.proposal.buildOptions.offerPayment}
+                      onChange={(e) =>
+                        setBuildOption("offerPayment", e.target.checked)
+                      }
+                      className="mt-0.5 h-4 w-4 accent-brand-blue"
+                    />
+                    <span className="text-sm text-gray-200">
+                      Offer the auto-pay choice
+                      <span className="block text-xs text-gray-400">
+                        ACH, card or check. Monthly only — an annual prepay is
+                        one payment, so there is no collection to automate.
+                      </span>
+                    </span>
+                  </label>
+                  {data.proposal.buildOptions.offerPayment && (
+                    <FieldShell
+                      id="pr-ach-delta"
+                      label="ACH auto-pay discount (e.g. 8)"
+                    >
+                      <input
+                        id="pr-ach-delta"
+                        className={fieldClass}
+                        placeholder=" "
+                        inputMode="decimal"
+                        value={data.proposal.buildOptions.achDelta}
+                        onChange={(e) =>
+                          setBuildOption("achDelta", e.target.value)
+                        }
+                      />
+                    </FieldShell>
+                  )}
+
+                  {/* WHAT THE CUSTOMER WILL ACTUALLY SEE, at both ends of the
+                      range. An operator typing deltas is working in
+                      differences; the customer reads totals. Showing both
+                      floor and ceiling here is what catches a delta typed
+                      into the wrong box. */}
+                  {buildRange && (
+                    <div className="rounded-lg border border-white/10 bg-black/20 p-3 text-xs text-gray-300">
+                      <p className="font-semibold uppercase tracking-wide text-gray-400">
+                        They will see
+                      </p>
+                      <p className="mt-1.5">
+                        Standard, by check:{" "}
+                        <span className="font-semibold tabular-nums text-white">
+                          ${money(buildRange.standard)}/mo
+                        </span>
+                      </p>
+                      <p className="mt-1">
+                        Cheapest they can configure:{" "}
+                        <span className="font-semibold tabular-nums text-white">
+                          ${money(buildRange.floor)}/mo
+                        </span>
+                        <span className="text-gray-500"> — {buildRange.floorLabel}</span>
+                      </p>
+                    </div>
+                  )}
+                  {/* A delta typed into the wrong field — 155 into "comes
+                      off" instead of the rate box — produces a floor of zero
+                      or below, and the customer's page renders it verbatim as
+                      "$-12/mo". Caught here rather than clamped there: a
+                      silently clamped $0 is a quote we would honour. */}
+                  {buildRange && buildRange.floor <= 0 && (
+                    <p className="rounded-lg border border-red-400/40 bg-red-400/10 px-3 py-2 text-xs text-red-200">
+                      Those discounts take the rate to ${money(buildRange.floor)}
+                      /mo. Check the amounts — each one comes off the standard
+                      rate, so they should be small next to it.
+                    </p>
+                  )}
+                  {!offersAnyChoice(data.proposal.buildOptions) && (
+                    <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200">
+                      Every option is switched off, so there is nothing for the
+                      customer to choose. This will send as a plain one-price
+                      quote.
+                    </p>
+                  )}
+                </div>
               )}
               <label
                 className={`flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4 ${

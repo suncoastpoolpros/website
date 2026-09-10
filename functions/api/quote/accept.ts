@@ -67,7 +67,9 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     agreeService?: boolean;
     agreePrivacy?: boolean;
   };
-  let body: { token?: string; plan?: string; onboarding?: Onboarding };
+  /** The customer's answers on a build-mode quote. Absent on every other. */
+  type PlanConfig = { filterParts?: boolean; term?: string; payment?: string };
+  let body: { token?: string; plan?: string; config?: PlanConfig; onboarding?: Onboarding };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -120,16 +122,91 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
 
   // The plan must be one this quote actually offered — otherwise a crafted
   // request could record acceptance of a plan or price never sent.
-  let proposal: { tiers?: Array<{ name?: string; price?: string }>; price?: string } = {};
+  let proposal: {
+    tiers?: Array<{ name?: string; price?: string }>;
+    price?: string;
+    pricingMode?: string;
+    buildOptions?: {
+      offerFilter?: boolean;
+      filterDelta?: string;
+      offerAnnual?: boolean;
+      offerPayment?: boolean;
+      achDelta?: string;
+    };
+  } = {};
   try {
     proposal = JSON.parse(row.proposal_json);
   } catch {
     return json({ ok: false, error: 'unreadable' }, 500);
   }
-  const offered = (proposal.tiers ?? []).map((t) => String(t?.name ?? '').trim()).filter(Boolean);
-  const match = offered.find((n) => n.toLowerCase() === plan.toLowerCase());
-  const acceptedPlan = offered.length ? match : plan || 'Proposal';
-  if (offered.length && !match) return json({ ok: false, error: 'unknown_plan' }, 400);
+  /**
+   * A BUILD-MODE QUOTE IS VALIDATED BY ITS OPTIONS, NOT BY A PLAN NAME.
+   *
+   * Two reasons it cannot go through the tier check below. Its `tiers` may
+   * still be populated — switching plan shape in the builder deliberately
+   * leaves the cards alone so the operator can switch back — so the check
+   * would compare a configuration summary against card names and reject a
+   * legitimate acceptance as unknown_plan. And the summary is not a name we
+   * offered; it is a sentence describing what they picked.
+   *
+   * So the config is normalised against what the proposal actually OFFERED,
+   * and the summary is rebuilt here from the normalised values. The client's
+   * `plan` string is ignored on this path: it is the customer's browser
+   * describing the deal, and the record has to be ours.
+   */
+  const buildOpts = proposal.buildOptions ?? {};
+  // MODE ALONE. The approve page renders the configurator for every build-mode
+  // quote, including one with no options switched on — so this has to accept
+  // one too, or that customer signs and gets rejected as unknown_plan.
+  const isBuild = proposal.pricingMode === 'build';
+
+  let acceptedPlan: string | undefined;
+  let planConfig: { filterParts: boolean; term: string; payment: string } | null = null;
+
+  if (isBuild) {
+    const c = body.config ?? {};
+    /*
+     * Every axis CLAMPED to what was offered. A crafted request asking for
+     * annual on a quote that never offered it would otherwise record an
+     * agreement at a price the proposal never quoted.
+     */
+    const filterParts = buildOpts.offerFilter === true ? c.filterParts !== false : true;
+    const term = buildOpts.offerAnnual === true && c.term === 'annual' ? 'annual' : 'monthly';
+    const payment =
+      buildOpts.offerPayment === true && (c.payment === 'card' || c.payment === 'check')
+        ? c.payment
+        : 'ach';
+    planConfig = { filterParts, term, payment };
+    /*
+     * MIRRORS describeChoice in src/components/admin/planOptions.ts.
+     * Pages Functions never import from src/ — they are built separately —
+     * so this wording is duplicated on purpose. Change one, change both, or
+     * the customer's screen and their signed record describe the same deal
+     * differently.
+     */
+    const short: Record<string, string> = {
+      ach: 'ACH auto-pay',
+      card: 'Card auto-pay',
+      check: 'Check',
+    };
+    acceptedPlan =
+      [
+        buildOpts.offerFilter === true
+          ? filterParts
+            ? 'Filter parts included'
+            : 'Without filter parts'
+          : '',
+        term === 'annual' ? 'Paid annually' : 'Billed monthly',
+        term === 'monthly' && buildOpts.offerPayment === true ? short[payment] : '',
+      ]
+        .filter(Boolean)
+        .join(' · ') || 'Proposal';
+  } else {
+    const offered = (proposal.tiers ?? []).map((t) => String(t?.name ?? '').trim()).filter(Boolean);
+    const match = offered.find((n) => n.toLowerCase() === plan.toLowerCase());
+    acceptedPlan = offered.length ? match : plan || 'Proposal';
+    if (offered.length && !match) return json({ ok: false, error: 'unknown_plan' }, 400);
+  }
 
   /**
    * An address given at signing, for a texted quote that has none on record.
@@ -170,6 +247,15 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     agreeService: true,
     agreePrivacy: true,
     termsVersion: TERMS_VERSION,
+    /*
+     * The configuration, on the onboarding payload rather than in a column of
+     * its own. A new column would need a migration run by hand in the D1
+     * console, and until it was, this UPDATE would reference a column that
+     * does not exist — failing every acceptance on the site, not just the
+     * configurable ones. The blast radius of getting that ordering wrong is
+     * far worse than a nested field. Omitted entirely on a card quote.
+     */
+    ...(planConfig ? { planConfig } : {}),
   };
 
   const recorded = await acceptQuote(
@@ -185,10 +271,45 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   );
   if (!recorded) return json({ ok: false, error: 'accept_failed' }, 500);
 
-  const price =
-    (proposal.tiers ?? []).find((t) => String(t?.name ?? '').trim() === acceptedPlan)?.price ??
-    proposal.price ??
-    '';
+  /**
+   * WHAT THE OFFICE WILL ACTUALLY CHARGE.
+   *
+   * On a card quote this is the chosen tier's price. On a build-mode quote
+   * the tier lookup misses and the old fallback handed back proposal.price —
+   * the STANDARD rate, before any option the customer picked. The handoff
+   * email would then have told the office to bill the pre-discount number on
+   * every configured plan we sold.
+   *
+   * Mirrors resolvePlan in src/components/admin/planOptions.ts, for the same
+   * reason the summary above is mirrored: functions/ cannot import from src/.
+   */
+  const buildPrice = (): string => {
+    const base = /-?\d[\d,]*(\.\d+)?/.exec(String(proposal.price ?? '').replace(/\s/g, ''));
+    if (!base || !planConfig) return '';
+    const n = Number(base[0].replace(/,/g, ''));
+    if (!Number.isFinite(n)) return '';
+    const off = (raw: unknown): number => {
+      const m = /-?\d[\d,]*(\.\d+)?/.exec(String(raw ?? '').replace(/\s/g, ''));
+      const v = m ? Number(m[0].replace(/,/g, '')) : 0;
+      return Number.isFinite(v) ? Math.abs(v) : 0;
+    };
+    let rate = n;
+    if (buildOpts.offerFilter === true && !planConfig.filterParts) rate -= off(buildOpts.filterDelta);
+    if (planConfig.term === 'monthly' && buildOpts.offerPayment === true && planConfig.payment === 'ach')
+      rate -= off(buildOpts.achDelta);
+    const fmt = (v: number): string =>
+      (Number.isInteger(v) ? v : Math.round(v * 100) / 100).toLocaleString('en-US');
+    // ANNUAL_MONTHS_CHARGED, mirrored. 11 months paid, the 12th free.
+    if (planConfig.term === 'annual')
+      return `$${fmt(Math.round((rate * 11) / 12))}/mo — $${fmt(rate * 11)} billed once`;
+    return `$${fmt(rate)}/mo`;
+  };
+
+  const price = isBuild
+    ? buildPrice()
+    : ((proposal.tiers ?? []).find((t) => String(t?.name ?? '').trim() === acceptedPlan)?.price ??
+      proposal.price ??
+      '');
   const when = new Date().toLocaleString('en-US', {
     timeZone: 'America/New_York',
     dateStyle: 'full',

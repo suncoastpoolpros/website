@@ -5,6 +5,7 @@
  * in an HttpOnly cookie the browser sends automatically, so these calls carry no
  * token in JS — auth state is whatever the server says.
  */
+import { type BuildOptions, emptyBuildOptions } from '@/components/admin/planOptions';
 
 // Customer + pool are shared by both admin documents (proposal and inspection
 // report) so the two builders describe a pool the same way. Each document then
@@ -121,8 +122,20 @@ export type ProposalData = {
      * 'single' = one headline price (the original behaviour, still the default).
      * 'tiers'  = a two-option comparison; `price` is then ignored in favour of
      * each tier's own price.
+     * 'build'  = the customer configures their own plan from `price` plus the
+     * adjustments in `buildOptions`. `tiers` is ignored, and no quote stored
+     * before this existed can be in this mode.
      */
     pricingMode: PricingMode;
+    /**
+     * What a 'build' proposal lets the customer choose, and by how much.
+     *
+     * Present on every draft, read only in 'build' mode — a single- or
+     * tiered-price quote carries it and ignores it, exactly as a single-price
+     * quote already carries an unread `tiers`. Absent entirely on quotes
+     * stored before this shipped, which is why every reader coalesces it.
+     */
+    buildOptions: BuildOptions;
     /**
      * Ordered cheapest → dearest. The second tier renders as "Everything in
      * <first>, plus:" — the upgrade must never claw back anything from the base
@@ -140,7 +153,12 @@ export type ProposalData = {
 
 export type AddOn = { label: string; price: string };
 
-export type PricingMode = 'single' | 'tiers';
+/**
+ * 'build' is a THIRD mode, deliberately not a replacement for 'tiers'. Every
+ * quote already in the database reads 'single' or 'tiers' and resolves its
+ * price through the code it was sent with. See planOptions.ts.
+ */
+export type PricingMode = 'single' | 'tiers' | 'build';
 
 export type Tier = {
   name: string;
@@ -390,6 +408,7 @@ export const emptyProposal = (): ProposalData => ({
     // changes until the admin explicitly switches to tiers.
     pricingMode: 'single',
     tiers: [],
+    buildOptions: emptyBuildOptions(),
     presetVersion: 0,
   },
 });

@@ -12,7 +12,8 @@ import {
 import { usePageMeta } from "@/lib/usePageMeta";
 import { type ParsedQuoteLink, parseQuoteLink } from "@/lib/quoteLinks";
 import { PRICING_CONDITION_TERM } from "@/components/admin/proposalTerms";
-import { jobKindOf, showsConditionTerm } from "@/components/admin/jobKinds";
+import { jobKindOf, jobKindLabel, showsConditionTerm } from "@/components/admin/jobKinds";
+import { includedBenefits } from "@/components/admin/proposalBenefits";
 import { cadenceLabel } from "@/components/admin/serviceCadence";
 import { splitTierIncludes } from "@/lib/adminApi";
 import {
@@ -32,6 +33,14 @@ import {
   declineReply,
   type DeclineReasonKey,
 } from "@/components/admin/declineReasons";
+import {
+  type BuildOptions,
+  type PlanChoice,
+  emptyBuildOptions,
+  money,
+  resolvePlan,
+} from "@/components/admin/planOptions";
+import { PlanConfigurator } from "@/components/PlanConfigurator";
 
 /** Matches MAX_PHOTOS in the builder's PhotoPicker — the ceiling on how far
  *  the fetch loop below will walk before giving up. */
@@ -140,6 +149,13 @@ type Quote = {
     cadence?: string;
     /** 'link' when the quote was never emailed — see the breakdown step. */
     deliveredBy?: string;
+    /**
+     * 'build' means the customer configures the plan themselves. Absent on
+     * every quote stored before this existed, which is exactly why the
+     * configurator is opt-in: no stored quote can accidentally be in it.
+     */
+    pricingMode?: string;
+    buildOptions?: Partial<BuildOptions>;
   };
   acceptedAt: string | null;
   acceptedPlan: string | null;
@@ -148,7 +164,15 @@ type Quote = {
 type State =
   | { kind: "loading" }
   | { kind: "ready"; quote: Quote }
-  | { kind: "accepted"; plan: string }
+  /**
+   * `kind` decides whether the confirmation calls it a plan.
+   *
+   * "Your Repair or install plan is confirmed" is what the hard-coded word
+   * produced once single-price quotes could be accepted here — recurring
+   * service is a plan, a one-off cleanup or an equipment repair is a job.
+   * Optional because a quote accepted before this existed has none stored.
+   */
+  | { kind: "accepted"; plan: string; jobKind?: string }
   | { kind: "error"; message: string };
 
 const formatPrice = (raw: string): string => {
@@ -305,6 +329,16 @@ export const ApprovePage = () => {
     }
   };
   const [plan, setPlan] = useState("");
+  /**
+   * The configuration behind `plan` on a build-mode quote.
+   *
+   * `plan` stays the human-readable summary so every existing reader of it —
+   * the signature step's "YOUR PLAN" line, the accepted screen, the handoff
+   * email — keeps working unchanged. This is the machine-readable twin, sent
+   * alongside so the office gets the axes back as fields rather than having
+   * to parse a sentence.
+   */
+  const [config, setConfig] = useState<PlanChoice | null>(null);
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
   const [pdfState, setPdfState] = useState<"idle" | "working" | "error">(
@@ -374,7 +408,11 @@ export const ApprovePage = () => {
         if (res.ok && data.ok && data.quote) {
           const q = data.quote;
           if (q.acceptedAt && q.acceptedPlan)
-            setState({ kind: "accepted", plan: q.acceptedPlan });
+            setState({
+              kind: "accepted",
+              plan: q.acceptedPlan,
+              jobKind: q.proposal?.jobKind,
+            });
           else {
             setState({ kind: "ready", quote: q });
             // Set here rather than in the initial useState: whether this quote
@@ -423,6 +461,63 @@ export const ApprovePage = () => {
   const tiers = quote?.proposal.tiers ?? [];
   /** The Essentials layout — the only shape with labelled comparison blocks. */
   const threePlan = tiers.some((t) => t.essentials);
+  /**
+   * The configurable quote, and the options it offered.
+   *
+   * Coalesced field by field rather than trusted wholesale: `buildOptions` is
+   * read back out of a JSON column, so a quote written by an older build of
+   * the admin can be in 'build' mode with only some of these present. A
+   * missing offer flag must read as NOT OFFERED — inventing an option the
+   * proposal never made would put a price on the page the PDF doesn't show.
+   */
+  const stored = quote?.proposal.buildOptions;
+  const buildOptions: BuildOptions = {
+    ...emptyBuildOptions(),
+    ...(stored ?? {}),
+    offerFilter: stored?.offerFilter === true,
+    offerAnnual: stored?.offerAnnual === true,
+    offerPayment: stored?.offerPayment === true,
+  };
+  /**
+   * MODE ALONE, not "mode and at least one option".
+   *
+   * Gating this on offersAnyChoice left a build-mode quote with every option
+   * switched off rendering the empty tier grid — no price, no button, nothing
+   * to accept. The configurator with no option groups is still a working
+   * accept path: it shows the rate and a Continue. Matches the same test in
+   * functions/api/quote/accept.ts, which must agree about which quotes take
+   * the configured path.
+   */
+  const isBuild = quote?.proposal.pricingMode === "build";
+
+  /**
+   * What a SINGLE-PRICE acceptance is recorded as.
+   *
+   * There is no tier name to use, and accept.ts falls back to the bare word
+   * "Proposal" — which reaches the office as "Plan accepted: Proposal" and
+   * the customer as "Your Proposal plan is confirmed". Neither says what was
+   * bought. The cadence does it for recurring work ("Weekly service"), and
+   * the job kind does it for everything else ("One-time cleanup").
+   */
+  const singlePlanLabel = (() => {
+    if (!quote) return "";
+    const kind = jobKindOf(quote.proposal.jobKind);
+    if (kind !== "recurring") return jobKindLabel(kind);
+    const cadence = cadenceLabel(quote.proposal.cadence);
+    /*
+     * "Recurring service" WHEN NO CADENCE IS STORED — never "Weekly service".
+     *
+     * Quotes saved before the cadence field existed have none, and this label
+     * goes into the signed acceptance record. Defaulting it to weekly would
+     * have a bi-weekly customer's agreement say they bought weekly service,
+     * which is the same promise cadenceOf refuses to make when it returns
+     * null and the documents print nothing.
+     */
+    return cadence
+      ? // cadenceLabel yields "WEEKLY SERVICE"; this is prose, not an eyebrow.
+        cadence.charAt(0) + cadence.slice(1).toLowerCase()
+      : jobKindLabel(kind);
+  })();
   /*
    * Both block labels share these metrics so the rows beneath them start at
    * the same height on every card. "Not included" and "Also included" are
@@ -432,6 +527,31 @@ export const ApprovePage = () => {
   const blockLabelClass =
     "mt-5 text-[10px] font-semibold uppercase tracking-wider text-[#a3acb8]";
   const chosen = tiers.find((t) => t.name === plan);
+  /**
+   * The configured rate, for the signature step.
+   *
+   * `chosen` misses on a build-mode quote — there is no tier to look up — and
+   * the price beside the plan name simply vanished, leaving the customer
+   * signing on a screen that named their plan but not what it costs. This is
+   * the same resolvePlan the configurator ran, given the choice they made.
+   */
+  const configPrice = useMemo(() => {
+    if (!config || !quote) return "";
+    const r = resolvePlan(quote.proposal.price ?? "", buildOptions, config);
+    if (r.monthly === null) return "";
+    return r.billedOnce !== null
+      ? `$${money(r.monthly)}/mo — $${money(r.billedOnce)} billed once`
+      : `$${money(r.monthly)}/mo`;
+  }, [config, quote, buildOptions]);
+
+  /**
+   * What the signature step prints beside the plan name — from whichever
+   * shape this quote is. See the note at its render site.
+   */
+  const signingPrice = chosen?.price
+    ? formatPrice(chosen.price)
+    : configPrice ||
+      (quote?.proposal.price?.trim() ? formatPrice(quote.proposal.price) : "");
 
   /**
    * Today in the browser's own timezone, as the date input's `min`.
@@ -537,6 +657,17 @@ export const ApprovePage = () => {
     [goToConfirm],
   );
 
+  /** The configurator's Continue. Same destination as a card's Select — the
+   *  choice is already made by the time they reach the button. */
+  const selectConfig = useCallback(
+    (choice: PlanChoice, summary: string) => {
+      setConfig(choice);
+      setPlan(summary);
+      goToConfirm();
+    },
+    [goToConfirm],
+  );
+
   /**
    * A texted quote has no email on record, so the confirmation would have
    * nowhere to go and there'd be no address to invoice from. Asked for here —
@@ -563,6 +694,9 @@ export const ApprovePage = () => {
         body: JSON.stringify({
           token,
           plan,
+          // Omitted entirely on a card quote, so the endpoint's stored shape
+          // for every existing proposal is byte-for-byte what it was.
+          ...(config ? { config } : {}),
           onboarding: {
             // No billing fields: this page no longer asks. The endpoint records
             // "not collected" rather than defaulting to "same as service".
@@ -587,7 +721,11 @@ export const ApprovePage = () => {
         plan?: string;
       };
       if (res.ok && data.ok)
-        setState({ kind: "accepted", plan: data.plan ?? plan });
+        setState({
+          kind: "accepted",
+          plan: data.plan ?? plan,
+          jobKind: quote?.proposal.jobKind,
+        });
       else
         setFormError(
           "We couldn’t record that. Please try again, or give us a call.",
@@ -602,6 +740,10 @@ export const ApprovePage = () => {
     busy,
     token,
     plan,
+    config,
+    // Read for the confirmation's wording. Without it here, the memoised
+    // submit could hold the null quote it was created with on first render.
+    quote,
     preferredStart,
     accessNotes,
     agree,
@@ -817,7 +959,8 @@ export const ApprovePage = () => {
               <Check className="h-7 w-7 text-[#1d7a33]" strokeWidth={3} />
             </div>
             <p className="text-lg font-semibold">
-              Your <span className="text-[#0f4d80]">{state.plan}</span> plan is
+              Your <span className="text-[#0f4d80]">{state.plan}</span>{" "}
+              {jobKindOf(state.jobKind) === "recurring" ? "plan" : "job"} is
               confirmed.
             </p>
             <p className="mx-auto mt-3 max-w-md leading-relaxed text-[#374151]">
@@ -958,455 +1101,534 @@ export const ApprovePage = () => {
                 unchanged — three cards simply share the row, with a tighter
                 gutter because the same gap across three columns squeezed the
                 cards themselves. */}
-            <div
-              className={`grid grid-cols-1 items-start gap-4 ${
-                tiers.length >= 3
-                  ? "lg:mt-24 lg:grid-cols-3 lg:gap-5"
-                  : "sm:mt-24 sm:grid-cols-2 sm:gap-8"
-              }`}
-            >
-              {tiers.map((tier, i) => {
-                /**
-                 * NOTHING ON THIS SCREEN IS "SELECTED".
-                 *
-                 * Select takes the customer straight to the signature, so a
-                 * selected state would exist for a few milliseconds on the way
-                 * out and never be seen. Everything that served it is gone: the
-                 * radio circle, the ring, the border swap, the button changing
-                 * colour. What is left describes the PLANS — recommended or
-                 * not — rather than the state of a choice being made.
-                 */
-                return (
-                  <div
-                    key={i}
-                    className={`relative flex flex-col overflow-hidden rounded-2xl border text-left ${
-                      // Recommended leads on a phone: stacked, the upgrade would
-                      // otherwise sit below the fold under the option it's meant
-                      // to beat. Side by side on desktop, natural order reads
-                      // cheaper-then-better — which only works as anchoring if
-                      // the better one visually dominates, hence the ring below.
-                      /* Lifted by EXACTLY the banner's height (h-12 / -mt-12).
-                         That is what makes the two cards line up, rather than
-                         compensating paddings that break the moment a tagline
-                         wraps: the banner occupies the space the lift creates,
-                         so both bodies begin on the same line and the buttons
-                         follow for free. The card stands proud of the row and
-                         nothing below it is knocked out of true.
+            {/* THE CONFIGURABLE QUOTE takes the place of the cards.
+                A build-mode proposal has one plan whose price the customer
+                assembles, so there is nothing to compare side by side and
+                none of the grid's comparison geometry applies. The cards
+                below are untouched and still render every quote ever sent. */}
+            {isBuild ? (
+              <PlanConfigurator
+                basePrice={quote.proposal.price ?? ""}
+                options={buildOptions}
+                cadence={cadenceLabel(quote.proposal.cadence)}
+                /* Derived with the filter service EXCLUDED, whatever the pool
+                   says. Filter parts are one of the choices below, so a
+                   shared list that promised them would contradict the option
+                   the customer is about to decline. The parts promise lives
+                   on the option itself, where it is true. */
+                includes={
+                  quote.proposal.includeBenefits !== false &&
+                  jobKindOf(quote.proposal.jobKind) === "recurring"
+                    ? includedBenefits(
+                        { type: quote.pool.filterType ?? "", included: false },
+                        quote.pool.sanitization ?? "",
+                      )
+                    : []
+                }
+                initial={config}
+                onContinue={selectConfig}
+              />
+            ) : tiers.length > 0 ? (
 
-                         THE TWO VALUES MUST STAY EQUAL — change the banner
-                         height and change this with it.
-
-                         Desktop only: stacked on a phone there is no row to
-                         rise above. */
-                      /* And the PLAIN card rises HALF the banner (-mt-5), so
-                         its top edge cuts the blue bar through the middle
-                         instead of stopping at its lower edge. Two card tops
-                         and a banner edge on three different lines read as
-                         drift; landing one of them mid-banner reads as a
-                         deliberate stagger.
-
-                         The 24px is given straight back as top padding on the
-                         body below (sm:pt-11 against a p-5 base), so the box
-                         grows upward and the heading does not move. That is the
-                         whole trick — the bodies still begin on the same line,
-                         so the buttons still line up, and the rule above holds
-                         unchanged. Half of h-12 is mt-6, and p-5 + 24px is
-                         pt-11: all four move together or not at all. */
-                      /* The breakpoint MUST match the grid's above: three
-                         cards stay stacked until lg, and a negative margin in
-                         a stacked column pulls each card onto the one before
-                         it. Written out in full rather than composed from a
-                         variable — Tailwind only sees literal class names. */
-                      tiers.length >= 3
-                        ? tier.recommended
-                          ? "order-first lg:order-none lg:-mt-12"
-                          : "lg:-mt-6"
-                        : tier.recommended
-                          ? "order-first sm:order-none sm:-mt-12"
-                          : "sm:-mt-6"
-                    } ${
-                      tier.recommended
-                        ? "border-[#1669AE] bg-white shadow-lg shadow-[#1669AE]/15 ring-1 ring-[#1669AE]/20 hover:border-[#0f4d80]"
-                        : "border-[#e3e8ef] bg-white hover:border-[#9fb3c8]"
-                    }`}
-                  >
-                    {/* The card is NOT a click target. A stretched button
-                        used to cover it, so the whole panel selected the plan —
-                        which meant a stray tap while reading the features, or a
-                        thumb steadying a phone, sent you to a signature page
-                        you had not asked for. One deliberate control per card:
-                        the button. */}
-                    {/* A banner on the card's top EDGE, not a pill inside it.
-                        The pill pushed the plan name down and spent interior
-                        space saying one word; flush to the edge it is more
-                        visible and costs nothing. overflow-hidden on the card
-                        is what clips it to the rounded corners.
-
-                        It stays on the card whatever is selected — that is
-                        information about the plan, not a claim about the
-                        current choice — but it MUTES once the other plan is
-                        chosen, so a solid blue bar never sits on a card the
-                        customer has just decided against. */}
-                    {tier.recommended && (
-                      <div className="flex h-12 items-center justify-center bg-[#1669AE] text-[12.5px] font-bold uppercase tracking-wider text-white">
-                        Best value
-                      </div>
-                    )}
+              <div
+                className={`grid grid-cols-1 items-start gap-4 ${
+                  tiers.length >= 3
+                    ? "lg:mt-24 lg:grid-cols-3 lg:gap-5"
+                    : "sm:mt-24 sm:grid-cols-2 sm:gap-8"
+                }`}
+              >
+                {tiers.map((tier, i) => {
+                  /**
+                   * NOTHING ON THIS SCREEN IS "SELECTED".
+                   *
+                   * Select takes the customer straight to the signature, so a
+                   * selected state would exist for a few milliseconds on the way
+                   * out and never be seen. Everything that served it is gone: the
+                   * radio circle, the ring, the border swap, the button changing
+                   * colour. What is left describes the PLANS — recommended or
+                   * not — rather than the state of a choice being made.
+                   */
+                  return (
                     <div
-                      className={`flex flex-1 flex-col p-5 ${
+                      key={i}
+                      className={`relative flex flex-col overflow-hidden rounded-2xl border text-left ${
+                        // Recommended leads on a phone: stacked, the upgrade would
+                        // otherwise sit below the fold under the option it's meant
+                        // to beat. Side by side on desktop, natural order reads
+                        // cheaper-then-better — which only works as anchoring if
+                        // the better one visually dominates, hence the ring below.
+                        /* Lifted by EXACTLY the banner's height (h-12 / -mt-12).
+                           That is what makes the two cards line up, rather than
+                           compensating paddings that break the moment a tagline
+                           wraps: the banner occupies the space the lift creates,
+                           so both bodies begin on the same line and the buttons
+                           follow for free. The card stands proud of the row and
+                           nothing below it is knocked out of true.
+
+                           THE TWO VALUES MUST STAY EQUAL — change the banner
+                           height and change this with it.
+
+                           Desktop only: stacked on a phone there is no row to
+                           rise above. */
+                        /* And the PLAIN card rises HALF the banner (-mt-5), so
+                           its top edge cuts the blue bar through the middle
+                           instead of stopping at its lower edge. Two card tops
+                           and a banner edge on three different lines read as
+                           drift; landing one of them mid-banner reads as a
+                           deliberate stagger.
+
+                           The 24px is given straight back as top padding on the
+                           body below (sm:pt-11 against a p-5 base), so the box
+                           grows upward and the heading does not move. That is the
+                           whole trick — the bodies still begin on the same line,
+                           so the buttons still line up, and the rule above holds
+                           unchanged. Half of h-12 is mt-6, and p-5 + 24px is
+                           pt-11: all four move together or not at all. */
+                        /* The breakpoint MUST match the grid's above: three
+                           cards stay stacked until lg, and a negative margin in
+                           a stacked column pulls each card onto the one before
+                           it. Written out in full rather than composed from a
+                           variable — Tailwind only sees literal class names. */
+                        tiers.length >= 3
+                          ? tier.recommended
+                            ? "order-first lg:order-none lg:-mt-12"
+                            : "lg:-mt-6"
+                          : tier.recommended
+                            ? "order-first sm:order-none sm:-mt-12"
+                            : "sm:-mt-6"
+                      } ${
                         tier.recommended
-                          ? ""
-                          : tiers.length >= 3
-                            ? "lg:pt-11"
-                            : "sm:pt-11"
+                          ? "border-[#1669AE] bg-white shadow-lg shadow-[#1669AE]/15 ring-1 ring-[#1669AE]/20 hover:border-[#0f4d80]"
+                          : "border-[#e3e8ef] bg-white hover:border-[#9fb3c8]"
                       }`}
                     >
-                      <h3 className="font-display text-lg font-bold">
-                        {tier.name}
-                      </h3>
-                      {tier.tagline && (
-                        /* Two lines RESERVED in the three-column layout.
-                           Narrower cards wrap the annual card's tagline to two
-                           lines while the other two fit on one, which pushed
-                           its Select button 20px below the others — the exact
-                           misalignment the banner/lift chain exists to
-                           prevent. Reserving the second line costs nothing on
-                           the cards that don't need it. Two-plan cards are
-                           wide enough that all taglines sit on one line, so
-                           they keep their natural height. */
-                        <p
-                          className={`mt-1 text-sm text-[#6b7280] ${
-                            tiers.length >= 3 ? "lg:min-h-[2.5rem]" : ""
-                          }`}
-                        >
-                          {currentTagline(tier.tagline)}
-                        </p>
-                      )}
-                      {/* Price and saving on ONE line, so the rate and the
-                          reason to take it are read as a single fact rather
-                          than as a number followed by a footnote.
+                      {/* The card is NOT a click target. A stretched button
+                          used to cover it, so the whole panel selected the plan —
+                          which meant a stray tap while reading the features, or a
+                          thumb steadying a phone, sent you to a signature page
+                          you had not asked for. One deliberate control per card:
+                          the button. */}
+                      {/* A banner on the card's top EDGE, not a pill inside it.
+                          The pill pushed the plan name down and spent interior
+                          space saying one word; flush to the edge it is more
+                          visible and costs nothing. overflow-hidden on the card
+                          is what clips it to the rounded corners.
 
-                          flex-wrap, not a fixed row: the note is operator-typed
-                          and runs to about thirty characters ("$1,815 billed
-                          once — $165 saved"), which fits beside a price on a
-                          desktop card and does not on a phone. Wrapping puts it
-                          underneath exactly when it has to be, instead of
-                          squeezing both.
-
-                          items-baseline so the pill sits on the price's
-                          baseline; centred, a small pill floats oddly against a
-                          30px number. */}
-                      {(tier.price || tier.priceNote?.trim()) && (
-                        <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-2 sm:min-h-[2.75rem] lg:min-h-[2.75rem]">
-                          {tier.price && (
-                            /* The recommended price is set a size larger. Two
-                               prices at identical weight ask the customer to do
-                               the comparison themselves; the point of
-                               recommending one is to have already done it. */
-                            /* SEMIBOLD, not bold, and a size up to pay for it.
-                               At 700 the rate read as a heavy block — the
-                               thing the eye bounced off rather than the thing
-                               it read. Inter is variable here, so 600 keeps
-                               the presence while opening the counters up.
-                               tabular-nums puts the digits on a fixed grid so
-                               "$155" and "$151" line up character for
-                               character across the cards, which is exactly the
-                               comparison the row is for. */
-                            <p
-                              className={`font-semibold tabular-nums text-[#0f4d80] ${
-                                tier.recommended
-                                  ? "text-[2.125rem] leading-none"
-                                  : "text-[1.75rem] leading-none"
-                              }`}
-                            >
-                              {formatPrice(tier.price)}
-                            </p>
-                          )}
-                          {tier.priceNote?.trim() && (
-                            <p className="rounded-md bg-[#e3f5e8] px-2 py-1 text-sm font-semibold text-[#176a2c]">
-                              {tier.priceNote.trim()}
-                            </p>
-                          )}
+                          It stays on the card whatever is selected — that is
+                          information about the plan, not a claim about the
+                          current choice — but it MUTES once the other plan is
+                          chosen, so a solid blue bar never sits on a card the
+                          customer has just decided against. */}
+                      {tier.recommended && (
+                        <div className="flex h-12 items-center justify-center bg-[#1669AE] text-[12.5px] font-bold uppercase tracking-wider text-white">
+                          Best value
                         </div>
                       )}
-                      {/* What the monthly rate BUYS, directly under the rate.
-                          Ten bullets on this card and none of them said how
-                          often we come — the one fact a customer holding a
-                          competitor's bi-weekly quote divides the price by.
-                          Same line on both cards (it is the same service), so
-                          the button row stays level; on quotes stored before
-                          the field existed cadenceLabel is empty on both and
-                          nothing renders — "probably weekly" is not printed
-                          under anyone's price. */}
-                      {cadenceLabel(quote.proposal.cadence) && (
-                        <p className="mt-0.5 text-[13px] font-semibold uppercase tracking-wide text-[#5b6b7c]">
-                          {cadenceLabel(quote.proposal.cadence)}
-                        </p>
-                      )}
-                      <span className="block pt-5">
-                        <button
-                          onClick={() => selectPlan(tier.name)}
-                          className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#0a1628] bg-[#0a1628] py-2.5 text-sm font-bold text-white transition-colors hover:border-[#16283f] hover:bg-[#16283f]"
-                        >
-                          Select
-                          <span className="sr-only"> {tier.name}</span>
-                        </button>
-                      </span>
-                      {/* What they are actually agreeing to pay, under the
-                          button and above the rule.
-
-                          Deliberately NOT in the badge beside the rate: a
-                          four-figure total there reads as the expensive option
-                          even when it is the cheaper one. Equally deliberately
-                          NOT omitted — burying the figure would only move the
-                          surprise to the invoice, where it costs far more than
-                          a moment's pause here. */}
-                      {/* A RESERVED STRIP, not a conditional line.
-                          Only the annual card has a billing note, so rendering
-                          it only there pushed that card's whole bullet list
-                          down — six rows that are identical across the cards
-                          stopped lining up, which is the one thing the layout
-                          is for. The slot is now the same height on every
-                          card and empty where there is nothing to say. */}
-                      <p
-                        className={`mt-2 text-center text-xs leading-relaxed text-[#6b7280] ${
-                          tiers.length > 1 ? "sm:min-h-[1.125rem]" : ""
+                      <div
+                        className={`flex flex-1 flex-col p-5 ${
+                          tier.recommended
+                            ? ""
+                            : tiers.length >= 3
+                              ? "lg:pt-11"
+                              : "sm:pt-11"
                         }`}
                       >
-                        {shortBillingNote(tier.billingNote ?? "")}
-                      </p>
-                      {/* A rule under the button, not a bare gap. Above it the
-                        card is making an offer; below it the card is
-                        justifying one, and the line is what tells you the
-                        difference at a glance. */}
-                      <div className="mt-5 border-t border-[#e9eef4]" />
-                      {/* The extras are LABELLED and come first; the shared
-                          service follows under a rule.
-
-                          This replaced "Everything in Pay Monthly, plus:",
-                          which pointed at the other card — and on a phone the
-                          cards stack with this one FIRST, so it named something
-                          the reader had not reached. Rewording it would not
-                          have helped: a reader who has not seen the monthly
-                          plan learns nothing from being told this one includes
-                          it. Each card carries the whole list now and stands
-                          alone in any order. */}
-                      {(() => {
-                        /* Shared rows first so the two cards line up line for
-                           line; this plan's own extras hang off the bottom
-                           under a heading, which is where a reader scanning for
-                           the difference looks anyway.
-
-                           splitTierIncludes also rebuilds the legacy shape,
-                           where the upgrade card stored ONLY its extras and
-                           leaned on "Everything in Pay Monthly, plus:" to imply
-                           the rest. That sentence is gone from this page, so
-                           without it an older quote's annual card would
-                           silently understate what is being bought. Composed
-                           here rather than backfilled: the stored row is the
-                           record of what was sent, some of them signed. */
-                        /*
-                         * The legacy-shape rebuild compares against the card
-                         * to the left, which only works when the two lists
-                         * differ by a SUFFIX. In the three-plan layout Pay
-                         * Monthly differs from Essentials by one bullet in the
-                         * middle — a filter line swapped, not appended — so
-                         * the rebuild put Essentials' "filter cleaning" line
-                         * into Pay Monthly's shared section, showing a bullet
-                         * that is not in that card's own list. Three-plan
-                         * tiers are all current-shape (they carry sharedCount
-                         * where it applies), so they never need the rebuild.
-                         */
-                        const { shared, extras } = splitTierIncludes(
-                          tier,
-                          i > 0 && !tier.essentials && !tiers[i - 1]?.essentials
-                            ? (tiers[i - 1]?.includes ?? [])
-                            : [],
-                        );
-                        /* Short forms here and NOWHERE else. The PDF keeps
-                           the long ones: it is read once and carefully, often
-                           on paper, and there the qualifier after the dash is
-                           the part that answers the objection. This page is
-                           scanned two columns at a time, where the same
-                           qualifiers turn six quick promises into six
-                           paragraphs. */
-                        const row = (item: string, j: number) => (
-                          <li
-                            key={j}
-                            className="flex gap-2 text-sm leading-relaxed text-[#374151]"
+                        <h3 className="font-display text-lg font-bold">
+                          {tier.name}
+                        </h3>
+                        {tier.tagline && (
+                          /* Two lines RESERVED in the three-column layout.
+                             Narrower cards wrap the annual card's tagline to two
+                             lines while the other two fit on one, which pushed
+                             its Select button 20px below the others — the exact
+                             misalignment the banner/lift chain exists to
+                             prevent. Reserving the second line costs nothing on
+                             the cards that don't need it. Two-plan cards are
+                             wide enough that all taglines sit on one line, so
+                             they keep their natural height. */
+                          <p
+                            className={`mt-1 text-sm text-[#6b7280] ${
+                              tiers.length >= 3 ? "lg:min-h-[2.5rem]" : ""
+                            }`}
                           >
-                            <Check
-                              className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]"
-                              strokeWidth={3}
-                            />
-                            {shortBullet(item)}
-                          </li>
-                        );
-                        return (
-                          <>
-                            {/* THE SHARED BLOCK, SPLIT AT THE DIFFERENTIATORS.
-                                On a three-plan quote the last rows of a
-                                Complete card are the three items Essentials
-                                marks ✗. Labelling them "Also included" —
-                                opposite "Not included" at the same height on
-                                the card alongside — turns the grouping into
-                                the comparison instead of leaving nine rows in
-                                one undifferentiated list. Two-plan quotes have
-                                no such block and are untouched. */}
-                            {shared.length > 0 &&
-                              (() => {
-                                const at = threePlan
-                                  ? shared.findIndex((b) =>
-                                      ALL_COMPLETE_DIFFERENTIATORS.includes(
-                                        b.trim(),
-                                      ),
-                                    )
-                                  : -1;
-                                if (at < 0)
-                                  return (
-                                    <ul className="mt-4 space-y-2">
-                                      {shared.map(row)}
-                                    </ul>
-                                  );
-                                return (
-                                  <>
-                                    <ul className="mt-4 space-y-2">
-                                      {shared.slice(0, at).map(row)}
-                                    </ul>
-                                    <p className={blockLabelClass}>
-                                      {EXTRAS_ALSO_INCLUDED_HEADING}
-                                    </p>
-                                    <ul className="mt-2 space-y-2">
-                                      {shared
-                                        .slice(at)
-                                        .map((b, j) => row(b, at + j))}
-                                    </ul>
-                                  </>
-                                );
-                              })()}
-                            {extras.length > 0 && (
-                              <>
-                                {/* A rule, not a heading. "Additional benefits"
-                                    labelled something the items already say for
-                                    themselves — nobody reads "Your 12th month
-                                    free" and wonders which plan it belongs to.
-                                    The line does the same work without words,
-                                    and the shared rows above it stay level with
-                                    the other card, which was the point.
+                            {currentTagline(tier.tagline)}
+                          </p>
+                        )}
+                        {/* Price and saving on ONE line, so the rate and the
+                            reason to take it are read as a single fact rather
+                            than as a number followed by a footnote.
 
-                                    Only on the card that HAS extras, so the
-                                    asymmetry is the signal: one plan runs on
-                                    past where the other stops. */}
-                                {shared.length > 0 && (
-                                  <div className="mt-5 border-t border-[#e9eef4]" />
-                                )}
-                                <ul
-                                  className={
-                                    shared.length
-                                      ? "mt-5 space-y-2"
-                                      : "mt-4 space-y-2"
-                                  }
-                                >
-                                  {extras.map((item, j) =>
-                                    row(item, shared.length + j),
-                                  )}
-                                </ul>
-                              </>
-                            )}
-                            {/* WHAT THIS PLAN LEAVES OUT.
-                                Only the Essentials card carries these, and it
-                                carries them on purpose: a cheaper plan whose
-                                document is merely silent about its exclusions
-                                is indefensible the first time a parts invoice
-                                lands. Muted, with a ✗ and no green — the eye
-                                reads the column as "six things yes, two
-                                things no" without having to compare lists.
-                                Every other tier has no `excludes`, so no
-                                existing quote renders one of these. */}
-                            {currentExcludes(tier.excludes).length > 0 && (
-                              <>
-                                {/* Labelled, and its twin sits at the SAME
-                                    position on the Complete cards — see
-                                    blockLabel above. Both or neither: a label
-                                    on one card only would push these rows a
-                                    line below the ✓ rows they pair with. */}
-                                <p className={blockLabelClass}>
-                                  {EXTRAS_NOT_INCLUDED_HEADING}
-                                </p>
-                                <ul className="mt-2 space-y-2">
-                                  {currentExcludes(tier.excludes).map((item, j) => (
-                                    <li
-                                      key={j}
-                                      className="flex gap-2 text-sm leading-relaxed text-[#8a94a1]"
-                                    >
-                                      {/* Red, at the operator's call: a grey ✗
-                                          beside a green ✓ reads as "quieter",
-                                          not as "no". The LABEL stays muted so
-                                          the row is still clearly the
-                                          secondary column — only the mark
-                                          carries the verdict. */}
-                                      <X
-                                        className="mt-0.5 h-4 w-4 shrink-0 text-[#c0392b]"
-                                        strokeWidth={2.5}
-                                      />
-                                      {shortBullet(item)}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </>
-                            )}
-                          </>
-                        );
-                      })()}
-                      {/* The note stays bottom-anchored so it lines up across
-                        both cards however much each has to say. The BUTTON no
-                        longer lives here — it sits under the price now.
+                            flex-wrap, not a fixed row: the note is operator-typed
+                            and runs to about thirty characters ("$1,815 billed
+                            once — $165 saved"), which fits beside a price on a
+                            desktop card and does not on a phone. Wrapping puts it
+                            underneath exactly when it has to be, instead of
+                            squeezing both.
 
-                        pt-6, not pt-3: at 12px the note sat barely further from
-                        the last bullet than the bullets sit from each other, so
-                        it read as a seventh item in smaller type rather than as
-                        a note ABOUT the list. Fine print earns its quietness
-                        from the space around it. */}
-                      <div className="mt-auto">
-                        {/* The nudge inside this note claims the annual plan
-                            costs less per month than this card. It was baked in
-                            from the SUGGESTED Essentials price; the operator
-                            then types their own. currentValueNote drops the
-                            claim when the two prices on this page disprove it. */}
+                            items-baseline so the pill sits on the price's
+                            baseline; centred, a small pill floats oddly against a
+                            30px number. */}
+                        {(tier.price || tier.priceNote?.trim()) && (
+                          <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-2 sm:min-h-[2.75rem] lg:min-h-[2.75rem]">
+                            {tier.price && (
+                              /* The recommended price is set a size larger. Two
+                                 prices at identical weight ask the customer to do
+                                 the comparison themselves; the point of
+                                 recommending one is to have already done it. */
+                              /* SEMIBOLD, not bold, and a size up to pay for it.
+                                 At 700 the rate read as a heavy block — the
+                                 thing the eye bounced off rather than the thing
+                                 it read. Inter is variable here, so 600 keeps
+                                 the presence while opening the counters up.
+                                 tabular-nums puts the digits on a fixed grid so
+                                 "$155" and "$151" line up character for
+                                 character across the cards, which is exactly the
+                                 comparison the row is for. */
+                              <p
+                                className={`font-semibold tabular-nums text-[#0f4d80] ${
+                                  tier.recommended
+                                    ? "text-[2.125rem] leading-none"
+                                    : "text-[1.75rem] leading-none"
+                                }`}
+                              >
+                                {formatPrice(tier.price)}
+                              </p>
+                            )}
+                            {tier.priceNote?.trim() && (
+                              <p className="rounded-md bg-[#e3f5e8] px-2 py-1 text-sm font-semibold text-[#176a2c]">
+                                {tier.priceNote.trim()}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {/* What the monthly rate BUYS, directly under the rate.
+                            Ten bullets on this card and none of them said how
+                            often we come — the one fact a customer holding a
+                            competitor's bi-weekly quote divides the price by.
+                            Same line on both cards (it is the same service), so
+                            the button row stays level; on quotes stored before
+                            the field existed cadenceLabel is empty on both and
+                            nothing renders — "probably weekly" is not printed
+                            under anyone's price. */}
+                        {cadenceLabel(quote.proposal.cadence) && (
+                          <p className="mt-0.5 text-[13px] font-semibold uppercase tracking-wide text-[#5b6b7c]">
+                            {cadenceLabel(quote.proposal.cadence)}
+                          </p>
+                        )}
+                        <span className="block pt-5">
+                          <button
+                            onClick={() => selectPlan(tier.name)}
+                            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#0a1628] bg-[#0a1628] py-2.5 text-sm font-bold text-white transition-colors hover:border-[#16283f] hover:bg-[#16283f]"
+                          >
+                            Select
+                            <span className="sr-only"> {tier.name}</span>
+                          </button>
+                        </span>
+                        {/* What they are actually agreeing to pay, under the
+                            button and above the rule.
+
+                            Deliberately NOT in the badge beside the rate: a
+                            four-figure total there reads as the expensive option
+                            even when it is the cheaper one. Equally deliberately
+                            NOT omitted — burying the figure would only move the
+                            surprise to the invoice, where it costs far more than
+                            a moment's pause here. */}
+                        {/* A RESERVED STRIP, not a conditional line.
+                            Only the annual card has a billing note, so rendering
+                            it only there pushed that card's whole bullet list
+                            down — six rows that are identical across the cards
+                            stopped lining up, which is the one thing the layout
+                            is for. The slot is now the same height on every
+                            card and empty where there is nothing to say. */}
+                        <p
+                          className={`mt-2 text-center text-xs leading-relaxed text-[#6b7280] ${
+                            tiers.length > 1 ? "sm:min-h-[1.125rem]" : ""
+                          }`}
+                        >
+                          {shortBillingNote(tier.billingNote ?? "")}
+                        </p>
+                        {/* A rule under the button, not a bare gap. Above it the
+                          card is making an offer; below it the card is
+                          justifying one, and the line is what tells you the
+                          difference at a glance. */}
+                        <div className="mt-5 border-t border-[#e9eef4]" />
+                        {/* The extras are LABELLED and come first; the shared
+                            service follows under a rule.
+
+                            This replaced "Everything in Pay Monthly, plus:",
+                            which pointed at the other card — and on a phone the
+                            cards stack with this one FIRST, so it named something
+                            the reader had not reached. Rewording it would not
+                            have helped: a reader who has not seen the monthly
+                            plan learns nothing from being told this one includes
+                            it. Each card carries the whole list now and stands
+                            alone in any order. */}
                         {(() => {
-                          const note = currentValueNote(
-                            tier.valueNote ?? "",
-                            tier.price,
-                            tiers.find((t) => t.recommended)?.price ??
-                              tiers[tiers.length - 1]?.price ??
-                              "",
-                          ).trim();
-                          return note ? (
-                            <p className="pt-6 text-xs leading-relaxed text-[#6b7280]">
-                              {note}
-                            </p>
-                          ) : null;
-                        })()}
-                        {/* One button, two jobs: "Choose" while unselected,
-                          "Continue" once it is. Putting the next step in the
-                          card means the decision and the action are in the same
-                          place — no hunting for a separate control after
-                          choosing.
+                          /* Shared rows first so the two cards line up line for
+                             line; this plan's own extras hang off the bottom
+                             under a heading, which is where a reader scanning for
+                             the difference looks anyway.
 
-                          The plan name is SR-ONLY, not dropped. It read
-                          "Choose Pay Annually", which is a lot of words for a
-                          button sitting directly under a heading that already
-                          says Pay Annually. But a screen-reader user listing
-                          the buttons on this page would otherwise hear "Choose"
-                          twice with nothing to tell them apart, so the name is
-                          still in the accessible name even though it is no
-                          longer on screen. */}
+                             splitTierIncludes also rebuilds the legacy shape,
+                             where the upgrade card stored ONLY its extras and
+                             leaned on "Everything in Pay Monthly, plus:" to imply
+                             the rest. That sentence is gone from this page, so
+                             without it an older quote's annual card would
+                             silently understate what is being bought. Composed
+                             here rather than backfilled: the stored row is the
+                             record of what was sent, some of them signed. */
+                          /*
+                           * The legacy-shape rebuild compares against the card
+                           * to the left, which only works when the two lists
+                           * differ by a SUFFIX. In the three-plan layout Pay
+                           * Monthly differs from Essentials by one bullet in the
+                           * middle — a filter line swapped, not appended — so
+                           * the rebuild put Essentials' "filter cleaning" line
+                           * into Pay Monthly's shared section, showing a bullet
+                           * that is not in that card's own list. Three-plan
+                           * tiers are all current-shape (they carry sharedCount
+                           * where it applies), so they never need the rebuild.
+                           */
+                          const { shared, extras } = splitTierIncludes(
+                            tier,
+                            i > 0 && !tier.essentials && !tiers[i - 1]?.essentials
+                              ? (tiers[i - 1]?.includes ?? [])
+                              : [],
+                          );
+                          /* Short forms here and NOWHERE else. The PDF keeps
+                             the long ones: it is read once and carefully, often
+                             on paper, and there the qualifier after the dash is
+                             the part that answers the objection. This page is
+                             scanned two columns at a time, where the same
+                             qualifiers turn six quick promises into six
+                             paragraphs. */
+                          const row = (item: string, j: number) => (
+                            <li
+                              key={j}
+                              className="flex gap-2 text-sm leading-relaxed text-[#374151]"
+                            >
+                              <Check
+                                className="mt-0.5 h-4 w-4 shrink-0 text-[#1d7a33]"
+                                strokeWidth={3}
+                              />
+                              {shortBullet(item)}
+                            </li>
+                          );
+                          return (
+                            <>
+                              {/* THE SHARED BLOCK, SPLIT AT THE DIFFERENTIATORS.
+                                  On a three-plan quote the last rows of a
+                                  Complete card are the three items Essentials
+                                  marks ✗. Labelling them "Also included" —
+                                  opposite "Not included" at the same height on
+                                  the card alongside — turns the grouping into
+                                  the comparison instead of leaving nine rows in
+                                  one undifferentiated list. Two-plan quotes have
+                                  no such block and are untouched. */}
+                              {shared.length > 0 &&
+                                (() => {
+                                  const at = threePlan
+                                    ? shared.findIndex((b) =>
+                                        ALL_COMPLETE_DIFFERENTIATORS.includes(
+                                          b.trim(),
+                                        ),
+                                      )
+                                    : -1;
+                                  if (at < 0)
+                                    return (
+                                      <ul className="mt-4 space-y-2">
+                                        {shared.map(row)}
+                                      </ul>
+                                    );
+                                  return (
+                                    <>
+                                      <ul className="mt-4 space-y-2">
+                                        {shared.slice(0, at).map(row)}
+                                      </ul>
+                                      <p className={blockLabelClass}>
+                                        {EXTRAS_ALSO_INCLUDED_HEADING}
+                                      </p>
+                                      <ul className="mt-2 space-y-2">
+                                        {shared
+                                          .slice(at)
+                                          .map((b, j) => row(b, at + j))}
+                                      </ul>
+                                    </>
+                                  );
+                                })()}
+                              {extras.length > 0 && (
+                                <>
+                                  {/* A rule, not a heading. "Additional benefits"
+                                      labelled something the items already say for
+                                      themselves — nobody reads "Your 12th month
+                                      free" and wonders which plan it belongs to.
+                                      The line does the same work without words,
+                                      and the shared rows above it stay level with
+                                      the other card, which was the point.
+
+                                      Only on the card that HAS extras, so the
+                                      asymmetry is the signal: one plan runs on
+                                      past where the other stops. */}
+                                  {shared.length > 0 && (
+                                    <div className="mt-5 border-t border-[#e9eef4]" />
+                                  )}
+                                  <ul
+                                    className={
+                                      shared.length
+                                        ? "mt-5 space-y-2"
+                                        : "mt-4 space-y-2"
+                                    }
+                                  >
+                                    {extras.map((item, j) =>
+                                      row(item, shared.length + j),
+                                    )}
+                                  </ul>
+                                </>
+                              )}
+                              {/* WHAT THIS PLAN LEAVES OUT.
+                                  Only the Essentials card carries these, and it
+                                  carries them on purpose: a cheaper plan whose
+                                  document is merely silent about its exclusions
+                                  is indefensible the first time a parts invoice
+                                  lands. Muted, with a ✗ and no green — the eye
+                                  reads the column as "six things yes, two
+                                  things no" without having to compare lists.
+                                  Every other tier has no `excludes`, so no
+                                  existing quote renders one of these. */}
+                              {currentExcludes(tier.excludes).length > 0 && (
+                                <>
+                                  {/* Labelled, and its twin sits at the SAME
+                                      position on the Complete cards — see
+                                      blockLabel above. Both or neither: a label
+                                      on one card only would push these rows a
+                                      line below the ✓ rows they pair with. */}
+                                  <p className={blockLabelClass}>
+                                    {EXTRAS_NOT_INCLUDED_HEADING}
+                                  </p>
+                                  <ul className="mt-2 space-y-2">
+                                    {currentExcludes(tier.excludes).map((item, j) => (
+                                      <li
+                                        key={j}
+                                        className="flex gap-2 text-sm leading-relaxed text-[#8a94a1]"
+                                      >
+                                        {/* Red, at the operator's call: a grey ✗
+                                            beside a green ✓ reads as "quieter",
+                                            not as "no". The LABEL stays muted so
+                                            the row is still clearly the
+                                            secondary column — only the mark
+                                            carries the verdict. */}
+                                        <X
+                                          className="mt-0.5 h-4 w-4 shrink-0 text-[#c0392b]"
+                                          strokeWidth={2.5}
+                                        />
+                                        {shortBullet(item)}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </>
+                              )}
+                            </>
+                          );
+                        })()}
+                        {/* The note stays bottom-anchored so it lines up across
+                          both cards however much each has to say. The BUTTON no
+                          longer lives here — it sits under the price now.
+
+                          pt-6, not pt-3: at 12px the note sat barely further from
+                          the last bullet than the bullets sit from each other, so
+                          it read as a seventh item in smaller type rather than as
+                          a note ABOUT the list. Fine print earns its quietness
+                          from the space around it. */}
+                        <div className="mt-auto">
+                          {/* The nudge inside this note claims the annual plan
+                              costs less per month than this card. It was baked in
+                              from the SUGGESTED Essentials price; the operator
+                              then types their own. currentValueNote drops the
+                              claim when the two prices on this page disprove it. */}
+                          {(() => {
+                            const note = currentValueNote(
+                              tier.valueNote ?? "",
+                              tier.price,
+                              tiers.find((t) => t.recommended)?.price ??
+                                tiers[tiers.length - 1]?.price ??
+                                "",
+                            ).trim();
+                            return note ? (
+                              <p className="pt-6 text-xs leading-relaxed text-[#6b7280]">
+                                {note}
+                              </p>
+                            ) : null;
+                          })()}
+                          {/* One button, two jobs: "Choose" while unselected,
+                            "Continue" once it is. Putting the next step in the
+                            card means the decision and the action are in the same
+                            place — no hunting for a separate control after
+                            choosing.
+
+                            The plan name is SR-ONLY, not dropped. It read
+                            "Choose Pay Annually", which is a lot of words for a
+                            button sitting directly under a heading that already
+                            says Pay Annually. But a screen-reader user listing
+                            the buttons on this page would otherwise hear "Choose"
+                            twice with nothing to tell them apart, so the name is
+                            still in the accessible name even though it is no
+                            longer on screen. */}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            ) : (
+              /* ONE PRICE, AND A WAY TO SAY YES.
+                 This branch did not exist. Step 1 rendered only the tier grid,
+                 so a single-price quote — the default shape, and the one a
+                 one-off repair or cleanup always uses — reached the page with
+                 no price and no button: the customer could decline it or ring
+                 us, and nothing else. The email had already told them they
+                 could approve it from this link.
+                 Deliberately one narrow card rather than a lone grid column:
+                 a full-width panel reads as a page banner, and a card sized
+                 like one of two makes the eye look for the other one. */
+              <div className="mt-10 flex justify-center sm:mt-16">
+                <div className="w-full max-w-md rounded-2xl border border-[#d7dee6] bg-white p-6 text-center shadow-sm">
+                  <h2 className="font-display text-lg font-bold text-[#0a1628]">
+                    {singlePlanLabel}
+                  </h2>
+                  {quote.proposal.price?.trim() ? (
+                    <>
+                      <p className="mt-3 font-semibold tabular-nums leading-none text-[#0f4d80]">
+                        <span className="text-[2.5rem]">
+                          {formatPrice(quote.proposal.price)}
+                        </span>
+                      </p>
+                      {/* No cadence eyebrow here, unlike the plan cards.
+                          The heading above IS the cadence on a recurring
+                          quote — "Weekly service" over "$155/mo" over
+                          "WEEKLY SERVICE" said it twice, two lines apart. */}
+                    </>
+                  ) : (
+                    /* "Call for pricing" and the like. The button still has to
+                       be here — a quote with no number on it is exactly the
+                       one where they want to talk to someone, and accepting
+                       is still how they say yes to the scope. */
+                    <p className="mt-3 leading-relaxed text-[#6b7280]">
+                      Your price is in the proposal attached to your email.
+                    </p>
+                  )}
+                  <button
+                    onClick={() => selectPlan(singlePlanLabel)}
+                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-[#0a1628] bg-[#0a1628] py-2.5 text-sm font-bold text-white transition-colors hover:border-[#16283f] hover:bg-[#16283f]"
+                  >
+                    Accept this proposal
+                  </button>
+                  <p className="mt-3 text-xs leading-relaxed text-[#8a94a1]">
+                    You will review and sign on the next screen. Nothing is
+                    agreed until you do.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/*
               The third box, under the two plans.
@@ -1579,14 +1801,18 @@ export const ApprovePage = () => {
                     tier name and it's what the PDF, the email and the signed
                     record all say. Shortening it to "Annual plan" here would
                     make the page disagree with the document. */}
+                {/* THE PRICE COMES FROM WHICHEVER SHAPE THIS QUOTE IS.
+                    A chosen tier has its own; a configured plan is resolved
+                    from the options; a single-price quote has only
+                    proposal.price — and that last one was missing, so the
+                    signature screen named the job and left the customer to
+                    sign without the number in front of them. */}
                 <p className="font-display text-lg font-bold text-[#0a1628]">
                   {plan}
-                  {chosen?.price && (
+                  {signingPrice && (
                     <>
                       <span className="font-normal text-[#9aa4b2]"> · </span>
-                      <span className="text-[#0f4d80]">
-                        {formatPrice(chosen.price)}
-                      </span>
+                      <span className="text-[#0f4d80]">{signingPrice}</span>
                     </>
                   )}
                 </p>
