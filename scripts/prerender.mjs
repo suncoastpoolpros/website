@@ -35,18 +35,18 @@ function injectHead(html, meta) {
   const replacements = [];
 
   if (meta.title) {
-    out = out.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(meta.title)}</title>`);
+    out = out.replace(/<title>[\s\S]*?<\/title>/, () => `<title>${escapeHtml(meta.title)}</title>`);
   }
   if (meta.description) {
     out = out.replace(
       /<meta name="description"[^>]*\/?>/,
-      `<meta name="description" content="${escapeHtml(meta.description)}" />`,
+      () => `<meta name="description" content="${escapeHtml(meta.description)}" />`,
     );
   }
   if (meta.canonicalUrl) {
     out = out.replace(
       /<link rel="canonical"[^>]*\/?>/,
-      `<link rel="canonical" href="${escapeHtml(meta.canonicalUrl)}" />`,
+      () => `<link rel="canonical" href="${escapeHtml(meta.canonicalUrl)}" />`,
     );
   }
 
@@ -56,7 +56,7 @@ function injectHead(html, meta) {
   if (meta.noindex) {
     out = out.replace(
       '</head>',
-      `  <meta name="robots" content="noindex,follow" />\n  </head>`,
+      () => `  <meta name="robots" content="noindex,follow" />\n  </head>`,
     );
   }
 
@@ -106,7 +106,7 @@ function injectHead(html, meta) {
       `<link rel="preload" as="image" fetchpriority="high" href="${escapeHtml(h.desktop)}" type="image/webp" media="(min-width: ${dprFloor}px) and (max-resolution: 1.99dppx)" />`,
       `<link rel="preload" as="image" fetchpriority="high" href="${escapeHtml(wide)}" type="image/webp" media="(min-width: ${dprFloor}px) and (min-resolution: 2dppx)" />`,
     );
-    out = out.replace('</head>', `  ${imgPreloads.join('\n    ')}\n  </head>`);
+    out = out.replace('</head>', () => `  ${imgPreloads.join('\n    ')}\n  </head>`);
   }
 
   // Per-page font preload. The template ships a default set; if this page
@@ -130,7 +130,7 @@ function injectHead(html, meta) {
       const mediaAttr = media ? ` media="${escapeHtml(media)}"` : '';
       return `<link rel="preload" as="font" type="font/woff2" href="${escapeHtml(href)}" crossorigin${mediaAttr} />`;
     });
-    out = out.replace('</head>', `  ${fontPreloads.join('\n    ')}\n  </head>`);
+    out = out.replace('</head>', () => `  ${fontPreloads.join('\n    ')}\n  </head>`);
   }
 
   // OG + Twitter tags — these don't exist in index.html, so append them inside
@@ -182,7 +182,7 @@ function injectHead(html, meta) {
   if (meta.title) replacements.push(`<meta name="twitter:title" content="${escapeHtml(meta.title)}" />`);
   if (meta.description) replacements.push(`<meta name="twitter:description" content="${escapeHtml(meta.description)}" />`);
 
-  out = out.replace('</head>', `  ${replacements.join('\n    ')}\n  </head>`);
+  out = out.replace('</head>', () => `  ${replacements.join('\n    ')}\n  </head>`);
 
   // Per-page JSON-LD, emitted STATICALLY. Previously each page injected its
   // graph from a useEffect, which means the HTML a crawler reads on first fetch
@@ -197,7 +197,7 @@ function injectHead(html, meta) {
       .replace(/\u2029/g, '\\u2029');
     out = out.replace(
       '</head>',
-      `  <script type="application/ld+json" data-page-schema>${ld}</script>\n  </head>`,
+      () => `  <script type="application/ld+json" data-page-schema>${ld}</script>\n  </head>`,
     );
   }
 
@@ -237,12 +237,12 @@ function hoistResourceLinks(body) {
 
 function injectBody(html, body) {
   const { cleaned, links } = hoistResourceLinks(body);
-  let out = html.replace('<div id="root"></div>', `<div id="root">${cleaned}</div>`);
+  let out = html.replace('<div id="root"></div>', () => `<div id="root">${cleaned}</div>`);
   if (links.length) {
     // De-dupe: the same asset can be rendered more than once (the logo mark is
     // in both the navbar and the footer).
     const unique = [...new Set(links)];
-    out = out.replace('</head>', `  ${unique.join('\n    ')}\n  </head>`);
+    out = out.replace('</head>', () => `  ${unique.join('\n    ')}\n  </head>`);
   }
   return out;
 }
@@ -268,7 +268,7 @@ function inlineCss(html, cssHref, cssText) {
   const replacement =
     `<style>${cssText}</style>\n    ` +
     `<noscript><link rel="stylesheet" crossorigin href="${cssHref}" /></noscript>`;
-  return html.replace(linkRe, replacement);
+  return html.replace(linkRe, () => replacement);
 }
 
 /**
