@@ -9,7 +9,7 @@ import { useQuoteSheet } from '@/components/QuoteSheet';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
 import { clearwaterFaqs } from '@/pages/clearwaterFaqs';
-import { CtaBand } from '@/components/CtaBand';
+import { ServiceQuoteForm } from '@/components/ServiceQuoteForm';
 import ClearwaterBelowFold from '@/pages/ClearwaterBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
@@ -247,7 +247,57 @@ export const ClearwaterPage = () => {
           homepage. Proof right after the marquee's claims. */}
       <HomeHeroPhoneSection />
       <ClearwaterBelowFold />
-      <CtaBand />
+      {/* On-page quote form in place of the shared call-to-action band, so the page ships
+          a real <form> in its prerendered HTML (CLAUDE.md #13). The copy and the
+          two qualifying questions are this page's own. This page's wrapper is
+          bg-white, so the form (which has no background of its own) sits in the
+          same #07111c band the old closing section painted. */}
+      <div className="bg-[#07111c]">
+        <ServiceQuoteForm
+          layout="centered"
+          accent="orange"
+          eyebrow="Clearwater Quote"
+          heading="From the sand to the suburbs, one flat rate."
+          intro={<>A beach pool and a Countryside pool aren&rsquo;t the same job. Tell us where yours is and what it runs on, and we&rsquo;ll send one flat monthly price the same day, on a set weekly day.</>}
+          points={[
+            "A set service day on a route that covers your part of town",
+            "Chemistry matched to beach or mainland conditions",
+            "Chemicals included, no contract, photo report every visit",
+          ]}
+          service={{ value: 'weekly', label: 'Weekly pool service' }}
+          extraFields={[
+            {
+              id: "area",
+              label: "Which part of Clearwater?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "beach", label: "Clearwater Beach" },
+                { value: "sand-key", label: "Sand Key" },
+                { value: "island-estates", label: "Island Estates" },
+                { value: "mainland", label: "Mainland Clearwater" },
+                { value: "countryside", label: "Countryside" },
+              ],
+            },
+            {
+              id: "sanitizer",
+              label: "Is the pool salt or chlorine?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "salt", label: "Salt system" },
+                { value: "chlorine", label: "Chlorine" },
+                { value: "unsure", label: "Not sure" },
+              ],
+            },
+          ]}
+          source="clearwater-quote-form"
+          submitLabel="Get My Clearwater Quote"
+          successTitle="Got it — we will be in touch today."
+          successBody="We will come back with your flat weekly rate and the day you would be on our Clearwater route."
+          footnote={<>Text a photo of the pool and equipment to {PHONE_DISPLAY} for a tighter number.</>}
+        />
+      </div>
       <Footer />
       <StickyMobileCta />
     </div>

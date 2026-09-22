@@ -9,7 +9,7 @@ import { useQuoteSheet } from '@/components/QuoteSheet';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
 import { seminoleFaqs } from '@/pages/seminoleFaqs';
-import { CtaBand } from '@/components/CtaBand';
+import { ServiceQuoteForm } from '@/components/ServiceQuoteForm';
 import SeminoleBelowFold from '@/pages/SeminoleBelowFold';
 import { SeminoleCoverageMap } from '@/components/SeminoleCoverageMap';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
@@ -228,7 +228,51 @@ export const SeminolePage = () => {
         <Navbar />
         <HeroSection />
         <SeminoleBelowFold />
-        <CtaBand />
+        {/* On-page quote form in place of the shared call-to-action band, so the page ships
+            a real <form> in its prerendered HTML (CLAUDE.md #13). The copy and the
+            two qualifying questions are this page's own. */}
+        <ServiceQuoteForm
+          layout="form-right"
+          accent="orange"
+          eyebrow="Seminole Quote"
+          heading="For the pool you actually swim in."
+          intro={<>A pool used most days needs different care than one that sits. Tell us whether it&rsquo;s screened and how often the family&rsquo;s in it, and you&rsquo;ll have one flat monthly price the same day.</>}
+          points={[
+            "Screen-enclosure debris cleared, not just the water",
+            "Chemistry kept for daily swimming, not a showroom",
+            "The price we quote is the price you pay",
+          ]}
+          service={{ value: 'weekly', label: 'Weekly pool service' }}
+          extraFields={[
+            {
+              id: "enclosure",
+              label: "Is the pool screened in?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "screened", label: "Yes, screened enclosure" },
+                { value: "open", label: "No, it is open" },
+                { value: "partial", label: "Partly" },
+              ],
+            },
+            {
+              id: "usage",
+              label: "How often does it get used?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "daily", label: "Most days" },
+                { value: "weekends", label: "Mostly weekends" },
+                { value: "occasionally", label: "Now and then" },
+              ],
+            },
+          ]}
+          source="seminole-quote-form"
+          submitLabel="Get My Seminole Quote"
+          successTitle="Got it — we will be in touch today."
+          successBody="We will come back with your flat weekly rate and the day your pool would be on our Seminole route."
+          footnote={<>Text a photo of the pool to {PHONE_DISPLAY} for a tighter number.</>}
+        />
         <Footer />
       </div>
       <StickyMobileCta />

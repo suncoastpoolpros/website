@@ -9,7 +9,7 @@ import { useQuoteSheet } from '@/components/QuoteSheet';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
 import { snellIsleFaqs } from '@/pages/snellIsleFaqs';
-import { CtaBand } from '@/components/CtaBand';
+import { ServiceQuoteForm } from '@/components/ServiceQuoteForm';
 import { SnellIsleHeroPhone } from '@/components/SnellIsleHeroPhone';
 import SnellIsleBelowFold from '@/pages/SnellIsleBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
@@ -218,7 +218,53 @@ export const SnellIslePage = () => {
         <HeroSection />
         <PhoneShowcaseMobile />
         <SnellIsleBelowFold />
-        <CtaBand />
+        {/* On-page quote form in place of the shared call-to-action band, so the page ships
+            a real <form> in its prerendered HTML (CLAUDE.md #13). The copy and the
+            two qualifying questions are this page's own. */}
+        <ServiceQuoteForm
+          layout="centered"
+          accent="blue"
+          eyebrow="Snell Isle Quote"
+          heading="A quote that starts with the finish."
+          intro={<>Pebble, quartz and older plaster each want their chemistry held differently, and a mature canopy changes how often the pool needs attention. Tell us both and we&rsquo;ll price it properly, the same day.</>}
+          points={[
+            "Chemistry held to protect the finish, not just to clear the water",
+            "Leaf and canopy debris handled every visit",
+            "One flat monthly rate, documented in a photo report",
+          ]}
+          service={{ value: 'weekly', label: 'Weekly pool service' }}
+          extraFields={[
+            {
+              id: "poolFinish",
+              label: "What is the pool finish?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "pebble", label: "Pebble (PebbleTec or similar)" },
+                { value: "quartz", label: "Quartz" },
+                { value: "plaster", label: "Plaster / marcite" },
+                { value: "tile", label: "Glass or full tile" },
+                { value: "unsure", label: "Not sure" },
+              ],
+            },
+            {
+              id: "treeCover",
+              label: "How much tree cover is over the pool?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "heavy", label: "Heavy canopy" },
+                { value: "some", label: "Some trees nearby" },
+                { value: "open", label: "Mostly open" },
+              ],
+            },
+          ]}
+          source="snell-isle-quote-form"
+          submitLabel="Get My Snell Isle Quote"
+          successTitle="Got it — we will be in touch today."
+          successBody="We will come back with your flat weekly rate and how we would care for that finish."
+          footnote={<>Photos of the pool surface help us quote it right — text them to {PHONE_DISPLAY}.</>}
+        />
         <Footer />
       </div>
       <StickyMobileCta />

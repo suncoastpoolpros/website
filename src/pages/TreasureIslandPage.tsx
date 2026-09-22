@@ -9,7 +9,7 @@ import { useQuoteSheet } from '@/components/QuoteSheet';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
 import { treasureIslandFaqs } from '@/pages/treasureIslandFaqs';
-import { CtaBand } from '@/components/CtaBand';
+import { ServiceQuoteForm } from '@/components/ServiceQuoteForm';
 import { TreasureIslandHeroPhone } from '@/components/TreasureIslandHeroPhone';
 import TreasureIslandBelowFold from '@/pages/TreasureIslandBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
@@ -263,7 +263,52 @@ export const TreasureIslandPage = () => {
         <HeroSection />
         <PhoneShowcaseMobile />
         <TreasureIslandBelowFold />
-        <CtaBand />
+        {/* On-page quote form in place of the shared call-to-action band, so the page ships
+            a real <form> in its prerendered HTML (CLAUDE.md #13). The copy and the
+            two qualifying questions are this page's own. */}
+        <ServiceQuoteForm
+          layout="centered"
+          accent="orange"
+          eyebrow="Treasure Island Quote"
+          heading="Guest-ready pool service, priced before you book."
+          intro={<>Tell us whether it&rsquo;s your home or a rental and when guests usually arrive. We&rsquo;ll set the service day around your calendar and send one flat monthly price the same day.</>}
+          points={[
+            "Service day set around check-ins, not the other way round",
+            "A photo report after every visit you can forward to your manager",
+            "One flat rate, chemicals included, no contract",
+          ]}
+          service={{ value: 'weekly', label: 'Weekly pool service' }}
+          extraFields={[
+            {
+              id: "homeUse",
+              label: "How is the property used?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "own-home", label: "Our own home" },
+                { value: "rental", label: "Short-term / vacation rental" },
+                { value: "seasonal", label: "Seasonal or snowbird home" },
+              ],
+            },
+            {
+              id: "guestTurnover",
+              label: "When do guests usually arrive?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "weekend", label: "Friday or Saturday" },
+                { value: "midweek", label: "Midweek" },
+                { value: "varies", label: "It varies" },
+                { value: "not-rental", label: "Not a rental" },
+              ],
+            },
+          ]}
+          source="treasure-island-quote-form"
+          submitLabel="Get My Treasure Island Quote"
+          successTitle="Got it — we will be in touch today."
+          successBody="We will come back with your flat weekly rate and a service day that lands ahead of your guests."
+          footnote={<>Photos of the pool and equipment pad help — text them to {PHONE_DISPLAY}.</>}
+        />
         <Footer />
       </div>
       <StickyMobileCta />

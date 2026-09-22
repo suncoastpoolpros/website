@@ -9,7 +9,7 @@ import { useQuoteSheet } from '@/components/QuoteSheet';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
 import { belleairBeachFaqs } from '@/pages/belleairBeachFaqs';
-import { CtaBand } from '@/components/CtaBand';
+import { ServiceQuoteForm } from '@/components/ServiceQuoteForm';
 import { BelleairHeroPhone } from '@/components/BelleairHeroPhone';
 import BelleairBeachBelowFold from '@/pages/BelleairBeachBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
@@ -207,7 +207,52 @@ export const BelleairBeachPage = () => {
         <Navbar />
         <HeroSection />
         <BelleairBeachBelowFold />
-        <CtaBand />
+        {/* On-page quote form in place of the shared call-to-action band, so the page ships
+            a real <form> in its prerendered HTML (CLAUDE.md #13). The copy and the
+            two qualifying questions are this page's own. */}
+        <ServiceQuoteForm
+          layout="form-right"
+          accent="blue"
+          eyebrow="Belleair Beach Quote"
+          heading="Get your flat weekly rate for Belleair Beach."
+          intro={<>Tell us how the home is used and how we get in, and we&rsquo;ll come back the same day with one flat monthly price — whether you&rsquo;re here all year or checking the photo reports from somewhere else.</>}
+          points={[
+            "A photo report after every visit, so you see the pool without being there",
+            "Every scheduled visit made, storm weeks included",
+            "Chemicals in the price, and no contract",
+          ]}
+          service={{ value: 'weekly', label: 'Weekly pool service' }}
+          extraFields={[
+            {
+              id: "homeUse",
+              label: "How is the home used?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "full-time", label: "Full-time residence" },
+                { value: "seasonal", label: "Seasonal — part of the year" },
+                { value: "away", label: "Mostly away / second home" },
+              ],
+            },
+            {
+              id: "access",
+              label: "How do we get to the pool?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "open", label: "Open access" },
+                { value: "gate-code", label: "Gate or community code" },
+                { value: "lockbox", label: "Key or lockbox" },
+                { value: "unsure", label: "Not sure yet" },
+              ],
+            },
+          ]}
+          source="belleair-beach-quote-form"
+          submitLabel="Get My Belleair Beach Quote"
+          successTitle="Got it — we will be in touch today."
+          successBody="We will come back with your flat weekly rate and the day your pool would sit on our Belleair Beach route."
+          footnote={<>Text a photo of the pool and equipment to {PHONE_DISPLAY} for a tighter number.</>}
+        />
         <Footer />
       </div>
       <StickyMobileCta />

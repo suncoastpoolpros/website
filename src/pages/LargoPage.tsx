@@ -18,7 +18,7 @@ import { useQuoteSheet } from '@/components/QuoteSheet';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
 import { largoFaqs } from '@/pages/largoFaqs';
-import { CtaBand } from '@/components/CtaBand';
+import { ServiceQuoteForm } from '@/components/ServiceQuoteForm';
 import LargoBelowFold from '@/pages/LargoBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
@@ -228,7 +228,53 @@ export const LargoPage = () => {
         <Navbar />
         <HeroSection />
         <LargoBelowFold />
-        <CtaBand />
+        {/* On-page quote form in place of the shared call-to-action band, so the page ships
+            a real <form> in its prerendered HTML (CLAUDE.md #13). The copy and the
+            two qualifying questions are this page's own. */}
+        <ServiceQuoteForm
+          layout="form-left"
+          accent="blue"
+          eyebrow="Largo Quote"
+          heading="A straight number for a Largo pool."
+          intro={<>Plenty of Largo pools have some age on them, and so does the equipment. Tell us roughly how old it is and why you&rsquo;re looking, and we&rsquo;ll send one flat monthly price the same day — no upsell attached.</>}
+          points={[
+            "Older equipment watched every visit, so problems show up early",
+            "Chemicals included in one flat monthly rate",
+            "No contract, and no pressure to replace what still works",
+          ]}
+          service={{ value: 'weekly', label: 'Weekly pool service' }}
+          extraFields={[
+            {
+              id: "equipmentAge",
+              label: "Roughly how old is the pool equipment?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "under-5", label: "Under 5 years" },
+                { value: "5-10", label: "5 to 10 years" },
+                { value: "over-10", label: "Over 10 years" },
+                { value: "unsure", label: "Not sure" },
+              ],
+            },
+            {
+              id: "reason",
+              label: "What has you looking?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "switching", label: "Switching from another service" },
+                { value: "first-time", label: "First time hiring a service" },
+                { value: "catch-up", label: "The pool needs catching up" },
+                { value: "new-home", label: "Just moved in" },
+              ],
+            },
+          ]}
+          source="largo-quote-form"
+          submitLabel="Get My Largo Quote"
+          successTitle="Got it — we will be in touch today."
+          successBody="We will come back with your flat weekly rate and an honest read on anything we would want to watch."
+          footnote={<>A photo of the equipment pad helps — text it to {PHONE_DISPLAY}.</>}
+        />
         <Footer />
       </div>
       <StickyMobileCta />

@@ -9,7 +9,7 @@ import { useQuoteSheet } from '@/components/QuoteSheet';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
 import { stPeteBeachFaqs } from '@/pages/stPeteBeachFaqs';
-import { CtaBand } from '@/components/CtaBand';
+import { ServiceQuoteForm } from '@/components/ServiceQuoteForm';
 import { StPeteBeachHeroPhone } from '@/components/StPeteBeachHeroPhone';
 import StPeteBeachBelowFold from '@/pages/StPeteBeachBelowFold';
 import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
@@ -231,7 +231,51 @@ export const StPeteBeachPage = () => {
         <HeroSection />
         <PhoneShowcaseMobile />
         <StPeteBeachBelowFold />
-        <CtaBand />
+        {/* On-page quote form in place of the shared call-to-action band, so the page ships
+            a real <form> in its prerendered HTML (CLAUDE.md #13). The copy and the
+            two qualifying questions are this page's own. */}
+        <ServiceQuoteForm
+          layout="form-left"
+          accent="orange"
+          eyebrow="St. Pete Beach Quote"
+          heading="Pool service built for the beach, priced the same day."
+          intro={<>Salt air, full sun and heavy use are harder on a pool than anywhere inland. Tell us what it runs on and how close to the Gulf it sits, and you&rsquo;ll get one flat monthly price back today.</>}
+          points={[
+            "Equipment checked every visit for salt-air corrosion",
+            "Chemistry adjusted for sun, splash-out and summer rain",
+            "Flat monthly rate, chemicals included, no contract",
+          ]}
+          service={{ value: 'weekly', label: 'Weekly pool service' }}
+          extraFields={[
+            {
+              id: "sanitizer",
+              label: "Is the pool salt or chlorine?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "salt", label: "Salt system" },
+                { value: "chlorine", label: "Chlorine" },
+                { value: "unsure", label: "Not sure" },
+              ],
+            },
+            {
+              id: "location",
+              label: "Where does the home sit?",
+              type: 'select',
+              required: true,
+              options: [
+                { value: "gulf-front", label: "Gulf-front" },
+                { value: "bay-canal", label: "On the bay or a canal" },
+                { value: "inland", label: "A few streets back" },
+              ],
+            },
+          ]}
+          source="st-pete-beach-quote-form"
+          submitLabel="Get My St. Pete Beach Quote"
+          successTitle="Got it — we will be in touch today."
+          successBody="We will come back with your flat weekly rate and what we would keep an eye on for a pool that close to the water."
+          footnote={<>A photo of the equipment pad tells us a lot — text it to {PHONE_DISPLAY}.</>}
+        />
         <Footer />
       </div>
       <StickyMobileCta />
