@@ -72,7 +72,7 @@ const SERVICES_FAQ: Array<{ question: string; answer: string }> = [
   {
     question: 'Can you handle a one-off job instead of weekly service?',
     answer:
-      "Yes. Green pool recoveries, storm cleanups, filter cleans and equipment repairs are all quoted as standalone jobs — you do not have to sign up for anything ongoing to get one done. Plenty of people call us for a recovery, then stay on weekly because that is what stops it happening again.",
+      "Green pool recoveries and storm cleanups, yes — both are quoted as standalone jobs, and plenty of people call us for a recovery, then stay on weekly because that is what stops it happening again. Filter service, equipment repairs, salt system work and acid washes are different: we only do those for pools on our weekly plan.",
   },
   {
     question: 'What areas do you cover?',
@@ -119,7 +119,7 @@ const ServicesPageInner = () => {
   usePageMeta({
     // Deliberately NOT led by "weekly cleaning": the homepage already owns
     // that query at #1, so the hub leans on the range instead of competing.
-    title: 'Pool Services in St. Petersburg, FL — Repairs & Cleanup',
+    title: 'Pool Services in St. Petersburg, FL — Weekly, Flat-Rate',
     description:
       'Pool services across St. Petersburg & Pinellas — flat-rate weekly cleaning with chemicals included, plus green pool recovery, storm cleanup and repairs.',
     canonicalPath: CANONICAL,

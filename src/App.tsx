@@ -45,6 +45,7 @@ const CyanuricAcidPage = lazyRoute(() => import('@/pages/CyanuricAcidPage').then
 const GreenPoolPage = lazyRoute(() => import('@/pages/GreenPoolPage').then((m) => m.GreenPoolPage));
 const StormCleanupPage = lazyRoute(() => import('@/pages/StormCleanupPage').then((m) => m.StormCleanupPage));
 const GreenPoolRecoveryPage = lazyRoute(() => import('@/pages/GreenPoolRecoveryPage').then((m) => m.GreenPoolRecoveryPage));
+const SaltwaterPoolServicePage = lazyRoute(() => import('@/pages/SaltwaterPoolServicePage').then((m) => m.SaltwaterPoolServicePage));
 const ServicesPage = lazyRoute(() => import('@/pages/ServicesPage').then((m) => m.ServicesPage));
 const HurricanePoolPrepPage = lazyRoute(() => import('@/pages/HurricanePoolPrepPage').then((m) => m.HurricanePoolPrepPage));
 const VariableSpeedPumpsPage = lazyRoute(() => import('@/pages/VariableSpeedPumpsPage').then((m) => m.VariableSpeedPumpsPage));
@@ -143,6 +144,7 @@ export const ROUTE_COMPONENTS: Record<string, PreloadableComponent> = {
   '/services': ServicesPage,
   '/services/storm-cleanup': StormCleanupPage,
   '/services/green-pool-recovery': GreenPoolRecoveryPage,
+  '/services/saltwater-pool-service': SaltwaterPoolServicePage,
   '/pool-care/variable-speed-pumps': VariableSpeedPumpsPage,
   '/pool-care/salt-water-vs-chlorine': SaltWaterVsChlorinePage,
   '/pool-care/how-to-drain-a-pool': DrainPoolPage,
@@ -262,6 +264,7 @@ export default function App() {
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/services/storm-cleanup" element={<StormCleanupPage />} />
           <Route path="/services/green-pool-recovery" element={<GreenPoolRecoveryPage />} />
+          <Route path="/services/saltwater-pool-service" element={<SaltwaterPoolServicePage />} />
           <Route path="/pool-care/variable-speed-pumps" element={<VariableSpeedPumpsPage />} />
           <Route path="/pool-care/salt-water-vs-chlorine" element={<SaltWaterVsChlorinePage />} />
           <Route path="/pool-care/how-to-drain-a-pool" element={<DrainPoolPage />} />

@@ -64,10 +64,11 @@ export const services: Service[] = [
   },
   {
     slug: 'salt',
-    label: 'Salt & Chemistry',
-    title: 'Salt systems & chemistry',
+    to: '/services/saltwater-pool-service/',
+    label: 'Saltwater Pool Service',
+    title: 'Saltwater pool service',
     blurb:
-      'Salt cell cleaning and replacement, system diagnostics, and the chemistry tuning that coastal pools need more of than inland ones.',
+      'Weekly care built around the salt system — the cell cleaned and the salt topped up in the rate, the generator checked every visit, algae kept out.',
     icon: Droplets,
   },
   {
@@ -83,7 +84,7 @@ export const services: Service[] = [
     label: 'Equipment Repair',
     title: 'Equipment repair & upgrades',
     blurb:
-      'Pumps, heaters, timers and automation — diagnosed before anything is quoted, and replaced only when a repair genuinely will not hold.',
+      'For customers on a weekly plan: pumps, heaters, timers and automation, diagnosed before anything is quoted and replaced only when a repair genuinely will not hold.',
     icon: Wrench,
   },
 ];

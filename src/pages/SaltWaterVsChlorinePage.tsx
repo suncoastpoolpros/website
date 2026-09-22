@@ -439,6 +439,13 @@ const SaltWaterVsChlorinePageInner = () => {
                 </a>
                 .
               </p>
+              <p className="text-gray-400 max-w-lg mx-auto mt-4">
+                Already have a salt system? Our{' '}
+                <Link to="/services/saltwater-pool-service/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
+                  saltwater pool service
+                </Link>{' '}
+                keeps the cell cleaned and the salt topped up as part of the weekly rate.
+              </p>
               <p className="text-gray-500 text-sm max-w-lg mx-auto mt-4">
                 Running a salt pool near the coast? Salt cells scale and corrode faster in the sea
                 air &mdash; see how we keep them healthy with{' '}
