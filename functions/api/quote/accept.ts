@@ -19,6 +19,7 @@ import {
 } from '../_quotes';
 import { sendViaResend } from '../admin/_shared';
 import { onboardInQuo } from '../_quo';
+import { onboardInPoolLogic } from '../_poollogic';
 
 type Ctx = {
   request: Request;
@@ -29,6 +30,7 @@ type Ctx = {
     PROPOSAL_REPLY_TO?: string;
     CONTACT_TO_EMAIL?: string;
     QUO_API_KEY?: string;
+    POOLLOGIC_API_KEY?: string;
   };
   /** Pages keeps the worker alive for this after the response is sent. */
   waitUntil?: (p: Promise<unknown>) => void;
@@ -354,6 +356,50 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
       })
     : Promise.resolve();
 
+  /*
+   * The billed customer in PoolLogic. Awaited, unlike Quo, because its outcome
+   * goes in the owner's email: a failure there is someone who won't be invoiced.
+   *
+   * The rate PoolLogic needs is a number per month — it bills that × months
+   * covered. A yearly plan's price reads "$X/mo — $Y billed once", and Y / 12
+   * is what makes PoolLogic's yearly invoice come to Y (to the cent).
+   */
+  const yearly = planConfig?.term === 'annual';
+  const amounts = (String(price).match(/\d[\d,]*(?:\.\d+)?/g) ?? []).map((n) => Number(n.replace(/,/g, '')));
+  const monthlyRate = yearly
+    ? amounts[1]
+      ? Math.round((amounts[1] / 12) * 100) / 100
+      : null
+    : (amounts[0] ?? null);
+  let sanitization = '';
+  try {
+    sanitization = String((JSON.parse(row.pool_json) as { sanitization?: unknown }).sanitization ?? '');
+  } catch {
+    // An unreadable pool record only costs the pool type.
+  }
+  const poolLogicResult = env.POOLLOGIC_API_KEY
+    ? await onboardInPoolLogic(env.POOLLOGIC_API_KEY, {
+        name: row.customer_name.trim() || signature,
+        email: row.customer_email.trim() || usableEmail,
+        phone: row.customer_phone,
+        address: row.customer_address,
+        sanitization,
+        monthlyRate,
+        cycle: yearly ? 'Yearly' : 'Monthly',
+        startDate: /^\d{4}-\d{2}-\d{2}$/.test(onboarding.preferredStart) ? onboarding.preferredStart : undefined,
+        second: onboarding.secondContact,
+        notes: [
+          `Signed${row.number ? ` proposal #${row.number}` : ''} on suncoastpoolpros.com: ${acceptedPlan}${price ? ` — ${price}` : ''}.`,
+          onboarding.accessNotes ? `Access: ${onboarding.accessNotes}` : '',
+          onboarding.secondContact?.relationship
+            ? `Second contact is their ${onboarding.secondContact.relationship.toLowerCase()}.`
+            : '',
+        ]
+          .filter(Boolean)
+          .join(' '),
+      })
+    : '';
+
   if (apiKey) {
     const billing = !billingAsked
       ? ''
@@ -402,6 +448,8 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
         : '',
       ``,
       `Quoted: ${new Date(row.created_at).toLocaleDateString('en-US')}`,
+      poolLogicResult ? `` : '',
+      poolLogicResult,
     ]
       .filter(Boolean)
       .join('\n');
