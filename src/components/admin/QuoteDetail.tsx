@@ -204,6 +204,18 @@ export const QuoteDetail = ({ id, onBack }: { id: string; onBack: () => void }) 
       ['Billing', billing],
       ['Preferred start', ob.preferredStart],
       ['Access notes', ob.accessNotes],
+      [
+        'Second contact',
+        ob.secondContact && typeof ob.secondContact === 'object'
+          ? [
+              str((ob.secondContact as Record<string, unknown>).name),
+              str((ob.secondContact as Record<string, unknown>).phone),
+              str((ob.secondContact as Record<string, unknown>).relationship),
+            ]
+              .filter(Boolean)
+              .join(' · ')
+          : '',
+      ],
       ['IP address', a.ip],
       ['Browser', a.userAgent],
     ]);

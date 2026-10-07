@@ -18,6 +18,7 @@ import {
   recordLookupFailure,
 } from '../_quotes';
 import { sendViaResend } from '../admin/_shared';
+import { onboardInQuo } from '../_quo';
 
 type Ctx = {
   request: Request;
@@ -27,6 +28,7 @@ type Ctx = {
     PROPOSAL_FROM_EMAIL?: string;
     PROPOSAL_REPLY_TO?: string;
     CONTACT_TO_EMAIL?: string;
+    QUO_API_KEY?: string;
   };
   /** Pages keeps the worker alive for this after the response is sent. */
   waitUntil?: (p: Promise<unknown>) => void;
@@ -59,6 +61,8 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     billingZip?: string;
     preferredStart?: string;
     accessNotes?: string;
+    /** Optional spouse / property manager. Never texted — they agreed to nothing. */
+    secondContact?: { name?: string; phone?: string; relationship?: string };
     /** Typed full name — the signature. */
     signature?: string;
     /** Supplied at signing when the quote was texted and carries no address. */
@@ -236,6 +240,15 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     billingZip: clean(ob.billingZip, 20),
     preferredStart: clean(ob.preferredStart, 40),
     accessNotes: clean(ob.accessNotes, 1000),
+    ...(clean(ob.secondContact?.name) || clean(ob.secondContact?.phone)
+      ? {
+          secondContact: {
+            name: clean(ob.secondContact?.name, 120),
+            phone: clean(ob.secondContact?.phone, 40),
+            relationship: clean(ob.secondContact?.relationship, 40),
+          },
+        }
+      : {}),
     // The signature and the moment it was given. accepted_at / accepted_ip on
     // the row carry the same facts; duplicated here so the onboarding payload
     // is self-contained if it's ever exported on its own.
@@ -325,6 +338,19 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   const replyTo = env.PROPOSAL_REPLY_TO || 'service@suncoastpoolpros.com';
   const owner = env.CONTACT_TO_EMAIL;
 
+  // New customer into the Quo contacts + a welcome text from the business line.
+  // Runs alongside the emails below; its failures are logged, never returned.
+  const quo = env.QUO_API_KEY
+    ? onboardInQuo(env.QUO_API_KEY, {
+        name: row.customer_name.trim() || signature,
+        email: row.customer_email.trim() || usableEmail,
+        phone: row.customer_phone,
+        address: row.customer_address,
+        second: onboarding.secondContact,
+        proposalNumber: row.number,
+      })
+    : Promise.resolve();
+
   if (apiKey) {
     const billing = !billingAsked
       ? ''
@@ -362,6 +388,15 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
       billing ? `Billing: ${billing}` : '',
       onboarding.preferredStart ? `Preferred start: ${onboarding.preferredStart}` : '',
       onboarding.accessNotes ? `Access notes: ${onboarding.accessNotes}` : '',
+      onboarding.secondContact
+        ? `Second contact: ${[
+            onboarding.secondContact.name,
+            onboarding.secondContact.phone,
+            onboarding.secondContact.relationship ? `(${onboarding.secondContact.relationship})` : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}`
+        : '',
       ``,
       `Quoted: ${new Date(row.created_at).toLocaleDateString('en-US')}`,
     ]
@@ -408,6 +443,7 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     }
   }
 
+  await quo;
   return json({ ok: true, plan: acceptedPlan, at: when }, 200);
 };
 

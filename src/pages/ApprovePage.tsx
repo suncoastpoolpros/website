@@ -347,6 +347,18 @@ export const ApprovePage = () => {
 
   const [preferredStart, setPreferredStart] = useState("");
   const [accessNotes, setAccessNotes] = useState("");
+  /**
+   * Someone else we can reach — a spouse, a property manager. Tucked behind a
+   * link so the customers who don't need it never see three more fields on the
+   * page they sign. Saved to the office's Quo contacts; never texted, because
+   * they agreed to nothing.
+   */
+  const [secondOpen, setSecondOpen] = useState(false);
+  const [second, setSecond] = useState({ name: "", phone: "", relationship: "" });
+  const secondDigits = second.phone.replace(/\D/g, "");
+  const secondPhoneOk =
+    secondDigits.length === 10 ||
+    (secondDigits.length === 11 && secondDigits.startsWith("1"));
   /** One box, covering all three documents named in its label. */
   const [agree, setAgree] = useState({ all: false });
   const [signature, setSignature] = useState("");
@@ -707,6 +719,16 @@ export const ApprovePage = () => {
               : {}),
             preferredStart,
             accessNotes,
+            // Only when it names someone; a half-opened, empty section is no one.
+            ...(secondOpen && (second.name.trim() || secondPhoneOk)
+              ? {
+                  secondContact: {
+                    name: second.name.trim(),
+                    phone: second.phone.trim(),
+                    relationship: second.relationship,
+                  },
+                }
+              : {}),
             // One box in the UI, three on the record — the label names all
             // three documents, and accept.ts still demands each one.
             agreeRequirements: agree.all,
@@ -746,6 +768,9 @@ export const ApprovePage = () => {
     quote,
     preferredStart,
     accessNotes,
+    secondOpen,
+    second,
+    secondPhoneOk,
     agree,
     signature,
     needsEmail,
@@ -1862,6 +1887,75 @@ export const ApprovePage = () => {
                   />
                 </label>
               </div>
+              {secondOpen ? (
+                <div className="mt-4 border-t border-[#eef1f5] pt-4">
+                  <p className="text-sm font-semibold text-[#1f2937]">
+                    Another contact
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-[#6b7280]">
+                    Someone we can reach about access or a visit. We won&rsquo;t
+                    add them to anything or send them marketing.
+                  </p>
+                  <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <label className="text-sm text-[#6b7280]">
+                      Name
+                      <input
+                        className={`${field} mt-1`}
+                        autoComplete="off"
+                        value={second.name}
+                        onChange={(e) =>
+                          setSecond((s) => ({ ...s, name: e.target.value }))
+                        }
+                      />
+                    </label>
+                    <label className="text-sm text-[#6b7280]">
+                      Mobile
+                      <input
+                        className={`${field} mt-1`}
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="off"
+                        value={second.phone}
+                        onChange={(e) =>
+                          setSecond((s) => ({ ...s, phone: e.target.value }))
+                        }
+                      />
+                    </label>
+                    <label className="text-sm text-[#6b7280]">
+                      They&rsquo;re my
+                      <select
+                        className={`${field} mt-1`}
+                        value={second.relationship}
+                        onChange={(e) =>
+                          setSecond((s) => ({
+                            ...s,
+                            relationship: e.target.value,
+                          }))
+                        }
+                      >
+                        <option value="">Choose…</option>
+                        <option>Spouse / partner</option>
+                        <option>Property manager</option>
+                        <option>Family member</option>
+                        <option>Other</option>
+                      </select>
+                    </label>
+                  </div>
+                  {secondDigits.length > 0 && !secondPhoneOk && (
+                    <p className="mt-1.5 text-xs text-[#c0392b]">
+                      That doesn&rsquo;t look like a phone number.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="mt-3 text-sm font-semibold text-[#1669AE] hover:underline"
+                  onClick={() => setSecondOpen(true)}
+                >
+                  + Add another contact (spouse, property manager…)
+                </button>
+              )}
               <p className="mt-3 text-xs text-[#6b7280]">
                 We&rsquo;ll confirm your first visit with you — the sooner you
                 start, the sooner your pool is on a routine.
