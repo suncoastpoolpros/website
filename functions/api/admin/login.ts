@@ -22,16 +22,15 @@ import {
   serializeSessionCookie,
 } from './_shared';
 
-// --- Turnstile bot-check is bypassed on the admin login. --------------------
-// Still false, and deliberately so: the widget was never mounted in
-// AdminKeypad.tsx, so flipping this to true would send no token and lock the
-// owner out of their own admin the moment TURNSTILE_SECRET_KEY is set.
+// --- Turnstile on the admin login. -------------------------------------------
+// AdminKeypad mounts the invisible widget and sends its token with the PIN, so
+// the check is enforced whenever TURNSTILE_SECRET_KEY is set — on top of the
+// per-IP rate limit on wrong PINs below, not instead of it.
 //
-// Brute-force protection no longer depends on it. Failed PINs are now rate
-// limited per IP (see below), which is what the note here used to promise
-// Turnstile would provide — and unlike a captcha it needs no widget, no env
-// var and no user-visible friction on a correct PIN.
-const REQUIRE_TURNSTILE = false;
+// LOCKED OUT? If the widget ever can't load (the keypad then says "Security
+// check didn't load"), delete TURNSTILE_SECRET_KEY in the Pages project and
+// redeploy: the login falls back to PIN + rate limit.
+const REQUIRE_TURNSTILE = true;
 // -----------------------------------------------------------------------------
 
 // Session lifetime: 30 days. Long enough that the owner rarely re-enters the

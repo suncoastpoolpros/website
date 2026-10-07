@@ -1,27 +1,42 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Delete, Lock, LoaderCircle } from 'lucide-react';
 import { login } from '@/lib/adminApi';
+import { useTurnstile } from '@/lib/turnstile';
 
 /**
  * Phone-style 6-digit PIN lock screen for /admin. The PIN is verified
  * server-side (/api/admin/login) — nothing here is a secret. On success the
  * server sets an HttpOnly session cookie and we call onUnlock().
  *
- * NOTE: Turnstile bot-check is temporarily bypassed (see REQUIRE_TURNSTILE in
- * functions/api/admin/login.ts). To restore it, mount the invisible widget via
- * useTurnstile() here and pass the token into login(pin, token).
+ * The invisible Turnstile widget starts loading on the first digit, and its
+ * token goes with the PIN (enforced in functions/api/admin/login.ts whenever
+ * TURNSTILE_SECRET_KEY is set).
  */
 const PIN_LENGTH = 6;
 
 type Status = 'idle' | 'checking' | 'error';
 
+/** What went wrong, in words — a failed bot check is not a wrong PIN. */
+const errorText = (error: string | undefined): string =>
+  error === 'captcha_missing' || error === 'captcha_failed'
+    ? "Security check didn't load — refresh and try again"
+    : error === 'too_many_attempts'
+      ? 'Too many tries — wait 15 minutes'
+      : error === 'network'
+        ? 'No connection — try again'
+        : 'Incorrect code — try again';
+
 export const AdminKeypad = ({ onUnlock }: { onUnlock: () => void }) => {
   const [pin, setPin] = useState('');
   const [status, setStatus] = useState<Status>('idle');
+  const [error, setError] = useState<string | undefined>();
+  const turnstile = useTurnstile();
 
   const press = useCallback((digit: string) => {
+    turnstile.warm();
     setStatus((s) => (s === 'error' ? 'idle' : s));
     setPin((prev) => (prev.length >= PIN_LENGTH ? prev : prev + digit));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const backspace = useCallback(() => {
@@ -34,15 +49,20 @@ export const AdminKeypad = ({ onUnlock }: { onUnlock: () => void }) => {
     if (pin.length !== PIN_LENGTH || status === 'checking') return;
     let cancelled = false;
     setStatus('checking');
-    login(pin).then((res) => {
-      if (cancelled) return;
-      if (res.ok) {
-        onUnlock();
-      } else {
-        setStatus('error');
-        setPin('');
-      }
-    });
+    turnstile
+      .execute()
+      .catch(() => '')
+      .then((token) => login(pin, token))
+      .then((res) => {
+        if (cancelled) return;
+        if (res.ok) {
+          onUnlock();
+        } else {
+          setError(res.error);
+          setStatus('error');
+          setPin('');
+        }
+      });
     return () => {
       cancelled = true;
     };
@@ -88,13 +108,16 @@ export const AdminKeypad = ({ onUnlock }: { onUnlock: () => void }) => {
         </div>
 
         <div className="mt-4 h-5 text-sm">
-          {status === 'error' && <span className="text-red-300">Incorrect code — try again</span>}
+          {status === 'error' && <span className="text-red-300">{errorText(error)}</span>}
           {checking && (
             <span className="inline-flex items-center gap-2 text-gray-400">
               <LoaderCircle className="h-4 w-4 animate-spin" /> Checking…
             </span>
           )}
         </div>
+
+        {/* The invisible Turnstile widget mounts here. */}
+        <div ref={turnstile.containerRef} />
 
         {/* Keypad */}
         <div className="mt-6 grid grid-cols-3 gap-3">

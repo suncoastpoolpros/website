@@ -195,5 +195,10 @@ export const useTurnstile = () => {
     });
   };
 
-  return { containerRef, execute, ready, enabled };
+  /** Start loading early (e.g. on the first keypad digit) so execute() rarely waits. */
+  const warm = (): void => {
+    if (enabled && !shouldLoad) setShouldLoad(true);
+  };
+
+  return { containerRef, execute, warm, ready, enabled };
 };
