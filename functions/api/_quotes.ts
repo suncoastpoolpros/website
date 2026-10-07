@@ -171,8 +171,58 @@ export async function reserveProposalNumber(db: unknown): Promise<number | null>
 }
 
 /**
+ * An email address as typed — or as PASTED. Copying a tapped address on a
+ * phone yields "mailto:someone@example.com", which passes an @-and-a-dot check
+ * and then goes nowhere: proposal #1011 was sent to one twice, leaving two dead
+ * copies in the list beside the one that was signed.
+ */
+export const cleanEmail = (raw: unknown): string =>
+  String(raw ?? '')
+    .trim()
+    .replace(/^mailto:/i, '')
+    .replace(/\?.*$/, '')
+    .trim();
+
+/**
+ * Another record under the same proposal number that has already been signed.
+ *
+ * Quotes saved before saveQuote reused a number's row can exist several times
+ * over, each with its own live link. Signing ANY of them after one was signed
+ * would send the welcome text and create the billed customer a second time.
+ */
+export async function findSignedSibling(
+  db: unknown,
+  row: QuoteRow,
+): Promise<{ accepted_plan: string | null; accepted_at: string } | null> {
+  if (!isQuoteStorageAvailable(db) || !row.number) return null;
+  try {
+    return (
+      (await db
+        .prepare(
+          `SELECT accepted_plan, accepted_at FROM quotes
+            WHERE number = ? AND id != ? AND accepted_at IS NOT NULL
+            ORDER BY accepted_at LIMIT 1`,
+        )
+        .bind(row.number, row.id)
+        .first<{ accepted_plan: string | null; accepted_at: string }>()) ?? null
+    );
+  } catch (err) {
+    console.log('[quotes] sibling_read_failed:', String(err).slice(0, 300));
+    return null;
+  }
+}
+
+/**
  * Persist a sent quote. Returns the token, or null when storage isn't available
  * or the write failed — callers then simply omit the approve link.
+ *
+ * ONE PROPOSAL NUMBER, ONE RECORD. The builder keeps its reserved number until
+ * a send succeeds, so a failed send and its retry arrive with the same number —
+ * and each used to insert a new row with its own link, all but one of them
+ * stuck on Awaiting forever (and still signable). A number that already has an
+ * unsigned row now overwrites it in place: same link, fresh 30-day window. A
+ * number whose row is already SIGNED still inserts, so a signed record is never
+ * rewritten — findSignedSibling keeps that new row from being signed again.
  */
 export async function saveQuote(
   db: unknown,
@@ -187,6 +237,33 @@ export async function saveQuote(
   if (!isQuoteStorageAvailable(db)) return null;
   const now = new Date();
   const expires = new Date(now.getTime() + QUOTE_TTL_DAYS * 24 * 60 * 60 * 1000);
+
+  const number = proposalNumberOrNull(quote.number);
+  if (number !== null) {
+    try {
+      const existing = await db
+        .prepare(
+          `SELECT id FROM quotes WHERE number = ? AND accepted_at IS NULL
+            ORDER BY created_at DESC LIMIT 1`,
+        )
+        .bind(number)
+        .first<{ id?: string }>();
+      if (existing?.id && (await updateQuote(db, existing.id, quote))) {
+        await db
+          .prepare('UPDATE quotes SET expires_at = ? WHERE id = ?')
+          .bind(expires.toISOString(), existing.id)
+          .run();
+        // The caller re-saves the photos under this id; clear the old set so a
+        // shorter list doesn't leave the previous send's extras behind.
+        await db.prepare('DELETE FROM quote_photos WHERE quote_id = ?').bind(existing.id).run().catch(() => {});
+        return existing.id;
+      }
+    } catch (err) {
+      // Falling through to an insert is the old behaviour: a duplicate row,
+      // never a lost quote.
+      console.log('[quotes] reuse_failed:', String(err).slice(0, 300));
+    }
+  }
   /**
    * Retried because the token is now 7 characters, not 43. A collision is still
    * vanishingly unlikely — but "unlikely" was ~1 in 10^70 before and is ~1 in
@@ -209,12 +286,12 @@ export async function saveQuote(
           now.toISOString(),
           expires.toISOString(),
           String(quote.customer?.name ?? '').trim(),
-          String(quote.customer?.email ?? '').trim(),
+          cleanEmail(quote.customer?.email),
           String(quote.customer?.address ?? '').trim() || null,
           String(quote.customer?.phone ?? '').trim() || null,
           JSON.stringify(quote.pool ?? {}),
           JSON.stringify(quote.proposal ?? {}),
-          proposalNumberOrNull(quote.number),
+          number,
         )
         .run();
       return id;
@@ -287,7 +364,7 @@ export async function updateQuote(
       )
       .bind(
         String(quote.customer?.name ?? '').trim(),
-        String(quote.customer?.email ?? '').trim(),
+        cleanEmail(quote.customer?.email),
         String(quote.customer?.address ?? '').trim() || null,
         String(quote.customer?.phone ?? '').trim() || null,
         JSON.stringify(quote.pool ?? {}),

@@ -38,14 +38,38 @@ export const toE164 = (raw: string | null | undefined): string | null => {
   return null;
 };
 
-const post = async (apiKey: string, path: string, body: unknown): Promise<void> => {
+const post = async (apiKey: string, path: string, body: unknown): Promise<{ data?: { id?: string } }> => {
   const res = await fetch(`${API}${path}`, {
     method: 'POST',
     headers: { authorization: apiKey, 'content-type': 'application/json' },
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`quo_${path}_${res.status}: ${(await res.text()).slice(0, 250)}`);
+  return (await res.json().catch(() => ({}))) as { data?: { id?: string } };
 };
+
+/**
+ * The customer's access notes (gate code, pets) as a note on the Quo contact,
+ * so whoever answers their text sees them. A versioned endpoint without /v1 —
+ * Quo's contact notes live on the newer dated API.
+ */
+const addNote = async (apiKey: string, contactId: string, text: string): Promise<void> => {
+  const res = await fetch(`https://api.quo.com/contacts/${encodeURIComponent(contactId)}/notes`, {
+    method: 'POST',
+    headers: { authorization: apiKey, 'content-type': 'application/json', 'quo-api-version': '2026-03-30' },
+    body: JSON.stringify({ text: text.slice(0, 2000) }),
+  });
+  if (!res.ok) throw new Error(`quo_note_${res.status}: ${(await res.text()).slice(0, 250)}`);
+};
+
+const withNote = (apiKey: string, created: Promise<{ data?: { id?: string } }>, note: string, who: string) =>
+  created
+    .then(async (r) => {
+      if (!note) return;
+      if (!r.data?.id) throw new Error('quo_note: no contact id in the create response');
+      await addNote(apiKey, r.data.id, note);
+    })
+    .catch((err) => console.log(`[quo] ${who}_failed:`, String(err).slice(0, 300)));
 
 export const onboardInQuo = async (
   apiKey: string,
@@ -54,6 +78,8 @@ export const onboardInQuo = async (
     email: string;
     phone: string | null;
     address: string | null;
+    /** Gate code, pets — added as a note on each contact created. */
+    accessNotes?: string;
     /** Saved as a contact only — never texted, they agreed to nothing. */
     second?: { name: string; phone: string; relationship: string };
     proposalNumber?: number | null;
@@ -62,7 +88,8 @@ export const onboardInQuo = async (
   const [firstName = 'Customer', ...rest] = c.name.trim().split(/\s+/);
   const phone = toE164(c.phone);
 
-  const contact = post(apiKey, '/contacts', {
+  const note = (c.accessNotes ?? '').trim();
+  const contact = withNote(apiKey, post(apiKey, '/contacts', {
     // Matches how the office files customers by hand: "Customer Mike Philips",
     // with the service address in the Company field.
     defaultFields: {
@@ -75,7 +102,7 @@ export const onboardInQuo = async (
     source: 'suncoastpoolpros.com',
     // The proposal number, never the quote id — that id IS the customer's private link.
     ...(c.proposalNumber ? { externalId: `proposal-${c.proposalNumber}` } : {}),
-  }).catch((err) => console.log('[quo] contact_failed:', String(err).slice(0, 300)));
+  }), note, 'contact');
 
   // No usable mobile number means no text — the contact is still worth having.
   const text = phone
@@ -90,7 +117,7 @@ export const onboardInQuo = async (
   const [secondFirst, ...secondRest] = (c.second?.name || 'Contact').trim().split(/\s+/);
   const secondContact =
     c.second && secondPhone
-      ? post(apiKey, '/contacts', {
+      ? withNote(apiKey, post(apiKey, '/contacts', {
           defaultFields: {
             firstName: `Customer ${secondFirst}`,
             lastName: secondRest.join(' ') || null,
@@ -100,7 +127,7 @@ export const onboardInQuo = async (
           },
           source: 'suncoastpoolpros.com',
           ...(c.proposalNumber ? { externalId: `proposal-${c.proposalNumber}-2` } : {}),
-        }).catch((err) => console.log('[quo] second_contact_failed:', String(err).slice(0, 300)))
+        }), note, 'second_contact')
       : Promise.resolve();
 
   await Promise.all([contact, text, secondContact]);

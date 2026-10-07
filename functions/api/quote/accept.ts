@@ -12,6 +12,7 @@
 import {
   TERMS_VERSION,
   acceptQuote,
+  findSignedSibling,
   getQuote,
   isPricingStale,
   isThrottled,
@@ -126,10 +127,17 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     return json({ ok: true, alreadyAccepted: true, plan: row.accepted_plan, at: row.accepted_at }, 200);
   }
 
+  // Another copy of this proposal number was already signed — see
+  // findSignedSibling. Same answer as a repeat click, and nothing is sent.
+  const sibling = await findSignedSibling(env.DB, row);
+  if (sibling) {
+    return json({ ok: true, alreadyAccepted: true, plan: sibling.accepted_plan, at: sibling.accepted_at }, 200);
+  }
+
   // The plan must be one this quote actually offered — otherwise a crafted
   // request could record acceptance of a plan or price never sent.
   let proposal: {
-    tiers?: Array<{ name?: string; price?: string }>;
+    tiers?: Array<{ name?: string; price?: string; billingNote?: string }>;
     price?: string;
     pricingMode?: string;
     buildOptions?: {
@@ -323,11 +331,21 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     return `$${fmt(rate)}/mo`;
   };
 
-  const price = isBuild
-    ? buildPrice()
-    : ((proposal.tiers ?? []).find((t) => String(t?.name ?? '').trim() === acceptedPlan)?.price ??
-      proposal.price ??
-      '');
+  /*
+   * A card plan paid annually ("Pay Annually", "Complete Annual") headlines
+   * its EFFECTIVE monthly rate and carries the real charge in billingNote:
+   * "$1,760 billed once — 11 months paid, your 12th free." Read on the price
+   * alone it looked like a $160/mo monthly plan, and was handed to PoolLogic
+   * as exactly that. Shaped like the build-mode annual string, so everything
+   * below reads both the same way.
+   */
+  const cardPrice = (): string => {
+    const tier = (proposal.tiers ?? []).find((t) => String(t?.name ?? '').trim() === acceptedPlan);
+    const headline = tier?.price ?? proposal.price ?? '';
+    const once = /\$\s?[\d,]+(?:\.\d+)? billed once/i.exec(String(tier?.billingNote ?? ''));
+    return once && headline ? `${headline} — ${once[0]}` : headline;
+  };
+  const price = isBuild ? buildPrice() : cardPrice();
   const when = new Date().toLocaleString('en-US', {
     timeZone: 'America/New_York',
     dateStyle: 'full',
@@ -351,6 +369,7 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
         email: row.customer_email.trim() || usableEmail,
         phone: row.customer_phone,
         address: row.customer_address,
+        accessNotes: onboarding.accessNotes,
         second: onboarding.secondContact,
         proposalNumber: row.number,
       })
@@ -364,7 +383,7 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
    * covered. A yearly plan's price reads "$X/mo — $Y billed once", and Y / 12
    * is what makes PoolLogic's yearly invoice come to Y (to the cent).
    */
-  const yearly = planConfig?.term === 'annual';
+  const yearly = planConfig?.term === 'annual' || /billed once/i.test(price);
   const amounts = (String(price).match(/\d[\d,]*(?:\.\d+)?/g) ?? []).map((n) => Number(n.replace(/,/g, '')));
   const monthlyRate = yearly
     ? amounts[1]
@@ -388,15 +407,9 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
         cycle: yearly ? 'Yearly' : 'Monthly',
         startDate: /^\d{4}-\d{2}-\d{2}$/.test(onboarding.preferredStart) ? onboarding.preferredStart : undefined,
         second: onboarding.secondContact,
-        notes: [
-          `Signed${row.number ? ` proposal #${row.number}` : ''} on suncoastpoolpros.com: ${acceptedPlan}${price ? ` — ${price}` : ''}.`,
-          onboarding.accessNotes ? `Access: ${onboarding.accessNotes}` : '',
-          onboarding.secondContact?.relationship
-            ? `Second contact is their ${onboarding.secondContact.relationship.toLowerCase()}.`
-            : '',
-        ]
-          .filter(Boolean)
-          .join(' '),
+        // Only what the customer told us for the tech — gate code, pets. The
+        // plan and price already live in PoolLogic's own billing fields.
+        notes: onboarding.accessNotes,
       })
     : '';
 

@@ -61,11 +61,14 @@ export const onboardInPoolLogic = async (apiKey: string, c: PoolLogicCustomer): 
     ...splitAddress(c.address),
     monthly_rate: c.monthlyRate,
     billing_cycle: c.cycle,
+    // Net 15 on every website customer — the office's terms, not PoolLogic's Net 30 default.
+    payment_terms_days: 15,
     ...(c.startDate ? { billing_start_date: c.startDate } : {}),
     ...(pool ? { pool_type: pool } : {}),
     ...(c.second?.name ? { secondary_contact_name: c.second.name } : {}),
     ...(c.second?.phone ? { secondary_contact_phone: c.second.phone } : {}),
-    notes: c.notes,
+    // Blank is left out: PoolLogic then writes its own "Onboarded via website".
+    ...(c.notes.trim() ? { notes: c.notes.trim() } : {}),
   };
 
   try {

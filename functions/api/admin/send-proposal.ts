@@ -9,7 +9,7 @@
  * customer approves by replying "approved", so Reply-To points at the business
  * inbox, not the no-reply From address.
  */
-import { proposalNumberOrNull, quoteUrl, saveQuote, saveQuotePhotos } from '../_quotes';
+import { cleanEmail, proposalNumberOrNull, quoteUrl, saveQuote, saveQuotePhotos } from '../_quotes';
 import {
   type AdminContext,
   type AdminEnv,
@@ -130,8 +130,8 @@ export const onRequestPost = async (ctx: AdminContext): Promise<Response> => {
       return json({ ok: false, error: 'bad_request' }, 400);
     }
 
-    const customer = payload.customer ?? {};
-    const toEmail = String(customer.email ?? '').trim();
+    const customer = { ...(payload.customer ?? {}), email: cleanEmail(payload.customer?.email) };
+    const toEmail = customer.email;
     if (!EMAIL_RE.test(toEmail)) {
       return json({ ok: false, error: 'invalid_customer_email' }, 400);
     }

@@ -2141,13 +2141,23 @@ export const ApprovePage = () => {
                   Sign to accept
                 </label>
                 <div className="mt-4 border-b-2 border-[#9fb3c8] transition-colors focus-within:border-[#1669AE]">
+                  {/* The empty line is an INSTRUCTION in plain type, never the
+                      customer's name in the handwriting face — a grey "Marjan
+                      Toosi" in script on the signature line read as already
+                      signed. The script face arrives with the first keystroke. */}
                   <input
                     id="signature"
-                    className="w-full bg-transparent pb-1 text-3xl text-[#0a1628] placeholder-[#c3cedb] focus:outline-none"
-                    style={{ fontFamily: '"Caveat", cursive', fontWeight: 700 }}
+                    className={`h-12 w-full bg-transparent pb-1 text-[#0a1628] placeholder-[#9aa4b2] focus:outline-none ${
+                      signature ? "text-3xl" : "text-base"
+                    }`}
+                    style={
+                      signature
+                        ? { fontFamily: '"Caveat", cursive', fontWeight: 700 }
+                        : undefined
+                    }
                     value={signature}
                     onChange={(e) => setSignature(e.target.value)}
-                    placeholder={quote.customerName.trim() || "Your full name"}
+                    placeholder="Type your full name to sign"
                     autoComplete="name"
                   />
                 </div>

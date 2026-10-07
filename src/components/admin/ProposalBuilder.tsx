@@ -1446,8 +1446,14 @@ export const ProposalBuilder = ({
                     placeholder=" "
                     autoComplete="off"
                     value={data.customer.email}
+                    // A pasted "mailto:" link passes as an address and then
+                    // goes nowhere — strip it as it lands.
                     onChange={(e) =>
-                      update("customer", "email", e.target.value)
+                      update(
+                        "customer",
+                        "email",
+                        e.target.value.replace(/^\s*mailto:/i, "").replace(/\?.*$/, ""),
+                      )
                     }
                   />
                 </FieldShell>
