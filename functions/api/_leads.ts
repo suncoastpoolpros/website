@@ -99,13 +99,17 @@ const sweep = async (db: unknown): Promise<void> => {
  * The opt-out line is there because this is the first text this number has
  * ever had from us.
  */
-const autoReply = (first: string, isQuote: boolean): string => {
+const autoReply = (first: string, isQuote: boolean, service: string): string => {
+  // "Weekly Cleaning" reads as "your request for weekly cleaning"; an acronym
+  // ("Commercial / HOA") keeps its case, and "Other" names nothing.
+  const svc = !service || service === 'Other' ? '' : /[A-Z]{2}/.test(service) ? service : service.toLowerCase();
   const body = (name: string): string =>
     isQuote
-      ? `Hi ${name}, thanks for reaching out to Suncoast Pool Pros! We got your request and will be in touch shortly. ` +
-        `Want a faster quote? Reply with a photo of your pool and equipment. Reply STOP to opt out.`
-      : `Hi ${name}, thanks for reaching out to Suncoast Pool Pros! We got your message and will be in touch shortly. ` +
-        `Reply STOP to opt out.`;
+      ? `Hi ${name}, it's Jonathan with Suncoast Pool Pros - we got your request${svc ? ` for ${svc}` : ''}! ` +
+        `Someone from our team will be in touch shortly. Quick question so we're ready: ` +
+        `when are you hoping to get started? Reply STOP to opt out.`
+      : `Hi ${name}, it's Jonathan with Suncoast Pool Pros - we got your message! ` +
+        `Someone from our team will be in touch shortly. Reply STOP to opt out.`;
   const text = body(first);
   return text.length <= 306 && /^[\x20-\x7e]*$/.test(text) ? text : body('there');
 };
@@ -147,7 +151,7 @@ export const handleLead = async (
       console.log('[leads] text_skipped: daily ceiling reached');
       return;
     }
-    await sendText(env.QUO_API_KEY, phone, autoReply(first || 'there', lead.source !== 'contact-page')).catch((err) =>
+    await sendText(env.QUO_API_KEY, phone, autoReply(first || 'there', lead.source !== 'contact-page', lead.service)).catch((err) =>
       console.log('[leads] text_failed:', String(err).slice(0, 300)),
     );
   };
