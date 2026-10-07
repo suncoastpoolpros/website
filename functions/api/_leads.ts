@@ -106,8 +106,8 @@ const autoReply = (first: string, isQuote: boolean, service: string): string => 
   const body = (name: string): string =>
     isQuote
       ? `Hi ${name}, it's Jonathan with Suncoast Pool Pros - we got your request${svc ? ` for ${svc}` : ''}! ` +
-        `Someone from our team will be in touch shortly. Quick question so we're ready: ` +
-        `when are you hoping to get started? Reply STOP to opt out.`
+        `Someone from our team will be in touch shortly. To save you time, reply with 2 quick photos: ` +
+        `your pool and your equipment. That way we can get your quote ready faster. Reply STOP to opt out.`
       : `Hi ${name}, it's Jonathan with Suncoast Pool Pros - we got your message! ` +
         `Someone from our team will be in touch shortly. Reply STOP to opt out.`;
   const text = body(first);
