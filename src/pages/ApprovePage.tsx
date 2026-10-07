@@ -2173,6 +2173,14 @@ export const ApprovePage = () => {
                   Typing your name is your electronic signature. We record it
                   with the date, time and IP address as proof of acceptance.
                 </p>
+                {/* Said here, at the moment of signing, because accept.ts texts
+                    the number on the quote straight away. The Privacy Policy
+                    holds the full SMS terms; this is the line nobody has to
+                    open a link to read. */}
+                <p className="mt-2 max-w-3xl text-xs leading-relaxed text-[#6b7280]">
+                  You&rsquo;ll get a welcome text from us at {PHONE_DISPLAY}.
+                  Msg &amp; data rates may apply. Reply STOP to opt out.
+                </p>
               </div>
             </section>
 

@@ -362,7 +362,8 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   const owner = env.CONTACT_TO_EMAIL;
 
   // New customer into the Quo contacts + a welcome text from the business line.
-  // Runs alongside the emails below; its failures are logged, never returned.
+  // Runs alongside PoolLogic; each step's outcome is a line in the owner's
+  // email, and nothing here can fail the acceptance.
   const quo = env.QUO_API_KEY
     ? onboardInQuo(env.QUO_API_KEY, {
         name: row.customer_name.trim() || signature,
@@ -373,7 +374,7 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
         second: onboarding.secondContact,
         proposalNumber: row.number,
       })
-    : Promise.resolve();
+    : Promise.resolve<string[]>([]);
 
   /*
    * The billed customer in PoolLogic. Awaited, unlike Quo, because its outcome
@@ -396,8 +397,9 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   } catch {
     // An unreadable pool record only costs the pool type.
   }
-  const poolLogicResult = env.POOLLOGIC_API_KEY
-    ? await onboardInPoolLogic(env.POOLLOGIC_API_KEY, {
+  // Quo ran alongside PoolLogic; both outcomes go in the owner's email.
+  const poolLogicPending = env.POOLLOGIC_API_KEY
+    ? onboardInPoolLogic(env.POOLLOGIC_API_KEY, {
         name: row.customer_name.trim() || signature,
         email: row.customer_email.trim() || usableEmail,
         phone: row.customer_phone,
@@ -412,6 +414,7 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
         notes: onboarding.accessNotes,
       })
     : '';
+  const [poolLogicResult, quoLines] = await Promise.all([poolLogicPending, quo]);
 
   if (apiKey) {
     const billing = !billingAsked
@@ -461,8 +464,8 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
         : '',
       ``,
       `Quoted: ${new Date(row.created_at).toLocaleDateString('en-US')}`,
-      poolLogicResult ? `` : '',
       poolLogicResult,
+      ...quoLines,
     ]
       .filter(Boolean)
       .join('\n');
@@ -507,7 +510,6 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     }
   }
 
-  await quo;
   return json({ ok: true, plan: acceptedPlan, at: when }, 200);
 };
 

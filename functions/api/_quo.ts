@@ -43,6 +43,7 @@ const post = async (apiKey: string, path: string, body: unknown): Promise<{ data
     method: 'POST',
     headers: { authorization: apiKey, 'content-type': 'application/json' },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`quo_${path}_${res.status}: ${(await res.text()).slice(0, 250)}`);
   return (await res.json().catch(() => ({}))) as { data?: { id?: string } };
@@ -58,19 +59,59 @@ const addNote = async (apiKey: string, contactId: string, text: string): Promise
     method: 'POST',
     headers: { authorization: apiKey, 'content-type': 'application/json', 'quo-api-version': '2026-03-30' },
     body: JSON.stringify({ text: text.slice(0, 2000) }),
+    signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`quo_note_${res.status}: ${(await res.text()).slice(0, 250)}`);
 };
 
-const withNote = (apiKey: string, created: Promise<{ data?: { id?: string } }>, note: string, who: string) =>
-  created
-    .then(async (r) => {
-      if (!note) return;
-      if (!r.data?.id) throw new Error('quo_note: no contact id in the create response');
-      await addNote(apiKey, r.data.id, note);
-    })
-    .catch((err) => console.log(`[quo] ${who}_failed:`, String(err).slice(0, 300)));
+/** Logged, and turned into the line the owner reads in the ACCEPTED email. */
+const failed = (what: string, err: unknown): string => {
+  const msg = String(err).slice(0, 300);
+  console.log(`[quo] ${what}_failed:`, msg);
+  // Quo's 402/403 on a text are the two the office can act on.
+  const why = /_402:/.test(msg)
+    ? 'out of API credits or subscription lapsed'
+    : /_403:/.test(msg)
+      ? 'daily texting cap reached'
+      : /_400:/.test(msg) && /a2p/i.test(msg)
+        ? 'texting registration (A2P) not approved'
+        : /timeout|abort/i.test(msg)
+          ? "Quo didn't answer"
+          : (/_(\d{3}):/.exec(msg)?.[1] ?? 'error');
+  return `${what} FAILED (${why}) — do it by hand in Quo`;
+};
 
+/**
+ * Creates the contact, then its access note. Returns one line per step for the
+ * owner's email; never throws.
+ */
+const contactWithNote = async (
+  apiKey: string,
+  label: string,
+  body: unknown,
+  note: string,
+): Promise<string[]> => {
+  let id: string | undefined;
+  try {
+    id = (await post(apiKey, '/contacts', body)).data?.id;
+  } catch (err) {
+    return [failed(`${label} contact`, err), ...(note ? [`${label} access note not added (no contact)`] : [])];
+  }
+  if (!note) return [`${label} contact added`];
+  try {
+    if (!id) throw new Error('no contact id in the create response');
+    await addNote(apiKey, id, note);
+    return [`${label} contact added, with the access note`];
+  } catch (err) {
+    return [`${label} contact added`, failed(`${label} access note`, err)];
+  }
+};
+
+/**
+ * Everything Quo does for a signed quote. Never throws: the acceptance is
+ * already recorded. Returns the lines for the owner's ACCEPTED email, so a
+ * text that didn't go out is seen the same day rather than never.
+ */
 export const onboardInQuo = async (
   apiKey: string,
   c: {
@@ -84,51 +125,62 @@ export const onboardInQuo = async (
     second?: { name: string; phone: string; relationship: string };
     proposalNumber?: number | null;
   },
-): Promise<void> => {
+): Promise<string[]> => {
   const [firstName = 'Customer', ...rest] = c.name.trim().split(/\s+/);
   const phone = toE164(c.phone);
-
   const note = (c.accessNotes ?? '').trim();
-  const contact = withNote(apiKey, post(apiKey, '/contacts', {
-    // Matches how the office files customers by hand: "Customer Mike Philips",
-    // with the service address in the Company field.
-    defaultFields: {
-      firstName: `Customer ${firstName}`,
-      lastName: rest.join(' ') || null,
-      company: c.address?.trim() || null,
-      emails: c.email ? [{ name: 'Email', value: c.email }] : [],
-      phoneNumbers: phone ? [{ name: 'Mobile', value: phone }] : [],
+
+  const contact = contactWithNote(
+    apiKey,
+    'Customer',
+    {
+      // Matches how the office files customers by hand: "Customer Mike Philips",
+      // with the service address in the Company field.
+      defaultFields: {
+        firstName: `Customer ${firstName}`,
+        lastName: rest.join(' ') || null,
+        company: c.address?.trim() || null,
+        emails: c.email ? [{ name: 'Email', value: c.email }] : [],
+        phoneNumbers: phone ? [{ name: 'Mobile', value: phone }] : [],
+      },
+      source: 'suncoastpoolpros.com',
+      // The proposal number, never the quote id — that id IS the customer's private link.
+      ...(c.proposalNumber ? { externalId: `proposal-${c.proposalNumber}` } : {}),
     },
-    source: 'suncoastpoolpros.com',
-    // The proposal number, never the quote id — that id IS the customer's private link.
-    ...(c.proposalNumber ? { externalId: `proposal-${c.proposalNumber}` } : {}),
-  }), note, 'contact');
+    note,
+  );
 
   // No usable mobile number means no text — the contact is still worth having.
-  const text = phone
-    ? post(apiKey, '/messages', { from: FROM, to: [phone], content: welcomeText(firstName) }).catch((err) =>
-        console.log('[quo] welcome_text_failed:', String(err).slice(0, 300)),
+  const text: Promise<string[]> = phone
+    ? post(apiKey, '/messages', { from: FROM, to: [phone], content: welcomeText(firstName) }).then(
+        () => ['Welcome text sent'],
+        (err) => [failed('Welcome text', err)],
       )
-    : Promise.resolve();
+    : Promise.resolve([`Welcome text NOT sent — no usable mobile number on the quote`]);
 
   // Filed the same way, with who they are in Quo's Role field. A second contact
   // without a usable number is no use in a phone system, so it's skipped.
   const secondPhone = toE164(c.second?.phone);
   const [secondFirst, ...secondRest] = (c.second?.name || 'Contact').trim().split(/\s+/);
-  const secondContact =
+  const second: Promise<string[]> =
     c.second && secondPhone
-      ? withNote(apiKey, post(apiKey, '/contacts', {
-          defaultFields: {
-            firstName: `Customer ${secondFirst}`,
-            lastName: secondRest.join(' ') || null,
-            company: c.address?.trim() || null,
-            role: c.second.relationship || null,
-            phoneNumbers: [{ name: 'Mobile', value: secondPhone }],
+      ? contactWithNote(
+          apiKey,
+          'Second',
+          {
+            defaultFields: {
+              firstName: `Customer ${secondFirst}`,
+              lastName: secondRest.join(' ') || null,
+              company: c.address?.trim() || null,
+              role: c.second.relationship || null,
+              phoneNumbers: [{ name: 'Mobile', value: secondPhone }],
+            },
+            source: 'suncoastpoolpros.com',
+            ...(c.proposalNumber ? { externalId: `proposal-${c.proposalNumber}-2` } : {}),
           },
-          source: 'suncoastpoolpros.com',
-          ...(c.proposalNumber ? { externalId: `proposal-${c.proposalNumber}-2` } : {}),
-        }), note, 'second_contact')
-      : Promise.resolve();
+          note,
+        )
+      : Promise.resolve(c.second ? ['Second contact NOT added — no usable phone number'] : []);
 
-  await Promise.all([contact, text, secondContact]);
+  return (await Promise.all([contact, text, second])).flat().map((l) => `Quo: ${l}`);
 };
