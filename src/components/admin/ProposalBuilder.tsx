@@ -129,9 +129,9 @@ type SendStatus =
   | { kind: "sending" }
   | { kind: "saving" }
   /** `stored: false` = emailed, but the quote was NOT saved. See the sent screen. */
-  | { kind: "sent"; stored: boolean }
+  | { kind: "sent"; stored: boolean; email: string }
   /** Saved without emailing — the link is the deliverable, so it's shown to copy. */
-  | { kind: "saved"; url: string }
+  | { kind: "saved"; url: string; name: string }
   | { kind: "error"; message: string };
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -781,7 +781,11 @@ export const ProposalBuilder = ({
         { ...data, proposalNumber, photos },
         controller.signal,
       );
-      setStatus({ kind: "saved", url });
+      // Done with this customer: clear the form and its saved draft so the next
+      // proposal starts blank. The link screen keeps what it needs to show.
+      setStatus({ kind: "saved", url, name: data.customer.name.trim() });
+      clearDraft();
+      setPhotos([]);
     } catch (err) {
       if (
         cancelledRef.current ||
@@ -952,7 +956,14 @@ export const ProposalBuilder = ({
       reservedNumberRef.current = null;
       setPreview(null);
       setOverrides({});
-      setStatus({ kind: "sent", stored: result.stored });
+      setStatus({ kind: "sent", stored: result.stored, email: data.customer.email });
+      // Sent and saved: clear the form and its draft so the next proposal starts
+      // blank. Sent but NOT saved keeps everything — that screen's fix is to
+      // send this same proposal again.
+      if (result.stored) {
+        clearDraft();
+        setPhotos([]);
+      }
     } catch (err) {
       // A cancel (flag set, or the fetch aborted) is not an error — stay idle.
       if (
@@ -1020,7 +1031,7 @@ export const ProposalBuilder = ({
           </h2>
           <p className="mt-2 text-gray-300">
             Nothing was emailed. Send this to{" "}
-            {data.customer.name.trim() || "them"} however you like — it opens
+            {status.name || "them"} however you like — it opens
             with the full breakdown of the service, then the plans.
           </p>
           <div className="mt-6 flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] p-2 pl-4 text-left">
@@ -1049,12 +1060,7 @@ export const ProposalBuilder = ({
             >
               <FilePlus2 className="h-5 w-5" /> New proposal
             </button>
-            <button
-              onClick={() => setStatus({ kind: "idle" })}
-              className="rounded-xl border border-white/15 px-5 py-3 font-semibold text-gray-200 hover:bg-white/5"
-            >
-              Back to this one
-            </button>
+
           </div>
         </div>
       </div>
@@ -1072,7 +1078,7 @@ export const ProposalBuilder = ({
             Proposal sent
           </h2>
           <p className="mt-2 text-gray-300">
-            Emailed to <span className="text-white">{data.customer.email}</span>{" "}
+            Emailed to <span className="text-white">{status.email}</span>{" "}
             with the PDF attached. A copy was BCC&apos;d to your inbox.
           </p>
           {/*
@@ -1103,12 +1109,15 @@ export const ProposalBuilder = ({
             >
               <FilePlus2 className="h-5 w-5" /> New proposal
             </button>
-            <button
-              onClick={() => setStatus({ kind: "idle" })}
-              className="rounded-xl border border-white/15 px-5 py-3 font-semibold text-gray-200 hover:bg-white/5"
-            >
-              Back to this one
-            </button>
+            {/* Only when the form was kept — see the send handler. */}
+            {!status.stored && (
+              <button
+                onClick={() => setStatus({ kind: "idle" })}
+                className="rounded-xl border border-white/15 px-5 py-3 font-semibold text-gray-200 hover:bg-white/5"
+              >
+                Back to this one
+              </button>
+            )}
           </div>
         </div>
       </div>
