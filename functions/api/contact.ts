@@ -24,7 +24,12 @@
 
 // Cloudflare Pages Function context type. Env is whatever's configured in
 // the Pages dashboard / wrangler.toml; we only read the ones we need.
+import { consume, handleLead } from './_leads';
+
 type Env = {
+  DB?: unknown;
+  QUO_API_KEY?: string;
+  POOLLOGIC_API_KEY?: string;
   RESEND_API_KEY: string;
   TURNSTILE_SECRET_KEY: string;
   CONTACT_TO_EMAIL: string;        // e.g. service@suncoastpoolpros.com
@@ -98,20 +103,44 @@ const handlePost = async (ctx: PagesContext): Promise<Response> => {
     return json({ ok: true }, 200);
   }
 
-  // 4. Turnstile verification. If a token is present we verify it; if no
-  //    token AND the form is configured as Turnstile-protected, we reject.
-  //    During the development window before Turnstile is set up, missing
-  //    tokens are accepted — flip TURNSTILE_REQUIRED behavior by setting
-  //    the secret to a non-empty string.
+  // 4. Turnstile. VERIFIED decides what the lead may set off, not whether it
+  //    arrives. A verified lead also gets the auto-reply text and the
+  //    PoolLogic ticket (_leads.ts, which rate-limits both). An unverified one
+  //    — no secret configured, an ad blocker that stopped the widget, a bot —
+  //    is still emailed, marked, and capped per IP: losing a real lead to a
+  //    widget that didn't load is worse than one junk email.
+  const ip = request.headers.get('CF-Connecting-IP') ?? '';
+  let verified = false;
   if (env.TURNSTILE_SECRET_KEY) {
     const token = typeof payload.turnstileToken === 'string' ? payload.turnstileToken : '';
-    if (!token) {
-      return json({ ok: false, error: 'captcha_missing' }, 400);
+    verified = !!token && (await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY, ip || undefined));
+    if (!verified) {
+      // Five an hour per IP is any real person; past that it's a script, and
+      // the script is told "ok" so it learns nothing.
+      if (!(await consume(env.DB, `unverified:ip:${ip}`, { max: 5, windowMs: 60 * 60 * 1000 }, true))) {
+        return json({ ok: true }, 200);
+      }
+      payload.unverified = 'Yes — the anti-bot check did not pass, so no auto-text or PoolLogic ticket was sent';
     }
-    const ok = await verifyTurnstile(token, env.TURNSTILE_SECRET_KEY, request.headers.get('CF-Connecting-IP') ?? undefined);
-    if (!ok) {
-      return json({ ok: false, error: 'captcha_failed' }, 400);
-    }
+  }
+
+  if (verified) {
+    const { text } = composeBody(payload);
+    ctx.waitUntil(
+      handleLead(
+        env,
+        {
+          name: String(payload.name ?? '').trim(),
+          email: String(payload.email ?? '').trim(),
+          phone: String(payload.phone ?? '').trim(),
+          address: String(payload.address ?? '').trim(),
+          source: String(payload.source ?? '').trim(),
+          service: payload.service ? humanizeService(String(payload.service).trim()) : '',
+          details: text,
+        },
+        ip,
+      ).catch((err) => console.log('[contact] lead_handoff_failed:', String(err).slice(0, 300))),
+    );
   }
 
   // 5. Compose + send the email via Resend. Retry once on transient failure.
@@ -274,7 +303,7 @@ const composeSubject = (p: SubmissionPayload): string => {
   const source = String(p.source ?? 'website');
   const service = String(p.service ?? '').trim();
   const name = String(p.name ?? '').trim();
-  const parts: string[] = [submissionLabels(p).subject];
+  const parts: string[] = [p.unverified ? `[unverified] ${submissionLabels(p).subject}` : submissionLabels(p).subject];
   if (service) parts.push(`(${humanizeService(service)})`);
   if (name) parts.push(`— ${name}`);
   parts.push(`[${source}]`);

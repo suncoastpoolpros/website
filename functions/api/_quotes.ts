@@ -658,7 +658,9 @@ export async function recordLookupFailure(
     // attacker a fresh budget by simply making a quote request.
     const longest = Math.max(...Object.values(THROTTLE).map((t) => t.windowMs));
     await db
-      .prepare('DELETE FROM lookup_failures WHERE window_start < ?')
+      // 'lead:' rows are _leads.ts's counters, whose windows run to 30 days;
+      // sweeping them on this minutes-long cutoff would reset the text limits.
+      .prepare("DELETE FROM lookup_failures WHERE window_start < ? AND ip NOT LIKE 'lead:%'")
       .bind(new Date(Date.now() - longest).toISOString())
       .run();
   } catch (err) {

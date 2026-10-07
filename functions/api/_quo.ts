@@ -64,6 +64,11 @@ const addNote = async (apiKey: string, contactId: string, text: string): Promise
   if (!res.ok) throw new Error(`quo_note_${res.status}: ${(await res.text()).slice(0, 250)}`);
 };
 
+/** One text from the business line. Throws on failure — callers decide how loud. */
+export const sendText = async (apiKey: string, to: string, content: string): Promise<void> => {
+  await post(apiKey, '/messages', { from: FROM, to: [to], content });
+};
+
 /** Logged, and turned into the line the owner reads in the ACCEPTED email. */
 const failed = (what: string, err: unknown): string => {
   const msg = String(err).slice(0, 300);

@@ -502,6 +502,9 @@ export const QuoteChooser = ({ onSubmitted }: { onSubmitted?: () => void } = {})
                 <p className="text-center text-gray-500 text-xs">
                   Step 2 is a few quick questions about your pool — takes under a minute.
                 </p>
+                <p className="text-center text-gray-500 text-[11px] leading-relaxed">
+                  By submitting, you agree to get texts about your request from Suncoast Pool Pros. Msg &amp; data rates may apply. Reply STOP to opt out.
+                </p>
               </form>
             )}
 

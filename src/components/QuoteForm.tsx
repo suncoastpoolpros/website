@@ -238,6 +238,9 @@ export const QuoteForm = () => {
                 <ShieldCheck className="w-4 h-4" />
                 We respond promptly. No spam. No obligation.
               </p>
+              <p className="text-center text-[11px] leading-relaxed text-gray-500">
+                By submitting, you agree to get texts about your request from Suncoast Pool Pros. Msg &amp; data rates may apply. Reply STOP to opt out.
+              </p>
             </form>
           </m.div>
         </div>
