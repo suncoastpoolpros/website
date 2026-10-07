@@ -377,8 +377,9 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     : Promise.resolve<string[]>([]);
 
   /*
-   * The billed customer in PoolLogic. Awaited, unlike Quo, because its outcome
-   * goes in the owner's email: a failure there is someone who won't be invoiced.
+   * The billed customer in PoolLogic, run in parallel with Quo. Both are
+   * awaited before the emails because their outcomes go in the owner's email:
+   * a failure here is someone who won't be invoiced.
    *
    * The rate PoolLogic needs is a number per month — it bills that × months
    * covered. A yearly plan's price reads "$X/mo — $Y billed once", and Y / 12
@@ -397,7 +398,6 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   } catch {
     // An unreadable pool record only costs the pool type.
   }
-  // Quo ran alongside PoolLogic; both outcomes go in the owner's email.
   const poolLogicPending = env.POOLLOGIC_API_KEY
     ? onboardInPoolLogic(env.POOLLOGIC_API_KEY, {
         name: row.customer_name.trim() || signature,
