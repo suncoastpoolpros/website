@@ -709,13 +709,13 @@ export async function acceptQuote(
    * to, on the same rule as customerEmail below.
    */
   signature = '',
-): Promise<boolean> {
-  if (!isQuoteStorageAvailable(db)) return false;
+): Promise<'accepted' | 'already' | 'failed'> {
+  if (!isQuoteStorageAvailable(db)) return 'failed';
   try {
     // Plan, consents and evidence land in ONE write. Acceptance is a single
     // fact; recording half of it would leave a row claiming agreement without
     // the terms version that says agreement to what.
-    await db
+    const res = await db
       .prepare(
         `UPDATE quotes
             SET accepted_at = ?, accepted_plan = ?, accepted_ip = ?, accepted_ua = ?,
@@ -746,10 +746,18 @@ export async function acceptQuote(
         id,
       )
       .run();
-    return true;
+    /*
+     * ZERO ROWS CHANGED MEANS ANOTHER REQUEST GOT THERE FIRST. The caller's
+     * accepted_at check happens on a read before this write, so two requests
+     * landing together (two tabs, a retried POST) both pass it — and only the
+     * `accepted_at IS NULL` here decides which one actually accepted. The loser
+     * must not send the emails or the welcome text a second time.
+     */
+    const changed = (res as { meta?: { changes?: number } })?.meta?.changes;
+    return changed === 0 ? 'already' : 'accepted';
   } catch (err) {
     console.log('[quotes] accept_failed:', String(err).slice(0, 300));
-    return false;
+    return 'failed';
   }
 }
 

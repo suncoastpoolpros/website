@@ -282,7 +282,10 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
     // Fills the name when the quote was saved without one — see acceptQuote.
     signature,
   );
-  if (!recorded) return json({ ok: false, error: 'accept_failed' }, 500);
+  if (recorded === 'failed') return json({ ok: false, error: 'accept_failed' }, 500);
+  // Lost the race to a simultaneous request: that one is sending the emails
+  // and the welcome text, so this one sends nothing.
+  if (recorded === 'already') return json({ ok: true, alreadyAccepted: true, plan: acceptedPlan }, 200);
 
   /**
    * WHAT THE OFFICE WILL ACTUALLY CHARGE.

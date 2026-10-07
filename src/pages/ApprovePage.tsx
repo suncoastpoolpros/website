@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Check,
   LoaderCircle,
@@ -340,6 +340,14 @@ export const ApprovePage = () => {
    */
   const [config, setConfig] = useState<PlanChoice | null>(null);
   const [busy, setBusy] = useState(false);
+  /**
+   * The double-submit lock. `busy` is state, so two taps inside one frame both
+   * read it as false before React re-renders; a ref flips synchronously. Taken
+   * on the first tap and only released if the request FAILED — after a success
+   * the page is done, and a signing must never be sent twice (it fires the
+   * welcome text). The server refuses a second acceptance as well.
+   */
+  const submitLock = useRef(false);
   const [formError, setFormError] = useState("");
   const [pdfState, setPdfState] = useState<"idle" | "working" | "error">(
     "idle",
@@ -696,7 +704,8 @@ export const ApprovePage = () => {
     (!needsEmail || emailOk);
 
   const submit = useCallback(async () => {
-    if (!canSubmit || busy) return;
+    if (!canSubmit || busy || submitLock.current) return;
+    submitLock.current = true;
     setBusy(true);
     setFormError("");
     try {
@@ -748,11 +757,14 @@ export const ApprovePage = () => {
           plan: data.plan ?? plan,
           jobKind: quote?.proposal.jobKind,
         });
-      else
+      else {
+        submitLock.current = false;
         setFormError(
           "We couldn’t record that. Please try again, or give us a call.",
         );
+      }
     } catch {
+      submitLock.current = false;
       setFormError("Something went wrong. Please give us a call.");
     } finally {
       setBusy(false);
