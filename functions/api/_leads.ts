@@ -123,7 +123,7 @@ export const handleLead = async (
     if (!(await consume(env.DB, `ticket:ip:${ip}`, LEAD_LIMITS.ticketPerIp))) return;
     if (!(await consume(env.DB, `ticket:day`, LEAD_LIMITS.ticketPerDay))) return;
     try {
-      const res = await fetch('https://app.poollogic.app/api/webhooks/incoming/service-request', {
+      const res = await fetch('https://app.poollogic.app/api/webhooks/incoming/lead', {
         method: 'POST',
         headers: { authorization: `Bearer ${env.POOLLOGIC_API_KEY}`, 'content-type': 'application/json' },
         body: JSON.stringify({
