@@ -1,34 +1,34 @@
 /**
- * What a website lead sets off beyond the email: an instant auto-reply text
- * from the Quo line, and a [LEAD] ticket in PoolLogic.
+ * What a website lead sets off beyond the email: a [LEAD] ticket in PoolLogic.
+ * (It used to send an instant auto-reply text from the Quo line too; that was
+ * removed in October 2026 — leads are answered by hand.)
  *
- * BOTH COST SOMETHING, SO BOTH ARE LIMITED. A text is money and, worse, the
- * number's reputation with the carriers — a script posting a thousand fake
- * leads must not turn into a thousand texts to strangers. So:
+ * TICKETS ARE LIMITED, so a script posting a thousand fake leads can't fill
+ * PoolLogic with a thousand tickets:
  *
  *  - Nothing here runs unless Turnstile verified the submission (contact.ts
  *    decides that; an unverified lead still reaches the inbox).
  *  - Every limit is a counter in D1, so it holds across every visitor and
  *    every Cloudflare location — not a per-browser or per-colo check.
- *  - FAIL CLOSED: if a counter can't be read or written, the text is skipped.
- *    A missed auto-reply costs one manual text; an unlimited one costs the
- *    number.
+ *  - FAIL CLOSED: if a counter can't be read or written, the ticket is
+ *    skipped. The lead email still arrives.
  *
  * Counters live in the lookup_failures table (migration 0004) under a 'lead:'
  * prefix — no migration needed. _quotes.ts's sweep skips that prefix, because
  * its windows are minutes and these are days.
  */
-import { sendText, toE164 } from './_quo';
+
+/** US numbers only — anything else is left alone rather than guessed at. */
+const toE164 = (raw: string | null | undefined): string | null => {
+  const digits = String(raw ?? '').replace(/\D/g, '');
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+  return null;
+};
 
 const DAY = 24 * 60 * 60 * 1000;
 
 export const LEAD_LIMITS = {
-  /** One auto-reply per phone number, however many times they submit. */
-  textPerPhone: { max: 1, windowMs: 30 * DAY },
-  /** A visitor (IP) can trigger at most this many texts a day. */
-  textPerIp: { max: 3, windowMs: DAY },
-  /** The ceiling for the whole site: worst case ~$0.50/day in Quo credits. */
-  textPerDay: { max: 25, windowMs: DAY },
   /** A double-submitted form makes one ticket, not two. */
   ticketPerContact: { max: 1, windowMs: DAY },
   ticketPerIp: { max: 5, windowMs: DAY },
@@ -93,27 +93,6 @@ const sweep = async (db: unknown): Promise<void> => {
     .catch(() => {});
 };
 
-/**
- * The auto-reply. Two segments at most (306 GSM characters) and plain ASCII —
- * an emoji or a curly quote switches the whole text to 70-character segments.
- * The opt-out line is there because this is the first text this number has
- * ever had from us.
- */
-const autoReply = (first: string, isQuote: boolean, service: string): string => {
-  // "Weekly Cleaning" reads as "your request for weekly cleaning"; an acronym
-  // ("Commercial / HOA") keeps its case, and "Other" names nothing.
-  const svc = !service || service === 'Other' ? '' : /[A-Z]{2}/.test(service) ? service : service.toLowerCase();
-  const body = (name: string): string =>
-    isQuote
-      ? `Hi ${name}, it's Jonathan with Suncoast Pool Pros - we got your request${svc ? ` for ${svc}` : ''}! ` +
-        `Someone from our team will be in touch shortly. To save you time, reply with 2 quick photos: ` +
-        `your pool and your equipment. That way we can get your quote ready faster. Reply STOP to opt out.`
-      : `Hi ${name}, it's Jonathan with Suncoast Pool Pros - we got your message! ` +
-        `Someone from our team will be in touch shortly. Reply STOP to opt out.`;
-  const text = body(first);
-  return text.length <= 306 && /^[\x20-\x7e]*$/.test(text) ? text : body('there');
-};
-
 export type Lead = {
   name: string;
   email: string;
@@ -127,7 +106,7 @@ export type Lead = {
 };
 
 export const handleLead = async (
-  env: { DB?: unknown; QUO_API_KEY?: string; POOLLOGIC_API_KEY?: string },
+  env: { DB?: unknown; POOLLOGIC_API_KEY?: string },
   lead: Lead,
   ip: string,
 ): Promise<void> => {
@@ -136,25 +115,6 @@ export const handleLead = async (
   // A signup is a customer whose quote is already signed — they get the
   // welcome text from accept.ts, not "thanks for reaching out".
   const isSignup = lead.source === 'signup-page';
-
-  const text = async (): Promise<void> => {
-    if (!env.QUO_API_KEY || !phone || isSignup) return;
-    // Phone first: a repeat submitter is stopped without spending the IP or
-    // site-wide budget. The site-wide ceiling is checked last, so it only
-    // counts texts that would otherwise have gone out.
-    if (!(await consume(env.DB, `text:phone:${phone}`, LEAD_LIMITS.textPerPhone))) return;
-    if (!(await consume(env.DB, `text:ip:${ip}`, LEAD_LIMITS.textPerIp))) {
-      console.log('[leads] text_skipped: ip limit');
-      return;
-    }
-    if (!(await consume(env.DB, `text:day`, LEAD_LIMITS.textPerDay))) {
-      console.log('[leads] text_skipped: daily ceiling reached');
-      return;
-    }
-    await sendText(env.QUO_API_KEY, phone, autoReply(first || 'there', lead.source !== 'contact-page', lead.service)).catch((err) =>
-      console.log('[leads] text_failed:', String(err).slice(0, 300)),
-    );
-  };
 
   const ticket = async (): Promise<void> => {
     if (!env.POOLLOGIC_API_KEY) return;
@@ -183,5 +143,5 @@ export const handleLead = async (
     }
   };
 
-  await Promise.all([text(), ticket(), sweep(env.DB)]);
+  await Promise.all([ticket(), sweep(env.DB)]);
 };

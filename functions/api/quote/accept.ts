@@ -19,7 +19,6 @@ import {
   recordLookupFailure,
 } from '../_quotes';
 import { sendViaResend } from '../admin/_shared';
-import { onboardInQuo } from '../_quo';
 import { onboardInPoolLogic } from '../_poollogic';
 
 type Ctx = {
@@ -30,7 +29,6 @@ type Ctx = {
     PROPOSAL_FROM_EMAIL?: string;
     PROPOSAL_REPLY_TO?: string;
     CONTACT_TO_EMAIL?: string;
-    QUO_API_KEY?: string;
     POOLLOGIC_API_KEY?: string;
   };
   /** Pages keeps the worker alive for this after the response is sent. */
@@ -294,7 +292,7 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   );
   if (recorded === 'failed') return json({ ok: false, error: 'accept_failed' }, 500);
   // Lost the race to a simultaneous request: that one is sending the emails
-  // and the welcome text, so this one sends nothing.
+  // and the PoolLogic hand-off, so this one sends nothing.
   if (recorded === 'already') return json({ ok: true, alreadyAccepted: true, plan: acceptedPlan }, 200);
 
   /**
@@ -361,25 +359,11 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
   const replyTo = env.PROPOSAL_REPLY_TO || 'service@suncoastpoolpros.com';
   const owner = env.CONTACT_TO_EMAIL;
 
-  // New customer into the Quo contacts + a welcome text from the business line.
-  // Runs alongside PoolLogic; each step's outcome is a line in the owner's
-  // email, and nothing here can fail the acceptance.
-  const quo = env.QUO_API_KEY
-    ? onboardInQuo(env.QUO_API_KEY, {
-        name: row.customer_name.trim() || signature,
-        email: row.customer_email.trim() || usableEmail,
-        phone: row.customer_phone,
-        address: row.customer_address,
-        accessNotes: onboarding.accessNotes,
-        second: onboarding.secondContact,
-        proposalNumber: row.number,
-      })
-    : Promise.resolve<string[]>([]);
-
   /*
-   * The billed customer in PoolLogic, run in parallel with Quo. Both are
-   * awaited before the emails because their outcomes go in the owner's email:
-   * a failure here is someone who won't be invoiced.
+   * The billed customer in PoolLogic — the one thing a signed quote sends
+   * anywhere (no texts, no Quo: texting is the CRM's job). Awaited before the
+   * emails because its outcome goes in the owner's email: a failure here is
+   * someone who won't be invoiced.
    *
    * The rate PoolLogic needs is a number per month — it bills that × months
    * covered. A yearly plan's price reads "$X/mo — $Y billed once", and Y / 12
@@ -414,7 +398,7 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
         notes: onboarding.accessNotes,
       })
     : '';
-  const [poolLogicResult, quoLines] = await Promise.all([poolLogicPending, quo]);
+  const poolLogicResult = await poolLogicPending;
 
   if (apiKey) {
     const billing = !billingAsked
@@ -465,7 +449,6 @@ export const onRequestPost = async (ctx: Ctx): Promise<Response> => {
       ``,
       `Quoted: ${new Date(row.created_at).toLocaleDateString('en-US')}`,
       poolLogicResult,
-      ...quoLines,
     ]
       .filter(Boolean)
       .join('\n');

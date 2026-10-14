@@ -28,7 +28,6 @@ import { consume, handleLead } from './_leads';
 
 type Env = {
   DB?: unknown;
-  QUO_API_KEY?: string;
   POOLLOGIC_API_KEY?: string;
   RESEND_API_KEY: string;
   TURNSTILE_SECRET_KEY: string;
@@ -104,8 +103,9 @@ const handlePost = async (ctx: PagesContext): Promise<Response> => {
   }
 
   // 4. Turnstile. VERIFIED decides what the lead may set off, not whether it
-  //    arrives. A verified lead also gets the auto-reply text and the
-  //    PoolLogic ticket (_leads.ts, which rate-limits both). An unverified one
+  //    arrives. A verified lead also gets a PoolLogic ticket (_leads.ts,
+  //    which rate-limits it); texting leads is the CRM's job, not the
+  //    site's. An unverified one
   //    — no secret configured, an ad blocker that stopped the widget, a bot —
   //    is still emailed, marked, and capped per IP: losing a real lead to a
   //    widget that didn't load is worse than one junk email.
@@ -120,7 +120,7 @@ const handlePost = async (ctx: PagesContext): Promise<Response> => {
       if (!(await consume(env.DB, `unverified:ip:${ip}`, { max: 5, windowMs: 60 * 60 * 1000 }, true))) {
         return json({ ok: true }, 200);
       }
-      payload.unverified = 'Yes — the anti-bot check did not pass, so no auto-text or PoolLogic ticket was sent';
+      payload.unverified = 'Yes — the anti-bot check did not pass, so no PoolLogic ticket was made';
     }
   }
 
