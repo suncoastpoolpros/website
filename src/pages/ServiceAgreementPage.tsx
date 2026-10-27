@@ -13,7 +13,7 @@ import {
 } from '@/lib/contact';
 import { usePageMeta } from '@/lib/usePageMeta';
 
-const LAST_UPDATED = '09-09-2026';
+const LAST_UPDATED = '10-27-2026';
 
 // Each block is one clause. `lead` renders a bolded inline label before the text
 // (used for the bulleted definition-style items in the original document).
@@ -306,11 +306,79 @@ const SECTIONS: Section[] = [
             type: 'p',
             text: 'If you have prepaid for a year, you may cancel at any time and we refund every month you have not used, calculated at the standard monthly rate. Because the free twelfth month is applied at the end of the term, it is earned by completing the year. The 30-day notice period above counts as service used.',
           },
+          {
+            type: 'p',
+            text: 'We may also end your service at any time, for any reason, by telling you in writing. We do not need to give a reason or advance notice. The 30-day notice requirement above applies only when you cancel.',
+          },
+          {
+            type: 'p',
+            text: 'If we end your service, you owe only for service provided up to the date it ends, and we refund anything you have prepaid for service you have not received. For an annual prepayment, the refund is calculated the same way as above.',
+          },
+        ],
+      },
+      // Placed after Cancellation, not after Billing, so sections 1–6 keep the
+      // numbers the admin proposal code cites (e.g. "section 6" for the guarantee).
+      {
+        id: 'service-pauses',
+        number: 7,
+        title: 'Service Pauses',
+        blocks: [
+          {
+            type: 'p',
+            text: 'We may pause your pool service. While service is paused, we don\'t visit your pool and you won\'t be charged for new service. We may pause service when:',
+          },
+          {
+            type: 'list',
+            items: [
+              { text: 'An invoice is more than 15 days past due' },
+              {
+                text: 'We\'ve tried to reach you several times about your pool or account and haven\'t heard back',
+              },
+              {
+                text: 'Your pool needs a repair or replacement part that we\'ve quoted, and we can\'t keep your pool in good condition until the quote is approved. How soon we pause depends on the repair. Equipment that stops the pool from running, like a failed pump, may mean a pause right away. Less urgent repairs give you more time.',
+              },
+            ],
+          },
+          { type: 'subheading', text: 'How we\'ll tell you:' },
+          {
+            type: 'p',
+            text: 'When we pause your service, we\'ll email you at the address on file. The email gives the reason and the date the pause starts, and when service will resume if we know it. We may also call or text you. Please keep your email address and phone number up to date with us. A pause still takes effect if our message doesn\'t reach you — for example, because the email bounced or there\'s no email address on file.',
+          },
+          { type: 'subheading', text: 'While service is paused:' },
+          {
+            type: 'list',
+            items: [
+              { text: 'Balances you already owe are still due. A pause doesn\'t cancel or waive them.' },
+              {
+                text: 'You\'re responsible for your pool while service is paused. A pause happens because a balance went unpaid, we couldn\'t reach you, or a needed repair wasn\'t approved, so we\'re not responsible for anything that happens to the pool during it. That includes algae, cloudy or green water, equipment damage, and pool-safety barriers. Please keep the pool safe and secured.',
+              },
+              {
+                text: 'Our "Always Blue" guarantee doesn\'t cover anything that happens to your pool while service is paused.',
+              },
+              {
+                text: 'We\'ll hold your spot on our route for 7 days. After that, your service day may change when service restarts.',
+              },
+            ],
+          },
+          { type: 'subheading', text: 'Restarting service:' },
+          {
+            type: 'p',
+            text: `To restart, reply to our email or call us at ${PHONE_DISPLAY}. We'll restart service once the reason for the pause is resolved: payment is made, we've heard from you, or the quote is approved or we've agreed on another plan. If your pool turned green or its condition got worse while service was paused, it may need recovery work before regular service resumes. Green pools take a lot of work to bring back, so recovery work, including a "Green-to-Clean," isn't covered by your monthly rate and is billed separately. We'll quote it and get your approval before doing the work, and service stays paused until it's approved.`,
+          },
+          {
+            type: 'p',
+            text: 'Following up on late payments takes time away from caring for our customers\' pools. If your service was paused for a past-due invoice, we may require you to set up automatic payment and keep it on file before we restart service.',
+          },
+          { type: 'subheading', text: 'Ending service:' },
+          {
+            type: 'p',
+            text: 'We may end your service while it\'s paused, or at any other time, as explained in the Cancellation Policy (section 6).',
+          },
         ],
       },
       {
         id: 'communication',
-        number: 7,
+        number: 8,
         title: 'Communication & Written Notice',
         blocks: [
           {
@@ -329,7 +397,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'customer-responsibilities',
-        number: 8,
+        number: 9,
         title: 'Customer Responsibilities',
         blocks: [
           { type: 'p', text: 'To ensure consistent service quality, customers agree to:' },
@@ -359,7 +427,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'equipment',
-        number: 9,
+        number: 10,
         title: 'Equipment Condition & Repairs',
         blocks: [
           {
@@ -382,7 +450,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'repairs',
-        number: 10,
+        number: 11,
         title: 'Repairs & Additional Services',
         blocks: [
           { type: 'p', text: 'Repairs, installations, cleanups, or specialty services:' },
@@ -402,7 +470,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'construction',
-        number: 11,
+        number: 12,
         title: 'Construction, Pressure Washing & Exterior Work',
         blocks: [
           {
@@ -425,7 +493,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'weather',
-        number: 12,
+        number: 13,
         title: 'Weather, Storms & Environmental Factors',
         blocks: [
           {
@@ -448,7 +516,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'water-level',
-        number: 13,
+        number: 14,
         title: 'Water Level, Surfaces & Structural Conditions',
         blocks: [
           {
@@ -476,7 +544,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'access',
-        number: 14,
+        number: 15,
         title: 'Access & Safety',
         blocks: [
           { type: 'p', text: 'Service may be postponed if conditions are unsafe, including:' },
@@ -497,7 +565,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'liability',
-        number: 15,
+        number: 16,
         title: 'Limitation of Liability',
         blocks: [
           { type: 'p', text: 'While reasonable care is exercised in all services:' },
@@ -515,7 +583,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'satisfaction',
-        number: 16,
+        number: 17,
         title: 'Customer Satisfaction, Claims & Disputes',
         blocks: [
           {
@@ -548,7 +616,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'governing-law',
-        number: 17,
+        number: 18,
         title: 'Governing Law',
         blocks: [
           {
@@ -563,7 +631,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'severability',
-        number: 18,
+        number: 19,
         title: 'Severability & Non-Waiver',
         blocks: [
           {
@@ -578,7 +646,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'entire-agreement',
-        number: 19,
+        number: 20,
         title: 'Entire Agreement & Updates',
         blocks: [
           {
@@ -593,7 +661,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'force-majeure',
-        number: 20,
+        number: 21,
         title: 'Force Majeure',
         blocks: [
           {
@@ -608,7 +676,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'assignment',
-        number: 21,
+        number: 22,
         title: 'Assignment',
         blocks: [
           {
@@ -619,7 +687,7 @@ const SECTIONS: Section[] = [
       },
       {
         id: 'acceptance',
-        number: 22,
+        number: 23,
         title: 'Agreement Acceptance',
         blocks: [
           {
@@ -642,12 +710,27 @@ const SECTIONS: Section[] = [
       },
 ];
 
+// Highlights unfilled [placeholders] (one level of nesting) so a draft clause
+// can't go live looking finished. Text without brackets renders unchanged.
+const PLACEHOLDER = /(\[(?:[^[\]]|\[[^\]]*\])*\])/;
+
+const withPlaceholders = (text: string) =>
+  text.split(PLACEHOLDER).map((part, i) =>
+    i % 2 === 1 ? (
+      <mark key={i} className="rounded bg-[#ff720f]/30 px-1 text-white">
+        {part}
+      </mark>
+    ) : (
+      part
+    )
+  );
+
 const renderBlock = (block: Block, i: number) => {
   switch (block.type) {
     case 'subheading':
       return (
         <p key={i} className="text-white font-semibold mt-6 mb-3">
-          {block.text}
+          {withPlaceholders(block.text)}
         </p>
       );
     case 'list':
@@ -658,7 +741,7 @@ const renderBlock = (block: Block, i: number) => {
               <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-blue-light" />
               <span>
                 {item.lead && <span className="font-semibold text-white">{item.lead} </span>}
-                {item.text}
+                {withPlaceholders(item.text)}
               </span>
             </li>
           ))}
@@ -668,7 +751,7 @@ const renderBlock = (block: Block, i: number) => {
     default:
       return (
         <p key={i} className="text-gray-300 leading-relaxed mb-4">
-          {block.text}
+          {withPlaceholders(block.text)}
         </p>
       );
   }
