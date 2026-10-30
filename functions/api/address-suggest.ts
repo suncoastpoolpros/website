@@ -38,10 +38,17 @@ const LIMITS = {
   perDay: { max: 3000, windowMs: DAY },
 };
 
-// Pinellas first: results are biased toward St. Petersburg and kept to the
-// Tampa Bay area, so "123 Main" suggests the local Main St, not Ohio's.
+// Pinellas only, where every service area is: Fort De Soto up to Tarpon
+// Springs at the Pasco line, ranked nearest St. Petersburg first. A box can't
+// trace the county (Tampa's Rocky Point and Westshore sit inside any box that
+// reaches Oldsmar and St. Pete's east shore, and its top edge clips Pasco), so
+// the box is a first cut and COUNTY does the rest: ask for extra results, drop
+// those Mapbox places in another county, keep the best SHOW.
 const PROXIMITY = '-82.64,27.77';
-const BBOX = '-82.9,27.5,-82.1,28.5';
+const BBOX = '-82.87,27.6,-82.54,28.18';
+const COUNTY = 'Pinellas County';
+const FETCH = 10; // Mapbox's maximum
+const SHOW = 5;
 
 const json = (body: unknown, status = 200): Response =>
   new Response(JSON.stringify(body), {
@@ -60,6 +67,8 @@ type MapboxFeature = {
     place_formatted?: string;
     context?: {
       place?: { name?: string };
+      /** The county, for US addresses. */
+      district?: { name?: string };
       region?: { region_code?: string; name?: string };
       postcode?: { name?: string };
     };
@@ -113,7 +122,7 @@ export const onRequestGet = async ({ request, env }: Ctx): Promise<Response> => 
     autocomplete: 'true',
     country: 'us',
     types: 'address',
-    limit: '5',
+    limit: String(FETCH),
     proximity: PROXIMITY,
     bbox: BBOX,
     access_token: token,
@@ -127,7 +136,16 @@ export const onRequestGet = async ({ request, env }: Ctx): Promise<Response> => 
       return none();
     }
     const data = (await res.json()) as { features?: MapboxFeature[] };
-    const suggestions = (data.features ?? []).map(toSuggestion).filter((s): s is AddressSuggestion => !!s);
+    // A result with no county named is kept: the box has already ruled out
+    // anything far away, and dropping it could hide a real Pinellas address.
+    const suggestions = (data.features ?? [])
+      .filter((f) => {
+        const county = f.properties?.context?.district?.name;
+        return !county || county === COUNTY;
+      })
+      .map(toSuggestion)
+      .filter((s): s is AddressSuggestion => !!s)
+      .slice(0, SHOW);
     return json({ suggestions });
   } catch (err) {
     // The error's name only: a fetch error's message can echo the URL, token included.
