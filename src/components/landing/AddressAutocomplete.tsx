@@ -14,12 +14,24 @@ import { MapPin } from 'lucide-react';
  * Escape closes it.
  */
 
-type Suggestion = { id: string; line1: string; line2: string; full: string };
+export type Suggestion = { id: string; line1: string; line2: string; full: string; city: string };
 
 const MIN_CHARS = 3;
 const DEBOUNCE_MS = 200;
 
-export const AddressAutocomplete = ({ name, defaultValue = '' }: { name: string; defaultValue?: string }) => {
+/**
+ * `onPick` reports the suggestion the field now holds, or null as soon as the
+ * visitor types (a hand-edited address is no longer the one Mapbox matched).
+ */
+export const AddressAutocomplete = ({
+  name,
+  defaultValue = '',
+  onPick,
+}: {
+  name: string;
+  defaultValue?: string;
+  onPick?: (s: Suggestion | null) => void;
+}) => {
   const [value, setValue] = useState(defaultValue);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
@@ -81,6 +93,7 @@ export const AddressAutocomplete = ({ name, defaultValue = '' }: { name: string;
   const pick = (s: Suggestion) => {
     picked.current = true;
     setValue(s.full);
+    onPick?.(s);
     setSuggestions([]);
     setOpen(false);
   };
@@ -120,6 +133,7 @@ export const AddressAutocomplete = ({ name, defaultValue = '' }: { name: string;
         value={value}
         onChange={(e) => {
           setValue(e.target.value);
+          onPick?.(null);
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}

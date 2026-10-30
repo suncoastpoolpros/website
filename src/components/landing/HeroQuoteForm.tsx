@@ -4,7 +4,8 @@ import { sendContact } from '@/lib/contactSubmit';
 import { trackEvent } from '@/lib/analytics';
 import { useTurnstile } from '@/lib/turnstile';
 import { PHONE_DISPLAY, SMS_QUOTE_HREF } from '@/lib/contact';
-import { AddressAutocomplete } from '@/components/landing/AddressAutocomplete';
+import { AddressAutocomplete, type Suggestion } from '@/components/landing/AddressAutocomplete';
+import { isServedCity } from '@/lib/cities';
 
 const SOURCE = 'landing-page-quote-form';
 
@@ -67,6 +68,11 @@ const revealCard = (el: HTMLElement) => {
 export const HeroQuoteForm = () => {
   const [step, setStep] = useState<'address' | 'details' | 'done'>('address');
   const [address, setAddress] = useState('');
+  // The city we can say we serve, or null. Set only when the address is a
+  // picked suggestion (not hand-typed) whose city is on our list: when in
+  // doubt, say nothing. It never blocks anyone from asking for a price.
+  const [servedCity, setServedCity] = useState<string | null>(null);
+  const picked = useRef<Suggestion | null>(null);
   const [firstName, setFirstName] = useState('');
   const [contactPreference, setContactPreference] = useState<ContactPreference>('text');
   const [loading, setLoading] = useState(false);
@@ -91,6 +97,8 @@ export const HeroQuoteForm = () => {
     const value = String(new FormData(e.currentTarget).get('address') ?? '').trim();
     if (!value) return;
     setAddress(value);
+    const s = picked.current;
+    setServedCity(s && s.full === value && isServedCity(s.city) ? s.city : null);
     setStep('details');
     trackEvent('quote_start', { source: SOURCE });
   };
@@ -147,7 +155,7 @@ export const HeroQuoteForm = () => {
           onSubmit={handleStart}
           className={`flex flex-col gap-2 rounded-[14px] bg-white p-2 ${raisedShadow} transition focus-within:ring-2 focus-within:ring-sc-blue/40 sm:flex-row sm:items-center`}
         >
-          <AddressAutocomplete name="address" defaultValue={address} />
+          <AddressAutocomplete name="address" defaultValue={address} onPick={(s) => (picked.current = s)} />
           <button type="submit" className={`${amberButton} h-12 px-6 text-base`}>
             Get my price
             <ButtonArrow />
@@ -176,6 +184,16 @@ export const HeroQuoteForm = () => {
               Change
             </button>
           </div>
+          {servedCity && (
+            <p className="mt-3 flex items-center gap-2 text-[14px] text-[#13804b]">
+              <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#e7f6ee]">
+                <Check className="h-3 w-3" strokeWidth={3.5} />
+              </span>
+              <span>
+                <span className="font-semibold">Good news:</span> we service {servedCity}.
+              </span>
+            </p>
+          )}
 
           <p className="mt-6 text-[21px] font-bold tracking-[-0.01em] text-sc-navy">Where should we send your price?</p>
 

@@ -75,7 +75,9 @@ type MapboxFeature = {
   };
 };
 
-export type AddressSuggestion = { id: string; line1: string; line2: string; full: string };
+// `city` is Mapbox's place name, which the form matches against src/lib/cities.ts
+// to say "we service this area" (only on an exact match).
+export type AddressSuggestion = { id: string; line1: string; line2: string; full: string; city: string };
 
 /**
  * "4424 19th St N, St. Petersburg, FL 33713": the shape splitAddress in
@@ -97,6 +99,7 @@ const toSuggestion = (f: MapboxFeature): AddressSuggestion | null => {
     line1: street,
     line2: city && state ? `${city}, ${state}${zip ? ` ${zip}` : ''}` : (p.place_formatted ?? '').replace(/, United States$/, ''),
     full,
+    city: city ?? '',
   };
 };
 
