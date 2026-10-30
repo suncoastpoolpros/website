@@ -3,6 +3,7 @@ import { SmartLink as Link } from '@/components/SmartLink';
 import { ArrowRight, ClipboardCheck, Timer, Check } from 'lucide-react';
 import { useQuoteSheet } from '@/components/QuoteSheet';
 import { pagedServices, services } from '@/lib/services';
+import { menuShadow, type HeaderMenuProps } from '@/components/ServiceAreasMenu';
 
 /**
  * Services dropdown for the desktop header.
@@ -25,17 +26,17 @@ import { pagedServices, services } from '@/lib/services';
  * preload on mouseenter/focus/touchstart, and since this menu only opens on
  * hover there is always a beat of pointer travel to cover it.
  */
-export const ServicesMenu = () => {
+export const ServicesMenu = ({ tone = 'dark', onQuote }: HeaderMenuProps = {}) => {
   const { open: openQuoteSheet } = useQuoteSheet();
   const remaining = services.length - pagedServices.length;
 
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    openQuoteSheet();
+    (onQuote ?? openQuoteSheet)();
   };
 
   return (
-    <div className="w-[664px] bg-gradient-to-r from-[#e4e9f0] to-white border border-black/10 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden">
+    <div className={`w-[664px] bg-gradient-to-r from-[#e4e9f0] to-white border border-black/10 rounded-2xl ${menuShadow(tone)} overflow-hidden`}>
       {/* 17rem rail, not 15: at 15 the "Five minutes, tops" heading wrapped
           onto two lines, which made the reassurance block read as a paragraph
           instead of a headline. */}

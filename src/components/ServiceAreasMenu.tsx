@@ -15,17 +15,29 @@ export { cities, type City } from '@/lib/cities';
  * Right side: live Google Maps embed of the Tampa Bay region (free, no API key).
  */
 
-export const ServiceAreasMenu = () => {
+export type HeaderMenuProps = {
+  /** 'light' softens the shadow for a header on a white page (/landing). The
+   *  default suits the dark site header, where a heavy shadow is needed to lift
+   *  the card off the dark page behind it. */
+  tone?: 'dark' | 'light';
+  /** Replaces the quote-sheet popup, e.g. to jump to a form already on the page. */
+  onQuote?: () => void;
+};
+
+export const menuShadow = (tone: HeaderMenuProps['tone']) =>
+  tone === 'light' ? 'shadow-[0_24px_60px_-24px_rgba(36,58,85,0.4)]' : 'shadow-2xl shadow-black/60';
+
+export const ServiceAreasMenu = ({ tone = 'dark', onQuote }: HeaderMenuProps = {}) => {
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
   const { open: openQuoteSheet } = useQuoteSheet();
 
   const handleQuoteClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    openQuoteSheet();
+    (onQuote ?? openQuoteSheet)();
   };
 
   return (
-    <div className="w-[880px] bg-gradient-to-r from-[#e4e9f0] to-white border border-black/10 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden">
+    <div className={`w-[880px] bg-gradient-to-r from-[#e4e9f0] to-white border border-black/10 rounded-2xl ${menuShadow(tone)} overflow-hidden`}>
       <div className="grid grid-cols-[minmax(290px,1fr)_auto]">
         {/* LEFT: header + city list */}
         <div className="p-7 pr-5">

@@ -33,7 +33,7 @@ const inlineLink =
 // mobile crop; wider screens get the 1536 file at 1x and the 1920 at 2x.
 const HeroPhoto = () => (
   <div className="relative mx-auto w-full min-w-0 max-w-[560px] lg:max-w-none">
-    <div className="relative aspect-[5/6] overflow-hidden rounded-[20px] bg-sc-sky/20 shadow-[0_40px_80px_-40px_rgba(16,32,52,0.55)] ring-1 ring-sc-navy/10 lg:aspect-auto lg:h-[min(640px,calc(100dvh-136px))]">
+    <div className="relative aspect-[5/6] overflow-hidden rounded-[20px] bg-sc-sky/20 shadow-[0_40px_80px_-40px_rgba(16,32,52,0.55)] ring-1 ring-sc-navy/10 lg:aspect-auto lg:h-[min(640px,calc(100dvh-128px))]">
       <picture>
         <source media="(max-width: 767px)" type="image/webp" srcSet="/st-pete-beach-hero-mobile-v2.webp" />
         <source media="(max-width: 767px)" srcSet="/st-pete-beach-hero-mobile-v2.jpg" />
@@ -67,7 +67,7 @@ const HeroPhoto = () => (
 // the screen's HEIGHT as well as its width, so shorter laptops still fit.
 const Hero = () => (
   <section className="relative bg-[#f5f9fd]">
-    <Container className="grid items-center gap-12 pb-16 pt-10 sm:pt-14 lg:min-h-[calc(100dvh-72px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,520px)] lg:gap-16 lg:py-8">
+    <Container className="grid items-center gap-12 pb-16 pt-10 sm:pt-14 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,520px)] lg:gap-16 lg:py-8">
       <div className="min-w-0">
         <p className="inline-flex items-center gap-2 rounded-[10px] bg-white py-1 pl-1 pr-3.5 text-[13px] font-medium text-sc-navy/75 shadow-[0_1px_2px_rgba(16,24,40,0.06)] ring-1 ring-sc-navy/10">
           <span className="rounded-[6px] bg-sc-blue/10 px-2 py-0.5 text-[12px] font-semibold text-sc-blue">
@@ -151,7 +151,7 @@ export const PoolLandingPage = () => {
       'Weekly pool cleaning in St. Petersburg with every standard chemical included, for one flat monthly price. No contracts, plus a 2-week money-back guarantee.',
     canonicalPath: '/landing/',
     noindex: true,
-    fontPreload: [FONTS.inter],
+    fontPreload: [FONTS.inter, FONTS.montserrat],
   });
 
   return (
