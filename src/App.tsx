@@ -57,6 +57,7 @@ const ContactPage = lazyRoute(() => import('@/pages/ContactPage').then((m) => m.
 const SignupPage = lazyRoute(() => import('@/pages/SignupPage').then((m) => m.SignupPage));
 const ServiceAgreementPage = lazyRoute(() => import('@/pages/ServiceAgreementPage').then((m) => m.ServiceAgreementPage));
 const PrivacyPolicyPage = lazyRoute(() => import('@/pages/PrivacyPolicyPage').then((m) => m.PrivacyPolicyPage));
+const PoolLandingPage = lazyRoute(() => import('@/pages/PoolLandingPage').then((m) => m.PoolLandingPage));
 // Private admin proposal builder. Intentionally NOT in entry-server.tsx /
 // PRERENDER_ROUTES — it's a client-only app route (no SEO, no static HTML), and
 // it's Disallow-ed in robots.txt.
@@ -155,6 +156,7 @@ export const ROUTE_COMPONENTS: Record<string, PreloadableComponent> = {
   '/signup': SignupPage,
   '/service-agreement': ServiceAgreementPage,
   '/privacy-policy': PrivacyPolicyPage,
+  '/landing': PoolLandingPage,
   '/admin': AdminPage,
   '/approve': ApprovePage,
 };
@@ -275,6 +277,7 @@ export default function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/service-agreement" element={<ServiceAgreementPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/landing" element={<PoolLandingPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/approve" element={<ApprovePage />} />
           {/* Catch-all 404 — must be last. */}

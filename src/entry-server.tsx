@@ -59,6 +59,7 @@ import { ContactPage } from '@/pages/ContactPage';
 import { SignupPage } from '@/pages/SignupPage';
 import { ServiceAgreementPage } from '@/pages/ServiceAgreementPage';
 import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage';
+import { PoolLandingPage } from '@/pages/PoolLandingPage';
 import { AdminPage } from '@/pages/AdminPage';
 import { ApprovePage } from '@/pages/ApprovePage';
 
@@ -100,6 +101,7 @@ export const PRERENDER_ROUTES = [
   '/signup',
   '/service-agreement',
   '/privacy-policy',
+  '/landing',
   // /admin is prerendered for ROUTING reasons, not SEO. Cloudflare Pages needs a
   // real file at the path: rewriting to /index.html in _redirects doesn't work
   // (Pages canonicalises /index.html → / and turns the rewrite into a 308), and
@@ -150,6 +152,7 @@ const Routing = () => (
     <Route path="/signup" element={<SignupPage />} />
     <Route path="/service-agreement" element={<ServiceAgreementPage />} />
     <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+    <Route path="/landing" element={<PoolLandingPage />} />
     <Route path="/admin" element={<AdminPage />} />
     <Route path="/approve" element={<ApprovePage />} />
   </Routes>
