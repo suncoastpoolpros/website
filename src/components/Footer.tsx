@@ -192,13 +192,16 @@ export const Footer = () => {
       <div className="border-t border-white/10">
         <Container>
           <div className="py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-gray-600 text-xs order-2 sm:order-1">
+            {/* #717988: the dimmest gray that still clears WCAG AA (4.5:1) on
+                the footer black, so the bottom bar stays quieter than the
+                gray-400 columns above. */}
+            <p className="text-[#717988] text-xs order-2 sm:order-1">
               &copy; {new Date().getFullYear()} {BUSINESS_NAME}. All rights reserved.
             </p>
             <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 order-1 sm:order-2">
               {legalLinks.map(({ label, to }) => (
                 <li key={label}>
-                  <Link to={to} className="text-gray-500 hover:text-white transition-colors text-xs">
+                  <Link to={to} className="text-[#717988] hover:text-white transition-colors text-xs">
                     {label}
                   </Link>
                 </li>
