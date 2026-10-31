@@ -148,8 +148,11 @@ const Hero = () => (
         {/* Desktop: as wide as the trust row below (473px on one line), the
             column's widest line, so the form ends where the text does. */}
         {/* #quote too: the old homepage's form anchor, which outside links
-            (the Business Profile, old texts) may still point at. */}
-        <div id="quote" className="mt-8 scroll-mt-24 lg:max-w-[473px]">
+            (the Business Profile, old texts) may still point at. relative
+            z-10: the hero-stagger entrance gives every block in this column
+            its own stacking context, so without it the lines below would
+            paint over the address suggestions. */}
+        <div id="quote" className="relative z-10 mt-8 scroll-mt-24 lg:max-w-[473px]">
           <div id="get-price" className="scroll-mt-24">
             <HeroQuoteForm />
           </div>

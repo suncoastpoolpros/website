@@ -414,9 +414,12 @@ const ReportPhone = ({ tour, step }: { tour: boolean; step: number }) => {
   useAutoScrollReport(phoneRef, bodyRef, !tour);
   useReportTour(bodyRef, tour, step);
   return (
+    // inert as well as aria-hidden: the mock email's footer has real tel/mailto
+    // links, and a hidden element must not hold anything focusable.
     <div
       className="phone-drop pointer-events-none relative flex justify-center"
       aria-hidden="true"
+      inert
       data-nosnippet=""
     >
       <div ref={phoneRef} className="relative">
@@ -458,16 +461,40 @@ const useMediaQuery = (query: string) => {
 // (--sp), and the phone scrolls to that part of the report. Phones, short
 // screens and reduced motion get the plain layout: a 2×2 list and the
 // self-scrolling email.
+//
+// The tour plays once, on the way down. The pinned stretch would otherwise
+// hold anyone scrolling back up for over two screens, so the section is
+// released (unpinned, the track's extra length dropped) once the visitor is
+// past it and has stopped scrolling, or as soon as they fling upward
+// (mouse/trackpad only: a programmatic scroll mid-swipe can kill touch
+// momentum on an iPad). While pinned, the stage fills the screen, so the
+// release is invisible: the page is scrolled by however far the stage moved.
+const TOUR_FLING_PX = 300; // upward travel within TOUR_FLING_MS that counts as a fling
+const TOUR_FLING_MS = 250;
+const TOUR_IDLE_MS = 150;
+
 const Report = () => {
   const tour = useMediaQuery(TOUR_QUERY);
   const [step, setStep] = useState(0);
+  const [released, setReleased] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
     const track = section?.querySelector<HTMLElement>('.tour-track');
-    if (!tour || !section || !track) return;
+    const stage = section?.querySelector<HTMLElement>('.tour-stage');
+    if (!tour || released || !section || !track || !stage) return;
+    const fine = window.matchMedia('(pointer: fine)').matches;
     let raf = 0;
+    let idle = 0;
+    let markY = window.scrollY;
+    let markT = performance.now();
+    const release = () => {
+      const before = stage.getBoundingClientRect().top;
+      section.classList.add('tour-released');
+      window.scrollTo({ top: window.scrollY + stage.getBoundingClientRect().top - before, behavior: 'instant' });
+      setReleased(true);
+    };
     const update = () => {
       raf = 0;
       const r = track.getBoundingClientRect();
@@ -477,8 +504,21 @@ const Report = () => {
       const s = Math.min(n - 1, Math.floor(p * n));
       section.style.setProperty('--sp', String(Math.min(1, p * n - s)));
       setStep(s);
+      clearTimeout(idle);
+      if (r.bottom <= window.innerHeight) idle = window.setTimeout(release, TOUR_IDLE_MS);
     };
     const onScroll = () => {
+      const y = window.scrollY;
+      const t = performance.now();
+      if (y >= markY || t - markT > TOUR_FLING_MS) {
+        markY = y;
+        markT = t;
+      } else if (fine && markY - y > TOUR_FLING_PX && track.getBoundingClientRect().top < 0) {
+        cancelAnimationFrame(raf);
+        clearTimeout(idle);
+        release();
+        return;
+      }
       if (!raf) raf = requestAnimationFrame(update);
     };
     update();
@@ -486,17 +526,17 @@ const Report = () => {
     window.addEventListener('resize', onScroll);
     return () => {
       cancelAnimationFrame(raf);
+      clearTimeout(idle);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
-      section.style.removeProperty('--sp');
     };
-  }, [tour]);
+  }, [tour, released]);
 
   return (
     <section
       ref={sectionRef}
       aria-labelledby="report-title"
-      className={`report-tour dark-depth overflow-clip ${sectionY}`}
+      className={`report-tour dark-depth overflow-clip ${sectionY}${released ? ' tour-released' : ''}`}
     >
       <div className="tour-track">
         <div className="tour-stage">

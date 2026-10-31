@@ -1501,6 +1501,14 @@ input[type="date"]::-webkit-date-and-time-value {
   .report-tour .tour-item[data-active] .tour-desc {
     grid-template-rows: 1fr;
   }
+  /* Released after the tour has played (Report): the stage stays as it was,
+     but scrolls with the page instead of pinning. */
+  .report-tour.tour-released .tour-track {
+    height: auto;
+  }
+  .report-tour.tour-released .tour-stage {
+    position: relative;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
