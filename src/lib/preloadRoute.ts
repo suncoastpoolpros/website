@@ -8,7 +8,7 @@
 // before the click registers.
 
 const PRELOADERS: Record<string, () => Promise<unknown>> = {
-  '/': () => import('@/pages/LandingPage'),
+  '/': () => import('@/pages/PoolLandingPage'),
   '/belleair-beach-fl': () => import('@/pages/BelleairBeachPage'),
   '/treasure-island-fl': () => import('@/pages/TreasureIslandPage'),
   '/seminole-fl': () => import('@/pages/SeminolePage'),

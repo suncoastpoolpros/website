@@ -1,17 +1,20 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { House, Phone, ShieldCheck } from 'lucide-react';
 import { usePageMeta, FONTS } from '@/lib/usePageMeta';
+import { serviceSchema, webSiteSchema } from '@/lib/businessSchema';
+import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 import { PHONE_DISPLAY, PHONE_HREF, SMS_QUOTE_HREF } from '@/lib/contact';
 import { HeroQuoteForm } from '@/components/landing/HeroQuoteForm';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { VisitReportCard } from '@/components/landing/VisitReportCard';
-import { LandingBelowFold } from '@/components/landing/LandingBelowFold';
+import { LANDING_FAQS, LandingBelowFold } from '@/components/landing/LandingBelowFold';
 import { Footer } from '@/components/Footer';
 import { LandingQuoteSheetProvider } from '@/components/landing/LandingQuoteSheet';
 
 /*
  * /landing — a standalone page in its own light look (the sc-* logo tokens in
- * index.css), with its own header and footer.
+ * index.css), with its own header and the site-wide footer. It will replace
+ * the homepage; until then it's noindex.
  *
  * The hero is built on the Hormozi offer framework: call out the audience,
  * promise the dream outcome, make it believable (guarantee + proof of every
@@ -144,8 +147,12 @@ const Hero = () => (
 
         {/* Desktop: as wide as the trust row below (473px on one line), the
             column's widest line, so the form ends where the text does. */}
-        <div id="get-price" className="mt-8 scroll-mt-24 lg:max-w-[473px]">
-          <HeroQuoteForm />
+        {/* #quote too: the old homepage's form anchor, which outside links
+            (the Business Profile, old texts) may still point at. */}
+        <div id="quote" className="mt-8 scroll-mt-24 lg:max-w-[473px]">
+          <div id="get-price" className="scroll-mt-24">
+            <HeroQuoteForm />
+          </div>
         </div>
 
         <p className="mt-7 flex items-start gap-2 text-[14.5px] leading-relaxed text-sc-navy/70">
@@ -193,6 +200,37 @@ const Hero = () => (
     </Container>
   </section>
 );
+
+// ── Structured data ─────────────────────────────────────────────────────────
+
+// Written for this page's future address, the homepage: on top of the
+// LocalBusiness entity that ships in index.html on every page, the homepage
+// declares the WebSite, its main Service, its FAQ and a one-level breadcrumb.
+// Harmless while this page is noindex; correct the day it moves to /.
+//
+// The Service has no price: this page deliberately shows none (the ~$150
+// average only appears elsewhere beside its caveats), and structured data
+// must match what's on the page. Every phrase in its description is on it.
+// The FAQ is built from the same list the page renders, so they can't drift.
+const LANDING_SCHEMA = [
+  webSiteSchema(),
+  serviceSchema({
+    serviceType: 'Weekly Pool Cleaning & Maintenance',
+    description:
+      'Weekly pool cleaning in St. Petersburg and across Pinellas County for one flat monthly rate: walls and waterline brushed, skimmed and vacuumed, water tested and balanced with every standard chemical included, salt cell care on salt pools, an equipment check, and a GPS-verified visit report with readings, chemicals and photos. No contract.',
+    url: '/',
+  }),
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: LANDING_FAQS.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+  breadcrumbSchema([{ name: 'Home', path: '/' }]),
+];
 
 // Layout effect in the browser (runs before paint, so nothing flashes hidden);
 // a no-op effect during the prerender, where layout effects don't run.
@@ -242,9 +280,9 @@ export const PoolLandingPage = () => {
     title: 'Weekly Pool Service in St. Petersburg, FL | Suncoast Pool Pros',
     description:
       'Weekly pool cleaning in St. Petersburg with every standard chemical included, for one flat monthly price. No contracts, plus a 2-week money-back guarantee.',
-    canonicalPath: '/landing/',
-    noindex: true,
+    canonicalPath: '/',
     fontPreload: [FONTS.inter, FONTS.montserrat],
+    jsonLd: LANDING_SCHEMA,
   });
 
   // The new version of the quote popup (not the site-wide one), so it can be

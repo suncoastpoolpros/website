@@ -79,6 +79,10 @@ const sectionY = 'py-20 sm:py-24 lg:py-28';
 
 const inlineLink =
   'font-semibold text-sc-navy underline decoration-sc-navy/30 decoration-1 underline-offset-[3px] transition hover:decoration-sc-navy';
+// For links inside lists, answers and fine print: the surrounding text's own
+// weight and color, with the same underline.
+const softLink =
+  'underline decoration-current/30 decoration-1 underline-offset-[3px] transition hover:text-sc-navy hover:decoration-sc-navy';
 
 // Every "Get my price" below the hero opens the quote popup (LandingQuoteSheet).
 const QuoteButton = ({ label = 'Get my price', className = '' }: { label?: string; className?: string }) => {
@@ -118,8 +122,10 @@ const QuoteButton = ({ label = 'Get my price', className = '' }: { label?: strin
 
 // The flat rate as an equation: the four parts of every visit add up to one
 // monthly price. Lines from the FAQ, How It Works, the homepage's included
-// lists and the sample report.
-const PARTS = [
+// lists and the sample report. A line with `to` links to the page that covers
+// it in depth (internal links from the homepage carry the most weight).
+type PartLine = string | { text: string; to: string };
+const PARTS: { icon: typeof Gauge; title: string; lines: PartLine[] }[] = [
   {
     icon: BrushCleaning,
     title: 'Weekly cleaning',
@@ -128,7 +134,11 @@ const PARTS = [
   {
     icon: Droplets,
     title: 'Water chemistry',
-    lines: ['Tested and balanced', 'Every standard chemical', 'Salt cell care on salt pools'],
+    lines: [
+      'Tested and balanced',
+      'Every standard chemical',
+      { text: 'Salt cell care on salt pools', to: '/services/saltwater-pool-service/' },
+    ],
   },
   {
     icon: Gauge,
@@ -177,11 +187,20 @@ const Included = () => (
             </div>
             <ul className="mt-4 space-y-2 lg:mt-3">
               {lines.map((l) => (
-                <li key={l} className="flex items-start gap-2.5 text-[14.5px] leading-snug text-sc-navy/75">
+                <li
+                  key={typeof l === 'string' ? l : l.text}
+                  className="flex items-start gap-2.5 text-[14.5px] leading-snug text-sc-navy/75"
+                >
                   <span className="mt-[1px]">
                     <CheckBadge />
                   </span>
-                  {l}
+                  {typeof l === 'string' ? (
+                    l
+                  ) : (
+                    <Link to={l.to} className={softLink}>
+                      {l.text}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -211,8 +230,15 @@ const Included = () => (
 
       <p className="mx-auto mt-8 max-w-3xl text-center text-[14px] leading-[1.55] text-sc-navy/[0.72]">
         <Wrench className="mr-1.5 inline h-4 w-4 -translate-y-px text-sc-navy/40" strokeWidth={2.25} />
-        Only ever quoted separately: major repairs, replacement parts, green-to-clean recovery and major storm
-        cleanup, always approved by you first.
+        Only ever quoted separately: major repairs, replacement parts,{' '}
+        <Link to="/services/green-pool-recovery/" className={softLink}>
+          green-to-clean recovery
+        </Link>{' '}
+        and{' '}
+        <Link to="/services/storm-cleanup/" className={softLink}>
+          major storm cleanup
+        </Link>
+        , always approved by you first.
       </p>
     </Container>
   </section>
@@ -752,10 +778,13 @@ const Guarantees = () => (
 
 // ── 5. Service areas ────────────────────────────────────────────────────────
 
-// From src/lib/cities.ts, the list the footer and menus use. All 14 as plain
-// pills, none linked: only 7 have their own page, and a mix of links and
-// non-links reads as inconsistent. The header's Service Areas menu links the
-// ones that do. St. Petersburg, the home base, is the one navy pill.
+// From src/lib/cities.ts, the list the footer and menus use. Every area with
+// its own page links to it: these are the city pages' strongest internal links
+// once this page is the homepage. Linked and plain pills look the same at rest
+// (a mix of styles read as inconsistent); the links show on hover. St.
+// Petersburg, the home base, is the one navy pill and stays unlinked: this
+// page is the St. Petersburg page.
+const pill = 'inline-flex items-center gap-1.5 rounded-full py-2.5 pl-3.5 pr-4';
 const Areas = () => (
   <section id="service-areas" aria-labelledby="areas-title" className={`scroll-mt-16 bg-white ${sectionY}`}>
     <Container className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
@@ -779,17 +808,35 @@ const Areas = () => (
 
       <ul className="flex flex-wrap content-center gap-2.5 self-center">
         {cities.map((c) => {
-          const home = c.slug === 'st-petersburg';
+          if (c.slug === 'st-petersburg') {
+            return (
+              <li key={c.slug} className={`${pill} bg-sc-navy`}>
+                <MapPin className="h-[15px] w-[15px] shrink-0 text-[#ffc226]" strokeWidth={2.25} />
+                <span className="text-[14.5px] font-[550] text-white">{c.name}</span>
+                <span className="text-[12.5px] text-white/60">{c.blurb}</span>
+              </li>
+            );
+          }
+          const inner = (
+            <>
+              <MapPin className="h-[15px] w-[15px] shrink-0 text-sc-sky" strokeWidth={2.25} />
+              <span className="text-[14.5px] font-[550] text-sc-navy transition-colors group-hover:text-sc-blue">
+                {c.name}
+              </span>
+            </>
+          );
           return (
-            <li
-              key={c.slug}
-              className={`inline-flex items-center gap-1.5 rounded-full py-2.5 pl-3.5 pr-4 ${
-                home ? 'bg-sc-navy' : 'bg-white ring-1 ring-sc-navy/10'
-              }`}
-            >
-              <MapPin className={`h-[15px] w-[15px] shrink-0 ${home ? 'text-[#ffc226]' : 'text-sc-sky'}`} strokeWidth={2.25} />
-              <span className={`text-[14.5px] font-[550] ${home ? 'text-white' : 'text-sc-navy'}`}>{c.name}</span>
-              {home && <span className="text-[12.5px] text-white/60">{c.blurb}</span>}
+            <li key={c.slug} className="flex">
+              {c.to ? (
+                <Link
+                  to={c.to}
+                  className={`${pill} group bg-white ring-1 ring-sc-navy/10 transition hover:-translate-y-px hover:ring-sc-blue/40 hover:shadow-[0_6px_16px_-8px_rgba(38,118,182,0.45)]`}
+                >
+                  {inner}
+                </Link>
+              ) : (
+                <span className={`${pill} bg-white ring-1 ring-sc-navy/10`}>{inner}</span>
+              )}
             </li>
           );
         })}
@@ -800,8 +847,12 @@ const Areas = () => (
 
 // ── 6. FAQ ──────────────────────────────────────────────────────────────────
 
-// Short, page-specific answers (the long versions live on /faq/).
-const FAQS = [
+// Short, page-specific answers (the long versions live on /faq/). Exported:
+// the page's FAQPage schema is built from these, so the schema always matches
+// what's on screen. `link` turns one phrase of the answer into a link to the
+// page that covers it; the schema keeps the plain text.
+type FaqItem = { q: string; a: string; link?: { text: string; to: string } };
+export const LANDING_FAQS: FaqItem[] = [
   {
     q: 'How much does pool service cost in St. Petersburg?',
     a: "It depends on your pool: its size, the trees around it, its surface and its equipment. Send your address or two photos and we'll reply with your exact flat monthly price the same day. Every standard chemical is included in that price.",
@@ -813,6 +864,7 @@ const FAQS = [
   {
     q: 'Do you service saltwater pools?',
     a: 'Yes, on the same flat-rate plan. On a salt pool we also clean the salt cell and check salinity, which keeps the cell from scaling up and failing early.',
+    link: { text: 'clean the salt cell and check salinity', to: '/services/saltwater-pool-service/' },
   },
   {
     q: 'How do I switch from my current pool company?',
@@ -820,13 +872,28 @@ const FAQS = [
   },
   {
     q: 'My pool is green right now. Can you still help?',
-    a: "Yes. Recovery is quoted first, since the chemicals and labor vary so much from pool to pool, and starts once you approve it. When it's clear, you move onto weekly service so it stays that way.",
+    a: "Yes. Green pool recovery is quoted first, since the chemicals and labor vary so much from pool to pool, and starts once you approve it. When it's clear, you move onto weekly service so it stays that way.",
+    link: { text: 'Green pool recovery is quoted first', to: '/services/green-pool-recovery/' },
   },
   {
     q: 'How soon can you start?',
     a: 'Usually within days. Our routes are concentrated around Pinellas and the beaches, so once your price is confirmed we can slot you onto a nearby route quickly.',
   },
 ];
+
+const AnswerWithLink = ({ answer, link }: { answer: string; link: { text: string; to: string } }) => {
+  const at = answer.indexOf(link.text);
+  if (at < 0) return <>{answer}</>;
+  return (
+    <>
+      {answer.slice(0, at)}
+      <Link to={link.to} className={softLink}>
+        {link.text}
+      </Link>
+      {answer.slice(at + link.text.length)}
+    </>
+  );
+};
 
 const Faq = () => (
   <section aria-labelledby="faq-title" className={`bg-[#f5f9fd] ${sectionY}`}>
@@ -850,13 +917,15 @@ const Faq = () => (
       </div>
 
       <div className="divide-y divide-sc-navy/10 rounded-[18px] bg-white px-5 shadow-[0_0_0_1px_rgba(36,58,85,0.08)] sm:px-6">
-        {FAQS.map(({ q, a }) => (
+        {LANDING_FAQS.map(({ q, a, link }) => (
           <details key={q} className="group">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-[16.5px] font-semibold text-sc-navy [&::-webkit-details-marker]:hidden">
               <h3>{q}</h3>
               <ChevronDown className="h-5 w-5 shrink-0 text-sc-navy/45 transition-transform group-open:rotate-180" />
             </summary>
-            <p className="-mt-1 pb-5 pr-10 text-[15.5px] leading-[1.6] text-sc-navy/[0.78]">{a}</p>
+            <p className="-mt-1 pb-5 pr-10 text-[15.5px] leading-[1.6] text-sc-navy/[0.78]">
+              {link ? <AnswerWithLink answer={a} link={link} /> : a}
+            </p>
           </details>
         ))}
       </div>

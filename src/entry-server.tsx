@@ -26,7 +26,6 @@ import { QuoteSheetProvider } from '@/components/QuoteSheet';
 import { resetSsrMeta, readSsrMeta } from '@/lib/serverMeta';
 
 // Eager imports — no lazy() here.
-import { LandingPage } from '@/pages/LandingPage';
 import { BelleairBeachPage } from '@/pages/BelleairBeachPage';
 import { TreasureIslandPage } from '@/pages/TreasureIslandPage';
 import { StPeteBeachPage } from '@/pages/StPeteBeachPage';
@@ -101,7 +100,6 @@ export const PRERENDER_ROUTES = [
   '/signup',
   '/service-agreement',
   '/privacy-policy',
-  '/landing',
   // /admin is prerendered for ROUTING reasons, not SEO. Cloudflare Pages needs a
   // real file at the path: rewriting to /index.html in _redirects doesn't work
   // (Pages canonicalises /index.html → / and turns the rewrite into a 308), and
@@ -119,7 +117,7 @@ export const PRERENDER_ROUTES = [
 
 const Routing = () => (
   <Routes>
-    <Route path="/" element={<LandingPage />} />
+    <Route path="/" element={<PoolLandingPage />} />
     <Route path="/belleair-beach-fl" element={<BelleairBeachPage />} />
     <Route path="/treasure-island-fl" element={<TreasureIslandPage />} />
     <Route path="/st-pete-beach-fl" element={<StPeteBeachPage />} />
@@ -152,7 +150,6 @@ const Routing = () => (
     <Route path="/signup" element={<SignupPage />} />
     <Route path="/service-agreement" element={<ServiceAgreementPage />} />
     <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-    <Route path="/landing" element={<PoolLandingPage />} />
     <Route path="/admin" element={<AdminPage />} />
     <Route path="/approve" element={<ApprovePage />} />
   </Routes>

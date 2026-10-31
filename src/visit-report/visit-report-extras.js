@@ -2,7 +2,7 @@
 //  1. Personalized report: typing an address in the hero field replays the
 //     animation with the visitor's street on the card and in the capsule.
 //  2. "2 photos" chip: two thumbnails pop up from the chip, hold, then tuck
-//     back into it as a tiny photo stack. Hovering the chip shows them again.
+//     back into it as a tiny photo stack.
 (function () {
   const card = document.querySelector('.report-enter.rs-v3');
   if (!card) return;
@@ -29,7 +29,6 @@
   box-shadow: 0 10px 24px -8px rgba(15,23,42,.45), 0 1px 3px rgba(15,23,42,.2); background: url(${PHOTO}) no-repeat; }
 .rs4-thumb.a { background-size: 330%; background-position: 18% 92%; }                 /* close-up of the water */
 .rs4-thumb.b { background-size: 260%; background-position: 78% 74%; transform: scaleX(-1); } /* deck + loungers, mirrored */
-.rs4-chip:hover .rs4-thumb { opacity: 1 !important; scale: 1 !important; translate: 0 0 !important; transition: opacity .2s, scale .35s cubic-bezier(.34,1.56,.64,1); }
 .rs4-addr { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px; }`;
   document.head.appendChild(css);
 

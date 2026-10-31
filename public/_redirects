@@ -39,6 +39,11 @@
 /getstarted   /  301
 /getstarted/  /  301
 
+# /landing was the staging URL for the current homepage while it was built
+# (noindex). Swapped onto / on 2026-10-31; send any stray links home.
+/landing   /  301
+/landing/  /  301
+
 # NOTE: /admin needs no rule here. It's prerendered like every other route (see
 # PRERENDER_ROUTES), so Pages serves dist/admin/index.html directly. Rewriting it
 # to /index.html does NOT work — Pages canonicalises /index.html to / and turns

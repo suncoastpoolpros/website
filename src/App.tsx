@@ -24,7 +24,6 @@ import { parseQuoteLink } from '@/lib/quoteLinks';
 // discarded the whole server-rendered tree (#418). lazyRoute can be preloaded so
 // the initial route renders synchronously — see src/lib/lazyRoute.ts and the
 // preload call in src/main.tsx.
-const LandingPage = lazyRoute(() => import('@/pages/LandingPage').then((m) => m.LandingPage));
 const BelleairBeachPage = lazyRoute(() => import('@/pages/BelleairBeachPage').then((m) => m.BelleairBeachPage));
 const TreasureIslandPage = lazyRoute(() => import('@/pages/TreasureIslandPage').then((m) => m.TreasureIslandPage));
 const StPeteBeachPage = lazyRoute(() => import('@/pages/StPeteBeachPage').then((m) => m.StPeteBeachPage));
@@ -123,7 +122,7 @@ const ChunkReloadReset = () => {
 /** Path -> component, for preloading the initial route before hydration (see
  *  src/main.tsx). Keys MUST match the <Route path> values below. */
 export const ROUTE_COMPONENTS: Record<string, PreloadableComponent> = {
-  '/': LandingPage,
+  '/': PoolLandingPage,
   '/belleair-beach-fl': BelleairBeachPage,
   '/treasure-island-fl': TreasureIslandPage,
   '/st-pete-beach-fl': StPeteBeachPage,
@@ -156,7 +155,6 @@ export const ROUTE_COMPONENTS: Record<string, PreloadableComponent> = {
   '/signup': SignupPage,
   '/service-agreement': ServiceAgreementPage,
   '/privacy-policy': PrivacyPolicyPage,
-  '/landing': PoolLandingPage,
   '/admin': AdminPage,
   '/approve': ApprovePage,
 };
@@ -244,7 +242,7 @@ export default function App() {
       <ChunkErrorBoundary>
       <Suspense fallback={null}>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<PoolLandingPage />} />
           <Route path="/belleair-beach-fl" element={<BelleairBeachPage />} />
           <Route path="/treasure-island-fl" element={<TreasureIslandPage />} />
           <Route path="/st-pete-beach-fl" element={<StPeteBeachPage />} />
@@ -277,7 +275,6 @@ export default function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/service-agreement" element={<ServiceAgreementPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-          <Route path="/landing" element={<PoolLandingPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/approve" element={<ApprovePage />} />
           {/* Catch-all 404 — must be last. */}

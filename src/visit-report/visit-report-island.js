@@ -2,7 +2,7 @@
 // Capsule wakes from a dot -> live status and progress ring ->
 // ring completes into a checkmark with a little squish -> capsule springs open
 // into the report, and the logo glides from the capsule into the card header
-// (shared-element / Framer "layoutId" style). Click the card to replay.
+// (shared-element / Framer "layoutId" style). Plays once.
 (function () {
   // React-safe: the card stays the node your framework rendered (no clone/replace).
   const card = document.querySelector('.report-enter');
@@ -20,7 +20,7 @@
 .rs-v3 .rs-progress, .rs-v3 .rs-dash { display: none; }
 /* box-shadow (not filter: drop-shadow) so the rotated card isn't rasterized into a blurry layer */
 .rs-v3 .report-seq { position: relative; box-shadow: 0 1px 2px rgba(15,23,42,.10), 0 18px 36px -12px rgba(15,23,42,.35) !important; }
-.rs-v3 { rotate: -1.5deg; cursor: pointer; }
+.rs-v3 { rotate: -1.5deg; }
 .rs3-ink { position: absolute; inset: 0; background: #0b0b0f; z-index: 5; pointer-events: none; }
 .rs3-island { position: absolute; z-index: 6; left: 50%; top: 10px; height: 40px; width: max-content; translate: -50% 0;
   display: flex; align-items: center; gap: 10px; padding: 0 7px; color: #fff; white-space: nowrap; pointer-events: none;
@@ -197,11 +197,11 @@
   let btnTimer;
   const run = () => { card.dispatchEvent(new CustomEvent('rs3:play')); btn.setAttribute('data-hidden', ''); clearTimeout(btnTimer); btnTimer = setTimeout(() => btn.removeAttribute('data-hidden'), 4900 * PACE); play(); };
   btn.addEventListener('click', run);
-  card.addEventListener('click', run);
   window.__rs3Play = run;
-  let seen = false;
-  new IntersectionObserver(([e]) => {
-    if (e.isIntersecting && !seen) { seen = true; run(); }
-    if (!e.isIntersecting) seen = false;
-  }, { threshold: 0.5 }).observe(card);
+  // Plays once, the first time the card is half on screen: scrolling away and
+  // back doesn't replay it.
+  const io = new IntersectionObserver(([e]) => {
+    if (e.isIntersecting) { io.disconnect(); run(); }
+  }, { threshold: 0.5 });
+  io.observe(card);
 })();
