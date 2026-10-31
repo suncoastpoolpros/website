@@ -97,7 +97,7 @@ export const VisitReportCard = memo(() => {
                     </span>
                     <span className="rs-complete col-start-1 row-start-1 text-sc-navy">Visit complete</span>
                   </p>
-                  <p className="text-[11px] leading-tight text-sc-navy/55">Thu, 9:42 AM · Serviced by Alex</p>
+                  <p className="text-[11px] leading-tight text-sc-navy/[0.72]">Thu, 9:42 AM · Serviced by Alex</p>
                 </div>
               </div>
               <span className="rs-badge grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-500 text-white">
@@ -109,7 +109,7 @@ export const VisitReportCard = memo(() => {
               <div className="grid grid-cols-4 divide-x divide-sc-navy/[0.07] py-2.5">
                 {READINGS.map((r) => (
                   <div key={r.label} className="min-w-0 px-2.5">
-                    <p className="truncate text-[10px] font-medium leading-tight text-sc-navy/55">{r.label}</p>
+                    <p className="truncate text-[10px] font-medium leading-tight text-sc-navy/[0.74]">{r.label}</p>
                     <p className="mt-0.5 grid text-[14px] font-semibold leading-tight tabular-nums text-sc-navy">
                       <span aria-hidden="true" className="rs-dash col-start-1 row-start-1">
                         –
@@ -121,7 +121,7 @@ export const VisitReportCard = memo(() => {
                   </div>
                 ))}
               </div>
-              <p className="rs-lsi flex items-center gap-1.5 border-t border-sc-navy/[0.07] px-2.5 py-1.5 text-[10.5px] text-sc-navy/60">
+              <p className="rs-lsi flex items-center gap-1.5 border-t border-sc-navy/[0.07] px-2.5 py-1.5 text-[10.5px] text-sc-navy/[0.7]">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 <span className="font-semibold text-emerald-700">Water balanced</span>
                 <span className="tabular-nums">· LSI −0.03</span>

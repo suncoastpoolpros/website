@@ -5,7 +5,8 @@ import { PHONE_DISPLAY, PHONE_HREF, SMS_QUOTE_HREF } from '@/lib/contact';
 import { HeroQuoteForm } from '@/components/landing/HeroQuoteForm';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { VisitReportCard } from '@/components/landing/VisitReportCard';
-import { LandingBelowFold, LandingFooter } from '@/components/landing/LandingBelowFold';
+import { LandingBelowFold } from '@/components/landing/LandingBelowFold';
+import { Footer } from '@/components/Footer';
 import { LandingQuoteSheetProvider } from '@/components/landing/LandingQuoteSheet';
 
 /*
@@ -44,6 +45,8 @@ const trustItem =
 // Phones always get the 800px file: the frame is ~360px wide, so 800 is sharp
 // at any phone density (~107 KB) instead of pulling the 1120 on 3x screens.
 // Wider screens choose by density from `sizes`: 640 at 1x (75 KB), 1120 at 2x.
+// visit-report-extras.js finds the img by data-hero-photo and reuses whichever
+// file it loaded for the card's photo thumbnails, so they cost no download.
 const PHOTO_SIZES = '(min-width: 1024px) 496px, 560px';
 
 const HeroPhoto = () => (
@@ -66,6 +69,7 @@ const HeroPhoto = () => (
           height={1400}
           fetchPriority="high"
           decoding="async"
+          data-hero-photo=""
           className="absolute inset-0 h-full w-full object-cover [filter:brightness(1.04)_saturate(1.16)]"
         />
       </picture>
@@ -96,43 +100,51 @@ const HeroPhoto = () => (
 
 // On desktop the hero fills the first screen. The headline and photo scale with
 // the screen's HEIGHT as well as its width, so shorter laptops still fit.
+// Portrait tablets (iPad Pro, 1024 wide and ~1366 tall) don't fill it: centred
+// in that much height, the content floated in empty space.
+// From 1024 to 1120 the photo column (420→496px) and gap (56→88px) grow with
+// the screen, so the text column holds ~475px: the width its chip, address bar
+// and trust row each need to stay on one line.
 const Hero = () => (
   <section className="relative bg-[#f5f9fd]">
-    <Container className="grid items-center gap-12 pb-16 pt-10 sm:pt-14 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,496px)] lg:gap-[88px] lg:py-8">
+    <Container className="grid items-center gap-12 pb-16 pt-10 sm:pt-14 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,clamp(420px,calc(420px_+_(100vw_-_1024px)_*_0.8),496px))] lg:gap-x-[clamp(56px,calc(56px_+_(100vw_-_1024px)_*_0.34),88px)] lg:py-8 lg:portrait:min-h-0 lg:portrait:py-20">
       <div className="hero-stagger min-w-0">
         {/* Both parts stay whole: on a phone the badge stacks them into two
-            lines rather than breaking "Weekly pool / service" mid-phrase. */}
+            lines rather than breaking a phrase mid-way. */}
         <p className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[999px] bg-white py-1 pl-1 pr-3.5 text-[13px] font-medium text-sc-navy/75 ring-1 ring-sc-navy/10">
-          <span className="whitespace-nowrap rounded-full bg-sc-blue/10 px-2.5 py-0.5 text-[12px] font-semibold text-sc-blue">
-            Weekly pool service
+          <span className="whitespace-nowrap rounded-full bg-sc-blue/10 px-2.5 py-0.5 text-[12px] font-semibold text-[#1f6aa6]">
+            One flat rate
           </span>
           <span className="whitespace-nowrap pl-1 sm:pl-0">St. Pete · Largo · Clearwater · Palm Harbor</span>
         </p>
 
         {/* The tagline is sized in em off the headline, so it scales with it. The
-            size keeps "Crystal-clear water," on one line: off the screen width
-            on phones, off the text column (screen minus photo and gaps) on
-            desktop, and off the height so short laptops still fit. */}
-        <hgroup className="mt-6 text-[clamp(30px,9.2vw,58px)] lg:text-[clamp(36px,min(calc((100vw-648px)/9.4),7.4vh),58px)]">
+            size is set off the screen width on phones, off the text column
+            (screen minus photo and gaps, never under the ~480px it holds
+            below 1120) on desktop, and off the height so short laptops still
+            fit. */}
+        <hgroup className="mt-6 text-[clamp(30px,9.2vw,58px)] lg:text-[clamp(36px,min(calc(max(100vw_-_648px,480px)/9.4),7.4vh),58px)]">
           <h1 className="text-[1em] font-bold leading-[1.04] tracking-[-0.035em] text-sc-navy">
             <span className="bg-[linear-gradient(90deg,#2676b6,#3f95cc)] box-decoration-clone bg-clip-text text-transparent">
-              Crystal-clear
+              St. Petersburg
             </span>{' '}
-            water,
+            {/* The space keeps the words apart for crawlers and screen readers,
+                which read the <br> as nothing. */}
             <br />
-            every week.
+            Pool Cleaning
           </h1>
-          <p className="mt-4 text-[0.42em] font-semibold leading-tight tracking-[-0.01em] text-sc-blue">
-            One flat rate. Chemicals included.
+          <p className="mt-4 text-[0.42em] font-semibold leading-tight tracking-[-0.01em] text-sc-navy/85">
+            Crystal-clear water, every week.
           </p>
         </hgroup>
 
-        <p className="mt-4 max-w-[29.5rem] text-pretty text-[17px] leading-[1.6] text-sc-navy/[0.78] sm:text-lg">
-          Weekly cleaning, full chemical balancing, GPS-verified visits, and a report after every clean. No
-          contracts, no surprises, no green water.
+        <p className="mt-5 max-w-[29.5rem] text-pretty text-[17px] leading-[1.6] text-sc-navy/[0.74] sm:text-lg">
+          Weekly pool cleaning service with every chemical included, GPS-verified visits, and no contracts.
         </p>
 
-        <div id="get-price" className="mt-8 scroll-mt-24">
+        {/* Desktop: as wide as the trust row below (473px on one line), the
+            column's widest line, so the form ends where the text does. */}
+        <div id="get-price" className="mt-8 scroll-mt-24 lg:max-w-[473px]">
           <HeroQuoteForm />
         </div>
 
@@ -245,7 +257,7 @@ export const PoolLandingPage = () => {
           <Hero />
           <LandingBelowFold />
         </main>
-        <LandingFooter />
+        <Footer />
       </div>
     </LandingQuoteSheetProvider>
   );

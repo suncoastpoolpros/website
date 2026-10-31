@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
-  Brush,
+  BrushCleaning,
   Camera,
   Check,
   ChevronDown,
-  ClipboardList,
+  ClipboardCheck,
+  Droplets,
   FlaskConical,
   Gauge,
   Handshake,
-  Mail,
   MapPin,
   MessageSquare,
   Phone,
@@ -22,9 +22,6 @@ import { useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
 import { HomeHeroPhone, useLiveClock } from '@/components/Hero';
 import { cities } from '@/lib/cities';
 import {
-  ADDRESS_CITY_STATE_ZIP,
-  ADDRESS_LINE,
-  BUSINESS_NAME,
   HOURS_SHORT,
   PHONE_DISPLAY,
   PHONE_HREF,
@@ -124,12 +121,12 @@ const QuoteButton = ({ label = 'Get my price', className = '' }: { label?: strin
 // lists and the sample report.
 const PARTS = [
   {
-    icon: Brush,
+    icon: BrushCleaning,
     title: 'Weekly cleaning',
     lines: ['Walls and waterline brushed', 'Skimmed and vacuumed', 'Baskets emptied'],
   },
   {
-    icon: FlaskConical,
+    icon: Droplets,
     title: 'Water chemistry',
     lines: ['Tested and balanced', 'Every standard chemical', 'Salt cell care on salt pools'],
   },
@@ -139,15 +136,23 @@ const PARTS = [
     lines: ['Pump, filter and salt system', 'Issues flagged early', 'Caught before they’re costly'],
   },
   {
-    icon: ClipboardList,
+    icon: ClipboardCheck,
     title: 'Visit report',
     lines: ['Readings, chemicals, photos', 'GPS-verified at your address', 'Sent before we leave'],
   },
 ];
 
+// The one check mark used across this section (the four cards and the price
+// card): a small green circle with a white-tinted fill (.check-badge).
+const CheckBadge = () => (
+  <span aria-hidden="true" className="check-badge grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full">
+    <Check className="h-[11px] w-[11px]" strokeWidth={3.25} />
+  </span>
+);
+
 const Included = () => (
   <section aria-labelledby="included-title" className={`bg-white ${sectionY}`}>
-    <Container>
+    <Container className="isolate">
       <div data-reveal="" className="mx-auto max-w-3xl text-center">
         <Eyebrow centered>What's included</Eyebrow>
         <h2 id="included-title" className={`${h2} text-sc-navy`}>
@@ -160,21 +165,21 @@ const Included = () => (
       </div>
 
       {/* The four parts, then the price card they add up to. */}
-      <div className="mt-14 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+      <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {PARTS.map(({ icon: Icon, title, lines }, i) => (
           <div key={title} data-reveal="" data-reveal-delay={i * 90} className="w-card flex h-full flex-col bg-white p-6">
             {/* Phones: icon beside the title, to keep the stacked cards short. */}
             <div className="flex items-center gap-3.5 lg:block">
-              <span className="icon-tile grid h-11 w-11 shrink-0 place-items-center rounded-[12px] lg:h-12 lg:w-12">
-                <Icon className="h-[22px] w-[22px]" strokeWidth={2} />
+              <span className="icon-tile grid h-11 w-11 shrink-0 place-items-center rounded-[13px] lg:h-12 lg:w-12 lg:rounded-[14px]">
+                <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
               </span>
               <h3 className="text-[18px] font-bold tracking-[-0.015em] text-sc-navy lg:mt-5">{title}</h3>
             </div>
             <ul className="mt-4 space-y-2 lg:mt-3">
               {lines.map((l) => (
                 <li key={l} className="flex items-start gap-2.5 text-[14.5px] leading-snug text-sc-navy/75">
-                  <span className="mt-[1px] grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-emerald-500/[0.12] text-emerald-700">
-                    <Check className="h-3 w-3" strokeWidth={3.25} />
+                  <span className="mt-[1px]">
+                    <CheckBadge />
                   </span>
                   {l}
                 </li>
@@ -187,15 +192,15 @@ const Included = () => (
       <div data-reveal="" data-reveal-delay={120} className="w-card mt-5 bg-white px-6 py-8 text-sc-navy sm:px-10">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
           <div>
-            <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#3b7fb6]">Your price</p>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-sc-blue">Your price</p>
             <p className="mt-1.5 text-[28px] font-bold leading-[1.1] tracking-[-0.02em] sm:text-[34px]">
               One flat monthly rate
             </p>
           </div>
-          <ul className="flex flex-col gap-1.5 text-[15px] text-sc-navy/80">
+          <ul className="flex flex-col gap-2 text-[15px] text-sc-navy/80">
             {['$0 chemical surcharges', 'No contract, month to month', '2-week money-back guarantee'].map((t) => (
-              <li key={t} className="flex items-center gap-2 whitespace-nowrap">
-                <Check className="h-4 w-4 shrink-0 text-[#10b981]" strokeWidth={3} />
+              <li key={t} className="flex items-center gap-2.5 whitespace-nowrap">
+                <CheckBadge />
                 {t}
               </li>
             ))}
@@ -204,7 +209,7 @@ const Included = () => (
         </div>
       </div>
 
-      <p className="mx-auto mt-8 max-w-3xl text-center text-[14px] leading-[1.55] text-sc-navy/60">
+      <p className="mx-auto mt-8 max-w-3xl text-center text-[14px] leading-[1.55] text-sc-navy/[0.72]">
         <Wrench className="mr-1.5 inline h-4 w-4 -translate-y-px text-sc-navy/40" strokeWidth={2.25} />
         Only ever quoted separately: major repairs, replacement parts, green-to-clean recovery and major storm
         cleanup, always approved by you first.
@@ -215,7 +220,14 @@ const Included = () => (
 
 // ── 2. The report ───────────────────────────────────────────────────────────
 
+// In the order they appear in the email, top to bottom, so the desktop tour
+// (below) always moves down the report.
 const REPORT_POINTS = [
+  {
+    icon: MapPin,
+    title: 'GPS-verified',
+    body: 'Time-stamped at your address, so every visit is proven, not promised.',
+  },
   {
     icon: Gauge,
     title: 'Every reading',
@@ -231,21 +243,28 @@ const REPORT_POINTS = [
     title: 'Photos of your pool',
     body: 'See exactly how we left your pool, even on days you’re not home.',
   },
-  {
-    icon: MapPin,
-    title: 'GPS-verified',
-    body: 'Time-stamped at your address, so every visit is proven, not promised.',
-  },
+];
+
+// Where each point lives in the sample email (ServiceReport.tsx), same order
+// as REPORT_POINTS: the elements whose combined box the tour scrolls to.
+const sectionTitled = (body: HTMLElement, title: string) =>
+  [...body.querySelectorAll('.sr-section')].find((el) => el.textContent?.trim() === title) ?? null;
+const TOUR_TARGETS: ((body: HTMLElement) => (Element | null)[])[] = [
+  (body) => [body.querySelector('.sr-header__datebadge'), body.querySelector('.sr-hero')],
+  (body) => [sectionTitled(body, 'Water Chemistry'), body.querySelector('.sr-lsi')],
+  (body) => [sectionTitled(body, 'Chemicals Added'), sectionTitled(body, 'Chemicals Added')?.nextElementSibling ?? null],
+  (body) => [sectionTitled(body, 'Photos'), body.querySelector('.sr-photo-wrap')],
 ];
 
 // The homepage's phone mockup (Hero.tsx): an iPhone with a live clock, showing
-// the real Gmail service-report email. The email scrolls itself once the
-// visitor is halfway down the section (useAutoScrollReport); the phone takes no
-// scroll or touch of its own, so it can never trap the page scroll. The
-// sample email's tel/mailto links and buttons stay unclickable, and the whole
-// mockup is aria-hidden: it's a picture of a report, not a UI. Its handwritten
-// note is off here (this page doesn't load that script font), and the report
-// shows this page's own pool photo, already downloaded for the hero.
+// the real Gmail service-report email. On desktop it's a guided tour (Report,
+// below); on phones the email scrolls itself once the visitor is halfway down
+// the section (useAutoScrollReport). Either way the phone takes no scroll or
+// touch of its own, so it can never trap the page scroll. The sample email's
+// tel/mailto links and buttons stay unclickable, and the whole mockup is
+// aria-hidden: it's a picture of a report, not a UI. Its handwritten note is
+// off here (this page doesn't load that script font), and the report shows
+// this page's own pool photo, already downloaded for the hero.
 // No mobile `.jpg` exists for this photo; every browser this site supports
 // takes the .webp sources first.
 const REPORT_PHOTO = {
@@ -256,51 +275,58 @@ const REPORT_PHOTO = {
   alt: 'A sparkling blue backyard pool and spa on the water',
 };
 
-// Framer-style scroll trigger: once the visitor is about halfway down the
-// section, the email scrolls itself on its own clock, like someone reading:
-// four eased flicks with short pauses, ~6s in all. On phones the phone sits
-// below the four features, so it also waits until most of the phone is on
-// screen. Once the section is fully off screen, the email resets to the top so
-// it plays again next time. Reduced motion: it doesn't play.
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+// Glides an element's scrollTop to `to`, eased. Returns a cancel function.
+const glideScroll = (el: HTMLElement, to: number, ms: number, done?: () => void) => {
+  const from = el.scrollTop;
+  const t0 = performance.now();
+  let raf = 0;
+  const tick = (now: number) => {
+    const t = Math.min(1, (now - t0) / ms);
+    el.scrollTop = from + (to - from) * easeInOutCubic(t);
+    if (t < 1) raf = requestAnimationFrame(tick);
+    else done?.();
+  };
+  raf = requestAnimationFrame(tick);
+  return () => cancelAnimationFrame(raf);
+};
+
+// Phones (and wherever the tour is off): a Framer-style scroll trigger. Once
+// the visitor is about halfway down the section, the email scrolls itself on
+// its own clock, like someone reading: four eased flicks with short pauses,
+// ~6s in all. The phone sits below the four points there, so it also waits
+// until most of the phone is on screen. Once the section is fully off screen,
+// the email resets to the top so it plays again next time. Reduced motion: it
+// doesn't play.
 const REPORT_STOPS = [0.24, 0.5, 0.76, 1]; // fractions of the email's length
 const REPORT_MOVE_MS = 950;
 const REPORT_PAUSE_MS = 650;
-const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 const useAutoScrollReport = (
   phoneRef: React.RefObject<HTMLDivElement | null>,
   bodyRef: React.RefObject<HTMLDivElement | null>,
+  enabled: boolean,
 ) => {
   useEffect(() => {
     const phone = phoneRef.current;
     const body = bodyRef.current;
     const section = phone?.closest('section');
-    if (!phone || !body || !section) return;
+    if (!enabled || !phone || !body || !section) return;
     if (!window.matchMedia('(prefers-reduced-motion: no-preference)').matches) return;
-    let raf = 0;
+    let cancelGlide = () => {};
     let timer = 0;
     let played = false;
     const stop = () => {
-      cancelAnimationFrame(raf);
+      cancelGlide();
       clearTimeout(timer);
-    };
-    const glideTo = (to: number, done: () => void) => {
-      const from = body.scrollTop;
-      const t0 = performance.now();
-      const tick = (now: number) => {
-        const t = Math.min(1, (now - t0) / REPORT_MOVE_MS);
-        body.scrollTop = from + (to - from) * easeInOutCubic(t);
-        if (t < 1) raf = requestAnimationFrame(tick);
-        else done();
-      };
-      raf = requestAnimationFrame(tick);
     };
     const play = () => {
       const max = body.scrollHeight - body.clientHeight;
       let i = 0;
       const next = () => {
         if (i >= REPORT_STOPS.length) return;
-        glideTo(REPORT_STOPS[i++] * max, () => {
+        cancelGlide = glideScroll(body, REPORT_STOPS[i++] * max, REPORT_MOVE_MS, () => {
           timer = window.setTimeout(next, REPORT_PAUSE_MS);
         });
       };
@@ -329,15 +355,38 @@ const useAutoScrollReport = (
       window.removeEventListener('scroll', check);
       window.removeEventListener('resize', check);
     };
-  }, [phoneRef, bodyRef]);
+  }, [phoneRef, bodyRef, enabled]);
 };
 
-const ReportPhone = () => {
+// Desktop tour, phone side: for the active step, the email glides to that
+// part of the report, centred as far as the email allows.
+const TOUR_GLIDE_MS = 520;
+
+const useReportTour = (bodyRef: React.RefObject<HTMLDivElement | null>, tour: boolean, step: number) => {
+  useEffect(() => {
+    const body = bodyRef.current;
+    if (!tour || !body) return;
+    const els = TOUR_TARGETS[step](body).filter((el): el is Element => !!el);
+    if (!els.length) return;
+    // The phone may be scaled; work in the email's own CSS pixels.
+    const box = body.getBoundingClientRect();
+    const scale = box.height / body.offsetHeight || 1;
+    const rects = els.map((el) => el.getBoundingClientRect());
+    const top = (Math.min(...rects.map((r) => r.top)) - box.top) / scale + body.scrollTop;
+    const bottom = (Math.max(...rects.map((r) => r.bottom)) - box.top) / scale + body.scrollTop;
+    const max = body.scrollHeight - body.clientHeight;
+    const target = Math.max(0, Math.min(max, top - Math.max(12, (body.clientHeight - (bottom - top)) / 2)));
+    return glideScroll(body, target, TOUR_GLIDE_MS);
+  }, [bodyRef, tour, step]);
+};
+
+const ReportPhone = ({ tour, step }: { tour: boolean; step: number }) => {
   const clock = useLiveClock();
   const [gmailScrolled, setGmailScrolled] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
   const phoneRef = useRef<HTMLDivElement>(null);
-  useAutoScrollReport(phoneRef, bodyRef);
+  useAutoScrollReport(phoneRef, bodyRef, !tour);
+  useReportTour(bodyRef, tour, step);
   return (
     <div
       className="phone-drop pointer-events-none relative flex justify-center"
@@ -359,41 +408,111 @@ const ReportPhone = () => {
   );
 };
 
-const Report = () => (
-  <section aria-labelledby="report-title" className={`dark-depth overflow-hidden ${sectionY}`}>
-    <Container className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:gap-20">
-      <div>
-        <div data-reveal="">
-          <Eyebrow light>Your service report</Eyebrow>
-        </div>
-        <h2 data-reveal="" id="report-title" className={`${h2} text-white`}>
-          Know exactly what happened at your pool, every week.
-        </h2>
-        <p data-reveal="" className="mt-4 max-w-[540px] text-pretty text-[17px] leading-[1.65] text-white/[0.72]">
-          Most pool services never send a report. Yours arrives before we leave the driveway, and anything that needs
-          your attention, like low water or an equipment issue, is flagged right there.
-        </p>
-        {/* 2×2, equal row heights, so the four items line up across. */}
-        <ul className="mt-11 grid auto-rows-fr sm:grid-cols-2 sm:gap-x-9">
-          {REPORT_POINTS.map(({ icon: Icon, title, body }, i) => (
-            <li key={title} data-reveal="" data-reveal-delay={i * 90} className="flex gap-4 py-6">
-              <span className="r-tile grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-white/[0.06] text-[#53a5d3]">
-                <Icon className="h-5 w-5" strokeWidth={2} />
-              </span>
-              <div>
-                <h3 className="text-[16.5px] font-semibold text-white">{title}</h3>
-                <p className="mt-1 text-[14.5px] leading-[1.6] text-white/[0.62]">{body}</p>
+// The guided tour runs on desktop screens tall enough to hold the whole
+// section, with motion allowed. Keep in sync with the .report-tour media
+// query in index.css, which pins the section.
+const TOUR_QUERY = '(min-width: 1024px) and (min-height: 680px) and (prefers-reduced-motion: no-preference)';
+
+const useMediaQuery = (query: string) => {
+  // false until mounted, to match the prerendered HTML.
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const update = () => setMatches(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, [query]);
+  return matches;
+};
+
+// Desktop: a guided tour. The section is tall and its content pinned
+// (.report-tour in index.css), so scrolling steps through the four points:
+// the active one lights up, a line beside it fills as the visitor scrolls
+// (--sp), and the phone scrolls to that part of the report. Phones, short
+// screens and reduced motion get the plain layout: a 2×2 list and the
+// self-scrolling email.
+const Report = () => {
+  const tour = useMediaQuery(TOUR_QUERY);
+  const [step, setStep] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const track = section?.querySelector<HTMLElement>('.tour-track');
+    if (!tour || !section || !track) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const r = track.getBoundingClientRect();
+      const range = r.height - window.innerHeight;
+      const p = range > 0 ? Math.min(1, Math.max(0, -r.top / range)) : 0;
+      const n = REPORT_POINTS.length;
+      const s = Math.min(n - 1, Math.floor(p * n));
+      section.style.setProperty('--sp', String(Math.min(1, p * n - s)));
+      setStep(s);
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      section.style.removeProperty('--sp');
+    };
+  }, [tour]);
+
+  return (
+    <section
+      ref={sectionRef}
+      aria-labelledby="report-title"
+      className={`report-tour dark-depth overflow-clip ${sectionY}`}
+    >
+      <div className="tour-track">
+        <div className="tour-stage">
+          <Container className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:gap-20">
+            <div>
+              <div data-reveal="">
+                <Eyebrow light>Your service report</Eyebrow>
               </div>
-            </li>
-          ))}
-        </ul>
+              <h2 data-reveal="" id="report-title" className={`${h2} text-white`}>
+                Know exactly what happened at your pool, every week.
+              </h2>
+              <p data-reveal="" className="mt-4 max-w-[540px] text-pretty text-[17px] leading-[1.65] text-white/[0.72]">
+                Most pool services never send a report. Yours arrives before we leave the driveway, and anything that
+                needs your attention, like low water or an equipment issue, is flagged right there.
+              </p>
+              {/* 2×2 with equal row heights, so the four items line up across;
+                  on the desktop tour, one column of steps. */}
+              <ul data-reveal="" className="tour-list mt-11 grid auto-rows-fr sm:grid-cols-2 sm:gap-x-9">
+                {REPORT_POINTS.map(({ icon: Icon, title, body }, i) => (
+                  <li key={title} data-active={tour && i === step ? '' : undefined} className="tour-item flex gap-4 py-6">
+                    <span className="r-tile grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-white/[0.06] text-[#53a5d3]">
+                      <Icon className="h-5 w-5" strokeWidth={2} />
+                    </span>
+                    <div>
+                      <h3 className="text-[16.5px] font-semibold text-white">{title}</h3>
+                      <div className="tour-desc">
+                        <p className="mt-1 text-[14.5px] leading-[1.6] text-white/[0.62]">{body}</p>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div data-reveal="" data-reveal-delay={120} className="mx-auto w-full max-w-[440px]">
+              <ReportPhone tour={tour} step={step} />
+            </div>
+          </Container>
+        </div>
       </div>
-      <div data-reveal="" data-reveal-delay={120} className="mx-auto w-full max-w-[440px]">
-        <ReportPhone />
-      </div>
-    </Container>
-  </section>
-);
+    </section>
+  );
+};
 
 // ── Reviews ─────────────────────────────────────────────────────────────────
 
@@ -448,7 +567,7 @@ const ReviewCard = ({ review, featured = false, delay }: { review: Review; featu
       </span>
       <span className="text-[13.5px]">
         <span className="font-semibold text-sc-navy">{review.name}</span>
-        <span className="text-sc-navy/55"> · Google review</span>
+        <span className="text-sc-navy/[0.72]"> · Google review</span>
       </span>
     </div>
   </li>
@@ -477,7 +596,7 @@ const Reviews = () => (
       </div>
 
       {/* Featured review on the left; the other two stacked on the right. */}
-      <ul className="mt-12 grid gap-5 md:grid-cols-2">
+      <ul className="isolate mt-12 grid gap-5 md:grid-cols-2">
         <ReviewCard review={REVIEWS[0]} featured delay={0} />
         <ReviewCard review={REVIEWS[1]} delay={90} />
         <ReviewCard review={REVIEWS[2]} delay={180} />
@@ -638,7 +757,7 @@ const Guarantees = () => (
 // non-links reads as inconsistent. The header's Service Areas menu links the
 // ones that do. St. Petersburg, the home base, is the one navy pill.
 const Areas = () => (
-  <section aria-labelledby="areas-title" className={`bg-white ${sectionY}`}>
+  <section id="service-areas" aria-labelledby="areas-title" className={`scroll-mt-16 bg-white ${sectionY}`}>
     <Container className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
       <div data-reveal="">
         <Eyebrow>Service area</Eyebrow>
@@ -745,7 +864,7 @@ const Faq = () => (
   </section>
 );
 
-// ── 7. Closing CTA + footer ─────────────────────────────────────────────────
+// ── 7. Closing CTA ─────────────────────────────────────────────────
 
 const FinalCta = () => (
   <section aria-labelledby="cta-title" className={`bg-white ${sectionY}`}>
@@ -773,45 +892,7 @@ const FinalCta = () => (
   </section>
 );
 
-export const LandingFooter = () => (
-  <footer className="border-t border-sc-navy/[0.08] bg-white py-10">
-    <Container className="flex flex-col gap-6 text-[14px] text-sc-navy/65 md:flex-row md:items-start md:justify-between">
-      <div>
-        <p className="font-display text-[15px] font-bold uppercase tracking-wide text-sc-navy">{BUSINESS_NAME}</p>
-        <p className="mt-2 flex items-start gap-2">
-          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-sc-navy/45" />
-          <span>
-            {ADDRESS_LINE}, {ADDRESS_CITY_STATE_ZIP}
-          </span>
-        </p>
-        <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-          <Phone className="h-4 w-4 shrink-0 text-sc-navy/45" />
-          <a href={PHONE_HREF} className="font-medium text-sc-navy">
-            {PHONE_DISPLAY}
-          </a>
-          <span aria-hidden="true">·</span>
-          {HOURS_SHORT}
-        </p>
-      </div>
-      <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2 md:justify-end">
-        <Link to="/services/" className="transition hover:text-sc-navy">
-          Services
-        </Link>
-        <Link to="/faq/" className="transition hover:text-sc-navy">
-          FAQ
-        </Link>
-        <Link to="/service-agreement/" className="transition hover:text-sc-navy">
-          Service Agreement
-        </Link>
-        <Link to="/privacy-policy/" className="transition hover:text-sc-navy">
-          Privacy Policy
-        </Link>
-      </nav>
-    </Container>
-  </footer>
-);
-
-// The sections go inside the page's <main>; LandingFooter goes after it.
+// The sections go inside the page's <main>; the site-wide Footer goes after it.
 export const LandingBelowFold = () => (
   <>
     <Included />

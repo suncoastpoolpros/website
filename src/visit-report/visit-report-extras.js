@@ -6,7 +6,9 @@
 (function () {
   const card = document.querySelector('.report-enter.rs-v3');
   if (!card) return;
-  const PHOTO = '/pool-waterfront-1120.webp';   // swap for real visit photos when you have them
+  // swap for real visit photos when you have them. Until then: whichever size
+  // of the hero photo this screen already downloaded (the thumbs are 66px).
+  const PHOTO = document.querySelector('img[data-hero-photo]')?.currentSrc || '/pool-waterfront-800.webp';
   const PACE = 1.6;                               // keep in sync with visit-report-island.js
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const SPRING = 'linear(0,0.0927,0.3006,0.5394,0.7468,0.8954,0.9851,1.0278,1.0396,1.0352,1.0249,1.0141,1.0057,1.0003,0.9977,0.9969,0.9972,0.998,0.9987,0.9993,0.9997,1)';

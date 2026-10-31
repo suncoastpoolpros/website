@@ -144,15 +144,16 @@ export const LandingHeader = () => {
         <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-8">
           <div className="flex h-16 items-center justify-between">
             <Link to="/" aria-label="Suncoast Pool Pros home" className="flex shrink-0 items-center gap-2">
-              {/* Phones: wave mark + stacked wordmark. md+: the single-line
-                  wordmark. Same lockups as the site header, in navy. */}
-              <img src="/icon-mark.svg" alt="" aria-hidden="true" width={37} height={24} className="h-7 w-auto md:hidden" />
-              <span className={`flex flex-col font-display font-bold uppercase md:hidden ${INK}`}>
-                <span className="text-[15px] leading-none tracking-[0.02em]">Suncoast</span>
-                <span className="mt-[3px] text-[9px] leading-none tracking-[0.405em]">Pool Pros</span>
-              </span>
-              <span className={`hidden font-display text-base font-bold uppercase tracking-wide md:inline ${INK}`}>
-                Suncoast Pool Pros
+              {/* The logo at every width: wave mark + stacked wordmark (the
+                  site header's phone lockup, in navy), a little larger from
+                  md up. The two lines' sizes and tracking scale together, so
+                  "POOL PROS" stays the width of "SUNCOAST". */}
+              <img src="/icon-mark.svg" alt="" aria-hidden="true" width={37} height={24} className="h-7 w-auto md:h-[30px]" />
+              <span className={`flex flex-col font-display font-bold uppercase ${INK}`}>
+                <span className="text-[15px] leading-none tracking-[0.02em] md:text-[16px]">Suncoast</span>
+                <span className="mt-[3px] text-[9px] leading-none tracking-[0.405em] md:mt-[3.25px] md:text-[9.6px]">
+                  Pool Pros
+                </span>
               </span>
             </Link>
 
