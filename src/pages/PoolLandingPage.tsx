@@ -262,15 +262,22 @@ const useScrollReveal = (rootRef: React.RefObject<HTMLDivElement | null>) => {
       },
       { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
     );
-    for (const el of root.querySelectorAll<HTMLElement>('[data-reveal]')) {
+    // Measure every element first, then write: interleaving the reads with
+    // setAttribute/setProperty forced a fresh layout per element.
+    const vh = window.innerHeight;
+    const els = [...root.querySelectorAll<HTMLElement>('[data-reveal]')];
+    const onScreen = els.map((el) => {
       const r = el.getBoundingClientRect();
-      if (r.top < window.innerHeight && r.bottom > 0) {
+      return r.top < vh && r.bottom > 0;
+    });
+    els.forEach((el, i) => {
+      if (onScreen[i]) {
         el.setAttribute('data-in', '');
-        continue;
+        return;
       }
       if (el.dataset.revealDelay) el.style.setProperty('--rd', `${el.dataset.revealDelay}ms`);
       io.observe(el);
-    }
+    });
     root.setAttribute('data-reveal-on', '');
     return () => io.disconnect();
   }, []);
