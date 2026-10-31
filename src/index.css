@@ -1219,110 +1219,234 @@ input[type="date"]::-webkit-date-and-time-value {
   }
 }
 
-/* ── /landing: the hero's visit-report card (VisitReportCard.tsx) ──────────
-   Every element's RESTING style is the finished report; each animation's
-   `both` fill supplies the "in progress" look until its delay runs out. So
-   with animations off (reduced motion) the card is simply complete.
-   --rs-o waits out the card's entrance on load; a hover replay zeroes it.
-   Only opacity/transform animate, so this stays on the compositor. */
-.report-enter {
-  animation: rs-enter 600ms cubic-bezier(0.2, 0.8, 0.2, 1) 350ms both;
-}
-.report-seq {
-  --rs-o: 350ms;
-  --rs-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.report-seq.is-replay {
-  --rs-o: 0ms;
-}
+/* ── /landing: the hero's service report (VisitReportCard.tsx) ─────────────
+   Animated by src/visit-report/*.js, which bring their own styles. Only two
+   things live here:
+   - the in-progress labels stay hidden at rest, so the markup alone (no JS)
+     reads as the finished card;
+   - the card stays hidden until the animation's first frame, so the
+     finished card never flashes before collapsing into the capsule. In the
+     prerendered HTML that's .rs-hold, which ends on its own after 4s in case
+     the scripts never run; once they have, the component swaps it for
+     .rs-wait (no time limit) and drops it on the first `rs3:play`. */
 .rs-progress,
 .rs-dash {
   opacity: 0;
 }
-.report-seq .rs-progress {
-  animation: rs-out 200ms var(--rs-ease) calc(var(--rs-o) + 2750ms) both;
+@media (prefers-reduced-motion: no-preference) {
+  .rs-hold {
+    animation: rs-hold 4s;
+  }
+  .rs-wait {
+    opacity: 0;
+  }
 }
-.report-seq .rs-complete {
-  animation: rs-rise 300ms var(--rs-ease) calc(var(--rs-o) + 2750ms) both;
+@keyframes rs-hold {
+  from, to { opacity: 0; }
 }
-.report-seq .rs-badge {
-  animation: rs-pop-sm 380ms var(--rs-ease) calc(var(--rs-o) + 2750ms) both;
+/* visit-report-island.js injects a Replay button under the card; the owner
+   doesn't want it. Hidden here rather than edited out of the script, so a
+   newer copy of the file drops in as-is. Clicking the card still replays. */
+.rs3-replay {
+  display: none !important;
 }
-.report-seq .rs-task,
-.report-seq .rs-task-check {
-  --rs-at: 500ms;
+
+/* /landing address form, empty submit (HeroQuoteForm.tsx): one soft amber glow
+   pulsing outward from the form's edge. A separate layer, so animating its
+   box-shadow can't wipe out the form's own ring and shadow. */
+.addr-nudge {
+  animation: addr-nudge 0.9s ease-out both;
 }
-.report-seq .rs-task:nth-child(2),
-.report-seq .rs-task:nth-child(2) .rs-task-check {
-  --rs-at: 920ms;
+@keyframes addr-nudge {
+  from { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.55); }
+  to { box-shadow: 0 0 0 10px rgba(245, 166, 35, 0); }
 }
-.report-seq .rs-task:nth-child(3),
-.report-seq .rs-task:nth-child(3) .rs-task-check {
-  --rs-at: 1340ms;
+@media (prefers-reduced-motion: reduce) {
+  .addr-nudge {
+    animation: none;
+  }
 }
-.report-seq .rs-task {
-  animation: rs-undim 300ms var(--rs-ease) calc(var(--rs-o) + var(--rs-at)) both;
+
+/* /landing quote builder (LandingQuoteSheet / LandingQuoteChooser).
+   Composited transitions only (opacity/transform). Phones: the panel rises
+   from the bottom. Desktop: it fades in from slightly smaller and lower. */
+.qs-scrim {
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
-.report-seq .rs-task-check {
-  animation: rs-pop 380ms var(--rs-ease) calc(var(--rs-o) + var(--rs-at)) both;
+.qs-scrim.is-open {
+  opacity: 1;
 }
-/* The count-up itself is JS, started by this animation's animationstart. */
-.report-seq .rs-dash {
-  animation: rs-out 1ms linear calc(var(--rs-o) + 1800ms) both;
+.qs-panel {
+  transform: translateY(100%);
+  transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
 }
-.report-seq .rs-value {
-  animation: rs-value-in 1ms linear calc(var(--rs-o) + 1800ms) both;
+.qs-panel.is-open {
+  transform: none;
 }
-.report-seq .rs-dot {
-  animation: rs-pop-sm 380ms var(--rs-ease) calc(var(--rs-o) + 2500ms) both;
+@media (min-width: 640px) {
+  .qs-panel {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+    transition:
+      transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 0.24s ease;
+  }
+  .qs-panel.is-open {
+    opacity: 1;
+    transform: none;
+  }
 }
-.report-seq .rs-reading:nth-child(2) .rs-dot {
-  animation-delay: calc(var(--rs-o) + 2590ms);
+/* Each new screen, and each new line in the live summary, eases in. */
+.qb-in {
+  animation: qb-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.report-seq .rs-reading:nth-child(3) .rs-dot {
-  animation-delay: calc(var(--rs-o) + 2680ms);
-}
-.report-seq .rs-footer {
-  animation: rs-footer-in 400ms var(--rs-ease) calc(var(--rs-o) + 3150ms) both;
-}
-@keyframes rs-enter {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: none; }
-}
-@keyframes rs-out {
-  from { opacity: 1; transform: none; }
-  to { opacity: 0; transform: translateY(-4px); }
-}
-@keyframes rs-rise {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: none; }
-}
-@keyframes rs-undim {
-  from { opacity: 0.3; }
-  to { opacity: 1; }
-}
-@keyframes rs-pop {
-  0% { transform: scale(0); }
-  60% { transform: scale(1.3); }
-  100% { transform: scale(1); }
-}
-@keyframes rs-pop-sm {
-  0% { transform: scale(0); }
-  60% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-@keyframes rs-value-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes rs-footer-in {
-  from { opacity: 0; transform: translateY(6px); }
+@keyframes qb-in {
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .report-enter,
-  .report-seq,
-  .report-seq * {
-    animation: none !important;
+  .qs-scrim,
+  .qs-panel {
+    transition: none;
   }
+  .qb-in {
+    animation: none;
+  }
+}
+
+/* ── /landing: motion and dark-section depth ──────────────────────────────── */
+/* Dark sections (service report, guarantees) and the final CTA box. */
+.dark-depth {
+  background:
+    radial-gradient(80% 55% at 15% 0%, rgba(83, 165, 211, 0.14), transparent 60%),
+    radial-gradient(60% 50% at 100% 100%, rgba(38, 118, 182, 0.12), transparent 60%),
+    linear-gradient(180deg, #28405e 0%, #223752 55%, #1d304a 100%);
+}
+.cta-depth {
+  background:
+    radial-gradient(70% 90% at 50% 0%, rgba(83, 165, 211, 0.22), transparent 65%),
+    linear-gradient(180deg, #28405e, #1e324c);
+  box-shadow: 0 30px 60px -30px rgba(20, 35, 55, 0.55);
+}
+/* Guarantee cards. Hover lifts with `translate`, which is separate from the
+   scroll reveal's `transform`, so the two never fight. */
+.g-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 24px 48px -24px rgba(5, 15, 30, 0.7),
+    0 8px 16px -8px rgba(5, 15, 30, 0.35);
+  transition:
+    translate 0.35s ease,
+    box-shadow 0.35s ease;
+}
+.g-card:hover {
+  translate: 0 -3px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 32px 60px -24px rgba(5, 15, 30, 0.8),
+    0 10px 20px -10px rgba(5, 15, 30, 0.4);
+}
+/* The Always Blue card: a faint gold glow from its top-left corner. */
+.g-card.g-card-feature {
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(255, 194, 38, 0.1), transparent 45%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
+}
+.g-tile {
+  background: rgba(255, 194, 38, 0.1);
+  color: #ffc226;
+  box-shadow: inset 0 0 0 1px rgba(255, 194, 38, 0.28);
+}
+/* Light sections: white cards and feature icon tiles. */
+/* One shadow for every white card (the four "what's included" cards, the
+   price card, the reviews): a hairline edge plus a soft shadow behind,
+   a little deeper on hover. */
+.w-card {
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px rgba(36, 58, 85, 0.08),
+    0 1px 2px rgba(16, 24, 40, 0.05),
+    0 16px 40px -20px rgba(36, 58, 85, 0.35);
+  transition: box-shadow 0.3s ease;
+}
+@media (hover: hover) {
+  .w-card:hover {
+    box-shadow:
+      0 0 0 1px rgba(36, 58, 85, 0.08),
+      0 1px 2px rgba(16, 24, 40, 0.05),
+      0 22px 48px -20px rgba(36, 58, 85, 0.45);
+  }
+}
+.icon-tile {
+  background: #eef4fa;
+  color: #2676b6;
+  box-shadow: inset 0 0 0 1px rgba(38, 118, 182, 0.12);
+}
+/* How it works: the timeline's number circles. */
+.step-dot {
+  box-shadow:
+    inset 0 0 0 1.5px rgba(38, 118, 182, 0.35),
+    0 8px 18px -8px rgba(38, 118, 182, 0.35);
+}
+.landing-canvas p {
+  text-wrap: pretty;
+}
+.r-tile {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 10px 20px -10px rgba(5, 15, 30, 0.6);
+}
+.phone-drop {
+  filter: drop-shadow(0 40px 50px rgba(5, 15, 30, 0.55)) drop-shadow(0 10px 18px rgba(5, 15, 30, 0.3));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Hero left column: each child rises in once on load. Desktop only: on a
+     phone this column IS the first screen, and fading the headline in would
+     hold back its largest-paint time (CLAUDE.md: mobile strips page motion). */
+  @media (min-width: 768px) {
+    .hero-stagger > * {
+      animation: hero-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+    .hero-stagger > :nth-child(1) { animation-delay: 80ms; }
+    .hero-stagger > :nth-child(2) { animation-delay: 170ms; }
+    .hero-stagger > :nth-child(3) { animation-delay: 260ms; }
+    .hero-stagger > :nth-child(4) { animation-delay: 350ms; }
+    .hero-stagger > :nth-child(5) { animation-delay: 440ms; }
+    .hero-stagger > :nth-child(6) { animation-delay: 530ms; }
+  }
+
+  /* Scroll reveal (useScrollReveal in PoolLandingPage.tsx). Hidden only once
+     the script has run and marked what's already on screen. */
+  [data-reveal-on] [data-reveal] {
+    transition:
+      opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--rd, 0ms),
+      transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--rd, 0ms);
+  }
+  [data-reveal-on] [data-reveal]:not([data-in]) {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  [data-reveal-on] .g-card[data-reveal] {
+    transition:
+      opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--rd, 0ms),
+      transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--rd, 0ms),
+      translate 0.35s ease,
+      box-shadow 0.35s ease;
+  }
+  [data-reveal-on] .w-card[data-reveal] {
+    transition:
+      opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--rd, 0ms),
+      transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--rd, 0ms),
+      box-shadow 0.3s ease;
+  }
+}
+@keyframes hero-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
 }

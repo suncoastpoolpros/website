@@ -1,14 +1,16 @@
-import React from 'react';
-import { Phone, ShieldCheck } from 'lucide-react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import { House, Phone, ShieldCheck } from 'lucide-react';
 import { usePageMeta, FONTS } from '@/lib/usePageMeta';
 import { PHONE_DISPLAY, PHONE_HREF, SMS_QUOTE_HREF } from '@/lib/contact';
 import { HeroQuoteForm } from '@/components/landing/HeroQuoteForm';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { VisitReportCard } from '@/components/landing/VisitReportCard';
+import { LandingBelowFold, LandingFooter } from '@/components/landing/LandingBelowFold';
+import { LandingQuoteSheetProvider } from '@/components/landing/LandingQuoteSheet';
 
 /*
  * /landing — a standalone page in its own light look (the sc-* logo tokens in
- * index.css), with its own header and no site Footer.
+ * index.css), with its own header and footer.
  *
  * The hero is built on the Hormozi offer framework: call out the audience,
  * promise the dream outcome, make it believable (guarantee + proof of every
@@ -27,36 +29,65 @@ const Container = ({ className = '', children }: { className?: string; children:
 const inlineLink =
   'font-semibold text-sc-navy underline decoration-sc-navy/30 decoration-1 underline-offset-[3px] transition hover:decoration-sc-navy';
 
+// Phones: the row wraps, and a wrapped line would start with a stray divider,
+// so below sm the dividers go and the ul's gap spaces the items instead.
+const trustItem =
+  'relative flex items-center gap-1.5 sm:pl-5 sm:first:pl-0 sm:before:absolute sm:before:left-2.5 sm:before:top-1/2 sm:before:h-4 sm:before:w-px sm:before:-translate-y-1/2 sm:before:bg-sc-navy/15 sm:first:before:hidden';
+
 // ── Photo + visit report ────────────────────────────────────────────────────
 
-// The <picture> sources mirror the site's DPR rules: phones get the portrait
-// mobile crop; wider screens get the 1536 file at 1x and the 1920 at 2x.
+// A waterfront pool and spa under palms (supplied by the owner). Portrait 4:5
+// crop of the full frame height, with the pool in the lower left: the report
+// card sits over the lower right, which is open water and deck. To replace
+// it, add files under NEW names (immutable image caching).
+//
+// Phones always get the 800px file: the frame is ~360px wide, so 800 is sharp
+// at any phone density (~107 KB) instead of pulling the 1120 on 3x screens.
+// Wider screens choose by density from `sizes`: 640 at 1x (75 KB), 1120 at 2x.
+const PHOTO_SIZES = '(min-width: 1024px) 496px, 560px';
+
 const HeroPhoto = () => (
   <div className="relative mx-auto w-full min-w-0 max-w-[560px] lg:max-w-none">
     <div className="relative aspect-[5/6] overflow-hidden rounded-[20px] bg-sc-sky/20 shadow-[0_40px_80px_-40px_rgba(16,32,52,0.55)] ring-1 ring-sc-navy/10 lg:aspect-auto lg:h-[min(640px,calc(100dvh-128px))]">
       <picture>
-        <source media="(max-width: 767px)" type="image/webp" srcSet="/st-pete-beach-hero-mobile-v2.webp" />
-        <source media="(max-width: 767px)" srcSet="/st-pete-beach-hero-mobile-v2.jpg" />
-        <source type="image/webp" srcSet="/st-pete-beach-hero.webp 1x, /st-pete-beach-hero-1920.webp 2x" />
+        <source media="(max-width: 767px)" type="image/webp" srcSet="/pool-waterfront-800.webp" />
+        <source media="(max-width: 767px)" srcSet="/pool-waterfront-800.jpg" />
+        <source
+          type="image/webp"
+          sizes={PHOTO_SIZES}
+          srcSet="/pool-waterfront-640.webp 640w, /pool-waterfront-1120.webp 1120w"
+        />
         <img
-          src="/st-pete-beach-hero.jpg"
-          alt="Crystal-clear backyard pool on the water in St. Petersburg, FL"
-          width={1536}
-          height={1024}
+          src="/pool-waterfront-1120.jpg"
+          srcSet="/pool-waterfront-640.jpg 640w, /pool-waterfront-1120.jpg 1120w"
+          sizes={PHOTO_SIZES}
+          alt="A sparkling blue backyard pool and spa on the water, framed by palm trees"
+          width={1120}
+          height={1400}
           fetchPriority="high"
           decoding="async"
-          className="absolute inset-0 h-full w-full object-cover object-[46%_50%]"
+          className="absolute inset-0 h-full w-full object-cover [filter:brightness(1.04)_saturate(1.16)]"
         />
       </picture>
+      {/* Warm, natural light: a soft-light amber wash, heavier toward the
+          bottom. No sepia filter instead: it browns the greens. Sits under
+          the bottom gradient and the report card. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,225,140,0.08)_0%,rgba(255,215,140,0.12)_30%,rgba(255,210,140,0.30)_60%,rgba(255,210,140,0.22)_100%)] mix-blend-soft-light"
+      />
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-[linear-gradient(180deg,rgba(16,32,52,0)_55%,rgba(16,32,52,0.28)_100%)]"
       />
+    </div>
 
-      {/* Scaled from its top-right corner so it shrinks into the corner, not inward. */}
-      <div className="absolute right-3 top-3 w-[300px] origin-top-right scale-[0.8] sm:right-6 sm:top-6 sm:scale-[0.94]">
-        <VisitReportCard />
-      </div>
+    {/* Upper-right, over the sky, so the pool stays visible. Outside the
+        photo's overflow-hidden frame so that from sm up it can break the
+        frame's right edge; phones keep it inside the corner. Scaled from its
+        top-right corner so it shrinks into it; a little more under 360px. */}
+    <div className="absolute right-3 top-3 w-[300px] origin-top-right scale-[0.8] max-[359px]:scale-[0.7] sm:-right-7 sm:top-[68px] sm:scale-[0.94]">
+      <VisitReportCard />
     </div>
   </div>
 );
@@ -67,13 +98,15 @@ const HeroPhoto = () => (
 // the screen's HEIGHT as well as its width, so shorter laptops still fit.
 const Hero = () => (
   <section className="relative bg-[#f5f9fd]">
-    <Container className="grid items-center gap-12 pb-16 pt-10 sm:pt-14 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,520px)] lg:gap-16 lg:py-8">
-      <div className="min-w-0">
-        <p className="inline-flex items-center gap-2 rounded-[10px] bg-white py-1 pl-1 pr-3.5 text-[13px] font-medium text-sc-navy/75 shadow-[0_1px_2px_rgba(16,24,40,0.06)] ring-1 ring-sc-navy/10">
-          <span className="rounded-[6px] bg-sc-blue/10 px-2 py-0.5 text-[12px] font-semibold text-sc-blue">
+    <Container className="grid items-center gap-12 pb-16 pt-10 sm:pt-14 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,496px)] lg:gap-[88px] lg:py-8">
+      <div className="hero-stagger min-w-0">
+        {/* Both parts stay whole: on a phone the badge stacks them into two
+            lines rather than breaking "Weekly pool / service" mid-phrase. */}
+        <p className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[999px] bg-white py-1 pl-1 pr-3.5 text-[13px] font-medium text-sc-navy/75 ring-1 ring-sc-navy/10">
+          <span className="whitespace-nowrap rounded-full bg-sc-blue/10 px-2.5 py-0.5 text-[12px] font-semibold text-sc-blue">
             Weekly pool service
           </span>
-          St. Petersburg &amp; Pinellas
+          <span className="whitespace-nowrap pl-1 sm:pl-0">St. Pete · Largo · Clearwater · Palm Harbor</span>
         </p>
 
         {/* The tagline is sized in em off the headline, so it scales with it. The
@@ -81,7 +114,7 @@ const Hero = () => (
             on phones, off the text column (screen minus photo and gaps) on
             desktop, and off the height so short laptops still fit. */}
         <hgroup className="mt-6 text-[clamp(30px,9.2vw,58px)] lg:text-[clamp(36px,min(calc((100vw-648px)/9.4),7.4vh),58px)]">
-          <h1 className="text-[1em] font-bold leading-[1.04] tracking-[-0.032em] text-sc-navy">
+          <h1 className="text-[1em] font-bold leading-[1.04] tracking-[-0.035em] text-sc-navy">
             <span className="bg-[linear-gradient(90deg,#2676b6,#3f95cc)] box-decoration-clone bg-clip-text text-transparent">
               Crystal-clear
             </span>{' '}
@@ -94,7 +127,7 @@ const Hero = () => (
           </p>
         </hgroup>
 
-        <p className="mt-4 max-w-[29.5rem] text-[17px] leading-[1.6] text-sc-navy/[0.78] sm:text-lg">
+        <p className="mt-4 max-w-[29.5rem] text-pretty text-[17px] leading-[1.6] text-sc-navy/[0.78] sm:text-lg">
           Weekly cleaning, full chemical balancing, GPS-verified visits, and a report after every clean. No
           contracts, no surprises, no green water.
         </p>
@@ -111,32 +144,37 @@ const Hero = () => (
               {PHONE_DISPLAY}
             </a>{' '}
             or{' '}
-            <a href={SMS_QUOTE_HREF} className={inlineLink}>
+            <a href={SMS_QUOTE_HREF} className={`${inlineLink} whitespace-nowrap`}>
               text us 2 photos
             </a>
             .
           </span>
         </p>
 
-        {/* Divider trick: each item's divider sits in the gap to its LEFT, and the
-            -ml + overflow-hidden clip it whenever the item starts a line — so a
-            wrapped row never begins with a stray divider. */}
-        <div className="mt-6 overflow-hidden">
-          <ul className="-ml-8 flex flex-wrap items-center gap-y-2 text-[14px] text-sc-navy/75">
-            <li className="relative flex items-center gap-2 pl-8 before:absolute before:left-4 before:top-1/2 before:h-4 before:w-px before:-translate-y-1/2 before:bg-sc-navy/15">
-              <span aria-hidden="true" className="tracking-[0.08em] text-[#e8a100]">
-                ★★★★★
-              </span>
-              <span>
-                <span className="font-semibold text-sc-navy">5.0</span> on Google
-              </span>
-            </li>
-            <li className="relative flex items-center gap-2 pl-8 before:absolute before:left-4 before:top-1/2 before:h-4 before:w-px before:-translate-y-1/2 before:bg-sc-navy/15">
-              <ShieldCheck className="h-[18px] w-[18px] text-sc-blue" strokeWidth={2.25} />
-              Always Blue guarantee
-            </li>
-          </ul>
-        </div>
+        {/* One line on desktop; each item's divider sits 10px into its 20px
+            left padding, and the first item has neither. */}
+        <ul className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13.5px] text-sc-navy/75 sm:gap-x-0">
+          <li className={trustItem}>
+            {/* Small, tight stars: what keeps all three items on one line at
+                ~1126px, where the column is 478px and the row needs ~473. */}
+            <span aria-hidden="true" className="text-[11px] tracking-[-0.02em] text-[#e8a100]">
+              ★★★★★
+            </span>
+            <span>
+              <span className="sr-only">Rated </span>
+              <span className="font-semibold text-sc-navy">5.0</span>
+              <span className="sr-only"> out of 5</span> on Google
+            </span>
+          </li>
+          <li className={trustItem}>
+            <ShieldCheck className="h-4 w-4 text-sc-blue" strokeWidth={2.25} />
+            Always Blue guarantee
+          </li>
+          <li className={trustItem}>
+            <House className="h-4 w-4 text-sc-blue" strokeWidth={2.25} />
+            Locally owned
+          </li>
+        </ul>
       </div>
 
       <HeroPhoto />
@@ -144,7 +182,50 @@ const Hero = () => (
   </section>
 );
 
+// Layout effect in the browser (runs before paint, so nothing flashes hidden);
+// a no-op effect during the prerender, where layout effects don't run.
+const useBeforePaint = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
+/**
+ * Scroll reveal for everything marked `data-reveal` below the hero (styles:
+ * `[data-reveal-on]` in index.css). Progressive: the hidden start state only
+ * applies once this runs, so without JS (or with reduced motion) everything is
+ * simply visible. Elements already on screen are marked in before the first
+ * paint, so they never flash out. Attributes, not classes, so a React
+ * re-render can never wipe them.
+ */
+const useScrollReveal = (rootRef: React.RefObject<HTMLDivElement | null>) => {
+  useBeforePaint(() => {
+    const root = rootRef.current;
+    if (!root || !('IntersectionObserver' in window)) return;
+    if (!window.matchMedia('(prefers-reduced-motion: no-preference)').matches) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          e.target.setAttribute('data-in', '');
+          io.unobserve(e.target);
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+    );
+    for (const el of root.querySelectorAll<HTMLElement>('[data-reveal]')) {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) {
+        el.setAttribute('data-in', '');
+        continue;
+      }
+      if (el.dataset.revealDelay) el.style.setProperty('--rd', `${el.dataset.revealDelay}ms`);
+      io.observe(el);
+    }
+    root.setAttribute('data-reveal-on', '');
+    return () => io.disconnect();
+  }, []);
+};
+
 export const PoolLandingPage = () => {
+  const rootRef = useRef<HTMLDivElement>(null);
+  useScrollReveal(rootRef);
   usePageMeta({
     title: 'Weekly Pool Service in St. Petersburg, FL | Suncoast Pool Pros',
     description:
@@ -154,12 +235,18 @@ export const PoolLandingPage = () => {
     fontPreload: [FONTS.inter, FONTS.montserrat],
   });
 
+  // The new version of the quote popup (not the site-wide one), so it can be
+  // revised here without touching other pages.
   return (
-    <div className="landing-canvas force-static-motion min-h-screen bg-white font-sans text-sc-navy antialiased">
-      <LandingHeader />
-      <main>
-        <Hero />
-      </main>
-    </div>
+    <LandingQuoteSheetProvider>
+      <div ref={rootRef} className="landing-canvas force-static-motion min-h-screen bg-white font-sans text-sc-navy antialiased">
+        <LandingHeader />
+        <main>
+          <Hero />
+          <LandingBelowFold />
+        </main>
+        <LandingFooter />
+      </div>
+    </LandingQuoteSheetProvider>
   );
 };

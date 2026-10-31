@@ -13,7 +13,7 @@ const formatClock = (d: Date) =>
 // SSR-safe: initial value is an empty string so the server-rendered HTML
 // matches the first client render. The real time is set on mount and ticked
 // every 10s (we only show H:MM, so a 10s tick is enough).
-const useLiveClock = () => {
+export const useLiveClock = () => {
   const [time, setTime] = useState('');
   useEffect(() => {
     setTime(formatClock(new Date()));
@@ -302,9 +302,23 @@ type HomeHeroPhoneProps = {
       from the side scroll wheel: overflow-hidden boxes still accept
       programmatic scrollTop, so the report scrolls with NO touch trap. */
   scrollBodyRef?: React.RefObject<HTMLDivElement | null>;
+  /** The handwritten "before we leave your driveway" note beside the phone.
+   *  Off where the page doesn't load the Caveat script font (/landing). */
+  annotation?: boolean;
+  /** The report's pool photo. Defaults to the homepage's (the Treasure Island
+   *  hero, a cache hit there); /landing points it at its own hero photo. */
+  reportPhoto?: React.ComponentProps<typeof ServiceReport>['photo'];
 };
 
-const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = true, scrollBodyRef }: HomeHeroPhoneProps) => {
+export const HomeHeroPhone = ({
+  clock,
+  gmailScrolled,
+  setGmailScrolled,
+  interactive = true,
+  scrollBodyRef,
+  annotation = true,
+  reportPhoto,
+}: HomeHeroPhoneProps) => {
   return (
     <>
             {/* Handwritten label + arrow — animates as if being written/drawn in. */}
@@ -323,6 +337,7 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
                 1200 (181px). Below that the hero is already tight, and this is
                 decorative (aria-hidden, data-nosnippet), so it simply sits out
                 rather than colliding. */}
+            {annotation && (
             <div
               className="hidden min-[1200px]:flex absolute right-0 top-1/2 -translate-y-[calc(50%+40px)] translate-x-[33px] xl:translate-x-[68px] rotate-[-6deg] flex-col items-start z-20 pointer-events-none"
             >
@@ -366,6 +381,7 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
                 />
               </svg>
             </div>
+            )}
 
             <div className="relative z-10 w-[300px] scale-90 origin-center">
               {/* Side buttons */}
@@ -555,7 +571,7 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
                             keep the ServiceReport DEFAULT_PHOTO). */}
                         <ServiceReport
                           inline
-                          photo={{
+                          photo={reportPhoto ?? {
                             base: '/treasure-island-hero',
                             // Points at the SAME re-encoded file the mobile hero
                             // paints, so this stays a cache hit instead of a
@@ -619,13 +635,15 @@ const HomeHeroPhone = ({ clock, gmailScrolled, setGmailScrolled, interactive = t
  * clock + Gmail-scroll state (independent of the desktop hero instance). Hidden
  * on lg+, where the phone lives inside the hero instead.
  */
-export const HomeHeroPhoneSection = () => {
-  const clock = useLiveClock();
-  const [gmailScrolled, setGmailScrolled] = useState(false);
-  // Side scroll wheel: drags on the track drive the phone's inner report
-  // scroll (programmatic scrollTop works on the overflow-hidden body, so the
-  // phone itself never captures touch — no page-scroll trap). Direct DOM
-  // writes from pointer events; no React state per drag frame.
+/**
+ * Side scroll wheel for the phone mockup on touch screens: drags on the track
+ * drive the phone's inner report scroll (programmatic scrollTop works on the
+ * overflow-hidden body, so the phone itself never captures touch — no
+ * page-scroll trap). Direct DOM writes from pointer events; no React state per
+ * drag frame. Pair with <PhoneScrollWheel> and pass bodyRef as the phone's
+ * scrollBodyRef.
+ */
+export const usePhoneScrollWheel = () => {
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const thumbRef = useRef<HTMLDivElement | null>(null);
@@ -679,6 +697,31 @@ export const HomeHeroPhoneSection = () => {
       track.removeEventListener('pointercancel', up);
     };
   }, []);
+  return { bodyRef, trackRef, thumbRef };
+};
+
+/** The wheel's track: 28px-wide touch target (visual 4px line + thumb), just
+ *  outside the phone's RIGHT edge. Absolute, so it stays out of the phone's
+ *  centring. touch-action:none so dragging it never scrolls the page. */
+export const PhoneScrollWheel = ({
+  trackRef,
+  thumbRef,
+}: Pick<ReturnType<typeof usePhoneScrollWheel>, 'trackRef' | 'thumbRef'>) => (
+  <div
+    ref={trackRef}
+    aria-hidden="true"
+    className="absolute left-full top-1/2 -translate-y-1/2 h-[400px] w-7 flex justify-center"
+    style={{ touchAction: 'none' }}
+  >
+    <div className="absolute inset-y-0 w-1 rounded-full bg-white/10" />
+    <div ref={thumbRef} className="absolute top-0 w-1.5 h-16 rounded-full bg-white/50" />
+  </div>
+);
+
+export const HomeHeroPhoneSection = () => {
+  const clock = useLiveClock();
+  const [gmailScrolled, setGmailScrolled] = useState(false);
+  const { bodyRef, trackRef, thumbRef } = usePhoneScrollWheel();
   return (
     <section className="lg:hidden relative bg-[#07111c] pt-12 pb-12 overflow-hidden">
       {/* Real heading + one crawlable sentence, deliberately OUTSIDE the
@@ -756,23 +799,9 @@ export const HomeHeroPhoneSection = () => {
               interactive={false}
               scrollBodyRef={bodyRef}
             />
-            {/* Scroll wheel: 28px-wide touch track (visual 4px line + thumb),
-                sitting just outside the phone's RIGHT edge. Absolute, so it
-                stays out of the centring math — as a flex sibling it pushed the
-                phone ~19px off centre. touch-action:none so dragging it never
-                scrolls the page. */}
-            <div
-              ref={trackRef}
-              aria-hidden="true"
-              className="absolute left-full top-1/2 -translate-y-1/2 h-[400px] w-7 flex justify-center"
-              style={{ touchAction: 'none' }}
-            >
-              <div className="absolute inset-y-0 w-1 rounded-full bg-white/10" />
-              <div
-                ref={thumbRef}
-                className="absolute top-0 w-1.5 h-16 rounded-full bg-white/50"
-              />
-            </div>
+            {/* Absolute, so it stays out of the centring math — as a flex
+                sibling it pushed the phone ~19px off centre. */}
+            <PhoneScrollWheel trackRef={trackRef} thumbRef={thumbRef} />
           </div>
         </div>
       </div>

@@ -521,7 +521,7 @@ export const ServiceReport = ({
             <span className="sr-footer__prefs">Manage email preferences</span>
 
             <div className="sr-footer__divider" />
-            <span className="sr-footer__powered">Powered by PoolLogic</span>
+            <span className="sr-footer__powered">Powered by Poolnautics</span>
           </footer>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Check, Loader2, Lock, Mail, MapPin, MessageSquare } from 'lucide-react';
+import { ArrowRight, ArrowUp, Check, Loader2, Lock, Mail, MapPin, MessageSquare } from 'lucide-react';
 import { sendContact } from '@/lib/contactSubmit';
 import { trackEvent } from '@/lib/analytics';
 import { useTurnstile } from '@/lib/turnstile';
@@ -92,10 +92,20 @@ export const HeroQuoteForm = () => {
     if (step === 'done' && doneRef.current) revealCard(doneRef.current);
   }, [step]);
 
+  // Our own empty-address nudge instead of the browser's "Please fill out
+  // this field" bubble (the form is noValidate). Each empty submit bumps the
+  // count, which remounts the glow so it pulses again.
+  const [emptyNudge, setEmptyNudge] = useState(0);
+
   const handleStart = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const value = String(new FormData(e.currentTarget).get('address') ?? '').trim();
-    if (!value) return;
+    if (!value) {
+      setEmptyNudge((n) => n + 1);
+      e.currentTarget.querySelector<HTMLInputElement>('input[name="address"]')?.focus();
+      return;
+    }
+    setEmptyNudge(0);
     setAddress(value);
     const s = picked.current;
     setServedCity(s && s.full === value && isServedCity(s.city) ? s.city : null);
@@ -151,16 +161,33 @@ export const HeroQuoteForm = () => {
       <div ref={turnstile.containerRef} aria-hidden="true" className="absolute -left-[9999px] h-px w-px" />
 
       {step === 'address' && (
-        <form
-          onSubmit={handleStart}
-          className={`flex flex-col gap-2 rounded-[14px] bg-white p-2 ${raisedShadow} transition focus-within:ring-2 focus-within:ring-sc-blue/40 sm:flex-row sm:items-center`}
-        >
-          <AddressAutocomplete name="address" defaultValue={address} onPick={(s) => (picked.current = s)} />
-          <button type="submit" className={`${amberButton} h-12 px-6 text-base`}>
-            Get my price
-            <ButtonArrow />
-          </button>
-        </form>
+        <>
+          <form
+            noValidate
+            onSubmit={handleStart}
+            onInput={() => emptyNudge && setEmptyNudge(0)}
+            className={`relative flex flex-col gap-2 rounded-[14px] bg-white p-2 ${raisedShadow} transition sm:flex-row sm:items-center ${
+              emptyNudge ? 'ring-2 ring-[rgba(245,166,35,0.9)]' : 'focus-within:ring-2 focus-within:ring-sc-blue/40'
+            }`}
+          >
+            {emptyNudge > 0 && (
+              <span key={emptyNudge} aria-hidden="true" className="addr-nudge pointer-events-none absolute inset-0 rounded-[14px]" />
+            )}
+            <AddressAutocomplete name="address" defaultValue={address} onPick={(s) => (picked.current = s)} />
+            <button type="submit" className={`${amberButton} h-12 px-6 text-base`}>
+              Get my price
+              <ButtonArrow />
+            </button>
+          </form>
+          <p aria-live="polite" className="text-[13.5px] font-medium text-sc-navy">
+            {emptyNudge > 0 && (
+              <span className="mt-3 flex items-center gap-1.5">
+                <ArrowUp className="h-4 w-4 text-[#f5a623]" strokeWidth={2.5} />
+                Start by typing your pool's address above.
+              </span>
+            )}
+          </p>
+        </>
       )}
 
       {step === 'details' && (
@@ -200,7 +227,15 @@ export const HeroQuoteForm = () => {
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className={fieldLabel}>Your name</span>
-              <input name="name" type="text" required autoComplete="name" className={inputClass} />
+              <input
+                name="name"
+                type="text"
+                required
+                autoComplete="name"
+                autoCapitalize="words"
+                enterKeyHint="next"
+                className={inputClass}
+              />
             </label>
             <label className="block">
               <span className={fieldLabel}>Mobile phone</span>

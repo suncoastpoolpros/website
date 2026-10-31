@@ -35,7 +35,13 @@ const MOBILE_NAV = [
 
 const INK = 'text-sc-navy';
 const linkClass =
-  'whitespace-nowrap text-sc-navy/70 hover:text-sc-navy px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors';
+  'whitespace-nowrap text-[rgba(30,50,80,0.72)] hover:text-[#1e3a5f] px-2.5 lg:px-3 py-2 text-[13.5px] font-medium transition-colors';
+
+// Hide on scroll down, reveal on scroll up. Movements of SCROLL_SLOP px or
+// less are ignored (and don't move the reference point), so trackpad jitter
+// can't flicker it; near the top it always shows.
+const SCROLL_SLOP = 6;
+const ALWAYS_SHOW_ABOVE = 80;
 
 export const LandingHeader = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,16 +54,42 @@ export const LandingHeader = () => {
   // prerendered HTML, then stays mounted: opening is a class toggle.
   const [hydrated, setHydrated] = useState(false);
   const closeTimer = useRef<number | null>(null);
+  const [hiddenByScroll, setHiddenByScroll] = useState(false);
+  const lastY = useRef(0);
+  const menuOpenRef = useRef(false);
 
   useScrollLock(isOpen);
 
   useEffect(() => {
     setHydrated(true);
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    lastY.current = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 8);
+      // The open menu's scroll lock pins and restores the page, which reads
+      // as scrolling; ignore it.
+      if (menuOpenRef.current) return;
+      if (y < ALWAYS_SHOW_ABOVE) {
+        setHiddenByScroll(false);
+        lastY.current = y;
+        return;
+      }
+      const delta = y - lastY.current;
+      if (Math.abs(delta) <= SCROLL_SLOP) return;
+      setHiddenByScroll(delta > 0);
+      lastY.current = y;
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Track the menu for the scroll handler, and once it closes, take the
+  // restored scroll position as the new reference point.
+  useEffect(() => {
+    menuOpenRef.current = isOpen;
+    if (!isOpen) lastY.current = window.scrollY;
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -94,11 +126,16 @@ export const LandingHeader = () => {
     <>
       {/* Phones: scrolls away with the page, like the site header on mobile.
           md+: sticks to the top and gains a shadow once the page scrolls (the
-          site header's frosted-dark-on-scroll, in light). The hairline is a
-          shadow, not a border: a border would make the header 65px and push
-          the full-screen hero 1px past the fold. */}
+          site header's frosted-dark-on-scroll, in light), hides while
+          scrolling down and comes back on scroll up. The hide is an inline
+          transform from React state, not a class toggled on the element:
+          re-renders reset this className. Reduced motion still hides and
+          shows, just without the slide. The hairline is a shadow, not a
+          border: a border would make the header 65px and push the
+          full-screen hero 1px past the fold. */}
       <header
-        className={`relative z-50 bg-white transition-shadow duration-300 md:sticky md:top-0 ${
+        style={hiddenByScroll ? { transform: 'translateY(-100%)' } : undefined}
+        className={`relative z-50 bg-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none md:sticky md:top-0 ${
           scrolled
             ? 'shadow-[0_1px_0_0_rgba(36,58,85,0.08)] md:shadow-[0_1px_0_0_rgba(36,58,85,0.08),0_8px_24px_-16px_rgba(36,58,85,0.35)]'
             : 'shadow-[0_1px_0_0_rgba(36,58,85,0.08)]'
@@ -170,8 +207,7 @@ export const LandingHeader = () => {
             </nav>
 
             <div className="flex items-center gap-4 md:gap-1.5 lg:gap-2">
-              <a href={PHONE_HREF} className={`hidden items-center gap-2 md:inline-flex ${linkClass}`}>
-                <Phone className="h-4 w-4 shrink-0" />
+              <a href={PHONE_HREF} className={`hidden items-center md:inline-flex ${linkClass}`}>
                 {PHONE_DISPLAY}
               </a>
 
@@ -219,15 +255,14 @@ export const LandingHeader = () => {
                 )}
               </div>
 
-              {/* `.btn` (site button shape) sets display after Tailwind's
-                  utilities, so the md: show/hide lives on this wrapper. Navy,
-                  not the site's orange: on this page the one warm color is the
-                  form's amber button, and an orange beside it would compete. */}
+              {/* Navy, not the site's orange: on this page the one warm color
+                  is the form's amber button, and an orange beside it would
+                  compete. */}
               <span className="hidden md:inline-flex">
                 <button
                   type="button"
                   onClick={focusQuoteForm}
-                  className="btn whitespace-nowrap bg-sc-navy px-4 text-white hover:bg-[#1c2f46] lg:px-6"
+                  className="inline-flex h-[38px] items-center whitespace-nowrap rounded-[10px] bg-sc-navy px-4 text-[13.5px] font-semibold text-white transition-colors hover:bg-[#1c2f46]"
                 >
                   Get a Quote
                 </button>

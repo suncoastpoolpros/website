@@ -122,9 +122,11 @@ export const AddressAutocomplete = ({
         ref={inputRef}
         name={name}
         type="text"
-        required
         // Our own list replaces the browser's, so the two don't stack up.
         autoComplete="off"
+        // Phone keyboards: capitalize street names, and label return "Go".
+        autoCapitalize="words"
+        enterKeyHint="go"
         role="combobox"
         aria-autocomplete="list"
         aria-expanded={showList}
