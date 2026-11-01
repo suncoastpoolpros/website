@@ -485,10 +485,12 @@ const useMediaQuery = (query: string) => {
 // The tour plays once, on the way down. The pinned stretch would otherwise
 // hold anyone scrolling back up for over two screens, so the section is
 // released (unpinned, the track's extra length dropped) once the visitor is
-// past it and has stopped scrolling, or as soon as they fling upward
-// (mouse/trackpad only: a programmatic scroll mid-swipe can kill touch
-// momentum on an iPad). While pinned, the stage fills the screen, so the
-// release is invisible: the page is scrolled by however far the stage moved.
+// past it and has stopped scrolling, touches the screen or turns the wheel
+// upward, or as soon as they fling upward mid-tour (mouse/trackpad only: a
+// programmatic scroll mid-swipe can kill touch momentum on an iPad, so touch
+// releases on touchstart, when the finger has already stopped any momentum).
+// While pinned, the stage fills the screen, so the release is invisible: the
+// page is scrolled by however far the stage moved.
 const TOUR_FLING_PX = 300; // upward travel within TOUR_FLING_MS that counts as a fling
 const TOUR_FLING_MS = 250;
 const TOUR_IDLE_MS = 150;
@@ -526,7 +528,10 @@ const Report = () => {
     // the visitor scrolling up; hold it hidden until that scroll has landed.
     let releasing = false;
     const release = () => {
+      if (releasing) return;
       releasing = true;
+      cancelAnimationFrame(raf);
+      clearTimeout(idle);
       root.setAttribute('data-header-hold', '');
       const before = stage.getBoundingClientRect().top;
       section.classList.add('tour-released');
@@ -534,8 +539,11 @@ const Report = () => {
       window.setTimeout(() => root.removeAttribute('data-header-hold'), 150);
       setReleased(true);
     };
+    // Past the end: the stage has reached the bottom of its track.
+    const pastEnd = () => track.getBoundingClientRect().bottom <= stage.getBoundingClientRect().bottom + 1;
     const update = () => {
       raf = 0;
+      if (releasing) return;
       const r = track.getBoundingClientRect();
       const st = stage.getBoundingClientRect();
       const range = r.height - st.height;
@@ -546,22 +554,28 @@ const Report = () => {
       setStep(s);
       if (mobileTour) root.toggleAttribute('data-header-hold', Math.abs(st.top + pin) < 1);
       clearTimeout(idle);
-      // Past the end: the stage has reached the bottom of its track.
-      if (r.bottom <= st.bottom + 1) idle = window.setTimeout(release, TOUR_IDLE_MS);
+      if (pastEnd()) idle = window.setTimeout(release, TOUR_IDLE_MS);
     };
     const onScroll = () => {
+      if (releasing) return;
       const y = window.scrollY;
       const t = performance.now();
       if (y >= markY || t - markT > TOUR_FLING_MS) {
         markY = y;
         markT = t;
       } else if (fine && markY - y > TOUR_FLING_PX && track.getBoundingClientRect().top < 0) {
-        cancelAnimationFrame(raf);
-        clearTimeout(idle);
         release();
         return;
       }
       if (!raf) raf = requestAnimationFrame(update);
+    };
+    // Heading back up from below without a pause: release before the
+    // scroll lands, so the tour is never replayed in reverse.
+    const onTouch = () => {
+      if (pastEnd()) release();
+    };
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY < 0 && pastEnd()) release();
     };
     const onResize = () => {
       measure();
@@ -570,11 +584,15 @@ const Report = () => {
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
+    window.addEventListener('touchstart', onTouch, { passive: true });
+    window.addEventListener('wheel', onWheel, { passive: true });
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(idle);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('touchstart', onTouch);
+      window.removeEventListener('wheel', onWheel);
       if (!releasing) root.removeAttribute('data-header-hold');
     };
   }, [tour, mobileTour, released]);
