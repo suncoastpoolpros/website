@@ -35,8 +35,11 @@ const inlineLink =
 
 // Phones: the row wraps, and a wrapped line would start with a stray divider,
 // so below sm the dividers go and the ul's gap spaces the items instead.
+// Phones: three centred columns split by hairlines (one line can't hold all
+// three, and wrapping left "Locally owned" alone on a second line). From sm
+// up: one row, each item's divider drawn by its ::before.
 const trustItem =
-  'relative flex items-center gap-1.5 sm:pl-5 sm:first:pl-0 sm:before:absolute sm:before:left-2.5 sm:before:top-1/2 sm:before:h-4 sm:before:w-px sm:before:-translate-y-1/2 sm:before:bg-sc-navy/15 sm:first:before:hidden';
+  'relative flex flex-col items-center gap-1 px-1.5 text-center sm:flex-row sm:gap-1.5 sm:px-0 sm:text-left sm:pl-5 sm:first:pl-0 sm:before:absolute sm:before:left-2.5 sm:before:top-1/2 sm:before:h-4 sm:before:w-px sm:before:-translate-y-1/2 sm:before:bg-sc-navy/15 sm:first:before:hidden';
 
 // ── Photo + visit report ────────────────────────────────────────────────────
 
@@ -110,15 +113,20 @@ const HeroPhoto = () => (
 // and trust row each need to stay on one line.
 const Hero = () => (
   <section className="relative bg-[#f5f9fd]">
-    <Container className="grid items-center gap-12 pb-16 pt-10 sm:pt-14 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,clamp(420px,calc(420px_+_(100vw_-_1024px)_*_0.8),496px))] lg:gap-x-[clamp(56px,calc(56px_+_(100vw_-_1024px)_*_0.34),88px)] lg:py-8 lg:portrait:min-h-0 lg:portrait:py-20">
+    <Container className="grid items-center gap-12 pb-16 pt-7 sm:pt-14 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,clamp(420px,calc(420px_+_(100vw_-_1024px)_*_0.8),496px))] lg:gap-x-[clamp(56px,calc(56px_+_(100vw_-_1024px)_*_0.34),88px)] lg:py-8 lg:portrait:min-h-0 lg:portrait:py-20">
       <div className="hero-stagger min-w-0">
-        {/* Both parts stay whole: on a phone the badge stacks them into two
-            lines rather than breaking a phrase mid-way. */}
-        <p className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[999px] bg-white py-1 pl-1 pr-3.5 text-[13px] font-medium text-sc-navy/75 ring-1 ring-sc-navy/10">
-          <span className="whitespace-nowrap rounded-full bg-sc-blue/10 px-2.5 py-0.5 text-[12px] font-semibold text-[#1f6aa6]">
+        {/* One line on phones too: slightly smaller type below sm fits it
+            from 390px, and under that Palm Harbor drops out (it's still in
+            the service-area list). Both parts stay whole: on anything
+            narrower still the badge stacks them rather than breaking a
+            phrase mid-way. */}
+        <p className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 rounded-[999px] bg-white py-1 pl-1 pr-3 text-[12px] font-medium text-sc-navy/75 ring-1 ring-sc-navy/10 sm:gap-x-2 sm:pr-3.5 sm:text-[13px]">
+          <span className="whitespace-nowrap rounded-full bg-sc-blue/10 px-2.5 py-0.5 text-[11.5px] font-semibold text-[#1f6aa6] sm:text-[12px]">
             One flat rate
           </span>
-          <span className="whitespace-nowrap pl-1 sm:pl-0">St. Pete · Largo · Clearwater · Palm Harbor</span>
+          <span className="whitespace-nowrap">
+            St. Pete · Largo · Clearwater<span className="max-[389px]:hidden"> · Palm Harbor</span>
+          </span>
         </p>
 
         {/* The tagline is sized in em off the headline, so it scales with it. The
@@ -126,7 +134,7 @@ const Hero = () => (
             (screen minus photo and gaps, never under the ~480px it holds
             below 1120) on desktop, and off the height so short laptops still
             fit. */}
-        <hgroup className="mt-6 text-[clamp(30px,9.2vw,58px)] lg:text-[clamp(36px,min(calc(max(100vw_-_648px,480px)/9.4),7.4vh),58px)]">
+        <hgroup className="mt-6 text-[clamp(30px,12.2vw,58px)] lg:text-[clamp(36px,min(calc(max(100vw_-_648px,480px)/9.4),7.4vh),58px)]">
           <h1 className="text-[1em] font-bold leading-[1.04] tracking-[-0.035em] text-sc-navy">
             <span className="bg-[linear-gradient(90deg,#2676b6,#3f95cc)] box-decoration-clone bg-clip-text text-transparent">
               St. Petersburg
@@ -136,7 +144,7 @@ const Hero = () => (
             <br />
             Pool Cleaning
           </h1>
-          <p className="mt-4 text-[0.42em] font-semibold leading-tight tracking-[-0.01em] text-sc-navy/85">
+          <p className="mt-4 text-[0.38em] font-semibold sm:text-[0.42em] leading-tight tracking-[-0.01em] text-sc-navy/85">
             Crystal-clear water, every week.
           </p>
         </hgroup>
@@ -175,11 +183,11 @@ const Hero = () => (
 
         {/* One line on desktop; each item's divider sits 10px into its 20px
             left padding, and the first item has neither. */}
-        <ul className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13.5px] text-sc-navy/75 sm:gap-x-0">
+        <ul className="mt-7 grid grid-cols-3 divide-x divide-sc-navy/10 text-[12.5px] leading-snug text-sc-navy/75 sm:mt-6 sm:flex sm:flex-wrap sm:items-center sm:gap-y-2 sm:divide-x-0 sm:text-[13.5px] sm:leading-normal">
           <li className={trustItem}>
             {/* Small, tight stars: what keeps all three items on one line at
                 ~1126px, where the column is 478px and the row needs ~473. */}
-            <span aria-hidden="true" className="text-[11px] tracking-[-0.02em] text-[#e8a100]">
+            <span aria-hidden="true" className="flex h-[18px] items-center text-[12.5px] tracking-[-0.02em] text-[#e8a100] sm:h-auto sm:text-[11px]">
               ★★★★★
             </span>
             <span>
@@ -189,11 +197,11 @@ const Hero = () => (
             </span>
           </li>
           <li className={trustItem}>
-            <ShieldCheck className="h-4 w-4 text-sc-blue" strokeWidth={2.25} />
+            <ShieldCheck className="h-[18px] w-[18px] shrink-0 text-sc-blue sm:h-4 sm:w-4" strokeWidth={2.25} />
             Always Blue guarantee
           </li>
           <li className={trustItem}>
-            <House className="h-4 w-4 text-sc-blue" strokeWidth={2.25} />
+            <House className="h-[18px] w-[18px] shrink-0 text-sc-blue sm:h-4 sm:w-4" strokeWidth={2.25} />
             Locally owned
           </li>
         </ul>
