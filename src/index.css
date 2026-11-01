@@ -1511,6 +1511,39 @@ input[type="date"]::-webkit-date-and-time-value {
   }
 }
 
+/* Homepage header dropdowns (LandingNavMenus): flush under the header, so
+   the card is squared off on top and its shadow is clipped there. */
+.nav-panel {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease,
+    visibility 0.16s;
+}
+.nav-panel.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.nav-panel-card {
+  overflow: hidden;
+  border-radius: 0 0 14px 14px;
+  background: #fff;
+  clip-path: inset(0 -120px -120px -120px);
+  box-shadow:
+    0 2px 4px rgba(15, 35, 65, 0.04),
+    0 8px 16px -4px rgba(15, 35, 65, 0.08),
+    0 24px 48px -12px rgba(15, 35, 65, 0.22),
+    0 40px 80px -24px rgba(15, 35, 65, 0.25);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-panel {
+    transition: none;
+  }
+}
+
 /* ── The same tour on phones and tablets: a story, like poollogic.app's
    (Report in LandingBelowFold.tsx; .m-tour is set only while
    MOBILE_TOUR_QUERY matches). The heading scrolls past; the stage then pins
@@ -1608,6 +1641,18 @@ input[type="date"]::-webkit-date-and-time-value {
     transform: scale(1.3);
     transform-origin: top center;
   }
+}
+/* Played through (Report): unpinned where it stands, at the bottom of its
+   track, so a swipe back up scrolls straight past. */
+.report-tour.m-tour.tour-done .tour-track {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.report-tour.m-tour.tour-done .tour-stage {
+  flex: none;
+  position: relative;
+  top: auto;
 }
 .report-tour.m-tour.tour-released .tour-track {
   height: auto;

@@ -485,12 +485,20 @@ const useMediaQuery = (query: string) => {
 // The tour plays once, on the way down. The pinned stretch would otherwise
 // hold anyone scrolling back up for over two screens, so the section is
 // released (unpinned, the track's extra length dropped) once the visitor is
-// past it and has stopped scrolling, touches the screen or turns the wheel
-// upward, or as soon as they fling upward mid-tour (mouse/trackpad only: a
-// programmatic scroll mid-swipe can kill touch momentum on an iPad, so touch
-// releases on touchstart, when the finger has already stopped any momentum).
-// While pinned, the stage fills the screen, so the release is invisible: the
-// page is scrolled by however far the stage moved.
+// past it and has stopped scrolling or turns the wheel upward, or as soon as
+// they fling upward mid-tour (mouse/trackpad only). While pinned, the stage
+// fills the screen, so the release is invisible: the page is scrolled by
+// however far the stage moved.
+//
+// iOS ignores (or undoes) that compensating scroll while a finger is down,
+// and Safari has no scroll anchoring, so on phones the release can't wait for
+// a swipe back up. Instead, once the visitor has scrolled the whole stage off
+// the top of the screen, it is unpinned where it stands (.tour-done: parked
+// at the bottom of its track, which moves nothing), so a swipe back up never
+// pins. The track's extra length, now an
+// empty band above the heading, is dropped once it is off screen: with a
+// compensating scroll after a pause if it is above, or with none needed as
+// soon as the whole section is below the screen.
 const TOUR_FLING_PX = 300; // upward travel within TOUR_FLING_MS that counts as a fling
 const TOUR_FLING_MS = 250;
 const TOUR_IDLE_MS = 150;
@@ -533,19 +541,31 @@ const Report = () => {
       cancelAnimationFrame(raf);
       clearTimeout(idle);
       root.setAttribute('data-header-hold', '');
+      // Wholly below the screen, the section can shrink without moving
+      // anything in view.
+      const below = track.getBoundingClientRect().top >= window.innerHeight;
       const before = stage.getBoundingClientRect().top;
       section.classList.add('tour-released');
-      window.scrollTo({ top: window.scrollY + stage.getBoundingClientRect().top - before, behavior: 'instant' });
+      if (!below) window.scrollTo({ top: window.scrollY + stage.getBoundingClientRect().top - before, behavior: 'instant' });
       window.setTimeout(() => root.removeAttribute('data-header-hold'), 150);
       setReleased(true);
     };
     // Past the end: the stage has reached the bottom of its track.
     const pastEnd = () => track.getBoundingClientRect().bottom <= stage.getBoundingClientRect().bottom + 1;
+    let done = false;
     const update = () => {
       raf = 0;
       if (releasing) return;
       const r = track.getBoundingClientRect();
       const st = stage.getBoundingClientRect();
+      clearTimeout(idle);
+      if (done) {
+        // The empty band (track top to stage top) is off screen: below it
+        // all, or above it all.
+        if (r.top >= window.innerHeight) release();
+        else if (st.top <= 0) idle = window.setTimeout(release, TOUR_IDLE_MS);
+        return;
+      }
       const range = r.height - st.height;
       const p = range > 0 ? Math.min(1, Math.max(0, (-r.top - pin) / range)) : 0;
       const n = REPORT_POINTS.length;
@@ -553,8 +573,12 @@ const Report = () => {
       section.style.setProperty('--sp', String(Math.min(1, p * n - s)));
       setStep(s);
       if (mobileTour) root.toggleAttribute('data-header-hold', Math.abs(st.top + pin) < 1);
-      clearTimeout(idle);
-      if (pastEnd()) idle = window.setTimeout(release, TOUR_IDLE_MS);
+      if (!pastEnd()) return;
+      if (mobileTour && st.bottom <= 0) {
+        done = true;
+        section.classList.add('tour-done');
+      }
+      idle = window.setTimeout(release, TOUR_IDLE_MS);
     };
     const onScroll = () => {
       if (releasing) return;
@@ -569,11 +593,8 @@ const Report = () => {
       }
       if (!raf) raf = requestAnimationFrame(update);
     };
-    // Heading back up from below without a pause: release before the
+    // Wheeling back up from below without a pause: release before the
     // scroll lands, so the tour is never replayed in reverse.
-    const onTouch = () => {
-      if (pastEnd()) release();
-    };
     const onWheel = (e: WheelEvent) => {
       if (e.deltaY < 0 && pastEnd()) release();
     };
@@ -584,14 +605,12 @@ const Report = () => {
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
-    window.addEventListener('touchstart', onTouch, { passive: true });
     window.addEventListener('wheel', onWheel, { passive: true });
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(idle);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
-      window.removeEventListener('touchstart', onTouch);
       window.removeEventListener('wheel', onWheel);
       if (!releasing) root.removeAttribute('data-header-hold');
     };
