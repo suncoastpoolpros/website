@@ -400,8 +400,13 @@ const useReportTour = (bodyRef: React.RefObject<HTMLDivElement | null>, tour: bo
     const rects = els.map((el) => el.getBoundingClientRect());
     const top = (Math.min(...rects.map((r) => r.top)) - box.top) / scale + body.scrollTop;
     const bottom = (Math.max(...rects.map((r) => r.bottom)) - box.top) / scale + body.scrollTop;
+    // On phones the pinned phone runs off the bottom of the screen, so centre
+    // within the part of the email that's actually showing.
+    const stage = body.closest('.tour-stage');
+    const clip = Math.min(box.bottom, window.innerHeight, stage?.getBoundingClientRect().bottom ?? Infinity);
+    const visible = Math.min(body.clientHeight, Math.max(160, (clip - box.top) / scale));
     const max = body.scrollHeight - body.clientHeight;
-    const target = Math.max(0, Math.min(max, top - Math.max(12, (body.clientHeight - (bottom - top)) / 2)));
+    const target = Math.max(0, Math.min(max, top - Math.max(12, (visible - (bottom - top)) / 2)));
     return glideScroll(body, target, TOUR_GLIDE_MS);
   }, [bodyRef, tour, step]);
 };
@@ -441,6 +446,11 @@ const ReportPhone = ({ tour, step }: { tour: boolean; step: number }) => {
 // section, with motion allowed. Keep in sync with the .report-tour media
 // query in index.css, which pins the section.
 const TOUR_QUERY = '(min-width: 1024px) and (min-height: 680px) and (prefers-reduced-motion: no-preference)';
+// Phones and tablets get the same tour, laid out like a story: see Report.
+// Keep in sync with the .m-tour rules in index.css.
+const MOBILE_TOUR_QUERY = '(max-width: 1023px) and (min-height: 520px) and (prefers-reduced-motion: no-preference)';
+// Space above the progress bars while the phone tour is pinned.
+const M_TOUR_TOP_PAD = 20;
 
 const useMediaQuery = (query: string) => {
   // false until mounted, to match the prerendered HTML.
@@ -462,6 +472,16 @@ const useMediaQuery = (query: string) => {
 // screens and reduced motion get the plain layout: a 2×2 list and the
 // self-scrolling email.
 //
+// Phones and tablets (MOBILE_TOUR_QUERY): the same tour as a story, like
+// poollogic.app's. The heading and intro scroll past as normal; then the
+// stage pins with four progress bars, the active point's title and text in
+// one place (crossfading), and the phone below, running off the bottom of
+// the screen. The stage is the whole column, so it pins at a NEGATIVE top
+// (--rh, measured: everything above the bars), which parks the heading just
+// above the screen. While pinned it holds the site header hidden
+// (data-header-hold on <html>, read by LandingHeader), since the bars sit
+// where the header would slide in.
+//
 // The tour plays once, on the way down. The pinned stretch would otherwise
 // hold anyone scrolling back up for over two screens, so the section is
 // released (unpinned, the track's extra length dropped) once the visitor is
@@ -474,7 +494,9 @@ const TOUR_FLING_MS = 250;
 const TOUR_IDLE_MS = 150;
 
 const Report = () => {
-  const tour = useMediaQuery(TOUR_QUERY);
+  const deskTour = useMediaQuery(TOUR_QUERY);
+  const mobileTour = useMediaQuery(MOBILE_TOUR_QUERY);
+  const tour = deskTour || mobileTour;
   const [step, setStep] = useState(0);
   const [released, setReleased] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
@@ -485,27 +507,47 @@ const Report = () => {
     const stage = section?.querySelector<HTMLElement>('.tour-stage');
     if (!tour || released || !section || !track || !stage) return;
     const fine = window.matchMedia('(pointer: fine)').matches;
+    const bars = section.querySelector<HTMLElement>('.tour-bars');
+    const root = document.documentElement;
+    // How far above the screen the stage pins: 0 on desktop, the heading's
+    // height on phones.
+    let pin = 0;
+    const measure = () => {
+      if (!mobileTour || !bars) return;
+      pin = Math.max(0, Math.round(bars.getBoundingClientRect().top - stage.getBoundingClientRect().top) - M_TOUR_TOP_PAD);
+      section.style.setProperty('--rh', `${pin}px`);
+    };
+    measure();
     let raf = 0;
     let idle = 0;
     let markY = window.scrollY;
     let markT = performance.now();
+    // The compensating scroll is upward, which would read to the header as
+    // the visitor scrolling up; hold it hidden until that scroll has landed.
+    let releasing = false;
     const release = () => {
+      releasing = true;
+      root.setAttribute('data-header-hold', '');
       const before = stage.getBoundingClientRect().top;
       section.classList.add('tour-released');
       window.scrollTo({ top: window.scrollY + stage.getBoundingClientRect().top - before, behavior: 'instant' });
+      window.setTimeout(() => root.removeAttribute('data-header-hold'), 150);
       setReleased(true);
     };
     const update = () => {
       raf = 0;
       const r = track.getBoundingClientRect();
-      const range = r.height - window.innerHeight;
-      const p = range > 0 ? Math.min(1, Math.max(0, -r.top / range)) : 0;
+      const st = stage.getBoundingClientRect();
+      const range = r.height - st.height;
+      const p = range > 0 ? Math.min(1, Math.max(0, (-r.top - pin) / range)) : 0;
       const n = REPORT_POINTS.length;
       const s = Math.min(n - 1, Math.floor(p * n));
       section.style.setProperty('--sp', String(Math.min(1, p * n - s)));
       setStep(s);
+      if (mobileTour) root.toggleAttribute('data-header-hold', Math.abs(st.top + pin) < 1);
       clearTimeout(idle);
-      if (r.bottom <= window.innerHeight) idle = window.setTimeout(release, TOUR_IDLE_MS);
+      // Past the end: the stage has reached the bottom of its track.
+      if (r.bottom <= st.bottom + 1) idle = window.setTimeout(release, TOUR_IDLE_MS);
     };
     const onScroll = () => {
       const y = window.scrollY;
@@ -521,26 +563,31 @@ const Report = () => {
       }
       if (!raf) raf = requestAnimationFrame(update);
     };
+    const onResize = () => {
+      measure();
+      onScroll();
+    };
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    window.addEventListener('resize', onResize);
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(idle);
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('resize', onResize);
+      if (!releasing) root.removeAttribute('data-header-hold');
     };
-  }, [tour, released]);
+  }, [tour, mobileTour, released]);
 
   return (
     <section
       ref={sectionRef}
       aria-labelledby="report-title"
-      className={`report-tour dark-depth overflow-clip ${sectionY}${released ? ' tour-released' : ''}`}
+      className={`report-tour dark-depth overflow-clip ${sectionY}${mobileTour ? ' m-tour' : ''}${released ? ' tour-released' : ''}`}
     >
       <div className="tour-track">
         <div className="tour-stage">
-          <Container className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:gap-20">
+          <Container className="tour-grid grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:gap-20">
             <div>
               <div data-reveal="">
                 <Eyebrow light>Your service report</Eyebrow>
@@ -552,8 +599,20 @@ const Report = () => {
                 Most pool services never send a report. Yours arrives before we leave the driveway, and anything that
                 needs your attention, like low water or an equipment issue, is flagged right there.
               </p>
+              {/* Phone tour only (.m-tour): one bar per point; done bars are
+                  full, the active one fills with scroll (--sp). */}
+              <div aria-hidden="true" className="tour-bars">
+                {REPORT_POINTS.map(({ title }, i) => (
+                  <span
+                    key={title}
+                    data-done={tour && i < step ? '' : undefined}
+                    data-active={tour && i === step ? '' : undefined}
+                  />
+                ))}
+              </div>
               {/* 2×2 with equal row heights, so the four items line up across;
-                  on the desktop tour, one column of steps. */}
+                  on the desktop tour, one column of steps; on the phone tour,
+                  one point at a time. */}
               <ul data-reveal="" className="tour-list mt-11 grid auto-rows-fr sm:grid-cols-2 sm:gap-x-9">
                 {REPORT_POINTS.map(({ icon: Icon, title, body }, i) => (
                   <li key={title} data-active={tour && i === step ? '' : undefined} className="tour-item flex gap-4 py-6">

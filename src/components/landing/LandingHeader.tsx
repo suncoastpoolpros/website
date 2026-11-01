@@ -69,6 +69,13 @@ export const LandingHeader = () => {
       // The open menu's scroll lock pins and restores the page, which reads
       // as scrolling; ignore it.
       if (menuOpenRef.current) return;
+      // The phone report tour (Report) holds the header away while it's
+      // pinned: its progress bars sit where the header would slide in.
+      if (document.documentElement.hasAttribute('data-header-hold')) {
+        setHiddenByScroll(true);
+        lastY.current = y;
+        return;
+      }
       if (y < ALWAYS_SHOW_ABOVE) {
         setHiddenByScroll(false);
         lastY.current = y;
@@ -124,20 +131,25 @@ export const LandingHeader = () => {
 
   return (
     <>
-      {/* Phones: scrolls away with the page, like the site header on mobile.
-          md+: sticks to the top and gains a shadow once the page scrolls (the
-          site header's frosted-dark-on-scroll, in light), hides while
-          scrolling down and comes back on scroll up. The hide is an inline
-          transform from React state, not a class toggled on the element:
-          re-renders reset this className. Reduced motion still hides and
+      {/* Every width: sticks to the top and gains a shadow once the page
+          scrolls (the site header's frosted-dark-on-scroll, in light), hides
+          while scrolling down and comes back on scroll up. Phones included:
+          the site header scrolls away on mobile because its bottom tab bar
+          (StickyMobileCta) carries call and quote there, and this page has
+          no such bar. Solid white, no blur, and the slide is a transform,
+          so it stays cheap on iOS (CLAUDE.md #10). The hide is a
+          data-attribute from React state, styled by a class: an inline
+          transform would be flattened on phones by the
+          `.force-static-motion [style*="transform"]` rule, and a class
+          toggled by hand would be reset by re-renders. Reduced motion still hides and
           shows, just without the slide. The hairline is a shadow, not a
           border: a border would make the header 65px and push the
           full-screen hero 1px past the fold. */}
       <header
-        style={hiddenByScroll ? { transform: 'translateY(-100%)' } : undefined}
-        className={`relative z-50 bg-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none md:sticky md:top-0 ${
+        data-scroll-hidden={hiddenByScroll ? '' : undefined}
+        className={`z-50 bg-white data-[scroll-hidden]:[transform:translateY(-100%)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none sticky top-0 ${
           scrolled
-            ? 'shadow-[0_1px_0_0_rgba(36,58,85,0.08)] md:shadow-[0_1px_0_0_rgba(36,58,85,0.08),0_8px_24px_-16px_rgba(36,58,85,0.35)]'
+            ? 'shadow-[0_1px_0_0_rgba(36,58,85,0.08),0_8px_24px_-16px_rgba(36,58,85,0.35)]'
             : 'shadow-[0_1px_0_0_rgba(36,58,85,0.08)]'
         }`}
       >

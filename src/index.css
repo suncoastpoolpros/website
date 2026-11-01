@@ -1511,6 +1511,112 @@ input[type="date"]::-webkit-date-and-time-value {
   }
 }
 
+/* ── The same tour on phones and tablets: a story, like poollogic.app's
+   (Report in LandingBelowFold.tsx; .m-tour is set only while
+   MOBILE_TOUR_QUERY matches). The heading scrolls past; the stage then pins
+   at top: -var(--rh), which parks the heading just above the screen and
+   leaves the progress bars, one point's text and the phone, which runs off
+   the bottom (lvh, so it still reaches the edge once Safari's toolbars
+   collapse). Every transform here is in a class, never inline: the mobile
+   `.force-static-motion [style*="transform"]` rule would flatten it. */
+.tour-bars {
+  display: none;
+}
+.report-tour.m-tour {
+  padding-bottom: 0;
+}
+.report-tour.m-tour .tour-track {
+  height: calc(var(--rh, 0px) + 100vh + 4 * 62vh);
+  height: calc(var(--rh, 0px) + 100lvh + 4 * 62svh);
+}
+.report-tour.m-tour .tour-stage {
+  position: sticky;
+  top: calc(-1 * var(--rh, 0px));
+  height: calc(var(--rh, 0px) + 100vh);
+  height: calc(var(--rh, 0px) + 100lvh);
+  overflow: hidden;
+}
+.report-tour.m-tour .tour-grid {
+  height: 100%;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: start;
+  row-gap: 8px;
+}
+.report-tour.m-tour .tour-bars {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 40px;
+}
+.report-tour.m-tour .tour-bars > span {
+  position: relative;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.14);
+}
+.report-tour.m-tour .tour-bars > span::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #53a5d3;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.report-tour.m-tour .tour-bars > span[data-done]::after {
+  transform: scaleX(1);
+}
+.report-tour.m-tour .tour-bars > span[data-active]::after {
+  transform: scaleX(var(--sp, 0));
+}
+.report-tour.m-tour .tour-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: auto;
+  margin-top: 20px;
+}
+/* All four stacked in one cell, so the block is as tall as the longest and
+   nothing below moves when the text changes. */
+.report-tour.m-tour .tour-item {
+  grid-area: 1 / 1;
+  padding: 0;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.report-tour.m-tour .tour-item[data-active] {
+  opacity: 1;
+  transform: none;
+}
+.report-tour.m-tour .tour-item .r-tile {
+  display: none;
+}
+.report-tour.m-tour .tour-item h3 {
+  font-size: 19px;
+}
+.report-tour.m-tour .tour-desc > p {
+  margin-top: 6px;
+  font-size: 15.5px;
+}
+/* Tablets: the phone at phone size left the lower half of the screen
+   empty. A transform, so the layout (and the stage's clip) is unchanged;
+   the tour's glide already works in the phone's own scaled pixels. */
+@media (min-width: 640px) {
+  .report-tour.m-tour .phone-drop {
+    transform: scale(1.3);
+    transform-origin: top center;
+  }
+}
+.report-tour.m-tour.tour-released .tour-track {
+  height: auto;
+}
+.report-tour.m-tour.tour-released .tour-stage {
+  position: relative;
+  top: auto;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   /* Hero left column: each child rises in once on load. Desktop only: on a
      phone this column IS the first screen, and fading the headline in would
