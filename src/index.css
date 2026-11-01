@@ -1526,8 +1526,8 @@ input[type="date"]::-webkit-date-and-time-value {
   padding-bottom: 0;
 }
 .report-tour.m-tour .tour-track {
-  height: calc(var(--rh, 0px) + 100vh + 4 * 62vh);
-  height: calc(var(--rh, 0px) + 100lvh + 4 * 62svh);
+  height: calc(var(--rh, 0px) + 100vh + 4 * 35vh);
+  height: calc(var(--rh, 0px) + 100lvh + 4 * 35svh);
 }
 .report-tour.m-tour .tour-stage {
   position: sticky;
