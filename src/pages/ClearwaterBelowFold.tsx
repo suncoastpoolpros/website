@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { SmartLink as Link } from '@/components/SmartLink';
 import { useQuoteFormSubmit } from '@/components/ServiceQuoteForm';
-import { ReportPreviewCard } from '@/components/landing/ReportPreviewCard';
+import { ClearwaterStandard } from '@/pages/ClearwaterStandard';
 import {
   Container,
   Eyebrow,
@@ -41,7 +41,7 @@ import { REVIEWS } from '@/lib/reviews';
  * Everything below the Clearwater hero, on the homepage design system: the
  * shared section pieces (sectionKit), the sc-* tokens, and the homepage's
  * gold/navy buttons. Light and dark sections alternate: trust band, Two Towns
- * (white), Standard (white), Getting started (dark), Service area (mist), FAQ
+ * (white), Standard (white into mist), Getting started (dark), Service area (mist), FAQ
  * (white), Quote (dark), Guides (white). Every "Get my price" below the hero
  * glides to the quote form (#quote) on this page.
  *
@@ -278,75 +278,7 @@ const TwoTowns = () => (
   </section>
 );
 
-// ── C. The Clearwater standard ────────────────────────────────────────────
-
-const STANDARD = [
-  { title: 'Full water test & balance', line: 'Chlorine, pH, alkalinity, stabilizer, salt' },
-  { title: 'All standard chemicals', line: 'Included in your flat rate, no add-ons' },
-  { title: 'Skim, brush & vacuum', line: 'Walls, floor, waterline and baskets' },
-  { title: 'Filter & equipment check', line: 'Pump, filter, heater, salt cell, valves' },
-  { title: 'Photo report every visit', line: 'See your clear water from anywhere' },
-  { title: 'Always Blue Guarantee', line: 'If it drifts under our care, we come back free' },
-];
-
-const Standard = () => (
-  <section aria-labelledby="cw-standard-title" className={`bg-white ${sectionY}`}>
-    <Container className="grid items-center gap-12 min-[960px]:grid-cols-[1.1fr_0.9fr] min-[960px]:gap-16">
-      <div>
-        <Eyebrow>The Clearwater standard</Eyebrow>
-        <h2 id="cw-standard-title" className={`${h2} text-sc-navy`}>
-          &ldquo;Clear&rdquo; isn&rsquo;t a vibe.{' '}
-          <br />
-          It&rsquo;s a checklist.
-        </h2>
-        <p className={`${lead} max-w-[36rem]`}>
-          Every weekly visit hits the same standard, beach or mainland. No skipped steps on a busy week, and no
-          &ldquo;looks fine&rdquo; without a real test.
-        </p>
-        <ol className="mt-8 grid gap-x-7 gap-y-[22px] min-[960px]:grid-cols-2">
-          {STANDARD.map((item, i) => (
-            <li key={item.title} className="flex items-start gap-3.5">
-              <span
-                aria-hidden="true"
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-[9px] bg-sc-blue/[0.08] text-[13px] font-bold text-[#1f6aa6]"
-              >
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <span>
-                <span className="block text-[15.5px] font-semibold leading-snug text-sc-navy">{item.title}</span>
-                <span className={`mt-0.5 block text-[14px] leading-snug ${muted}`}>{item.line}</span>
-              </span>
-            </li>
-          ))}
-        </ol>
-      </div>
-
-      <figure className="w-full min-[960px]:max-w-[420px] min-[960px]:justify-self-end">
-        <ReportPreviewCard
-          meta="Sand Key · Tue, 10:14 AM · Serviced by Alex"
-          readings={[
-            { label: 'Chlorine', value: '3.8' },
-            { label: 'pH', value: '7.5' },
-            { label: 'Alkalinity', value: '96' },
-            { label: 'Salt', value: '3,100' },
-          ]}
-          status="tuned for Gulf sun"
-          photo={{
-            src: '/pool-waterfront-1120.webp',
-            srcSet: '/pool-waterfront-640.webp 640w, /pool-waterfront-800.webp 800w, /pool-waterfront-1120.webp 1120w',
-            alt: 'Clear pool water in the visit report photo',
-            width: 1120,
-            height: 1400,
-          }}
-          tags={['6 tasks done', 'Salt cell checked', 'GPS verified']}
-        />
-        <figcaption className={`mt-4 text-right text-[14px] italic ${muted}`}>
-          Water you&rsquo;d be happy to see your own name on.
-        </figcaption>
-      </figure>
-    </Container>
-  </section>
-);
+// ── C. The Clearwater standard: ClearwaterStandard.tsx
 
 // ── D. Getting started ────────────────────────────────────────────────────
 
@@ -850,7 +782,7 @@ const ClearwaterBelowFold = () => (
   <>
     <TrustBand />
     <TwoTowns />
-    <Standard />
+    <ClearwaterStandard />
     <GettingStarted />
     <ServiceArea />
     <Faq />

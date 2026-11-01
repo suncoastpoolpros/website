@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { SmartLink as Link } from '@/components/SmartLink';
 import { useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
-import { HomeHeroPhone, useLiveClock } from '@/components/Hero';
+import { PhoneReport } from '@/components/landing/PhoneReport';
 import { cities } from '@/lib/cities';
 import {
   HOURS_SHORT,
@@ -256,24 +256,10 @@ const TOUR_TARGETS: ((body: HTMLElement) => (Element | null)[])[] = [
   (body) => [sectionTitled(body, 'Photos'), body.querySelector('.sr-photo-wrap')],
 ];
 
-// The homepage's phone mockup (Hero.tsx): an iPhone with a live clock, showing
-// the real Gmail service-report email. On desktop it's a guided tour (Report,
-// below); on phones the email scrolls itself once the visitor is halfway down
-// the section (useAutoScrollReport). Either way the phone takes no scroll or
-// touch of its own, so it can never trap the page scroll. The sample email's
-// tel/mailto links and buttons stay unclickable, and the whole mockup is
-// aria-hidden: it's a picture of a report, not a UI. Its handwritten note is
-// off here (this page doesn't load that script font), and the report shows
-// this page's own pool photo, already downloaded for the hero.
-// No mobile `.jpg` exists for this photo; every browser this site supports
-// takes the .webp sources first.
-const REPORT_PHOTO = {
-  base: '/pool-waterfront-800',
-  mobileWebp: '/pool-waterfront-800.webp',
-  webp: '/pool-waterfront-640.webp',
-  wideWebp: '/pool-waterfront-1120.webp',
-  alt: 'A sparkling blue backyard pool and spa on the water',
-};
+// The phone (PhoneReport) is on desktop a guided tour (Report, below); on
+// phones the email scrolls itself once the visitor is halfway down the
+// section (useAutoScrollReport). Either way the phone takes no scroll or touch
+// of its own, so it can never trap the page scroll.
 
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
@@ -386,34 +372,11 @@ const useReportTour = (bodyRef: React.RefObject<HTMLDivElement | null>, tour: bo
 };
 
 const ReportPhone = ({ tour, step }: { tour: boolean; step: number }) => {
-  const clock = useLiveClock();
-  const [gmailScrolled, setGmailScrolled] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
   const phoneRef = useRef<HTMLDivElement>(null);
   useAutoScrollReport(phoneRef, bodyRef, !tour);
   useReportTour(bodyRef, tour, step);
-  return (
-    // inert as well as aria-hidden: the mock email's footer has real tel/mailto
-    // links, and a hidden element must not hold anything focusable.
-    <div
-      className="phone-drop pointer-events-none relative flex justify-center"
-      aria-hidden="true"
-      inert
-      data-nosnippet=""
-    >
-      <div ref={phoneRef} className="relative">
-        <HomeHeroPhone
-          clock={clock}
-          gmailScrolled={gmailScrolled}
-          setGmailScrolled={setGmailScrolled}
-          interactive={false}
-          scrollBodyRef={bodyRef}
-          annotation={false}
-          reportPhoto={REPORT_PHOTO}
-        />
-      </div>
-    </div>
-  );
+  return <PhoneReport scrollRef={bodyRef} phoneRef={phoneRef} />;
 };
 
 // The guided tour runs on desktop screens tall enough to hold the whole

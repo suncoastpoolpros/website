@@ -308,6 +308,15 @@ type HomeHeroPhoneProps = {
   /** The report's pool photo. Defaults to the homepage's (the Treasure Island
    *  hero, a cache hit there); /landing points it at its own hero photo. */
   reportPhoto?: React.ComponentProps<typeof ServiceReport>['photo'];
+  /** The sample customer's address in the report; the report's own default
+   *  when unset. */
+  address?: React.ReactNode;
+  /** 'dark' (default): the frame's deep shadow and a blurred glow, for dark
+   *  sections. 'light': a layered contact shadow plus a soft floor shadow, for
+   *  light sections (.phone-frame-light / .phone-floor in index.css). */
+  shadow?: 'dark' | 'light';
+  /** A diagonal sheen across the screen (.phone-glare). */
+  glare?: boolean;
 };
 
 export const HomeHeroPhone = ({
@@ -318,7 +327,11 @@ export const HomeHeroPhone = ({
   scrollBodyRef,
   annotation = true,
   reportPhoto,
+  address,
+  shadow = 'dark',
+  glare = false,
 }: HomeHeroPhoneProps) => {
+  const light = shadow === 'light';
   return (
     <>
             {/* Handwritten label + arrow — animates as if being written/drawn in. */}
@@ -390,8 +403,10 @@ export const HomeHeroPhone = ({
               <div className="absolute left-[-3px] top-[225px] w-[3px] h-14 bg-[#1a1a1a] rounded-l-sm z-0" />
               <div className="absolute right-[-3px] top-[180px] w-[3px] h-20 bg-[#1a1a1a] rounded-r-sm z-0" />
 
+              {light && <div aria-hidden="true" className="phone-floor" />}
+
               {/* Phone Frame - titanium-style bezel */}
-              <div className="relative rounded-[3rem] p-[3px] bg-gradient-to-b from-[#2a2a2a] via-[#1a1a1a] to-[#2a2a2a] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.04)]">
+              <div className={`relative rounded-[3rem] p-[3px] bg-gradient-to-b from-[#2a2a2a] via-[#1a1a1a] to-[#2a2a2a] ${light ? 'phone-frame-light z-[1]' : 'shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.04)]'}`}>
                 <div className="relative rounded-[2.85rem] bg-black overflow-hidden h-[648px]">
                   {/* Inner screen */}
                   <div className="absolute inset-[10px] rounded-[2.55rem] bg-[#f2f2f0] overflow-hidden">
@@ -571,6 +586,7 @@ export const HomeHeroPhone = ({
                             keep the ServiceReport DEFAULT_PHOTO). */}
                         <ServiceReport
                           inline
+                          customerAddress={address}
                           photo={reportPhoto ?? {
                             base: '/treasure-island-hero',
                             // Points at the SAME re-encoded file the mobile hero
@@ -614,6 +630,7 @@ export const HomeHeroPhone = ({
                       </div>
                     </div>
 
+                    {glare && <div aria-hidden="true" className="phone-glare" />}
                   </div>
 
                   {/* Glossy screen reflection */}
@@ -623,7 +640,9 @@ export const HomeHeroPhone = ({
 
               {/* Soft ambient glow behind phone — orange bottom unifies with hero accent.
                   Inset kept tight on the bottom so the bloom doesn't bleed into the hero's fade zone. */}
-              <div className="absolute -top-6 -left-6 -right-6 bottom-12 bg-gradient-to-br from-brand-blue/15 via-brand-blue-dark/10 to-brand-blue/15 blur-3xl -z-10 rounded-[3rem]" />
+              {!light && (
+                <div className="absolute -top-6 -left-6 -right-6 bottom-12 bg-gradient-to-br from-brand-blue/15 via-brand-blue-dark/10 to-brand-blue/15 blur-3xl -z-10 rounded-[3rem]" />
+              )}
             </div>
     </>
   );

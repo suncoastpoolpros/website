@@ -1380,6 +1380,265 @@ input[type="date"]::-webkit-date-and-time-value {
 .phone-drop {
   filter: drop-shadow(0 40px 50px rgba(5, 15, 30, 0.55)) drop-shadow(0 10px 18px rgba(5, 15, 30, 0.3));
 }
+/* PhoneReport's light variant (shadow="light"), for light sections: no
+   drop-shadow filter or blurred glow; a layered contact shadow on the frame,
+   a soft floor shadow under it, and a sheen across the screen (glare). */
+.phone-drop.phone-drop--light {
+  filter: none;
+}
+.phone-frame-light {
+  box-shadow:
+    0 0 0 1px rgba(15, 23, 42, 0.06),
+    0 2px 3px rgba(15, 23, 42, 0.1),
+    0 10px 18px -6px rgba(15, 23, 42, 0.16),
+    0 30px 50px -18px rgba(15, 23, 42, 0.24),
+    0 70px 90px -40px rgba(15, 23, 42, 0.28);
+}
+.phone-floor {
+  position: absolute;
+  left: 15%;
+  bottom: -12px;
+  width: 70%;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(15, 23, 42, 0.3), rgba(15, 23, 42, 0));
+  filter: blur(6px);
+  pointer-events: none;
+}
+.phone-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 5;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.06) 28%,
+    rgba(255, 255, 255, 0) 42%
+  );
+}
+
+/* ── Clearwater standard (ClearwaterStandard.tsx): six steps around the
+   sample report phone. Three a side from 1000px; below that the phone, then
+   one list. */
+.cs-section {
+  background: linear-gradient(#fff, #f5f9fd);
+  padding-block: 72px;
+  overflow-x: clip;
+}
+.cs-container {
+  margin-inline: auto;
+  max-width: 72rem;
+  padding-inline: 16px;
+}
+.cs-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #2676b6;
+}
+.cs-eyebrow::before,
+.cs-eyebrow::after {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.5;
+}
+.cs-h2 {
+  margin-top: 16px;
+  font-size: 34px;
+  font-weight: 650;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: #243a55;
+}
+.cs-lead {
+  margin: 18px auto 0;
+  max-width: 34rem;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #5f6368;
+}
+.cs-stage {
+  position: relative;
+  margin-top: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.cs-glow {
+  position: absolute;
+  left: 50%;
+  top: 327px;
+  width: 760px;
+  height: 520px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgba(83, 165, 211, 0.16), rgba(83, 165, 211, 0));
+  pointer-events: none;
+}
+.cs-col {
+  position: relative;
+  display: grid;
+  gap: 24px;
+}
+.cs-phone {
+  position: relative;
+  isolation: isolate;
+  order: -1;
+  margin-bottom: 16px;
+}
+.cs-step-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: -8px -10px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.cs-step-btn:hover {
+  background: rgba(38, 118, 182, 0.06);
+}
+.cs-step-btn:focus-visible {
+  outline: 2px solid #2676b6;
+  outline-offset: 0;
+}
+.cs-step-title {
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: #243a55;
+  transition: color 0.2s ease;
+}
+.cs-step-btn:hover .cs-step-title {
+  color: #2676b6;
+}
+.cs-step-line {
+  display: block;
+  margin-top: 4px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #5f6368;
+}
+/* Hover hint, just under the phone's visible bottom edge (the phone is drawn
+   at 90%, so its box runs ~33px past the frame). */
+.cs-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 27px;
+  z-index: 20; /* over the phone (z-10 inside HomeHeroPhone) */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #243a55;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 8px 20px -8px rgba(15, 23, 42, 0.5);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 6px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+.cs-phone[data-hint] .cs-hint {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.cs-phone ::-webkit-scrollbar {
+  display: none;
+}
+.cs-pulse {
+  position: absolute;
+  border-radius: 10px;
+  pointer-events: none;
+  animation: cs-pulse 1.6s ease-out forwards;
+}
+@keyframes cs-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(38, 118, 182, 0.55); }
+  30% { box-shadow: 0 0 0 3px rgba(38, 118, 182, 0.55); }
+  100% { box-shadow: 0 0 0 12px rgba(38, 118, 182, 0); }
+}
+.cs-footer {
+  margin-top: 64px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.cs-footnote {
+  font-size: 14.5px;
+  color: #5f6368;
+}
+@media (min-width: 768px) {
+  .cs-section {
+    padding-block: 112px 120px;
+  }
+  .cs-container {
+    padding-inline: 32px;
+  }
+  .cs-h2 {
+    font-size: 48px;
+  }
+}
+@media (min-width: 1000px) {
+  .cs-stage {
+    display: grid;
+    grid-template-columns: 1fr 320px 1fr;
+    align-items: center;
+    gap: 56px;
+  }
+  .cs-glow {
+    top: 50%;
+  }
+  .cs-col {
+    gap: 44px;
+  }
+  .cs-phone {
+    order: 0;
+    margin-bottom: 0;
+  }
+  .cs-col--l .cs-step-btn {
+    flex-direction: row-reverse;
+    text-align: right;
+  }
+}
+/* Steps fade up as the stage comes on screen, in alternating order (L1, R1,
+   L2, ...). Hidden only once the script has armed the stage. */
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .cs-stage[data-armed] .cs-step {
+    transition:
+      opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .cs-stage[data-armed]:not([data-in]) .cs-step {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  .cs-col--r .cs-step:nth-child(1) { transition-delay: 120ms; }
+  .cs-col--l .cs-step:nth-child(2) { transition-delay: 240ms; }
+  .cs-col--r .cs-step:nth-child(2) { transition-delay: 360ms; }
+  .cs-col--l .cs-step:nth-child(3) { transition-delay: 480ms; }
+  .cs-col--r .cs-step:nth-child(3) { transition-delay: 600ms; }
+}
 
 /* ── /landing service report: the desktop guided tour (Report in
    LandingBelowFold.tsx). Keep the media query in sync with TOUR_QUERY there.
