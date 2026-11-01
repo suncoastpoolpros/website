@@ -21,6 +21,8 @@ export const HOURS_SHORT = 'Mon–Sat, 8 AM–6 PM';
 // The Google Business Profile's own share link (it opens the business's
 // listing, reviews included). Also in index.html's LocalBusiness sameAs.
 export const GOOGLE_PROFILE_URL = 'https://share.google/6iulYZMJRGefq9Sw7';
+// Confirmed by the owner (Nov 2026). Also in index.html's sameAs.
+export const YELP_URL = 'https://www.yelp.com/biz/suncoast-pool-pros-st-petersburg';
 
 // Prefilled SMS body for the "text us photos for a quote" flow.
 export const SMS_QUOTE_BODY =

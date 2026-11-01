@@ -27,11 +27,14 @@ export const AddressAutocomplete = ({
   name,
   defaultValue = '',
   placeholder = "Enter your pool's address",
+  near,
   onPick,
 }: {
   name: string;
   defaultValue?: string;
   placeholder?: string;
+  /** Rank suggestions nearest this city (a NEAR key in address-suggest.ts). */
+  near?: string;
   onPick?: (s: Suggestion | null) => void;
 }) => {
   const [value, setValue] = useState(defaultValue);
@@ -57,7 +60,8 @@ export const AddressAutocomplete = ({
     const ctrl = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/address-suggest?q=${encodeURIComponent(q)}`, { signal: ctrl.signal });
+        const nearParam = near ? `&near=${encodeURIComponent(near)}` : '';
+        const res = await fetch(`/api/address-suggest?q=${encodeURIComponent(q)}${nearParam}`, { signal: ctrl.signal });
         const data = (await res.json()) as { suggestions?: Suggestion[] };
         setSuggestions(data.suggestions ?? []);
         setActive(-1);
@@ -69,7 +73,7 @@ export const AddressAutocomplete = ({
       clearTimeout(timer);
       ctrl.abort();
     };
-  }, [value]);
+  }, [value, near]);
 
   const showList = open && suggestions.length > 0;
 

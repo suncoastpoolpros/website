@@ -60,26 +60,32 @@ const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offs
 const ClearwaterHero = () => {
   const hasLinks = NEIGHBORHOODS.some((n) => n.to);
   const Bar = hasLinks ? 'nav' : 'div';
+  // No overflow-hidden on the section: the address suggestions must be able
+  // to hang past its bottom edge. The photo layer clips itself instead.
   return (
-    <section className="relative flex min-h-[calc(100svh-64px)] items-center justify-center overflow-hidden bg-[#1D304A] text-center">
-      <picture>
-        <source media="(max-width: 767px)" srcSet={HERO_IMG.mobile} type="image/webp" />
-        <source media="(max-width: 1023px)" srcSet={HERO_IMG.tablet} type="image/webp" />
-        <source srcSet={`${HERO_IMG.desktop} 1x, ${HERO_IMG.wide} 2x`} type="image/webp" />
-        <img
-          src={HERO_IMG.fallback}
-          alt="Waterfront pool in the Clearwater area"
-          width={1500}
-          height={1000}
-          fetchPriority="high"
-          className={`cw-hero-zoom absolute inset-0 h-full w-full object-cover object-[50%_70%]${
-            HERO_IMG.letterboxed ? ' md:top-[-9.25%] md:h-[118.5%]' : ''
-          }`}
-        />
-      </picture>
-      <div aria-hidden="true" className="cw-hero-tint absolute inset-0" />
+    <section className="relative flex min-h-[calc(100svh-64px)] items-center justify-center bg-[#1D304A] text-center">
+      <div className="absolute inset-0 overflow-hidden">
+        <picture>
+          <source media="(max-width: 767px)" srcSet={HERO_IMG.mobile} type="image/webp" />
+          <source media="(max-width: 1023px)" srcSet={HERO_IMG.tablet} type="image/webp" />
+          <source srcSet={`${HERO_IMG.desktop} 1x, ${HERO_IMG.wide} 2x`} type="image/webp" />
+          <img
+            src={HERO_IMG.fallback}
+            alt="Waterfront pool in the Clearwater area"
+            width={1500}
+            height={1000}
+            fetchPriority="high"
+            className={`cw-hero-zoom absolute inset-0 h-full w-full object-cover object-[50%_70%]${
+              HERO_IMG.letterboxed ? ' md:top-[-9.25%] md:h-[118.5%]' : ''
+            }`}
+          />
+        </picture>
+        <div aria-hidden="true" className="cw-hero-tint absolute inset-0" />
+      </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-[50rem] px-5 pb-14 pt-10 sm:px-8 md:pb-[110px]">
+      {/* z-20: above the neighborhood bar (z-10), so open suggestions paint
+          over it. */}
+      <div className="relative z-20 mx-auto w-full max-w-[50rem] px-5 pb-14 pt-10 sm:px-8 md:pb-[110px]">
         {/* The page's one h1, set as a label; the big line below is a <p>. */}
         <h1
           className={`flex items-center justify-center gap-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-[#FFC94D] sm:text-[13px] sm:tracking-[0.16em] ${shadowSoft}`}
@@ -102,7 +108,12 @@ const ClearwaterHero = () => {
         {/* relative z-10: the address suggestions must paint over the lines
             below. text-left: the form's own text and its step-two card. */}
         <div id="get-price" className="relative z-10 mx-auto mt-8 max-w-[34rem] scroll-mt-24 text-left">
-          <HeroQuoteForm variant="onDark" placeholder="Your pool's address" source="clearwater-hero-quote-form" />
+          <HeroQuoteForm
+            variant="onDark"
+            placeholder="Your pool's address"
+            source="clearwater-hero-quote-form"
+            near="clearwater"
+          />
         </div>
 
         <p className={`mt-3 text-[13.5px] text-white/85 ${shadowSoft}`}>

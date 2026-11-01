@@ -14,6 +14,7 @@ import {
   ADDRESS_CITY_STATE_ZIP,
   HOURS_SHORT,
   GOOGLE_PROFILE_URL,
+  YELP_URL,
 } from '@/lib/contact';
 
 // Footer "Service Areas" links. Every city with a dedicated page (`city.to`) MUST
@@ -52,16 +53,20 @@ const legalLinks = [
   { label: 'Privacy Policy', to: '/privacy-policy/' },
 ];
 
-// Lucide has no Google mark, so Google gets its "G" as type.
-const GoogleG = ({ className = '' }: { className?: string }) => (
+// Lucide has no Google or Yelp marks, so they get a letter as type: Google's
+// "G" and Yelp's lowercase "y".
+const Letter = ({ char, className = '' }: { char: string; className?: string }) => (
   <span aria-hidden="true" className={`grid place-items-center text-[16px] font-bold leading-none ${className}`}>
-    G
+    {char}
   </span>
 );
+const GoogleG = ({ className }: { className?: string }) => <Letter char="G" className={className} />;
+const YelpY = ({ className }: { className?: string }) => <Letter char="y" className={className} />;
 
 const socialLinks = [
   { label: 'Facebook', href: 'https://www.facebook.com/suncoastpoolpros', Icon: Facebook },
   { label: 'Suncoast Pool Pros on Google', href: GOOGLE_PROFILE_URL, Icon: GoogleG },
+  { label: 'Suncoast Pool Pros on Yelp', href: YELP_URL, Icon: YelpY },
 ];
 
 const colHeading = 'text-white font-semibold mb-4 uppercase tracking-wider text-xs';

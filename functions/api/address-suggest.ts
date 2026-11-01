@@ -39,12 +39,18 @@ const LIMITS = {
 };
 
 // Pinellas only, where every service area is: Fort De Soto up to Tarpon
-// Springs at the Pasco line, ranked nearest St. Petersburg first. A box can't
+// Springs at the Pasco line, ranked nearest St. Petersburg first (or the
+// `near` city, below). A box can't
 // trace the county (Tampa's Rocky Point and Westshore sit inside any box that
 // reaches Oldsmar and St. Pete's east shore, and its top edge clips Pasco), so
 // the box is a first cut and COUNTY does the rest: ask for extra results, drop
 // those Mapbox places in another county, keep the best SHOW.
 const PROXIMITY = '-82.64,27.77';
+// A city page can rank its own city first (?near=clearwater). Named anchors
+// only, never raw coordinates from the request.
+const NEAR: Record<string, string> = {
+  clearwater: '-82.80,27.97',
+};
 const BBOX = '-82.87,27.6,-82.54,28.18';
 const COUNTY = 'Pinellas County';
 const FETCH = 10; // Mapbox's maximum
@@ -112,7 +118,9 @@ export const onRequestGet = async ({ request, env }: Ctx): Promise<Response> => 
   const site = request.headers.get('sec-fetch-site');
   if (site && site !== 'same-origin') return none();
 
-  const q = (new URL(request.url).searchParams.get('q') ?? '').trim().replace(/\s+/g, ' ');
+  const params = new URL(request.url).searchParams;
+  const q = (params.get('q') ?? '').trim().replace(/\s+/g, ' ');
+  const proximity = NEAR[params.get('near') ?? ''] ?? PROXIMITY;
   if (q.length < 3 || q.length > 120) return none();
 
   const ip = request.headers.get('cf-connecting-ip') ?? '';
@@ -126,7 +134,7 @@ export const onRequestGet = async ({ request, env }: Ctx): Promise<Response> => 
     country: 'us',
     types: 'address',
     limit: String(FETCH),
-    proximity: PROXIMITY,
+    proximity,
     bbox: BBOX,
     access_token: token,
   }).toString();

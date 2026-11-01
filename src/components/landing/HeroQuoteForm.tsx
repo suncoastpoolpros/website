@@ -80,10 +80,13 @@ export const HeroQuoteForm = ({
   placeholder,
   variant,
   source = SOURCE,
+  near,
 }: {
   placeholder?: string;
   variant?: 'onDark';
   source?: string;
+  /** Rank address suggestions nearest this city (see AddressAutocomplete). */
+  near?: string;
 } = {}) => {
   const onDark = variant === 'onDark';
   const [step, setStep] = useState<'address' | 'details' | 'done'>('address');
@@ -198,6 +201,7 @@ export const HeroQuoteForm = ({
                 name="address"
                 defaultValue={address}
                 placeholder={placeholder}
+                near={near}
                 onPick={(s) => (picked.current = s)}
               />
               <button type="submit" className={`${amberButton} h-12 px-6 text-base${onDark ? ` ${onDarkButtonFocus}` : ''}`}>
