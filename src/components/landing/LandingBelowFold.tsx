@@ -28,6 +28,8 @@ import {
   SMS_QUOTE_HREF,
 } from '@/lib/contact';
 import { amberButton, focusQuoteForm } from '@/components/landing/HeroQuoteForm';
+import { Container, Eyebrow, h2, lead, sectionY } from '@/components/landing/sectionKit';
+import { GOOGLE_REVIEWS_URL, REVIEWS, type Review } from '@/lib/reviews';
 
 /*
  * /landing below the hero, in the order a visitor's questions come:
@@ -48,34 +50,6 @@ import { amberButton, focusQuoteForm } from '@/components/landing/HeroQuoteForm'
  * PoolLandingPage), and images below the fold are lazy. The FAQ is native
  * <details>, so every answer ships in the prerendered HTML.
  */
-
-const Container = ({ className = '', children }: { className?: string; children: React.ReactNode }) => (
-  <div className={`mx-auto w-full max-w-[1200px] px-4 sm:px-8 ${className}`}>{children}</div>
-);
-
-// A 22px rule before the label (and after it too when the heading is centered).
-const Eyebrow = ({
-  children,
-  light = false,
-  centered = false,
-}: {
-  children: React.ReactNode;
-  light?: boolean;
-  centered?: boolean;
-}) => (
-  <p
-    className={`inline-flex items-center gap-2.5 text-[11.5px] font-semibold uppercase tracking-[0.16em] before:h-px before:w-[22px] before:bg-current before:opacity-60 ${
-      centered ? 'after:h-px after:w-[22px] after:bg-current after:opacity-60' : ''
-    } ${light ? 'text-sc-sky' : 'text-sc-blue'}`}
-  >
-    {children}
-  </p>
-);
-
-const h2 = 'mt-3 text-balance text-[30px] font-[650] leading-[1.12] tracking-[-0.035em] sm:text-[40px]';
-const lead = 'mt-4 text-pretty text-[17px] leading-[1.6] text-sc-navy/[0.78]';
-// Section padding: 112px top and bottom on desktop.
-const sectionY = 'py-20 sm:py-24 lg:py-28';
 
 const inlineLink =
   'font-semibold text-sc-navy underline decoration-sc-navy/30 decoration-1 underline-offset-[3px] transition hover:decoration-sc-navy';
@@ -678,36 +652,11 @@ const Report = () => {
 
 // ── Reviews ─────────────────────────────────────────────────────────────────
 
-// Real Google reviews, quoted as written (including the owner's name spelled
-// two ways). No review count anywhere: only what can be shown in full.
-// TODO: GOOGLE_REVIEWS_URL is a Google search until the Business Profile link
-// is supplied; swap in the profile's reviews URL.
-const GOOGLE_REVIEWS_URL = 'https://www.google.com/search?q=Suncoast+Pool+Pros+St.+Petersburg+FL+reviews';
-
-const REVIEWS = [
-  {
-    name: 'Michelle M.',
-    quote:
-      'My pool has never looked better. After struggling with my former pool company for years, it’s such a relief to finally have a company I can count on and not have to worry about my pool service. Jonathan and Warren have both been wonderful to work with. They’re responsive, reliable, and do exactly what they say they’re going to do.',
-  },
-  {
-    name: 'Jack K.',
-    quote:
-      'Johnathan with Suncoast Pools provides a value service. Reasonable price, and very reliable service. They replaced my filter system and pump after the hurricane, then converted my pool to a salt system. Outstanding service.',
-  },
-  {
-    name: 'Praxitelis',
-    quote: 'Excellent service. Of the 5 years I’ve had pool service, this is by far the best!',
-  },
-];
-
 const Stars = ({ className = '' }: { className?: string }) => (
   <span aria-hidden="true" className={`tracking-[0.06em] text-[#e8a100] ${className}`}>
     ★★★★★
   </span>
 );
-
-type Review = (typeof REVIEWS)[number];
 
 const ReviewCard = ({ review, featured = false, delay }: { review: Review; featured?: boolean; delay: number }) => (
   <li

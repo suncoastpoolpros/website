@@ -118,30 +118,18 @@ const OFFSCREEN: React.CSSProperties = {
   height: 1,
 };
 
-export const ServiceQuoteForm = ({
-  id = 'quote',
-  eyebrow,
-  heading,
-  intro,
-  points,
-  layout = 'form-right',
-  accent = 'blue',
-  service,
-  serviceOptions,
-  serviceLabel = 'What do you need?',
-  extraFields = [],
-  source,
-  submitLabel,
-  successTitle,
-  successBody,
-  footnote,
-}: ServiceQuoteFormProps) => {
+/**
+ * The submit side of an on-page quote form: honeypot, a fresh Turnstile token,
+ * every named field sent generically, the analytics event, and the
+ * error/success state. Shared so a page with its own form layout (Clearwater)
+ * submits exactly as this component does. The form must render the `website`
+ * honeypot and mount `turnstile.containerRef`.
+ */
+export const useQuoteFormSubmit = (source: string) => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const turnstile = useTurnstile();
-  const a = ACCENT[accent];
-  const isCentered = layout === 'centered';
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -188,6 +176,31 @@ export const ServiceQuoteForm = ({
       setLoading(false);
     }
   };
+
+  return { submitted, setSubmitted, loading, error, turnstile, handleSubmit };
+};
+
+export const ServiceQuoteForm = ({
+  id = 'quote',
+  eyebrow,
+  heading,
+  intro,
+  points,
+  layout = 'form-right',
+  accent = 'blue',
+  service,
+  serviceOptions,
+  serviceLabel = 'What do you need?',
+  extraFields = [],
+  source,
+  submitLabel,
+  successTitle,
+  successBody,
+  footnote,
+}: ServiceQuoteFormProps) => {
+  const { submitted, setSubmitted, loading, error, turnstile, handleSubmit } = useQuoteFormSubmit(source);
+  const a = ACCENT[accent];
+  const isCentered = layout === 'centered';
 
   if (submitted) {
     return (
