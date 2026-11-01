@@ -32,6 +32,12 @@ const ButtonArrow = () => (
 
 const raisedShadow =
   'shadow-[0_0_0_1px_rgba(36,58,85,0.14),0_1px_2px_rgba(16,24,40,0.05),0_12px_32px_-14px_rgba(36,58,85,0.28)]';
+// Over a dark photo: a deeper shadow, the address bar set in a frosted frame
+// (its blur is dropped on phones by the global mobile blur ban, CLAUDE.md
+// #10), and a white focus ring on the amber button.
+const onDarkShadow = 'shadow-[0_18px_40px_-18px_rgba(0,0,0,0.5)]';
+const onDarkFrame = 'rounded-[18px] bg-white/14 p-1.5 ring-1 ring-inset ring-white/22 backdrop-blur-[8px]';
+const onDarkButtonFocus = 'focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white';
 
 const cardClass = `rounded-[14px] bg-white p-6 ${raisedShadow}`;
 
@@ -64,8 +70,22 @@ const revealCard = (el: HTMLElement) => {
  * right in the hero, so starting costs one field instead of a whole form;
  * someone who has started is far more likely to finish. Step two then asks
  * where to send the price. Nothing is sent until step two is submitted.
+ *
+ * Shared by the homepage hero and the city heroes built on it (Clearwater).
+ * The page wraps it in an element with id="get-price", which focusQuoteForm
+ * (the header's "Get a Quote") scrolls to. `source` tags the lead and its
+ * analytics events with the page it came from.
  */
-export const HeroQuoteForm = () => {
+export const HeroQuoteForm = ({
+  placeholder,
+  variant,
+  source = SOURCE,
+}: {
+  placeholder?: string;
+  variant?: 'onDark';
+  source?: string;
+} = {}) => {
+  const onDark = variant === 'onDark';
   const [step, setStep] = useState<'address' | 'details' | 'done'>('address');
   const [address, setAddress] = useState('');
   // The city we can say we serve, or null. Set only when the address is a
@@ -110,7 +130,7 @@ export const HeroQuoteForm = () => {
     const s = picked.current;
     setServedCity(s && s.full === value && isServedCity(s.city) ? s.city : null);
     setStep('details');
-    trackEvent('quote_start', { source: SOURCE });
+    trackEvent('quote_start', { source });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -140,13 +160,13 @@ export const HeroQuoteForm = () => {
       await sendContact({
         ...payload,
         service: 'weekly',
-        source: SOURCE,
+        source,
         submittedAt: new Date().toISOString(),
         turnstileToken,
       });
       setFirstName(String(payload.name ?? '').split(/\s+/)[0] ?? '');
       setStep('done');
-      trackEvent('generate_lead', { source: SOURCE });
+      trackEvent('generate_lead', { source });
     } catch (err) {
       setError(`We couldn't send that. Please try again, or call us at ${PHONE_DISPLAY}.`);
       console.error('Landing quote form submit failed:', err);
@@ -162,24 +182,31 @@ export const HeroQuoteForm = () => {
 
       {step === 'address' && (
         <>
-          <form
-            noValidate
-            onSubmit={handleStart}
-            onInput={() => emptyNudge && setEmptyNudge(0)}
-            className={`relative flex flex-col gap-2 rounded-[14px] bg-white p-2 ${raisedShadow} transition sm:flex-row sm:items-center ${
-              emptyNudge ? 'ring-2 ring-[rgba(245,166,35,0.9)]' : 'focus-within:ring-2 focus-within:ring-sc-blue/40'
-            }`}
-          >
-            {emptyNudge > 0 && (
-              <span key={emptyNudge} aria-hidden="true" className="addr-nudge pointer-events-none absolute inset-0 rounded-[14px]" />
-            )}
-            <AddressAutocomplete name="address" defaultValue={address} onPick={(s) => (picked.current = s)} />
-            <button type="submit" className={`${amberButton} h-12 px-6 text-base`}>
-              Get my price
-              <ButtonArrow />
-            </button>
-          </form>
-          <p aria-live="polite" className="text-[13.5px] font-medium text-sc-navy">
+          <div className={onDark ? onDarkFrame : undefined}>
+            <form
+              noValidate
+              onSubmit={handleStart}
+              onInput={() => emptyNudge && setEmptyNudge(0)}
+              className={`relative flex flex-col gap-2 rounded-[14px] bg-white p-2 ${onDark ? onDarkShadow : raisedShadow} transition sm:flex-row sm:items-center ${
+                emptyNudge ? 'ring-2 ring-[rgba(245,166,35,0.9)]' : 'focus-within:ring-2 focus-within:ring-sc-blue/40'
+              }`}
+            >
+              {emptyNudge > 0 && (
+                <span key={emptyNudge} aria-hidden="true" className="addr-nudge pointer-events-none absolute inset-0 rounded-[14px]" />
+              )}
+              <AddressAutocomplete
+                name="address"
+                defaultValue={address}
+                placeholder={placeholder}
+                onPick={(s) => (picked.current = s)}
+              />
+              <button type="submit" className={`${amberButton} h-12 px-6 text-base${onDark ? ` ${onDarkButtonFocus}` : ''}`}>
+                Get my price
+                <ButtonArrow />
+              </button>
+            </form>
+          </div>
+          <p aria-live="polite" className={`text-[13.5px] font-medium ${onDark ? 'text-white' : 'text-sc-navy'}`}>
             {emptyNudge > 0 && (
               <span className="mt-3 flex items-center gap-1.5">
                 <ArrowUp className="h-4 w-4 text-[#f5a623]" strokeWidth={2.5} />

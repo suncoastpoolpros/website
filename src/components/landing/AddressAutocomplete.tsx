@@ -26,10 +26,12 @@ const DEBOUNCE_MS = 200;
 export const AddressAutocomplete = ({
   name,
   defaultValue = '',
+  placeholder = "Enter your pool's address",
   onPick,
 }: {
   name: string;
   defaultValue?: string;
+  placeholder?: string;
   onPick?: (s: Suggestion | null) => void;
 }) => {
   const [value, setValue] = useState(defaultValue);
@@ -141,7 +143,7 @@ export const AddressAutocomplete = ({
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
         onKeyDown={handleKeyDown}
-        placeholder="Enter your pool's address"
+        placeholder={placeholder}
         className="h-12 w-full rounded-[10px] bg-transparent pl-11 pr-3 text-[16.5px] text-sc-navy placeholder:text-sc-navy/50 focus:outline-none"
       />
       <ul
