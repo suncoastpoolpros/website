@@ -18,6 +18,10 @@ export const ADDRESS_CITY_STATE_ZIP = 'St. Petersburg, FL 33713';
 export const HOURS_DISPLAY = 'Mon–Sat: 8:00 AM – 6:00 PM';
 export const HOURS_SHORT = 'Mon–Sat, 8 AM–6 PM';
 
+// The Google Business Profile's own share link (it opens the business's
+// listing, reviews included). Also in index.html's LocalBusiness sameAs.
+export const GOOGLE_PROFILE_URL = 'https://share.google/6iulYZMJRGefq9Sw7';
+
 // Prefilled SMS body for the "text us photos for a quote" flow.
 export const SMS_QUOTE_BODY =
   'Hi! Here are photos of my pool and equipment, plus my address — can I get a flat-rate quote?';

@@ -13,6 +13,7 @@ import {
   ADDRESS_LINE,
   ADDRESS_CITY_STATE_ZIP,
   HOURS_SHORT,
+  GOOGLE_PROFILE_URL,
 } from '@/lib/contact';
 
 // Footer "Service Areas" links. Every city with a dedicated page (`city.to`) MUST
@@ -51,8 +52,16 @@ const legalLinks = [
   { label: 'Privacy Policy', to: '/privacy-policy/' },
 ];
 
+// Lucide has no Google mark, so Google gets its "G" as type.
+const GoogleG = ({ className = '' }: { className?: string }) => (
+  <span aria-hidden="true" className={`grid place-items-center text-[16px] font-bold leading-none ${className}`}>
+    G
+  </span>
+);
+
 const socialLinks = [
   { label: 'Facebook', href: 'https://www.facebook.com/suncoastpoolpros', Icon: Facebook },
+  { label: 'Suncoast Pool Pros on Google', href: GOOGLE_PROFILE_URL, Icon: GoogleG },
 ];
 
 const colHeading = 'text-white font-semibold mb-4 uppercase tracking-wider text-xs';

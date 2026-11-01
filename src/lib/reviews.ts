@@ -1,8 +1,8 @@
+import { GOOGLE_PROFILE_URL } from '@/lib/contact';
+
 // Real Google reviews, quoted as written (including the owner's name spelled
 // two ways). No review count anywhere: only what can be shown in full.
-// TODO: GOOGLE_REVIEWS_URL is a Google search until the Business Profile link
-// is supplied; swap in the profile's reviews URL.
-export const GOOGLE_REVIEWS_URL = 'https://www.google.com/search?q=Suncoast+Pool+Pros+St.+Petersburg+FL+reviews';
+export const GOOGLE_REVIEWS_URL = GOOGLE_PROFILE_URL;
 
 export const REVIEWS = [
   {
