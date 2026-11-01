@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowRight, ChevronDown, Clock, MessageSquare, Phone, X } from 'lucide-react';
 import { SmartLink as Link } from '@/components/SmartLink';
-import { ServiceAreasMenu } from '@/components/ServiceAreasMenu';
-import { ServicesMenu } from '@/components/ServicesMenu';
+import { AreasPanel, ServicesPanel } from '@/components/landing/LandingNavMenus';
 import { cities } from '@/lib/cities';
 import { HOURS_SHORT, PHONE_DISPLAY, PHONE_HREF, SMS_HREF } from '@/lib/contact';
 import { useScrollLock } from '@/lib/useScrollLock';
@@ -105,8 +104,8 @@ export const LandingHeader = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen]);
 
-  // Hover menus: a short close delay lets the pointer cross the gap between
-  // the trigger and the menu without it snapping shut (same as Navbar).
+  // Hover menus: a short close delay forgives a pointer that strays off the
+  // trigger or the menu for a moment.
   const openMenu = (which: 'areas' | 'services') => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
     closeTimer.current = null;
@@ -118,7 +117,7 @@ export const LandingHeader = () => {
     closeTimer.current = window.setTimeout(() => {
       setAreasOpen(false);
       setServicesOpen(false);
-    }, 120);
+    }, 160);
   };
 
   const quoteFromMenu = () => {
@@ -144,14 +143,15 @@ export const LandingHeader = () => {
           toggled by hand would be reset by re-renders. Reduced motion still hides and
           shows, just without the slide. The hairline is a shadow, not a
           border: a border would make the header 65px and push the
-          full-screen hero 1px past the fold. */}
+          full-screen hero 1px past the fold. From lg up the hairline stays
+          flat even when scrolled, so the dropdowns hang flush from it. */}
       <header
         data-scroll-hidden={hiddenByScroll ? '' : undefined}
         className={`z-50 bg-white data-[scroll-hidden]:[transform:translateY(-100%)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none sticky top-0 ${
           scrolled
             ? 'shadow-[0_1px_0_0_rgba(36,58,85,0.08),0_8px_24px_-16px_rgba(36,58,85,0.35)]'
             : 'shadow-[0_1px_0_0_rgba(36,58,85,0.08)]'
-        }`}
+        } lg:shadow-[0_1px_0_0_#e5e7eb]`}
       >
         <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-8">
           <div className="flex h-16 items-center justify-between">
@@ -170,42 +170,37 @@ export const LandingHeader = () => {
             </Link>
 
             {/* Inline links: lg+ only, as on the site header (they don't fit
-                beside the phone and CTA at tablet width). */}
-            <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
-              <div className="relative" onMouseEnter={() => openMenu('areas')} onMouseLeave={scheduleClose}>
+                beside the phone and CTA at tablet width). The nav and the menu
+                triggers' wrappers run the header's full height, so each menu
+                (LandingNavMenus) hangs from the header's bottom edge and the
+                pointer never leaves the wrapper on its way down. */}
+            <nav aria-label="Main" className="hidden items-center gap-1 self-stretch lg:flex">
+              <div className="relative flex self-stretch" onMouseEnter={() => openMenu('areas')} onMouseLeave={scheduleClose}>
                 <button
                   type="button"
                   onClick={() => (areasOpen ? setAreasOpen(false) : openMenu('areas'))}
                   aria-expanded={areasOpen}
                   aria-haspopup="true"
-                  className={`inline-flex items-center gap-1 ${linkClass}`}
+                  className={`inline-flex items-center gap-1 ${linkClass} ${areasOpen ? 'text-[#1e3a5f]!' : ''}`}
                 >
                   Service Areas
                   <ChevronDown className={`h-3.5 w-3.5 transition-transform ${areasOpen ? 'rotate-180' : ''}`} />
                 </button>
-                {areasOpen && (
-                  <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3">
-                    <ServiceAreasMenu tone="light" onQuote={quoteFromMenu} />
-                  </div>
-                )}
+                <AreasPanel open={areasOpen} onQuote={quoteFromMenu} />
               </div>
 
-              <div className="relative" onMouseEnter={() => openMenu('services')} onMouseLeave={scheduleClose}>
+              <div className="relative flex self-stretch" onMouseEnter={() => openMenu('services')} onMouseLeave={scheduleClose}>
                 <button
                   type="button"
                   onClick={() => (servicesOpen ? setServicesOpen(false) : openMenu('services'))}
                   aria-expanded={servicesOpen}
                   aria-haspopup="true"
-                  className={`inline-flex items-center gap-1 ${linkClass}`}
+                  className={`inline-flex items-center gap-1 ${linkClass} ${servicesOpen ? 'text-[#1e3a5f]!' : ''}`}
                 >
                   Services
                   <ChevronDown className={`h-3.5 w-3.5 transition-transform ${servicesOpen ? 'rotate-180' : ''}`} />
                 </button>
-                {servicesOpen && (
-                  <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3">
-                    <ServicesMenu tone="light" onQuote={quoteFromMenu} />
-                  </div>
-                )}
+                <ServicesPanel open={servicesOpen} />
               </div>
 
               <Link to="/pool-care/" className={linkClass}>
