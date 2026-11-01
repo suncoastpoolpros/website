@@ -1489,7 +1489,6 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 .cs-phone {
   position: relative;
-  isolation: isolate;
   order: -1;
   margin-bottom: 16px;
 }
@@ -1532,35 +1531,6 @@ input[type="date"]::-webkit-date-and-time-value {
   font-size: 14.5px;
   line-height: 1.5;
   color: #5f6368;
-}
-/* Hover hint, just under the phone's visible bottom edge (the phone is drawn
-   at 90%, so its box runs ~33px past the frame). */
-.cs-hint {
-  position: absolute;
-  left: 50%;
-  bottom: 27px;
-  z-index: 20; /* over the phone (z-10 inside HomeHeroPhone) */
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  border-radius: 999px;
-  background: #243a55;
-  color: #fff;
-  font-size: 12.5px;
-  font-weight: 600;
-  white-space: nowrap;
-  box-shadow: 0 8px 20px -8px rgba(15, 23, 42, 0.5);
-  pointer-events: none;
-  opacity: 0;
-  transform: translate(-50%, 6px);
-  transition:
-    opacity 0.25s ease,
-    transform 0.25s ease;
-}
-.cs-phone[data-hint] .cs-hint {
-  opacity: 1;
-  transform: translate(-50%, 0);
 }
 .cs-phone ::-webkit-scrollbar {
   display: none;

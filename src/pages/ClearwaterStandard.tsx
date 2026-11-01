@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
-import { Check, Mouse } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { PhoneReport } from '@/components/landing/PhoneReport';
 import { QuoteLink } from '@/components/landing/sectionKit';
 
@@ -227,14 +227,12 @@ const useReportLoop = (
       leaveHold = false;
       clearTimeout(leaveTimer);
       setLive();
-      wrap.setAttribute('data-hint', '');
     };
     const onLeave = (e: PointerEvent) => {
       if (e.pointerType !== 'mouse' || !over) return;
       over = false;
       leaveHold = true;
       setLive();
-      wrap.removeAttribute('data-hint');
       leaveTimer = window.setTimeout(() => {
         leaveHold = false;
         resume();
@@ -335,7 +333,6 @@ const useReportLoop = (
       wrap.removeEventListener('touchstart', onTouchStart);
       wrap.removeEventListener('touchend', onTouchEnd);
       wrap.removeEventListener('touchcancel', onTouchEnd);
-      wrap.removeAttribute('data-hint');
       body.style.position = '';
       body.style.overflowY = '';
     };
@@ -406,10 +403,6 @@ export const ClearwaterStandard = () => {
               address="Sand Key · Clearwater Beach, FL 33767"
               scrollRef={bodyRef}
             />
-            <span aria-hidden="true" className="cs-hint">
-              <Mouse className="h-3.5 w-3.5" strokeWidth={2.25} />
-              Scroll to explore
-            </span>
           </div>
           <StepList steps={RIGHT} side="r" onPick={pick} />
         </div>
