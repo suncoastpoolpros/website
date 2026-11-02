@@ -21,8 +21,11 @@ const SHOW_AFTER_VIEWPORT_FRACTION = 0.7;
  * open or once the #quote form / footer is on screen (so it never covers
  * them).
  */
-export const StickyMobileCta = () => {
-  const { open, isOpen } = useQuoteSheet();
+export const StickyMobileCta = ({ quote: popup }: { quote?: { open: () => void; isOpen: boolean } } = {}) => {
+  // Pages on the homepage's quote popup (LandingQuoteSheet) pass it in;
+  // everyone else opens the site-wide one.
+  const siteWide = useQuoteSheet();
+  const { open, isOpen } = popup ?? siteWide;
   const { pathname } = useLocation();
   const [show, setShow] = useState(false);
 

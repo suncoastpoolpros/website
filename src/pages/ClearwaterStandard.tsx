@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
 import { PhoneReport } from '@/components/landing/PhoneReport';
-import { QuoteLink } from '@/components/landing/sectionKit';
+import { QuoteButton } from '@/components/landing/sectionKit';
 
 /*
  * The Clearwater standard: six weekly steps around the sample report email.
@@ -408,7 +408,7 @@ export const ClearwaterStandard = () => {
         </div>
 
         <div className="cs-footer">
-          <QuoteLink />
+          <QuoteButton />
           <p className="cs-footnote">All six steps, one flat rate.</p>
         </div>
       </div>

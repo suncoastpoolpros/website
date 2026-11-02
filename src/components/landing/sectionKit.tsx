@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ArrowRight, Phone } from 'lucide-react';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { amberButton } from '@/components/landing/HeroQuoteForm';
+import { useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
 
 /*
  * The homepage design system's section pieces, shared by the homepage's
@@ -56,14 +57,13 @@ const ButtonArrow = () => (
   <ArrowRight className="h-[18px] w-[18px] transition-transform duration-150 group-hover:translate-x-[3px]" strokeWidth={2.5} />
 );
 
-const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
 /**
- * A CTA that glides to the page's on-page quote form (#quote). A plain link
- * underneath, so it still lands without JS; `#quote` carries scroll-mt-24 for
- * the header.
+ * A CTA that opens the quote popup (LandingQuoteSheet), so the page must sit
+ * inside <LandingQuoteSheetProvider>. The popup is pre-mounted once the button
+ * is on screen, so the tap only runs the open transition. Not on pointerdown:
+ * changing the DOM mid-tap made iOS swallow the first click.
  */
-export const QuoteLink = ({
+export const QuoteButton = ({
   variant = 'gold',
   label = 'Get my price',
   className = '',
@@ -71,21 +71,30 @@ export const QuoteLink = ({
   variant?: 'gold' | 'navy';
   label?: string;
   className?: string;
-}) => (
-  <a
-    href="#quote"
-    onClick={(e) => {
-      const target = document.getElementById('quote');
-      if (!target) return;
-      e.preventDefault();
-      target.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
-    }}
-    className={`${buttonClass[variant]} ${className}`}
-  >
-    {label}
-    <ButtonArrow />
-  </a>
-);
+}) => {
+  const { open, warm } = useLandingQuoteSheet();
+  const ref = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        warm();
+        io.disconnect();
+      }
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [warm]);
+
+  return (
+    <button ref={ref} type="button" onClick={open} className={`${buttonClass[variant]} ${className}`}>
+      {label}
+      <ButtonArrow />
+    </button>
+  );
+};
 
 export const PhoneButton = ({ onDark = false, className = '' }: { onDark?: boolean; className?: string }) => (
   <a href={PHONE_HREF} className={`${onDark ? buttonClass.outlineOnDark : buttonClass.outline} ${className}`}>

@@ -4,6 +4,7 @@ import { HeroQuoteForm } from '@/components/landing/HeroQuoteForm';
 import { Footer } from '@/components/Footer';
 import { SmartLink as Link } from '@/components/SmartLink';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
+import { LandingQuoteSheetProvider, useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { clearwaterFaqs } from '@/pages/clearwaterFaqs';
 import ClearwaterBelowFold from '@/pages/ClearwaterBelowFold';
@@ -75,6 +76,9 @@ const ClearwaterHero = () => {
             width={1500}
             height={1000}
             fetchPriority="high"
+            // The quote popup's photo column: the clean, portrait phone file
+            // (the landscape ones carry dark bars).
+            data-quote-image={HERO_IMG.mobile}
             className={`cw-hero-zoom absolute inset-0 h-full w-full object-cover object-[50%_70%]${
               HERO_IMG.letterboxed ? ' md:top-[-9.25%] md:h-[118.5%]' : ''
             }`}
@@ -234,6 +238,9 @@ const PAGE_SCHEMA = [
       ]),
     ];
 
+// The phone bar's Quote opens the same popup (it needs the provider above it).
+const PopupStickyCta = () => <StickyMobileCta quote={useLandingQuoteSheet()} />;
+
 export const ClearwaterPage = () => {
   usePageMeta({
     title: PAGE_TITLE,
@@ -252,13 +259,17 @@ export const ClearwaterPage = () => {
 
   // overflow-x-clip, not -hidden: hidden makes the wrapper a scroll
   // container, and the sticky header would stop sticking.
+  // The homepage's quote popup: every "Get my price" below the hero (and the
+  // phone bar's Quote) opens it; the hero keeps its address search.
   return (
-    <div className="landing-canvas force-static-motion relative min-h-screen overflow-x-clip bg-white font-sans text-sc-navy antialiased">
-      <LandingHeader />
-      <ClearwaterHero />
-      <ClearwaterBelowFold />
-      <Footer />
-      <StickyMobileCta />
-    </div>
+    <LandingQuoteSheetProvider>
+      <div className="landing-canvas force-static-motion relative min-h-screen overflow-x-clip bg-white font-sans text-sc-navy antialiased">
+        <LandingHeader />
+        <ClearwaterHero />
+        <ClearwaterBelowFold />
+        <Footer />
+        <PopupStickyCta />
+      </div>
+    </LandingQuoteSheetProvider>
   );
 };

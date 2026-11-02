@@ -26,7 +26,7 @@ import {
   Container,
   Eyebrow,
   PhoneButton,
-  QuoteLink,
+  QuoteButton,
   buttonClass,
   h2,
   lead,
@@ -43,7 +43,7 @@ import { REVIEWS } from '@/lib/reviews';
  * gold/navy buttons. Light and dark sections alternate: trust band, Two Towns
  * (white), Standard (white into mist), Getting started (dark), Service area (mist), FAQ
  * (white), Quote (dark), Guides (white). Every "Get my price" below the hero
- * glides to the quote form (#quote) on this page.
+ * opens the quote popup (QuotePopup); the hero keeps its address search.
  *
  * Copy follows the Service Agreement, the FAQ and the homepage guarantees.
  * Techs alternate, so nothing here promises one permanent person: the fixed
@@ -109,7 +109,7 @@ const TrustBand = () => (
         </ul>
 
         <div className="flex flex-col items-center gap-2">
-          <QuoteLink variant="navy" className="h-[46px] w-full min-[960px]:w-auto" />
+          <QuoteButton variant="navy" className="h-[46px] w-full min-[960px]:w-auto" />
           <p className={`text-[12.5px] ${muted}`}>Free quote · same-day reply</p>
         </div>
       </div>
@@ -272,7 +272,7 @@ const TwoTowns = () => (
           </h3>
           <p className="mt-2.5 text-[16px] text-white/75">The town is named for clear water. We just keep the promise.</p>
         </div>
-        <QuoteLink className="relative justify-self-start min-[860px]:justify-self-end" />
+        <QuoteButton className="relative justify-self-start min-[860px]:justify-self-end" />
       </div>
     </Container>
   </section>
@@ -339,7 +339,7 @@ const GettingStarted = () => (
         </ul>
         <div className="flex flex-wrap gap-3">
           <PhoneButton onDark />
-          <QuoteLink />
+          <QuoteButton />
         </div>
       </div>
     </Container>
@@ -417,7 +417,7 @@ const ServiceArea = () => (
           </Link>
           .
         </p>
-        <QuoteLink label="Check my address" className="mt-[26px]" />
+        <QuoteButton label="Check my address" className="mt-[26px]" />
       </div>
 
       <div className="grid gap-4">
