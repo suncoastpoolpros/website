@@ -76,6 +76,7 @@ const HeroPhoto = () => (
           fetchPriority="high"
           decoding="async"
           data-hero-photo=""
+          data-quote-image="/pool-waterfront-1120.webp"
           className="absolute inset-0 h-full w-full object-cover [filter:brightness(1.04)_saturate(1.16)]"
         />
       </picture>
