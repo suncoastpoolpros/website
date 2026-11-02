@@ -24,9 +24,11 @@ import { amberButton } from '@/components/landing/HeroQuoteForm';
  * photos, or a call. Contact details come last, never first: someone who has
  * already tapped through a few answers is far more likely to finish.
  *
- * Desktop: a two-column window, the current page's hero photo on the left
- * (a live summary of the answers once the questions start). Phones (≤760px):
- * a bottom sheet with the right column only.
+ * Desktop (≥901px): a two-column window, the current page's hero photo on the
+ * left (a live summary of the answers once the questions start). Tablet
+ * portrait and phones: one column, with the photo as a header on the first
+ * screen only. Short screens (height ≤520px): one column, no photo. The
+ * breakpoint rules live in index.css (.qs-*).
  *
  * Leads go through /api/contact like every other form (Turnstile, honeypot,
  * the generate_lead event); the endpoint lists unknown keys as email rows, so
@@ -38,11 +40,12 @@ const ADVANCE_MS = 220;
 export const QUOTE_POPUP_FALLBACK_PHOTO = '/pool-waterfront-1120.webp';
 const SMS_BODY = 'Hi! Here are photos of my pool and equipment, plus my address. Can I get a flat-rate quote?';
 
-type Question = { key: string; title: string; sub: string; options: [string, string][] };
+type Question = { key: string; label: string; title: string; sub: string; options: [string, string][] };
 
 const QUESTIONS: Question[] = [
   {
     key: 'Size',
+    label: 'Pool size',
     title: 'About how big is your pool?',
     sub: 'A rough guess is perfect.',
     options: [
@@ -54,6 +57,7 @@ const QUESTIONS: Question[] = [
   },
   {
     key: 'Type',
+    label: 'Water',
     title: 'Saltwater or chlorine?',
     sub: 'Either is fine. It just changes what we bring.',
     options: [
@@ -64,6 +68,7 @@ const QUESTIONS: Question[] = [
   },
   {
     key: 'Screen',
+    label: 'Screen',
     title: 'Is it screened in?',
     sub: 'Screen enclosures keep most debris out.',
     options: [
@@ -73,6 +78,7 @@ const QUESTIONS: Question[] = [
   },
   {
     key: 'Trees',
+    label: 'Trees',
     title: 'How many trees are nearby?',
     sub: 'More leaves means a little more time each visit.',
     options: [
@@ -159,8 +165,8 @@ const inputCls = (bad: boolean) =>
       : 'border-[rgba(36,58,85,0.2)] focus:border-sc-blue focus:shadow-[0_0_0_4px_rgba(38,118,182,0.12)]'
   }`;
 const labelCls = 'mb-1 flex items-baseline justify-between gap-3 text-[13.5px] font-semibold text-sc-navy';
-const h2Cls = 'text-balance text-[26px] font-[650] leading-[1.15] tracking-[-0.028em] text-sc-navy min-[761px]:text-[30px]';
-const subCls = 'mt-2 text-pretty text-[15px] leading-[1.55] text-sc-muted';
+const h2Cls = 'qs-h2 text-balance text-[26px] font-[650] leading-[1.15] tracking-[-0.028em] text-sc-navy min-[761px]:text-[30px]';
+const subCls = 'qs-sub mt-2 text-pretty text-[15px] leading-[1.55] text-sc-muted';
 
 const ButtonArrow = () => (
   <ArrowRight className="h-[18px] w-[18px] transition-transform duration-150 group-hover:translate-x-[3px]" strokeWidth={2.5} />
@@ -396,7 +402,7 @@ export const QuotePopup = ({
     <button
       type="button"
       onClick={() => chooseMethod(method)}
-      className={`group flex w-full items-center gap-4 rounded-[14px] bg-white p-[18px] text-left ${hairline} transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-px hover:border-[rgba(36,58,85,0.2)] hover:shadow-[0_10px_24px_-14px_rgba(36,58,85,0.35)] ${focusRing}`}
+      className={`qs-row group flex w-full items-center gap-4 rounded-[14px] bg-white p-[18px] text-left ${hairline} transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-px hover:border-[rgba(36,58,85,0.2)] hover:shadow-[0_10px_24px_-14px_rgba(36,58,85,0.35)] ${focusRing}`}
     >
       <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] bg-sc-mist text-sc-blue transition-colors duration-200 group-hover:bg-sc-navy group-hover:text-white">
         <Icon className="h-5 w-5" strokeWidth={1.75} />
@@ -424,7 +430,7 @@ export const QuotePopup = ({
   // ── Screens ───────────────────────────────────────────────────────────────
 
   const chooseScreen = (
-    <div className="flex min-h-full flex-col pt-3 min-[761px]:justify-center min-[761px]:py-2">
+    <div className="flex min-h-full flex-col pt-5 min-[901px]:justify-center min-[901px]:py-2">
       <Eyebrow>Free flat-rate quote</Eyebrow>
       <h2 id={headingId} className={`mt-3 ${h2Cls}`}>
         How would you like
@@ -434,13 +440,13 @@ export const QuotePopup = ({
       </h2>
       <p className={subCls}>Choose what’s easiest. Most quotes go out the same day.</p>
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="qs-gap mt-6 flex flex-col gap-3">
         {methodRow(
           'form',
           ListChecks,
           'Answer 4 quick questions',
           'Tap through, then tell us where to send it.',
-          <span className="hidden shrink-0 text-[13px] text-sc-muted min-[761px]:block">~60 sec</span>,
+          <span className="qs-time shrink-0 text-[13px] text-sc-muted">~60 sec</span>,
         )}
         {methodRow(
           'text',
@@ -472,7 +478,7 @@ export const QuotePopup = ({
         )}
       </div>
 
-      <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[12.5px] text-sc-muted min-[761px]:gap-x-2.5">
+      <ul className="qs-gap mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[12.5px] text-sc-muted min-[761px]:gap-x-2.5">
         <li className="flex items-center gap-1.5">
           <Stars className="text-[11px]" />
           <span>
@@ -500,7 +506,7 @@ export const QuotePopup = ({
         {q.title}
       </h2>
       <p className={subCls}>{q.sub}</p>
-      <div className="mt-6 grid grid-cols-2 gap-3" role="group" aria-labelledby={headingId}>
+      <div className="qs-cards qs-gap mt-6" role="group" aria-labelledby={headingId}>
         {q.options.map(([title, hint]) => {
           const on = (picked ?? answers[q.key]) === title;
           return (
@@ -509,7 +515,7 @@ export const QuotePopup = ({
               type="button"
               aria-pressed={on}
               onClick={() => answer(q, title)}
-              className={`relative rounded-[14px] border p-4 pr-10 text-left transition-[border-color,background-color,box-shadow] duration-150 min-[761px]:p-[18px] min-[761px]:pr-11 ${focusRing} ${
+              className={`relative flex flex-col rounded-[14px] border p-4 pr-10 text-left transition-[border-color,background-color,box-shadow] duration-150 min-[761px]:p-[18px] min-[761px]:pr-11 ${focusRing} ${
                 on ? 'border-sc-blue bg-sc-mist shadow-[0_0_0_1px_#2676b6_inset]' : 'border-[rgba(36,58,85,0.12)] bg-white hover:border-[rgba(36,58,85,0.25)]'
               }`}
             >
@@ -804,76 +810,104 @@ export const QuotePopup = ({
     </div>
   );
 
-  // ── Left column ─────────────────────────────────────────────────────────
-  const inQuestions = screen === 'question' || screen === 'contact' || (screen === 'done' && done?.kind === 'form');
-  const summary = QUESTIONS.filter((x) => answers[x.key]);
+  // ── Photo column / header ───────────────────────────────────────────────
+  // Once the questions start, the left column trades its trust pills for a
+  // live summary of the answers.
+  const summarizing = screen === 'question' || screen === 'contact' || (screen === 'done' && done?.kind === 'form');
+  const photoLayers = (
+    <>
+      {photo && <div className="qs-photo" style={{ backgroundImage: `url("${photo}")` }} />}
+      <div className="qs-photo-fade absolute inset-0" />
+    </>
+  );
+  const pill = 'qs-glass inline-flex items-center gap-2 whitespace-nowrap rounded-full px-3 py-1.5 text-[12.5px] text-white';
+  const brand = 'text-[11px] font-semibold uppercase tracking-[0.14em] text-white';
+  const closeButton = (cls: string) => (
+    <button type="button" onClick={onClose} aria-label="Close" className={`h-9 w-9 shrink-0 place-items-center rounded-full transition ${focusRing} ${cls}`}>
+      <X className="h-[18px] w-[18px]" strokeWidth={1.75} />
+    </button>
+  );
+  const plainClose = `bg-white text-sc-navy/60 ${hairline} hover:border-[rgba(36,58,85,0.25)] hover:text-sc-navy`;
 
   return (
     <>
-      <aside aria-hidden="true" className="relative hidden w-[310px] shrink-0 overflow-hidden bg-[#1b2b41] text-white min-[761px]:flex min-[761px]:flex-col">
-        {photo && <div className="qs-photo" style={{ backgroundImage: `url("${photo}")` }} />}
-        <div className="qs-photo-fade absolute inset-0" />
-        <p className="relative px-7 pt-7 text-[11px] font-semibold uppercase tracking-[0.14em]">Suncoast Pool Pros</p>
+      <aside aria-hidden="true" className="qs-aside relative shrink-0 flex-col overflow-hidden bg-[#0b0d10] text-white">
+        {photoLayers}
+        <div className={`qs-photo-deep absolute inset-0 ${summarizing ? 'is-on' : ''}`} />
+        <p className={`relative px-7 pt-7 ${brand}`}>Suncoast Pool Pros</p>
         <div className="relative mt-auto px-7 pb-7">
-          <p className="text-[22px] font-[650] leading-[1.25] tracking-[-0.028em]">
-            One flat rate.
-            <br />
-            <span className="text-sc-gold">Crystal-clear water,</span>
-            <br />
-            every week.
-          </p>
-          {inQuestions && summary.length > 0 ? (
-            <dl key="summary" className="qb-in mt-5 divide-y divide-white/[0.12] border-t border-white/[0.12] text-[13.5px]">
-              {summary.map((x) => (
-                <div key={x.key} className="qb-in flex items-center justify-between gap-3 py-2.5">
-                  <dt className="text-white/60">{x.key}</dt>
-                  <dd className="font-semibold">{answers[x.key]}</dd>
+          {summarizing ? (
+            <dl key="summary" className="qb-in divide-y divide-white/[0.12] text-[13.5px]">
+              {QUESTIONS.map((x) => (
+                <div key={x.key} className="flex items-center justify-between gap-3 py-2.5">
+                  <dt className="text-white/60">{x.label}</dt>
+                  <dd key={answers[x.key] ?? ''} className={answers[x.key] ? 'qb-in font-semibold' : 'text-white/35'}>
+                    {answers[x.key] ?? '—'}
+                  </dd>
                 </div>
               ))}
             </dl>
           ) : (
-            <ul key="checks" className="mt-5 grid gap-2.5 text-[14px] text-white/90">
-              {['Every chemical included', 'GPS-verified visits + photo report', 'No contracts, cancel anytime'].map((t) => (
-                <li key={t} className="flex items-start gap-2.5">
-                  <Check className="mt-[3px] h-4 w-4 shrink-0 text-sc-sky" strokeWidth={2.25} />
-                  {t}
-                </li>
-              ))}
+            <ul key="pills" className="flex flex-col items-start gap-2">
+              <li className={pill}>
+                <Stars className="text-[11px]" />
+                <span>
+                  <span className="font-semibold">5.0</span> on Google
+                </span>
+              </li>
+              <li className={pill}>
+                <ShieldCheck className="h-3.5 w-3.5 text-sc-gold" strokeWidth={1.75} />
+                Always Blue guarantee
+              </li>
+              <li className={pill}>
+                <Check className="h-3.5 w-3.5 text-sc-gold" strokeWidth={2} />
+                Chemicals included, no contracts
+              </li>
             </ul>
           )}
-          <div className="mt-5 flex items-center gap-2 border-t border-white/[0.14] pt-4 text-[13px] text-white/85">
-            <Stars className="text-[12px]" />
-            <span>
-              <span className="font-semibold text-white">5.0</span> on Google
-            </span>
-          </div>
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex h-14 shrink-0 items-center gap-4 px-5 min-[761px]:px-8">
-          {screen !== 'choose' && screen !== 'done' && (
-            <button
-              type="button"
-              onClick={back}
-              className={`-ml-1.5 inline-flex h-9 items-center gap-0.5 rounded-[8px] pl-1 pr-2 text-[14px] font-medium text-sc-navy/70 transition hover:text-sc-navy ${focusRing}`}
-            >
-              <ChevronLeft className="h-[18px] w-[18px]" strokeWidth={1.75} />
-              Back
-            </button>
-          )}
-          {screen === 'question' || screen === 'contact' ? progress : <span className="flex-1" />}
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className={`grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white text-sc-navy/60 ${hairline} transition hover:border-[rgba(36,58,85,0.25)] hover:text-sc-navy ${focusRing}`}
-          >
-            <X className="h-[18px] w-[18px]" strokeWidth={1.75} />
-          </button>
-        </div>
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+        {screen === 'choose' ? (
+          <>
+            {/* Phones and tablet portrait: a photo header, first screen only. */}
+            <div className="qs-head relative shrink-0 overflow-hidden bg-[#0b0d10]">
+              {photoLayers}
+              <div className="qs-head-shade absolute inset-0" />
+              <span aria-hidden="true" className="absolute left-1/2 top-2 h-1 w-9 -translate-x-1/2 rounded-full bg-white/70 min-[761px]:hidden" />
+              <p aria-hidden="true" className={`absolute left-5 top-5 min-[761px]:left-10 min-[761px]:top-6 ${brand}`}>
+                Suncoast Pool Pros
+              </p>
+              <p aria-hidden="true" className={`absolute bottom-4 left-5 min-[761px]:bottom-5 min-[761px]:left-10 ${pill}`}>
+                <Stars className="text-[11px]" />
+                <span>
+                  <span className="font-semibold">5.0</span> on Google · Always Blue guarantee
+                </span>
+              </p>
+              {closeButton('qs-glass absolute right-4 top-4 grid text-white hover:bg-black/60')}
+            </div>
+            {/* Everywhere else, the first screen keeps only the close button. */}
+            {closeButton(`qs-nohead absolute right-4 top-4 z-10 ${plainClose}`)}
+          </>
+        ) : (
+          <div className="qs-pad flex h-14 shrink-0 items-center gap-4">
+            {screen !== 'done' && (
+              <button
+                type="button"
+                onClick={back}
+                className={`-ml-1.5 inline-flex h-9 items-center gap-0.5 rounded-[8px] pl-1 pr-2 text-[14px] font-medium text-sc-navy/70 transition hover:text-sc-navy ${focusRing}`}
+              >
+                <ChevronLeft className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                Back
+              </button>
+            )}
+            {screen === 'question' || screen === 'contact' ? progress : <span className="flex-1" />}
+            {closeButton(`grid ${plainClose}`)}
+          </div>
+        )}
 
-        <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-[max(1.75rem,env(safe-area-inset-bottom))] min-[761px]:px-10 min-[761px]:pb-7">
+        <div ref={bodyRef} className="qs-pad min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[max(1.75rem,env(safe-area-inset-bottom))] min-[761px]:pb-8">
           {screen === 'choose' && chooseScreen}
           {screen === 'question' && questionScreen}
           {screen === 'contact' && contactScreen}

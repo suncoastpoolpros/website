@@ -10,8 +10,8 @@ import { useOverlayTransition } from '@/lib/useOverlayTransition';
  * (src/components/QuoteSheet.tsx). Anything inside <LandingQuoteSheetProvider>
  * opens it with useLandingQuoteSheet().
  *
- * Phones (≤760px): a 94dvh sheet that rises from the bottom. Desktop: a
- * centered window that fades and rises in. Both animate with composited CSS
+ * Phones (≤760px): a 94dvh sheet that rises from the bottom. Wider: a
+ * centered window that fades and rises in (sizes per breakpoint: .qs-panel). Both animate with composited CSS
  * transitions (.qs-* in index.css). The desktop backdrop's blur animates back
  * to 0 before unmount (the CLAUDE.md #10 contract); phones get no blur.
  *
@@ -119,7 +119,7 @@ export const LandingQuoteSheetProvider = ({ children }: { children: React.ReactN
           // `mounted` stays true through the close transition, so it still
           // animates out.
           <div
-            className={`fixed inset-0 z-[120] flex items-end justify-center min-[761px]:items-center min-[761px]:p-6 ${sheet.visible ? '' : 'pointer-events-none'} ${sheet.mounted ? '' : 'invisible'}`}
+            className={`qs-host fixed inset-0 z-[120] flex justify-center ${sheet.visible ? '' : 'pointer-events-none'} ${sheet.mounted ? '' : 'invisible'}`}
             inert={!sheet.visible}
             data-quote-sheet="landing"
           >
@@ -130,7 +130,7 @@ export const LandingQuoteSheetProvider = ({ children }: { children: React.ReactN
               aria-modal="true"
               aria-labelledby={headingId}
               tabIndex={-1}
-              className={`qs-panel relative flex h-[94dvh] w-full overflow-hidden rounded-t-[20px] bg-white font-sans text-sc-navy antialiased shadow-[0_-12px_40px_-12px_rgba(20,33,52,0.35)] outline-none min-[761px]:h-[min(620px,calc(100dvh-48px))] min-[761px]:max-w-[900px] min-[761px]:rounded-[20px] min-[761px]:shadow-[0_40px_100px_-30px_rgba(20,33,52,0.55),0_12px_32px_-12px_rgba(20,33,52,0.25)] ${sheet.visible ? 'is-open' : ''}`}
+              className={`qs-panel relative flex overflow-hidden bg-white font-sans text-sc-navy antialiased shadow-[0_-12px_40px_-12px_rgba(20,33,52,0.35)] outline-none min-[761px]:shadow-[0_40px_100px_-30px_rgba(20,33,52,0.55),0_12px_32px_-12px_rgba(20,33,52,0.25)] ${sheet.visible ? 'is-open' : ''}`}
             >
               <React.Fragment key={session}>
                 <QuotePopup

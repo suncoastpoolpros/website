@@ -1244,7 +1244,16 @@ input[type="date"]::-webkit-date-and-time-value {
     -webkit-backdrop-filter: blur(6px);
   }
 }
+/* Sizes: phone (≤760) a 94dvh bottom sheet; tablet portrait (761–900) a
+   640px card as tall as its content; desktop (≥901) the 900px two-column
+   window; short screens (height ≤520, e.g. phone landscape) full screen. */
+.qs-host {
+  align-items: flex-end;
+}
 .qs-panel {
+  width: 100%;
+  height: 94dvh;
+  border-radius: 20px 20px 0 0;
   transform: translateY(100%);
   transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
 }
@@ -1252,7 +1261,15 @@ input[type="date"]::-webkit-date-and-time-value {
   transform: none;
 }
 @media (min-width: 761px) {
+  .qs-host {
+    align-items: center;
+    padding: 24px;
+  }
   .qs-panel {
+    max-width: 640px;
+    height: auto;
+    max-height: calc(100dvh - 64px);
+    border-radius: 20px;
     opacity: 0;
     transform: translateY(10px) scale(0.985);
     transition:
@@ -1264,6 +1281,141 @@ input[type="date"]::-webkit-date-and-time-value {
     transform: none;
   }
 }
+@media (min-width: 901px) {
+  .qs-panel {
+    max-width: 900px;
+    height: min(620px, calc(100dvh - 48px));
+    max-height: none;
+  }
+}
+@media (max-height: 520px) {
+  .qs-host {
+    padding: 0;
+  }
+  .qs-panel {
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+  }
+  /* The panel covers the whole screen, so a blur behind it is wasted GPU work
+     (and this is a phone held sideways). */
+  .qs-scrim,
+  .qs-scrim.is-open {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Left photo column: desktop only (≥901, not on short screens). */
+.qs-aside {
+  display: none;
+  width: 310px;
+}
+@media (min-width: 901px) and (min-height: 521px) {
+  .qs-aside {
+    display: flex;
+  }
+}
+@media (min-width: 901px) and (max-width: 1024px) {
+  .qs-aside {
+    width: 250px;
+  }
+}
+/* First-screen photo header: phones and tablet portrait only. Its twin, the
+   plain close button, shows wherever the header doesn't. */
+.qs-head {
+  height: 132px;
+}
+@media (min-width: 761px) {
+  .qs-head {
+    height: 180px;
+  }
+}
+@media (min-width: 901px), (max-height: 520px) {
+  .qs-head {
+    display: none;
+  }
+}
+.qs-nohead {
+  display: none;
+}
+@media (min-width: 901px), (max-height: 520px) {
+  .qs-nohead {
+    display: grid;
+  }
+}
+
+/* Content padding; the 901–1024 window is narrower, so 32px there. */
+.qs-pad {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+@media (min-width: 761px) {
+  .qs-pad {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+@media (min-width: 901px) and (max-width: 1024px) {
+  .qs-pad {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+@media (max-height: 520px) {
+  .qs-pad {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+/* "~60 sec" next to the first option: hidden on phones and narrow windows. */
+.qs-time {
+  display: none;
+}
+@media (min-width: 761px) {
+  .qs-time {
+    display: block;
+  }
+}
+@media (min-width: 901px) and (max-width: 1024px) {
+  .qs-time {
+    display: none;
+  }
+}
+
+/* Answer cards: 2 columns; 1 on very small phones; 4 on short screens. */
+.qs-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 360px) {
+  .qs-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-height: 520px) {
+  .qs-cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .qs-h2 {
+    font-size: 22px;
+  }
+  .qs-sub {
+    margin-top: 4px;
+    font-size: 14px;
+  }
+  .qs-gap {
+    margin-top: 16px;
+  }
+  .qs-row {
+    padding: 12px 16px;
+  }
+}
+
 /* The left column's photo runs 10% above the column, so the dark bands baked
    into the top of some hero images are cropped off. */
 .qs-photo {
@@ -1272,8 +1424,31 @@ input[type="date"]::-webkit-date-and-time-value {
   background-size: cover;
   background-position: center;
 }
+/* A light black vignette only, so the photo stays the hero. */
 .qs-photo-fade {
-  background: linear-gradient(180deg, rgba(31, 49, 73, 0.05) 0%, rgba(31, 49, 73, 0.55) 38%, rgba(27, 43, 65, 0.94) 64%, #1b2b41 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, transparent 22%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+/* The short phone/tablet header has no room for the column's 22% fade, so
+   it gets a firmer top shade behind the brand line. */
+.qs-head-shade {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.42) 0%, transparent 45%);
+}
+/* Under the live summary the bottom deepens to near-black, for legibility. */
+.qs-photo-deep {
+  background: linear-gradient(180deg, transparent 35%, rgba(11, 13, 16, 0.82) 68%, #0b0d10 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.qs-photo-deep.is-on {
+  opacity: 1;
+}
+/* Frosted glass pills over the photo. The global mobile rule strips the blur
+   below 768px (CLAUDE.md #10); the dark fill keeps them legible without it. */
+.qs-glass {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 /* Each new screen, and each new line in the live summary, eases in. */
 .qb-in {
