@@ -13,7 +13,8 @@ import { focusQuoteForm } from '@/components/landing/HeroQuoteForm';
  * light page. Same layout, type, menus and mobile takeover, so the two read as
  * one brand; only the colors change (navy ink on white instead of white on a
  * dark bar), and every "Get a Quote" goes to the form on this page rather than
- * the site's quote-sheet popup.
+ * the site's quote-sheet popup. A page with no form of its own (the FAQ)
+ * passes `onQuote` to open the popup instead.
  *
  * Kept as a port rather than a `theme` prop on Navbar: Navbar runs on every
  * other page, and its dark styling is threaded through dozens of classes.
@@ -42,7 +43,7 @@ const linkClass =
 const SCROLL_SLOP = 6;
 const ALWAYS_SHOW_ABOVE = 80;
 
-export const LandingHeader = () => {
+export const LandingHeader = ({ onQuote = focusQuoteForm }: { onQuote?: () => void } = {}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [callOpen, setCallOpen] = useState(false);
@@ -123,7 +124,7 @@ export const LandingHeader = () => {
   const quoteFromMenu = () => {
     setAreasOpen(false);
     setServicesOpen(false);
-    focusQuoteForm();
+    onQuote();
   };
 
   const closeMenu = () => setIsOpen(false);
@@ -269,7 +270,7 @@ export const LandingHeader = () => {
               <span className="hidden md:inline-flex">
                 <button
                   type="button"
-                  onClick={focusQuoteForm}
+                  onClick={() => onQuote()}
                   className="inline-flex h-[38px] items-center whitespace-nowrap rounded-[10px] bg-sc-navy px-4 text-[13.5px] font-semibold text-white transition-colors hover:bg-[#1c2f46]"
                 >
                   Get a Quote
@@ -374,7 +375,7 @@ export const LandingHeader = () => {
                   onClick={() => {
                     closeMenu();
                     // After the scroll lock lets go, or the scroll lands on a pinned body.
-                    setTimeout(focusQuoteForm, 0);
+                    setTimeout(onQuote, 0);
                   }}
                   className="btn w-full bg-sc-navy text-white hover:bg-[#1c2f46]"
                 >
