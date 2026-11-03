@@ -161,13 +161,35 @@ const Hero = () => (
             z-10: the hero-stagger entrance gives every block in this column
             its own stacking context, so without it the lines below would
             paint over the address suggestions. */}
-        <div id="quote" className="relative z-10 mt-8 scroll-mt-24 lg:max-w-[473px]">
-          <div id="get-price" className="scroll-mt-24">
-            <HeroQuoteForm />
+        <div id="quote" className="relative z-10 mt-10 scroll-mt-24 lg:max-w-[473px]">
+          {/* Inside #quote, so the hero-stagger entrance keeps its count. */}
+          <ul className="flex flex-wrap gap-[14px] text-[13px] font-medium text-[#5b6b80]">
+            {['No commitment', 'No signup', 'No contracts'].map((item) => (
+              <li key={item} className="inline-flex items-center gap-[5px]">
+                <svg
+                  aria-hidden="true"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#16a34a"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="inline-block shrink-0"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                {item}
+              </li>
+            ))}
+          </ul>
+          <div id="get-price" className="mt-[10px] scroll-mt-24">
+            <HeroQuoteForm fastCta placeholder="Your pool's address" />
           </div>
         </div>
 
-        <p className="mt-7 flex items-start gap-2 text-[14.5px] leading-relaxed text-sc-navy/70">
+        <p className="mt-10 flex items-start gap-2 text-[14.5px] leading-relaxed text-sc-navy/70">
           <Phone className="mt-[3px] h-4 w-4 shrink-0 text-sc-navy/55" strokeWidth={2.25} />
           <span>
             Prefer to talk? Call{' '}

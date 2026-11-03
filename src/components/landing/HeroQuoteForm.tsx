@@ -26,6 +26,12 @@ export const focusQuoteForm = () => {
 export const amberButton =
   'group inline-flex items-center justify-center gap-2 rounded-[10px] bg-[linear-gradient(180deg,#ffbf2f,#ffa90a)] font-semibold text-[#1f3149] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_1px_2px_rgba(180,110,0,0.25),0_6px_14px_-6px_rgba(230,140,0,0.55)] transition hover:brightness-[1.03] active:translate-y-px disabled:cursor-wait disabled:opacity-70';
 
+// The homepage hero's "Get a fast price": the logo sun's own two yellows,
+// left to right, with hover lightening, a one-sweep shimmer and a nudging
+// arrow (.get-price-btn in index.css, which also sets its transition).
+const fastPriceButton =
+  'get-price-btn inline-flex items-center justify-center gap-2 rounded-[10px] bg-[linear-gradient(90deg,#FFC405,#FFAE04)] font-semibold text-[#243A55] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_1px_2px_rgba(180,100,0,0.25),0_6px_14px_-6px_rgba(255,162,3,0.6)] active:translate-y-px';
+
 const ButtonArrow = () => (
   <ArrowRight className="h-[18px] w-[18px] transition-transform duration-150 group-hover:translate-x-[3px]" strokeWidth={2.5} />
 );
@@ -81,12 +87,15 @@ export const HeroQuoteForm = ({
   variant,
   source = SOURCE,
   near,
+  fastCta,
 }: {
   placeholder?: string;
   variant?: 'onDark';
   source?: string;
   /** Rank address suggestions nearest this city (see AddressAutocomplete). */
   near?: string;
+  /** The homepage's animated "Get a fast price" button instead of "Get my price". */
+  fastCta?: boolean;
 } = {}) => {
   const onDark = variant === 'onDark';
   const [step, setStep] = useState<'address' | 'details' | 'done'>('address');
@@ -204,10 +213,17 @@ export const HeroQuoteForm = ({
                 near={near}
                 onPick={(s) => (picked.current = s)}
               />
-              <button type="submit" className={`${amberButton} h-12 px-6 text-base${onDark ? ` ${onDarkButtonFocus}` : ''}`}>
-                Get my price
-                <ButtonArrow />
-              </button>
+              {fastCta ? (
+                <button type="submit" className={`${fastPriceButton} h-12 px-6 text-base`}>
+                  Get a fast price
+                  <ArrowRight className="h-[18px] w-[18px]" strokeWidth={2.5} />
+                </button>
+              ) : (
+                <button type="submit" className={`${amberButton} h-12 px-6 text-base${onDark ? ` ${onDarkButtonFocus}` : ''}`}>
+                  Get my price
+                  <ButtonArrow />
+                </button>
+              )}
             </form>
           </div>
           <p aria-live="polite" className={`text-[13.5px] font-medium ${onDark ? 'text-white' : 'text-sc-navy'}`}>
