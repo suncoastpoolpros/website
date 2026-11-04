@@ -2159,3 +2159,19 @@ input[type="date"]::-webkit-date-and-time-value {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: none; }
 }
+
+/* Admin lead finder: the enlarged aerial that opens beside a hovered thumbnail. */
+@keyframes lf-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+.lf-pop {
+  animation: lf-pop 0.12s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lf-pop {
+    animation: none;
+  }
+}
