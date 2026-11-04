@@ -75,7 +75,9 @@
   --color-sc-amber: #ffa203;
   --color-sc-cream: #ffdd4f;
   /* The homepage design system's supporting colors (city pages built on it). */
-  --color-sc-ink: #1f3149; /* text on the gold button */
+  --color-sc-ink: #1f3149; /* text on dark-gold badges */
+  --color-sc-gold-start: #ffc405; /* the gold button's gradient, left */
+  --color-sc-gold-end: #ffae04; /* the gold button's gradient, right */
   --color-sc-mist: #f5f9fd; /* light section background */
   --color-sc-gold: #ffc226; /* labels and stars on dark */
   --color-sc-muted: #5f6368; /* secondary text */
@@ -1218,35 +1220,42 @@ input[type="date"]::-webkit-date-and-time-value {
   }
 }
 
-/* The homepage hero's "Get a fast price" (HeroQuoteForm fastCta). Its text
-   and arrow stay above the ::before/::after layers: isolation + z-index:-1
-   paint them over the button's own gradient but under its content. Keyframe
-   names are prefixed: a bare `shimmer` already backs the animate-shimmer
-   theme utility. */
-.get-price-btn {
+/* The one gold button (amberButton in HeroQuoteForm), on every page built on
+   the homepage design: the homepage, Clearwater, FAQ and the quote popup.
+   Its text and icons stay above the ::before/::after layers: isolation +
+   z-index:-1 paint them over the button's own gradient but under its
+   content. Keyframe names are prefixed: a bare `shimmer` already backs the
+   animate-shimmer theme utility. */
+.gold-btn {
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  background: linear-gradient(90deg, var(--color-sc-gold-start), var(--color-sc-gold-end));
+  color: var(--color-sc-navy);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 1px 2px rgba(180, 100, 0, 0.25),
+    0 6px 14px -6px rgba(255, 162, 3, 0.6);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
 /* Lighter on hover: a brighter overlay fades in at 40%. */
-.get-price-btn::before {
+.gold-btn::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: linear-gradient(90deg, #ffd206, #ffc405);
+  background: linear-gradient(90deg, var(--color-sc-sun), var(--color-sc-gold-start));
   opacity: 0;
   transition: opacity 0.25s ease;
 }
-.get-price-btn:hover::before {
+.gold-btn:not(:disabled):hover::before {
   opacity: 0.4;
 }
 /* Shimmer: one sweep each time the button is hovered, no repeat. */
-.get-price-btn::after {
+.gold-btn::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -1255,31 +1264,32 @@ input[type="date"]::-webkit-date-and-time-value {
   background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.6) 50%, transparent 70%);
   transform: translateX(-120%);
 }
-.get-price-btn:hover::after {
-  animation: get-price-shimmer 0.9s ease-in-out 1 forwards;
+.gold-btn:not(:disabled):hover::after {
+  animation: gold-btn-shimmer 0.9s ease-in-out 1 forwards;
 }
-/* The arrow nudges right and back, continuously. */
-.get-price-btn svg {
-  animation: get-price-nudge 1s ease-in-out infinite;
+/* The arrow nudges right and back, continuously. Only the arrow: a phone or
+   message icon stays put, and a loading spinner keeps its own spin. */
+.gold-btn .lucide-arrow-right {
+  animation: gold-btn-nudge 1s ease-in-out infinite;
 }
 /* A small lift on hover. */
-.get-price-btn:hover {
+.gold-btn:not(:disabled):hover {
   transform: translateY(-2px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
     0 10px 22px -8px rgba(255, 162, 3, 0.75);
 }
-@keyframes get-price-shimmer {
+@keyframes gold-btn-shimmer {
   from { transform: translateX(-120%); }
   to { transform: translateX(120%); }
 }
-@keyframes get-price-nudge {
+@keyframes gold-btn-nudge {
   0%, 100% { transform: translateX(0); }
   50% { transform: translateX(4px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .get-price-btn svg,
-  .get-price-btn:hover::after {
+  .gold-btn .lucide-arrow-right,
+  .gold-btn:not(:disabled):hover::after {
     animation: none;
   }
 }
