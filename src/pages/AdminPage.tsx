@@ -8,6 +8,7 @@ import { ProposalBuilder } from '@/components/admin/ProposalBuilder';
 import { CommercialBuilder } from '@/components/admin/CommercialBuilder';
 import { InspectionBuilder } from '@/components/admin/InspectionBuilder';
 import { QuotesList } from '@/components/admin/QuotesList';
+import { LeadFinder } from '@/components/admin/LeadFinder';
 import { LAST_DOC_KEY, type DocKind } from '@/components/admin/docKinds';
 
 type AuthState = 'loading' | 'locked' | 'unlocked';
@@ -16,7 +17,7 @@ const readLastDoc = (): DocKind | null => {
   if (typeof window === 'undefined') return null;
   try {
     const v = window.localStorage.getItem(LAST_DOC_KEY);
-    return v === 'proposal' || v === 'commercial' || v === 'inspection' || v === 'quotes'
+    return v === 'proposal' || v === 'commercial' || v === 'inspection' || v === 'quotes' || v === 'leads'
       ? v
       : null;
   } catch {
@@ -106,6 +107,7 @@ export const AdminPage = () => {
         <InspectionBuilder onLogout={lock} onBack={backToHome} />
       )}
       {auth === 'unlocked' && doc === 'quotes' && <QuotesList onLogout={lock} onBack={backToHome} />}
+      {auth === 'unlocked' && doc === 'leads' && <LeadFinder onLogout={lock} onBack={backToHome} />}
     </main>
   );
 };

@@ -3,7 +3,7 @@
  * Each builder keeps its own autosaved draft, so switching between them here
  * never disturbs work in progress on the other one.
  */
-import { Building2, ClipboardList, FileText, ListChecks, LogOut, ArrowRight } from 'lucide-react';
+import { Building2, ClipboardList, FileText, House, ListChecks, LogOut, ArrowRight } from 'lucide-react';
 import type { DocKind } from './docKinds';
 
 const CARDS: Array<{ kind: DocKind; title: string; blurb: string; Icon: typeof FileText }> = [
@@ -37,6 +37,13 @@ const CARDS: Array<{ kind: DocKind; title: string; blurb: string; Icon: typeof F
     blurb:
       'Every proposal you’ve sent and what came back — who accepted, which plan they chose, and who hasn’t answered yet.',
     Icon: ListChecks,
+  },
+  {
+    kind: 'leads',
+    title: 'New Homeowner Leads',
+    blurb:
+      'Recently sold homes with a pool near your route stops, ranked from your route and county sales files. Shows when it last ran.',
+    Icon: House,
   },
 ];
 
