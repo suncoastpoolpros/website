@@ -11,13 +11,15 @@
  * can say when it last ran and what it found. The leads leave as a CSV for the
  * CRM, where outreach lives; nothing here contacts anyone.
  *
- * Pools aren't in the county's map data: each lead links to its property page
- * to check.
+ * Pools aren't in the county's map data, and the appraiser's site refuses
+ * automated reads, so each lead's lot is checked for pool water on the county's
+ * aerial photo right after the search (leads/poolCheck.ts), with the photo on
+ * the card and a link to the property page to confirm.
  *
  * Styled on the homepage's kit (adminKit.tsx): white cards on the light
  * section blue, the homepage's fields, and the gold button for the one action.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, ArrowRight, Download, ExternalLink, History, LoaderCircle, MapPin } from 'lucide-react';
 import { AddressAutocomplete, type Suggestion } from '@/components/landing/AddressAutocomplete';
 import {
@@ -38,6 +40,7 @@ import {
 } from './adminKit';
 import { ago, onDate, onDateTime } from './quoteFormat';
 import { toCSV } from './leads/csv';
+import { checkPool, type PoolCheck } from './leads/poolCheck';
 import {
   money,
   rankLeads,
@@ -127,8 +130,9 @@ const readSettings = (): Settings => {
 /** A week without a run is worth flagging: new owners pick a company early. */
 const STALE_DAYS = 7;
 
-const LEAD_COLUMNS: Array<keyof Lead> = [
-  'priority_score',
+const LEAD_COLUMNS = [
+  'pool_on_aerial',
+  'pool_water_m2',
   'street_address',
   'city',
   'zip',
@@ -143,6 +147,25 @@ const LEAD_COLUMNS: Array<keyof Lead> = [
   'parcel_id',
   'county_page',
 ];
+
+type SortKey = 'newest' | 'closest' | 'price' | 'pool';
+
+/** More leads than this and the rest are checked as you open them, not all at once. */
+const POOL_CHECK_LIMIT = 250;
+/** Aerial photos fetched at a time: quick, and light on the county's image server. */
+const POOL_CHECK_CONCURRENCY = 4;
+
+const POOL_RANK: Record<string, number> = { seen: 0, possible: 1, none: 2, error: 3 };
+
+const POOL_LABEL: Record<string, { text: string; cls: string }> = {
+  seen: { text: 'Pool seen', cls: 'bg-[#e7f6ee] text-[#13804b]' },
+  possible: { text: 'Possible pool', cls: 'bg-[#fff8e1] text-[#8a6100]' },
+  none: { text: 'No pool seen', cls: 'bg-sc-mist text-sc-navy/60' },
+  error: { text: 'Photo unavailable', cls: 'bg-sc-mist text-sc-navy/60' },
+};
+
+const poolCsv = (c: PoolCheck | undefined): string =>
+  !c ? 'not checked' : c.status === 'seen' ? 'seen' : c.status === 'possible' ? 'possible' : c.status === 'none' ? 'none seen' : 'photo unavailable';
 
 /** "Oct 31": the year is in the run history; this tile only has room for the day. */
 const monthDay = (iso: string): string =>
@@ -242,6 +265,10 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
   const [history, setHistory] = useState<RunHistory>({ kind: 'loading' });
   const [showAll, setShowAll] = useState(false);
   const [running, setRunning] = useState(false);
+  // Pool checks by parcel, filled in as the aerials come back.
+  const [pools, setPools] = useState<Record<string, PoolCheck>>({});
+  const [sort, setSort] = useState<SortKey>('newest');
+  const [poolsOnly, setPoolsOnly] = useState(false);
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -269,6 +296,31 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
   // repeat search is one press.
   useEffect(() => store(SETTINGS_KEY, settings), [settings]);
   useEffect(() => store(CENTER_KEY, center), [center]);
+
+  // After each search, check every lead's lot on the aerial photo, a few at a
+  // time. A new search abandons the old queue.
+  useEffect(() => {
+    if (!result) return;
+    setPools({});
+    const ctrl = new AbortController();
+    const queue = result.leads.filter((l) => l.ring).slice(0, POOL_CHECK_LIMIT);
+    let next = 0;
+    const worker = async () => {
+      while (next < queue.length && !ctrl.signal.aborted) {
+        const lead = queue[next++];
+        let check: PoolCheck;
+        try {
+          check = await checkPool(lead.ring as Array<[number, number]>, ctrl.signal);
+        } catch {
+          if (ctrl.signal.aborted) return;
+          check = { status: 'error', thumb: null };
+        }
+        if (!ctrl.signal.aborted) setPools((p) => ({ ...p, [lead.parcel_id]: check }));
+      }
+    };
+    for (let i = 0; i < POOL_CHECK_CONCURRENCY; i++) worker();
+    return () => ctrl.abort();
+  }, [result]);
 
   const setText = (k: 'lookbackDays' | 'radius' | 'minPrice' | 'maxPrice') => (e: { target: { value: string } }) =>
     setSettings((s) => ({ ...s, [k]: e.target.value }));
@@ -385,7 +437,11 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
   const download = () => {
     if (!result) return;
     const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
-    const blob = new Blob([toCSV(LEAD_COLUMNS, result.leads)], { type: 'text/csv;charset=utf-8' });
+    const rows = visible.map((l) => {
+      const c = pools[l.parcel_id];
+      return { ...l, pool_on_aerial: poolCsv(c), pool_water_m2: c && c.status !== 'error' ? c.waterM2 : '' };
+    });
+    const blob = new Blob([toCSV(LEAD_COLUMNS, rows)], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -397,7 +453,30 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
   const last = history.kind === 'ready' ? history.runs[0] : undefined;
   const lastDays = last ? (Date.now() - new Date(last.ran_at).getTime()) / 86_400_000 : null;
   const stale = result && result.signature !== signature;
-  const shown = result ? (showAll ? result.leads : result.leads.slice(0, 50)) : [];
+  const checkable = result ? Math.min(POOL_CHECK_LIMIT, result.leads.filter((l) => l.ring).length) : 0;
+  const checked = Object.keys(pools).length;
+  const poolCounts = useMemo(() => {
+    const c = { seen: 0, possible: 0 };
+    for (const v of Object.values<PoolCheck>(pools)) if (v.status === 'seen' || v.status === 'possible') c[v.status]++;
+    return c;
+  }, [pools]);
+  const visible = useMemo(() => {
+    if (!result) return [] as Lead[];
+    const list = poolsOnly
+      ? result.leads.filter((l) => ['seen', 'possible'].includes(pools[l.parcel_id]?.status ?? ''))
+      : [...result.leads];
+    const rank = (l: Lead) => POOL_RANK[pools[l.parcel_id]?.status ?? 'error'] ?? 4;
+    return list.sort((a, b) =>
+      sort === 'closest'
+        ? a.straight_line_miles - b.straight_line_miles
+        : sort === 'price'
+          ? (b.sale_price ?? 0) - (a.sale_price ?? 0)
+          : sort === 'pool'
+            ? rank(a) - rank(b) || b.sale_date.localeCompare(a.sale_date)
+            : b.sale_date.localeCompare(a.sale_date),
+    );
+  }, [result, pools, poolsOnly, sort]);
+  const shown = showAll ? visible : visible.slice(0, 50);
   // Most-common reason first.
   const exclusions = Object.entries<number>(result?.excluded ?? {}).sort((a, b) => b[1] - a[1]);
   const excludedTotal = exclusions.reduce((n, [, v]) => n + v, 0);
@@ -537,52 +616,127 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                   </p>
                 )}
 
+                {result.leads.length > 0 && (
+                  <div className={`${tileClass} space-y-3 px-4 py-3`}>
+                    <p className="text-[14px] text-sc-navy/80">
+                      {checked < checkable ? (
+                        <span className="inline-flex items-center gap-2">
+                          <LoaderCircle className="h-4 w-4 animate-spin text-sc-blue" /> Checking aerial photos for pools…{' '}
+                          {checked} of {checkable}
+                        </span>
+                      ) : (
+                        <>
+                          <span className="font-semibold text-sc-navy">{poolCounts.seen} with a pool seen</span>
+                          {poolCounts.possible ? `, ${poolCounts.possible} possible` : ''} on the 2026 aerial photos.
+                        </>
+                      )}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                      <label className="flex items-center gap-2 text-[14px] font-semibold text-sc-navy">
+                        Sort
+                        <select
+                          value={sort}
+                          onChange={(e) => setSort(e.target.value as SortKey)}
+                          className="h-10 rounded-[10px] bg-white px-3 text-[14px] font-medium text-sc-navy ring-1 ring-sc-navy/[0.18] focus:outline-none focus:ring-2 focus:ring-sc-blue/50"
+                        >
+                          <option value="newest">Newest sale</option>
+                          <option value="pool">Pools first</option>
+                          <option value="closest">Closest</option>
+                          <option value="price">Highest price</option>
+                        </select>
+                      </label>
+                      <label className="flex cursor-pointer items-center gap-2 text-[14px] font-semibold text-sc-navy">
+                        <input
+                          type="checkbox"
+                          checked={poolsOnly}
+                          onChange={(e) => setPoolsOnly(e.target.checked)}
+                          className="h-4 w-4 accent-[#2676b6]"
+                        />
+                        Only homes with a pool seen or possible
+                      </label>
+                    </div>
+                  </div>
+                )}
+
                 {result.leads.length === 0 ? (
                   <p className={bodyText}>
                     No qualifying leads. The exclusion counts below say why: the distance, the window, the price range or
                     the property type.
                   </p>
+                ) : visible.length === 0 ? (
+                  <p className={bodyText}>
+                    {checked < checkable ? 'No pools found yet. Still checking…' : 'No pools seen on these lots’ photos.'}
+                  </p>
                 ) : (
                   <ul className="space-y-3">
-                    {shown.map((r) => (
-                      <li key={r.parcel_id} className="rounded-[12px] p-4 ring-1 ring-inset ring-sc-navy/[0.12]">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="text-[16px] font-semibold text-sc-navy">{r.street_address}</p>
+                    {shown.map((r) => {
+                      const pool = pools[r.parcel_id];
+                      const label = pool ? POOL_LABEL[pool.status] : null;
+                      return (
+                        <li
+                          key={r.parcel_id}
+                          className="flex gap-4 rounded-[12px] p-3 ring-1 ring-inset ring-sc-navy/[0.12] sm:p-4"
+                        >
+                          <a
+                            href={r.county_page}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`${r.street_address} on the county property page`}
+                            className="block h-24 w-24 shrink-0 overflow-hidden rounded-[10px] bg-sc-mist sm:h-32 sm:w-32"
+                          >
+                            {pool?.thumb ? (
+                              <img src={pool.thumb} alt="" className="h-full w-full object-cover" />
+                            ) : r.ring && pool?.status !== 'error' ? (
+                              <span className="flex h-full w-full items-center justify-center">
+                                <LoaderCircle className="h-5 w-5 animate-spin text-sc-navy/30" />
+                              </span>
+                            ) : null}
+                          </a>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+                              <p className="text-[16px] font-semibold text-sc-navy">{r.street_address}</p>
+                              {label && (
+                                <span
+                                  className={`shrink-0 rounded-full px-2.5 py-0.5 text-[12.5px] font-semibold ${label.cls}`}
+                                  title={
+                                    pool && pool.status !== 'error'
+                                      ? `About ${pool.waterM2} m² of open water inside the lot on the 2026 aerial`
+                                      : undefined
+                                  }
+                                >
+                                  {label.text}
+                                </span>
+                              )}
+                            </div>
                             <p className="text-[14px] text-sc-navy/60">
                               {[r.city, `FL ${r.zip}`.trim()].filter(Boolean).join(', ')} · {r.property_type}
                               {r.living_sqft && r.living_sqft !== '0 sf' ? ` · ${r.living_sqft}` : ''}
                             </p>
+                            <p className="mt-1.5 text-[14px] text-sc-navy/80">
+                              Sold {onDate(`${r.sale_date}T12:00:00Z`)} ({r.days_since_sale} days ago)
+                              {r.sale_price !== null ? ` · ${dollars(r.sale_price)}` : ''} · {r.straight_line_miles} mi
+                              away
+                            </p>
+                            {r.owner_on_record && (
+                              <p className="mt-1 text-[13.5px] text-sc-navy/60">Owner on record: {r.owner_on_record}</p>
+                            )}
+                            <a
+                              href={r.county_page}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-1.5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-sc-blue hover:text-sc-navy"
+                            >
+                              County property page <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
                           </div>
-                          <span
-                            className="shrink-0 rounded-full bg-[#e7f6ee] px-2.5 py-1 text-[14px] font-bold tabular-nums text-[#13804b]"
-                            title="Priority: 60% how recently it sold, 40% how close it is"
-                          >
-                            {r.priority_score}
-                          </span>
-                        </div>
-                        <p className="mt-2 text-[14px] text-sc-navy/80">
-                          Sold {onDate(`${r.sale_date}T12:00:00Z`)} ({r.days_since_sale} days ago)
-                          {r.sale_price !== null ? ` · ${dollars(r.sale_price)}` : ''} · {r.straight_line_miles} mi away
-                        </p>
-                        {r.owner_on_record && (
-                          <p className="mt-1 text-[13.5px] text-sc-navy/60">Owner on record: {r.owner_on_record}</p>
-                        )}
-                        <a
-                          href={r.county_page}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-2 inline-flex items-center gap-1.5 text-[14px] font-semibold text-sc-blue hover:text-sc-navy"
-                        >
-                          Check for a pool on the county page <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
-                      </li>
-                    ))}
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
-                {result.leads.length > shown.length && (
+                {visible.length > shown.length && (
                   <button type="button" onClick={() => setShowAll(true)} className={smallButton}>
-                    Show all {result.leads.length.toLocaleString()}
+                    Show all {visible.length.toLocaleString()}
                   </button>
                 )}
 
@@ -677,8 +831,9 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
 
             <p className={mutedText}>
               Sales come from the Pinellas County Property Appraiser’s public records. Pools aren’t in that data, so each
-              lead links to its county page to check. Distances are straight-line, not driving. Nothing here contacts
-              anyone: outreach happens in the CRM.
+              lot is checked for pool water on the county’s 2026 aerial photo. A pool under a screen cage or heavy shade
+              can read as none seen, so glance at the photo. Distances are straight-line, not driving. Nothing here
+              contacts anyone: outreach happens in the CRM.
             </p>
           </aside>
         </div>

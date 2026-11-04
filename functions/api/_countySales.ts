@@ -7,12 +7,15 @@
  *      four before it): sale date, price, property-use code, the qualified-sale
  *      flag, living area and the parcel's map point. The county does the radius
  *      search itself.
- *   2. The county's parcel layer: site address, city, ZIP and the owner on
- *      record with their mailing address. Its own sale fields are empty, which
- *      is why the sales come from (1).
+ *   2. The county's parcel layer: site address, city, ZIP, the owner on record
+ *      with their mailing address, and the lot's outline (for the pool check
+ *      on the aerial photo). Its own sale fields are empty, which is why the
+ *      sales come from (1).
  *
  * What neither layer has is POOLS. The appraiser lists a pool under "Extra
- * Features" on each property's page only, so every lead links there to check.
+ * Features" on each property's page only, and that site refuses automated
+ * reads, so the lead finder looks for water inside the lot outline on the
+ * county's aerial photo instead (see aerial.ts and leads/poolCheck.ts).
  *
  * Kept light on the county's servers: one radius query per year layer (paged
  * past 2,000 rows), then the address lookups in batches. Timeouts throughout,
@@ -50,11 +53,20 @@ export type CountySale = {
   zip: string;
   owner: string;
   mailing: string;
+  /** The lot's outer boundary as [lng, lat] points, or null if the parcel had none. */
+  ring: Array<[number, number]> | null;
 };
+
+/** Outline points kept per lot: plenty for a residential lot, bounded for odd ones. */
+const MAX_RING_POINTS = 80;
 
 export type CountyResult = { sales: CountySale[]; truncated: boolean; loadedAt: string | null };
 
-type Feature = { attributes: Record<string, unknown>; geometry?: { x?: number; y?: number } };
+type Feature = {
+  attributes: Record<string, unknown>;
+  /** A point (sales layer) or a polygon's rings (parcel layer). */
+  geometry?: { x?: number; y?: number; rings?: Array<Array<[number, number]>> };
+};
 type QueryResponse = { features?: Feature[]; exceededTransferLimit?: boolean; error?: { message?: string } };
 
 const post = async (url: string, params: Record<string, string | number>): Promise<QueryResponse> => {
@@ -131,6 +143,7 @@ export const fetchCountySales = async ({
   // they go into the query text.
   const straps = [...new Set(raw.map((f) => str(f.attributes.STRAP)).filter((s) => /^\d{18}$/.test(s)))];
   const parcels = new Map<string, Record<string, unknown>>();
+  const rings = new Map<string, Array<[number, number]>>();
   const batches: string[][] = [];
   for (let i = 0; i < straps.length; i += ADDRESS_BATCH) batches.push(straps.slice(i, i + ADDRESS_BATCH));
   // A few at a time: fast enough, and polite to the county's server.
@@ -140,11 +153,23 @@ export const fetchCountySales = async ({
         post(PARCELS, {
           where: `STRAP IN (${batch.map((s) => `'${s}'`).join(',')})`,
           outFields: 'STRAP,SITE_ADDRESS,SITE_CITY,SITE_ZIP,OWNER1,OWNADD_1,OWNCITY,OWNSTATE,OWNZIP',
-          returnGeometry: 'false',
+          returnGeometry: 'true',
+          outSR: 4326,
+          geometryPrecision: 6,
         }),
       ),
     );
-    for (const r of results) for (const f of r.features ?? []) parcels.set(str(f.attributes.STRAP), f.attributes);
+    for (const r of results) {
+      for (const f of r.features ?? []) {
+        const strap = str(f.attributes.STRAP);
+        parcels.set(strap, f.attributes);
+        const ring = f.geometry?.rings?.[0];
+        if (ring && ring.length >= 3) {
+          const step = Math.ceil(ring.length / MAX_RING_POINTS);
+          rings.set(strap, ring.filter((_, i) => i % step === 0));
+        }
+      }
+    }
   }
 
   const sales: CountySale[] = [];
@@ -174,6 +199,7 @@ export const fetchCountySales = async ({
       zip: str(p.SITE_ZIP).slice(0, 5),
       owner: str(p.OWNER1),
       mailing,
+      ring: rings.get(strap) ?? null,
     });
   }
   return { sales, truncated, loadedAt };

@@ -1,7 +1,6 @@
 /**
  * New-homeowner leads: recent Pinellas sales within a set distance of one
- * address, narrowed by property type, sale type and price, ranked by how
- * recently they sold and how close they are.
+ * address, narrowed by property type, sale type and price, newest sale first.
  *
  * The sales come from the county (functions/api/_countySales.ts), already cut
  * to the radius and date window there. Everything else is decided here, in the
@@ -9,8 +8,9 @@
  * Nothing is guessed: a sale with no address or price (when a range is set) is
  * excluded, never filled in.
  *
- * POOLS are not in the county's map data. Each lead links to its property
- * page, where a pool is listed under Extra Features.
+ * POOLS are not in the county's map data. Each lead carries its lot outline
+ * so the page can look for water on the aerial photo (poolCheck.ts), and links
+ * to its property page, where a pool is listed under Extra Features.
  */
 import type { CountySale } from '../../../../functions/api/_countySales';
 
@@ -20,7 +20,6 @@ export type { CountySale };
 export type SearchPoint = { street: string; zip: string; lat: number; lng: number };
 
 export type Lead = {
-  priority_score: number;
   street_address: string;
   city: string;
   zip: string;
@@ -36,6 +35,8 @@ export type Lead = {
   parcel_id: string;
   /** The appraiser's page for this parcel: where a pool would be listed. */
   county_page: string;
+  /** The lot outline, for the aerial pool check. */
+  ring: Array<[number, number]> | null;
 };
 
 export type LeadResult = {
@@ -137,15 +138,7 @@ export const milesBetween = (aLat: number, aLng: number, bLat: number, bLng: num
 const daysBetween = (fromIso: string, toIso: string): number =>
   Math.round((Date.parse(toIso) - Date.parse(fromIso)) / 86_400_000);
 
-// ── Ranking ──────────────────────────────────────────────────────────────────
-
-/**
- * Score 0–100: 60% how recently it sold (a new owner picks a pool company in
- * the first weeks), 40% how close it is to the search address. Both scale
- * linearly across the chosen window and radius.
- */
-const score = (days: number, lookbackDays: number, miles: number, radius: number): number =>
-  Math.round(100 * (0.6 * (1 - days / lookbackDays) + 0.4 * (1 - miles / radius)));
+// ── Filtering ────────────────────────────────────────────────────────────────
 
 export const rankLeads = ({
   center,
@@ -235,7 +228,6 @@ export const rankLeads = ({
     }
 
     leads.push({
-      priority_score: score(days, lookbackDays, miles, radius),
       street_address: titleCase(s.address),
       city: titleCase(s.city),
       zip: s.zip,
@@ -249,9 +241,10 @@ export const rankLeads = ({
       owner_mailing_address: s.mailing,
       parcel_id: s.strap,
       county_page: countyPage(s.strap),
+      ring: s.ring,
     });
   }
 
-  leads.sort((a, b) => b.priority_score - a.priority_score || b.sale_date.localeCompare(a.sale_date));
+  leads.sort((a, b) => b.sale_date.localeCompare(a.sale_date) || a.straight_line_miles - b.straight_line_miles);
   return { leads, excluded, newestSale };
 };
