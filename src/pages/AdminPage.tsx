@@ -13,6 +13,13 @@ import { LAST_DOC_KEY, type DocKind } from '@/components/admin/docKinds';
 
 type AuthState = 'loading' | 'locked' | 'unlocked';
 
+/**
+ * Screens already on the homepage-style kit (adminKit.tsx), which sit on the
+ * homepage's light section blue. The rest still use the dark theme until
+ * they're moved over.
+ */
+const LIGHT_DOCS: Array<DocKind | null> = [null, 'leads'];
+
 const readLastDoc = (): DocKind | null => {
   if (typeof window === 'undefined') return null;
   try {
@@ -83,10 +90,14 @@ export const AdminPage = () => {
   const backToHome = () => pickDoc(null);
 
   return (
-    <main className="min-h-dvh bg-navy text-white">
+    <main
+      className={`min-h-dvh ${
+        auth !== 'unlocked' || LIGHT_DOCS.includes(doc) ? 'bg-sc-mist font-sans text-sc-navy' : 'bg-navy text-white'
+      }`}
+    >
       {auth === 'loading' && (
         <div className="flex min-h-dvh items-center justify-center">
-          <LoaderCircle className="h-8 w-8 animate-spin text-brand-blue-light" />
+          <LoaderCircle className="h-8 w-8 animate-spin text-sc-blue" />
         </div>
       )}
       {auth === 'locked' && <AdminKeypad onUnlock={() => setAuth('unlocked')} />}

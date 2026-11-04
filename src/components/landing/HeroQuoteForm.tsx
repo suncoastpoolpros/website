@@ -32,7 +32,7 @@ const ButtonArrow = () => (
   <ArrowRight className="h-[18px] w-[18px] transition-transform duration-150 group-hover:translate-x-[3px]" strokeWidth={2.5} />
 );
 
-const raisedShadow =
+export const raisedShadow =
   'shadow-[0_0_0_1px_rgba(36,58,85,0.14),0_1px_2px_rgba(16,24,40,0.05),0_12px_32px_-14px_rgba(36,58,85,0.28)]';
 // Over a dark photo: a deeper shadow, the address bar set in a frosted frame
 // (its blur is dropped on phones by the global mobile blur ban, CLAUDE.md
@@ -43,9 +43,9 @@ const onDarkButtonFocus = 'focus-visible:outline-3 focus-visible:outline-offset-
 
 const cardClass = `rounded-[14px] bg-white p-6 ${raisedShadow}`;
 
-const fieldLabel = 'mb-1.5 block text-[13.5px] font-semibold text-sc-navy';
+export const fieldLabel = 'mb-1.5 block text-[13.5px] font-semibold text-sc-navy';
 
-const inputClass =
+export const inputClass =
   'h-12 w-full rounded-[10px] bg-white px-4 text-base text-sc-navy ring-1 ring-sc-navy/[0.18] placeholder:text-sc-navy/40 transition focus:outline-none focus:ring-2 focus:ring-sc-blue/50';
 
 // A radio styled as one segment of a segmented control.

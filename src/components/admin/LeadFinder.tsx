@@ -1,44 +1,48 @@
 /**
- * /admin → New Homeowner Leads. Recently sold homes with a pool, near a stop
- * we already drive to.
+ * /admin → New Homeowner Leads. Recently sold homes with a pool within a set
+ * distance of one address, optionally inside a sale-price range.
  *
- * Two CSVs go in (route stops, property sales) and are read IN THE BROWSER:
- * neither file is uploaded. Single homes can also be added by hand, with the
- * address placed by the site's Mapbox lookup, and each one gets its own answer.
- * The route file and the hand-added homes are remembered on this device only,
- * so a quick check is: type an address, press Run. Press Run and the leads are ranked here
+ * The search address is typed and picked from the site's address lookup,
+ * which supplies its map position. The sold homes come from the county sales
+ * CSV, read IN THE BROWSER and never uploaded. The leads are ranked here
  * (leads/leadEngine.ts); the only thing sent to the server is a summary of the
- * run (settings and counts, never an address), so the page can say when it last
- * ran and what it found. The leads leave as a CSV for the CRM, where outreach
- * lives; nothing here contacts anyone.
+ * run (settings and counts, never an address), so the page can say when it
+ * last ran and what it found. The leads leave as a CSV for the CRM, where
+ * outreach lives; nothing here contacts anyone.
+ *
+ * Styled on the homepage's kit (adminKit.tsx): white cards on the light
+ * section blue, the homepage's fields, and the gold button for the one action.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  AlertCircle,
-  ChevronLeft,
-  Download,
-  FileSpreadsheet,
-  History,
-  LoaderCircle,
-  LogOut,
-  MapPin,
-  Play,
-  Plus,
-  Upload,
-  X,
-} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AlertCircle, ArrowRight, Download, FileSpreadsheet, History, LoaderCircle, MapPin, Upload } from 'lucide-react';
 import { AddressAutocomplete, type Suggestion } from '@/components/landing/AddressAutocomplete';
-import { CollapsibleSection, Section } from './adminUi';
+import {
+  AdminBody,
+  AdminHeader,
+  Card,
+  PageHead,
+  Stat,
+  bodyText,
+  buttonClass,
+  cardClass,
+  fieldLabel,
+  inputClass,
+  mutedText,
+  notice,
+  smallButton,
+  tileClass,
+} from './adminKit';
 import { ago, onDate, onDateTime } from './quoteFormat';
 import { parseCSV, toCSV, type CsvRow } from './leads/csv';
 import {
-  ROUTE_COLUMNS,
   SALES_COLUMNS,
-  auditRoutes,
   missingColumns,
+  money,
   rankLeads,
+  shortMoney,
   type Lead,
   type LeadResult,
+  type SearchPoint,
 } from './leads/leadEngine';
 
 type LoadedFile = { name: string; rows: CsvRow[]; missing: string[] };
@@ -62,25 +66,13 @@ type RunHistory =
   | { kind: 'ready'; storage: boolean; runs: Run[]; total: number }
   | { kind: 'error' };
 
-type Settings = { asOf: string; lookbackDays: string; radius: string };
+type Settings = { asOf: string; lookbackDays: string; radius: string; minPrice: string; maxPrice: string };
+
+/** The search address, with the full line it was picked as. */
+type Center = SearchPoint & { label: string };
 
 const SETTINGS_KEY = 'scpp_admin_lead_settings';
-const ROUTES_KEY = 'scpp_admin_lead_routes';
-const HAND_KEY = 'scpp_admin_lead_hand';
-
-/** A home typed in rather than read from the sales file. */
-type HandHome = {
-  id: string;
-  street: string;
-  city: string;
-  state: string;
-  zip: string;
-  lat: number;
-  lng: number;
-  saleDate: string;
-  salePrice: string;
-  hasPool: boolean;
-};
+const CENTER_KEY = 'scpp_admin_lead_center';
 
 const readStored = <T,>(key: string, fallback: T): T => {
   try {
@@ -100,39 +92,21 @@ const store = (key: string, value: unknown) => {
   }
 };
 
-/** "St. Petersburg, FL 33701" → its parts. */
-const splitPlace = (line2: string): { city: string; state: string; zip: string } => {
-  const m = /^(.*?),\s*([A-Z]{2})(?:\s+(\d{5}))?\s*$/.exec(line2.trim());
-  return m ? { city: m[1], state: m[2], zip: m[3] ?? '' } : { city: line2.trim(), state: '', zip: '' };
-};
-
-const handRow = (h: HandHome): CsvRow => ({
-  street_address: h.street,
-  city: h.city,
-  state: h.state,
-  zip: h.zip,
-  sale_date: h.saleDate,
-  sale_price: h.salePrice,
-  has_pool: h.hasPool ? 'Y' : 'N',
-  latitude: String(h.lat),
-  longitude: String(h.lng),
-  source: 'hand',
-});
-
 /** Today in Florida, as YYYY-MM-DD. */
 const todayEt = (): string =>
   new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
 
 const readSettings = (): Settings => {
-  const base = { asOf: todayEt(), lookbackDays: '90', radius: '5' };
-  try {
-    const saved = JSON.parse(window.localStorage.getItem(SETTINGS_KEY) ?? '{}') as Partial<Settings>;
-    // The as-of date is always today on a fresh visit: a remembered one would
-    // quietly re-run last month's window.
-    return { ...base, lookbackDays: saved.lookbackDays ?? base.lookbackDays, radius: saved.radius ?? base.radius };
-  } catch {
-    return base;
-  }
+  const saved = readStored<Partial<Settings>>(SETTINGS_KEY, {});
+  // The as-of date is always today on a fresh visit: a remembered one would
+  // quietly re-run last month's window.
+  return {
+    asOf: todayEt(),
+    lookbackDays: saved.lookbackDays ?? '90',
+    radius: saved.radius ?? '2',
+    minPrice: saved.minPrice ?? '',
+    maxPrice: saved.maxPrice ?? '',
+  };
 };
 
 /** A week without a run is worth flagging: new owners pick a company early. */
@@ -149,18 +123,27 @@ const LEAD_COLUMNS: Array<keyof Lead> = [
   'sale_price',
   'days_since_sale',
   'straight_line_miles',
-  'stops_within_1_mile',
-  'nearest_route_stop_id',
-  'nearest_technician',
-  'nearest_service_day',
-  'source',
 ];
 
-const input =
-  'h-11 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-white placeholder-gray-500 focus:border-brand-blue-light focus:outline-none';
-const label = 'mb-1.5 block text-sm font-medium text-gray-300';
-const ghostButton =
-  'inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm text-gray-300 hover:bg-white/5';
+/** "Oct 31": the year is in the run history; this tile only has room for the day. */
+const monthDay = (iso: string): string =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+
+/** A county price as written ("950000", "$950,000.00") shown as $950,000. */
+const showPrice = (raw: string): string => {
+  const n = money(raw);
+  return n === null ? raw : `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+};
+
+/** "$400k–$900k", "over $400k", "under $900k" or '' for no range. */
+const priceRange = (min: number | null, max: number | null): string =>
+  min !== null && max !== null
+    ? `${shortMoney(min)}–${shortMoney(max)}`
+    : min !== null
+      ? `over ${shortMoney(min)}`
+      : max !== null
+        ? `under ${shortMoney(max)}`
+        : '';
 
 const FilePick = ({
   title,
@@ -176,20 +159,20 @@ const FilePick = ({
   const ref = useRef<HTMLInputElement>(null);
   const bad = file && (file.missing.length > 0 || file.rows.length === 0);
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+    <div className={`${tileClass} p-4`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-semibold text-white">{title}</p>
+          <p className="text-[15px] font-semibold text-sc-navy">{title}</p>
           {file ? (
-            <p className={`mt-1 truncate text-sm ${bad ? 'text-red-300' : 'text-gray-400'}`}>
-              <FileSpreadsheet className="mr-1 inline h-4 w-4 align-[-3px]" />
+            <p className={`mt-1 truncate text-[13.5px] ${bad ? 'font-medium text-red-700' : 'text-sc-navy/65'}`}>
+              <FileSpreadsheet className="mr-1 inline h-4 w-4 align-[-3px] text-sc-blue" />
               {file.name} · {file.rows.length.toLocaleString()} rows
             </p>
           ) : (
-            <p className="mt-1 text-sm text-gray-500">No file yet</p>
+            <p className="mt-1 text-[13.5px] text-sc-navy/50">No file yet</p>
           )}
         </div>
-        <button type="button" onClick={() => ref.current?.click()} className={`${ghostButton} shrink-0`}>
+        <button type="button" onClick={() => ref.current?.click()} className={`${smallButton} shrink-0 bg-white`}>
           <Upload className="h-4 w-4" /> {file ? 'Replace' : 'Choose CSV'}
         </button>
         <input
@@ -204,111 +187,67 @@ const FilePick = ({
           }}
         />
       </div>
-      {file && file.rows.length === 0 && <p className="mt-2 text-sm text-red-300">This file has no data rows.</p>}
+      {file && file.rows.length === 0 && <p className={`mt-3 ${notice.error}`}>This file has no data rows.</p>}
       {file && file.missing.length > 0 && (
-        <p className="mt-2 text-sm text-red-300">Missing columns: {file.missing.join(', ')}</p>
+        <p className={`mt-3 ${notice.error}`}>Missing columns: {file.missing.join(', ')}</p>
       )}
-      <p className="mt-3 text-xs leading-relaxed text-gray-500">
-        Needs: <span className="font-mono text-gray-400">{columns.join(', ')}</span>
+      <p className="mt-3 text-[12px] leading-relaxed text-sc-navy/50">
+        Needs: <span className="font-mono text-sc-navy/70">{columns.join(', ')}</span>
+        <br />
+        Optional: <span className="font-mono text-sc-navy/70">sale_price, parcel_id</span>
       </p>
     </div>
   );
 };
 
 /**
- * One home at a time. The address has to be PICKED from the suggestions: that
- * is where its map position comes from, and a typed address with no position
- * can't be measured against a stop.
+ * The search address. It has to be PICKED from the suggestions: that is where
+ * its map position comes from, and a typed address with no position can't be
+ * measured from.
  */
-const HandEntry = ({ onAdd }: { onAdd: (h: HandHome) => void }) => {
-  const [picked, setPicked] = useState<Suggestion | null>(null);
-  const [saleDate, setSaleDate] = useState('');
-  const [salePrice, setSalePrice] = useState('');
-  const [hasPool, setHasPool] = useState(true);
-  // Remounts the address field empty after each add.
-  const [fieldKey, setFieldKey] = useState(0);
+const CenterPicker = ({ center, onChange }: { center: Center | null; onChange: (c: Center | null) => void }) => {
+  const [noPosition, setNoPosition] = useState(false);
 
-  const placed = picked && typeof picked.lat === 'number' && typeof picked.lng === 'number';
-  const ready = !!placed && !!saleDate;
+  if (center) {
+    return (
+      <div className={`${tileClass} flex items-center gap-3 px-4 py-3`}>
+        <MapPin className="h-5 w-5 shrink-0 text-sc-blue" />
+        <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-sc-navy">{center.label}</span>
+        <button
+          type="button"
+          onClick={() => onChange(null)}
+          className="shrink-0 text-[14px] font-semibold text-sc-navy underline decoration-sc-navy/30 underline-offset-[3px] transition hover:decoration-sc-navy"
+        >
+          Change
+        </button>
+      </div>
+    );
+  }
 
-  const add = () => {
-    if (!ready || !picked) return;
-    onAdd({
-      id: `${picked.id}-${Date.now()}`,
-      street: picked.line1,
-      ...splitPlace(picked.line2),
-      lat: picked.lat as number,
-      lng: picked.lng as number,
-      saleDate,
-      salePrice: salePrice.trim(),
-      hasPool,
-    });
-    setPicked(null);
-    setSaleDate('');
-    setSalePrice('');
-    setHasPool(true);
-    setFieldKey((k) => k + 1);
+  const pick = (s: Suggestion | null) => {
+    if (!s) return setNoPosition(false);
+    if (typeof s.lat !== 'number' || typeof s.lng !== 'number') return setNoPosition(true);
+    const zip = /\b(\d{5})\b/.exec(s.line2)?.[1] ?? '';
+    onChange({ label: s.full, street: s.line1, zip, lat: s.lat, lng: s.lng });
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <span className={label}>Address</span>
-        <div key={fieldKey} className="flex rounded-lg bg-white">
-          <AddressAutocomplete name="lead-address" placeholder="Start typing an address" onPick={setPicked} />
-        </div>
-        {picked && !placed && (
-          <p className="mt-1.5 text-sm text-red-300">That address came back without a map position. Try another match.</p>
-        )}
+    <div>
+      <span className={fieldLabel}>Address</span>
+      <div className="flex rounded-[10px] bg-white ring-1 ring-sc-navy/[0.18] focus-within:ring-2 focus-within:ring-sc-blue/50">
+        <AddressAutocomplete name="lead-center" placeholder="Start typing an address" onPick={pick} />
       </div>
-      <div className="grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-        <label>
-          <span className={label}>Sold on</span>
-          <input
-            type="date"
-            value={saleDate}
-            onChange={(e) => setSaleDate(e.target.value)}
-            className={`${input} [color-scheme:dark]`}
-          />
-        </label>
-        <label>
-          <span className={label}>Sale price (optional)</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={salePrice}
-            onChange={(e) => setSalePrice(e.target.value)}
-            placeholder="$540,000"
-            className={input}
-          />
-        </label>
-        <label className="flex h-11 items-center gap-2 text-sm text-gray-300">
-          <input
-            type="checkbox"
-            checked={hasPool}
-            onChange={(e) => setHasPool(e.target.checked)}
-            className="h-4 w-4 accent-[#4a93d1]"
-          />
-          Has a pool
-        </label>
-      </div>
-      <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={add} disabled={!ready} className={`${ghostButton} disabled:cursor-not-allowed disabled:opacity-50`}>
-          <Plus className="h-4 w-4" /> Add home
-        </button>
-        {!ready && (
-          <span className="text-sm text-gray-500">
-            {placed ? 'Add the sale date.' : 'Pick an address from the list, then add the sale date.'}
-          </span>
-        )}
-      </div>
+      {noPosition ? (
+        <p className={`mt-2 ${notice.error}`}>That address came back without a map position. Try another match.</p>
+      ) : (
+        <p className={`mt-2 ${mutedText}`}>Pick it from the list so it can be placed on the map.</p>
+      )}
     </div>
   );
 };
 
 export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack: () => void }) => {
-  const [routes, setRoutes] = useState<LoadedFile | null>(() => readStored<LoadedFile | null>(ROUTES_KEY, null));
-  const [hand, setHand] = useState<HandHome[]>(() => readStored<HandHome[]>(HAND_KEY, []));
+  const [center, setCenter] = useState<Center | null>(() => readStored<Center | null>(CENTER_KEY, null));
   const [sales, setSales] = useState<LoadedFile | null>(null);
   const [settings, setSettings] = useState<Settings>(readSettings);
   const [result, setResult] = useState<(LeadResult & { signature: string; checked: number }) | null>(null);
@@ -340,87 +279,74 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
     fetchHistory();
   }, [fetchHistory]);
 
+  // Remembered on this device: the window, distance and price range, and the
+  // last search address, so a repeat search is one press.
   useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        SETTINGS_KEY,
-        JSON.stringify({ lookbackDays: settings.lookbackDays, radius: settings.radius }),
-      );
-    } catch {
-      /* storage disabled: the defaults come back next visit, nothing else lost */
-    }
-  }, [settings.lookbackDays, settings.radius]);
+    const { lookbackDays, radius, minPrice, maxPrice } = settings;
+    store(SETTINGS_KEY, { lookbackDays, radius, minPrice, maxPrice });
+  }, [settings]);
+  useEffect(() => store(CENTER_KEY, center), [center]);
 
-  // Remembered on this device so the next visit can skip straight to an address.
-  useEffect(() => store(ROUTES_KEY, routes), [routes]);
-  useEffect(() => store(HAND_KEY, hand.length ? hand : null), [hand]);
+  const set = (k: keyof Settings) => (e: { target: { value: string } }) =>
+    setSettings((s) => ({ ...s, [k]: e.target.value }));
 
-  const readFile = async (f: File, columns: readonly string[]): Promise<LoadedFile> => {
-    const rows = parseCSV(await f.text());
-    return { name: f.name, rows, missing: missingColumns(rows, columns) };
-  };
-
-  const audit = useMemo(() => (routes ? auditRoutes(routes.rows) : null), [routes]);
+  const minPrice = money(settings.minPrice);
+  const maxPrice = money(settings.maxPrice);
 
   // What the results were computed from. When it no longer matches, the results
   // on screen are for different inputs and say so.
   const signature = [
-    routes?.name,
-    routes?.rows.length,
+    center?.label,
     sales?.name,
     sales?.rows.length,
-    hand.map((h) => h.id).join(','),
     settings.asOf,
     settings.lookbackDays,
     settings.radius,
+    minPrice,
+    maxPrice,
   ].join('|');
-  const routesReady = !!routes && routes.rows.length > 0 && !routes.missing.length;
   const salesReady = !!sales && sales.rows.length > 0 && !sales.missing.length;
-  // Routes are always needed (there is nothing to measure from without them);
-  // the homes can come from the file, from hand, or both.
-  const canRun = routesReady && (salesReady || hand.length > 0);
+  const canRun = !!center && salesReady;
 
   const run = async () => {
-    if (!canRun || !audit || !routes) return;
-    const fileRows = salesReady && sales ? sales.rows : [];
-    const allSales = [...fileRows, ...hand.map(handRow)];
-    const salesLabel = [salesReady && sales ? sales.name : '', hand.length ? `${hand.length} by hand` : '']
-      .filter(Boolean)
-      .join(' + ');
+    if (!center || !sales || !salesReady) return;
     setRunError('');
     setLogNote('');
     setShowAll(false);
     let out: LeadResult;
     try {
       out = rankLeads({
-        stops: audit.stops,
-        sales: allSales,
+        center,
+        sales: sales.rows,
         asOf: settings.asOf,
         lookbackDays: Number(settings.lookbackDays),
         radius: Number(settings.radius),
+        minPrice,
+        maxPrice,
       });
     } catch (e) {
       setResult(null);
       setRunError(e instanceof Error ? e.message : String(e));
       return;
     }
-    setResult({ ...out, signature, checked: allSales.length });
+    setResult({ ...out, signature, checked: sales.rows.length });
 
     setRunning(true);
     try {
+      const range = priceRange(minPrice, maxPrice);
       const res = await fetch('/api/admin/lead-runs', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
+        // Counts and settings only: the search address is not recorded.
         body: JSON.stringify({
           asOf: settings.asOf,
           lookbackDays: Number(settings.lookbackDays),
           radius: Number(settings.radius),
-          routeStops: audit.scheduledStops,
-          salesRows: allSales.length,
+          routeStops: 1,
+          salesRows: sales.rows.length,
           leadsFound: out.leads.length,
           newestSale: out.newestSale,
-          routesFile: routes.name,
-          salesFile: salesLabel,
+          salesFile: range ? `${sales.name} · ${range}` : sales.name,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; storage?: boolean };
@@ -455,414 +381,276 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
   const excludedTotal = exclusions.reduce((n, [, v]) => n + v, 0);
 
   return (
-    <div className="min-h-dvh px-4 py-8 md:px-8 md:py-12">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-8 flex items-start justify-between gap-4">
-          <div>
-            <button onClick={onBack} className="mb-1 inline-flex items-center gap-1 text-sm text-gray-400 hover:text-white">
-              <ChevronLeft className="h-4 w-4" /> All documents
-            </button>
-            <h1 className="font-display text-2xl font-bold text-white">New Homeowner Leads</h1>
-            <p className="text-sm text-gray-400">Recently sold homes with a pool, near a stop we already drive to.</p>
-          </div>
-          <button onClick={onLogout} className={ghostButton}>
-            <LogOut className="h-4 w-4" /> Lock
-          </button>
-        </div>
+    <>
+      <AdminHeader onLogout={onLogout} />
+      <AdminBody>
+        <PageHead
+          eyebrow="Lead finder"
+          title="New homeowner leads"
+          lead="Recently sold homes with a pool, within the distance you set of one address."
+          onBack={onBack}
+        />
 
-        {/* The running tally: when it last ran, and how fresh that data was. */}
-        <section
-          className={`mb-6 rounded-2xl border p-5 ${
-            lastDays !== null && lastDays > STALE_DAYS
-              ? 'border-amber-400/30 bg-amber-400/10'
-              : 'border-white/10 bg-white/[0.03]'
-          }`}
-        >
-          {history.kind === 'loading' && (
-            <p className="flex items-center gap-2 text-sm text-gray-400">
-              <LoaderCircle className="h-4 w-4 animate-spin" /> Loading run history…
-            </p>
-          )}
-          {history.kind === 'error' && (
-            <p className="flex items-center gap-2 text-sm text-red-300">
-              <AlertCircle className="h-4 w-4" /> Couldn’t load the run history.
-            </p>
-          )}
-          {history.kind === 'ready' && !history.storage && (
-            <p className="text-sm leading-relaxed text-amber-100">
-              <span className="font-semibold">Run history isn’t set up yet.</span> Leads still work. Apply{' '}
-              <span className="font-mono text-amber-200">migrations/0009_lead_runs.sql</span> in the D1 console to
-              start keeping a tally.
-            </p>
-          )}
-          {history.kind === 'ready' && history.storage && !last && (
-            <p className="text-sm text-gray-300">
-              <History className="mr-1.5 inline h-4 w-4 align-[-3px] text-gray-500" />
-              Never run yet. Your first run will show here.
-            </p>
-          )}
-          {history.kind === 'ready' && history.storage && last && (
-            <>
-              <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-                <div>
-                  <p className="text-xs uppercase tracking-wider text-gray-400">Last run</p>
-                  <p className="mt-1 text-xl font-bold text-white">
-                    {ago(last.ran_at)}
-                    {lastDays !== null && lastDays > STALE_DAYS && (
-                      <span className="ml-2 text-sm font-semibold text-amber-200">Due for a run</span>
-                    )}
-                  </p>
-                  <p className="mt-0.5 text-sm text-gray-400">{onDateTime(last.ran_at)}</p>
-                </div>
-                <div className="flex gap-6 text-sm">
-                  <div>
-                    <p className="text-2xl font-bold text-white">{last.leads_found.toLocaleString()}</p>
-                    <p className="text-xs uppercase tracking-wider text-gray-400">Leads found</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-white">{history.total.toLocaleString()}</p>
-                    <p className="text-xs uppercase tracking-wider text-gray-400">Runs total</p>
-                  </div>
-                </div>
-              </div>
-              <p className="mt-3 text-sm text-gray-400">
-                {last.sales_rows.toLocaleString()} sales checked against {last.route_stops.toLocaleString()} stops
-                {last.newest_sale ? ` · county data through ${onDate(`${last.newest_sale}T12:00:00Z`)}` : ''}
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+          <div className="space-y-6">
+            <Card title="1. Search around">
+              <CenterPicker center={center} onChange={setCenter} />
+            </Card>
+
+            <Card title="2. Sold homes">
+              <p className={`-mt-2 ${mutedText}`}>
+                The county sales file. It’s read on this device and never uploaded.
               </p>
-              {history.runs.length > 1 && (
-                <details className="mt-4">
-                  <summary className="cursor-pointer text-sm font-semibold text-brand-blue-light">
-                    Recent runs
-                  </summary>
-                  <div className="mt-3 overflow-x-auto">
-                    <table className="w-full min-w-[560px] text-left text-sm">
-                      <thead className="text-xs uppercase tracking-wider text-gray-500">
-                        <tr>
-                          <th className="py-2 pr-4 font-medium">Ran</th>
-                          <th className="py-2 pr-4 font-medium">Leads</th>
-                          <th className="py-2 pr-4 font-medium">Sales</th>
-                          <th className="py-2 pr-4 font-medium">Window</th>
-                          <th className="py-2 font-medium">Data through</th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-gray-300">
-                        {history.runs.map((r) => (
-                          <tr key={r.id} className="border-t border-white/5">
-                            <td className="py-2 pr-4">{onDateTime(r.ran_at)}</td>
-                            <td className="py-2 pr-4 font-semibold text-white">{r.leads_found}</td>
-                            <td className="py-2 pr-4">{r.sales_rows.toLocaleString()}</td>
-                            <td className="py-2 pr-4">
-                              {r.lookback_days} days · {r.radius_miles} mi
-                            </td>
-                            <td className="py-2">{r.newest_sale ? onDate(`${r.newest_sale}T12:00:00Z`) : '—'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </details>
-              )}
-            </>
-          )}
-        </section>
-
-        <div className="space-y-6">
-          <Section title="1. Load the files">
-            <p className="-mt-2 text-sm leading-relaxed text-gray-400">
-              Both files are read on this device and never uploaded. The route file is remembered here, so next
-              time you can skip straight to adding a home.
-            </p>
-            <div className="grid gap-4 md:grid-cols-2">
-              <FilePick
-                title="Route stops"
-                columns={[...ROUTE_COLUMNS, 'latitude', 'longitude']}
-                file={routes}
-                onFile={async (f) => setRoutes(await readFile(f, ROUTE_COLUMNS))}
-              />
               <FilePick
                 title="Property sales"
                 columns={SALES_COLUMNS}
                 file={sales}
-                onFile={async (f) => setSales(await readFile(f, SALES_COLUMNS))}
+                onFile={async (f) => {
+                  const rows = parseCSV(await f.text());
+                  setSales({ name: f.name, rows, missing: missingColumns(rows, SALES_COLUMNS) });
+                }}
               />
-            </div>
-            <p className="text-xs leading-relaxed text-gray-500">
-              Optional route columns: technician, service_day. Optional sales columns: parcel_id, sale_price. Route
-              stops without latitude/longitude can’t be measured from.
-            </p>
-            {routes && (
-              <button
-                type="button"
-                onClick={() => setRoutes(null)}
-                className="text-xs font-semibold text-gray-400 hover:text-white"
-              >
-                Forget the route file on this device
-              </button>
-            )}
-          </Section>
+            </Card>
 
-          <Section title="2. Add homes by hand">
-            <p className="-mt-2 text-sm leading-relaxed text-gray-400">
-              Optional. For a single home you’ve heard about, with or without a sales file. Each one gets its own
-              answer when you run.
-            </p>
-            <HandEntry onAdd={(h) => setHand((list) => [...list, h])} />
-            {hand.length > 0 && (
-              <ul className="space-y-2">
-                {hand.map((h) => (
-                  <li
-                    key={h.id}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm"
-                  >
-                    <span className="min-w-0 truncate text-gray-200">
-                      <span className="font-semibold text-white">{h.street}</span>
-                      {h.city ? `, ${h.city}` : ''} · sold {onDate(`${h.saleDate}T12:00:00Z`)}
-                      {h.salePrice ? ` · ${h.salePrice}` : ''}
-                      {h.hasPool ? '' : ' · no pool'}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${h.street}`}
-                      onClick={() => setHand((list) => list.filter((x) => x.id !== h.id))}
-                      className="shrink-0 rounded p-1 text-gray-400 hover:bg-white/5 hover:text-white"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Section>
-
-          <Section title="3. Settings">
-            <div className="grid gap-4 sm:grid-cols-3">
-              <label>
-                <span className={label}>As of</span>
-                <input
-                  type="date"
-                  value={settings.asOf}
-                  onChange={(e) => setSettings((s) => ({ ...s, asOf: e.target.value }))}
-                  className={`${input} [color-scheme:dark]`}
-                />
-              </label>
-              <label>
-                <span className={label}>Sold within (days)</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  value={settings.lookbackDays}
-                  onChange={(e) => setSettings((s) => ({ ...s, lookbackDays: e.target.value }))}
-                  className={input}
-                />
-              </label>
-              <label>
-                <span className={label}>Max miles from a stop</span>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  min={0.1}
-                  step={0.5}
-                  value={settings.radius}
-                  onChange={(e) => setSettings((s) => ({ ...s, radius: e.target.value }))}
-                  className={input}
-                />
-              </label>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={run}
-                disabled={!canRun || running}
-                className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-blue px-5 font-semibold text-white transition-colors hover:bg-brand-blue-dark disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {running ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-                Run
-              </button>
-              {!canRun && (
-                <span className="text-sm text-gray-500">
-                  {routesReady ? 'Load a sales file or add a home to run.' : 'Load the route stops file to run.'}
-                </span>
-              )}
-              {runError && <span className="text-sm text-red-300">{runError}</span>}
-            </div>
-            {logNote && <p className="text-sm text-amber-200">{logNote}</p>}
-          </Section>
-
-          {audit && (
-            <CollapsibleSection
-              title="Route audit"
-              hint={`${audit.geocodedStops} of ${audit.scheduledStops} stops geocoded · ${audit.issues.length} issue${audit.issues.length === 1 ? '' : 's'}`}
-            >
-              <p className="text-sm text-gray-400">
-                {audit.scheduledStops.toLocaleString()} stops · {audit.distinctProperties.toLocaleString()} distinct
-                addresses · {audit.geocodedStops.toLocaleString()} geocoded
+            <Card title="3. Narrow it down">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <label className="block">
+                  <span className={fieldLabel}>Within (miles)</span>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min={0.1}
+                    step={0.25}
+                    value={settings.radius}
+                    onChange={set('radius')}
+                    className={inputClass}
+                  />
+                </label>
+                <label className="block">
+                  <span className={fieldLabel}>Sold within (days)</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    value={settings.lookbackDays}
+                    onChange={set('lookbackDays')}
+                    className={inputClass}
+                  />
+                </label>
+                <label className="block">
+                  <span className={fieldLabel}>As of</span>
+                  <input type="date" value={settings.asOf} onChange={set('asOf')} className={inputClass} />
+                </label>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className={fieldLabel}>Sale price from</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={settings.minPrice}
+                    onChange={set('minPrice')}
+                    placeholder="No minimum"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="block">
+                  <span className={fieldLabel}>Sale price up to</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={settings.maxPrice}
+                    onChange={set('maxPrice')}
+                    placeholder="No maximum"
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+              <p className={`-mt-2 ${mutedText}`}>
+                {minPrice !== null || maxPrice !== null
+                  ? `Only homes that sold ${priceRange(minPrice, maxPrice)}. Homes with no price on record are left out.`
+                  : 'Leave both blank for any price.'}
               </p>
-              {audit.issues.length === 0 ? (
-                <p className="text-sm text-emerald-300">No problems found.</p>
-              ) : (
-                <ul className="space-y-1.5 text-sm">
-                  {audit.issues.slice(0, 50).map((x, i) => (
-                    <li key={i} className="text-gray-300">
-                      <span className="font-semibold text-white">{x.issue}</span> · stop {x.stopId}: {x.detail}
-                    </li>
-                  ))}
-                  {audit.issues.length > 50 && (
-                    <li className="text-gray-500">…and {audit.issues.length - 50} more.</li>
-                  )}
-                </ul>
-              )}
-            </CollapsibleSection>
-          )}
-
-          {result && (
-            <section className="glass-panel rounded-2xl p-5 sm:p-6">
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                <h2 className="font-display text-base font-bold text-white">4. Leads</h2>
-                {result.leads.length > 0 && (
-                  <button type="button" onClick={download} className={ghostButton}>
-                    <Download className="h-4 w-4" /> Download CSV
-                  </button>
+              <div className="flex flex-wrap items-center gap-4">
+                <button type="button" onClick={run} disabled={!canRun || running} className={`${buttonClass.gold} px-7`}>
+                  {running && <LoaderCircle className="h-5 w-5 animate-spin" />}
+                  Find leads
+                  {!running && <ArrowRight className="h-[18px] w-[18px]" strokeWidth={2.5} />}
+                </button>
+                {!canRun && (
+                  <span className={mutedText}>
+                    {!center && !salesReady
+                      ? 'Pick an address and load the sales file to run.'
+                      : !center
+                        ? 'Pick an address to search around.'
+                        : 'Load the sales file to run.'}
+                  </span>
                 )}
               </div>
+              {runError && <p className={notice.error}>{runError}</p>}
+              {logNote && <p className={notice.warn}>{logNote}</p>}
+            </Card>
 
-              {stale && (
-                <p className="mb-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-100">
-                  The files or settings changed since this run. Press Run again to update.
-                </p>
-              )}
-              {result.needsRouteCoordinates && (
-                <p className="mb-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-100">
-                  None of the route stops have coordinates, so no distances could be measured. Add latitude and
-                  longitude to the route file.
-                </p>
-              )}
+            {result && (
+              <Card
+                title="4. Leads"
+                aside={
+                  result.leads.length > 0 && (
+                    <button type="button" onClick={download} className={smallButton}>
+                      <Download className="h-4 w-4" /> Download CSV
+                    </button>
+                  )
+                }
+              >
+                {stale && <p className={notice.warn}>The address, file or filters changed since this run. Run it again to update.</p>}
 
-              {result.handChecks.length > 0 && (
-                <div className="mb-5 rounded-xl border border-brand-blue-light/30 bg-brand-blue/10 p-4">
-                  <h3 className="text-sm font-semibold text-white">Homes you added</h3>
-                  <ul className="mt-2 space-y-1.5 text-sm">
-                    {result.handChecks.map((c, i) => (
-                      <li key={i} className="text-gray-300">
-                        <span className="font-semibold text-white">{c.street_address}</span>
-                        {c.lead ? (
-                          <span className="text-emerald-300">
-                            {' '}
-                            · lead, score {c.lead.priority_score} · {c.lead.straight_line_miles} mi from stop{' '}
-                            {c.lead.nearest_route_stop_id}
-                          </span>
-                        ) : (
-                          <span className="text-amber-200">
-                            {' '}
-                            · not a lead: {c.reason}
-                            {c.detail ? ` (${c.detail})` : ''}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <Stat value={result.leads.length.toLocaleString()} label="Leads" />
+                  <Stat value={result.checked.toLocaleString()} label="Homes checked" />
+                  <Stat value={excludedTotal.toLocaleString()} label="Excluded" />
+                  <Stat value={result.newestSale ? monthDay(result.newestSale) : '—'} label="Newest sale" />
                 </div>
-              )}
 
-              <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {(
-                  [
-                    ['Leads', result.leads.length],
-                    ['Homes checked', result.checked],
-                    ['Excluded', excludedTotal],
-                    ['Newest sale', result.newestSale ? onDate(`${result.newestSale}T12:00:00Z`) : '—'],
-                  ] as const
-                ).map(([k, v]) => (
-                  <div key={k} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-                    <span className="block text-2xl font-bold text-white">
-                      {typeof v === 'number' ? v.toLocaleString() : v}
-                    </span>
-                    <span className="block text-xs uppercase tracking-wider text-gray-400">{k}</span>
-                  </div>
-                ))}
-              </div>
-
-              {result.leads.length === 0 ? (
-                <p className="text-sm leading-relaxed text-gray-400">
-                  No qualifying leads. Check the exclusion counts below: sale dates, coordinates, the window and the
-                  radius.
-                </p>
-              ) : (
-                <ul className="space-y-3">
-                  {shown.map((r, i) => (
-                    <li
-                      key={`${r.parcel_id || r.street_address}-${i}`}
-                      className="rounded-xl border border-white/10 bg-white/[0.03] p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="font-semibold text-white">
-                            {r.street_address}
-                            {r.source === 'hand' && (
-                              <span className="ml-2 rounded bg-brand-blue/25 px-1.5 py-0.5 align-[2px] text-[11px] font-semibold text-brand-blue-light">
-                                Added by hand
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-sm text-gray-400">
-                            {[r.city, `${r.state} ${r.zip}`.trim()].filter(Boolean).join(', ')}
-                          </p>
+                {result.leads.length === 0 ? (
+                  <p className={bodyText}>
+                    No qualifying leads. The exclusion counts below say why: the distance, the window, the price range or
+                    missing data.
+                  </p>
+                ) : (
+                  <ul className="space-y-3">
+                    {shown.map((r, i) => (
+                      <li
+                        key={`${r.parcel_id || r.street_address}-${i}`}
+                        className="rounded-[12px] p-4 ring-1 ring-inset ring-sc-navy/[0.12]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-[16px] font-semibold text-sc-navy">{r.street_address}</p>
+                            <p className="text-[14px] text-sc-navy/60">
+                              {[r.city, `${r.state} ${r.zip}`.trim()].filter(Boolean).join(', ')}
+                            </p>
+                          </div>
+                          <span
+                            className="shrink-0 rounded-full bg-[#e7f6ee] px-2.5 py-1 text-[14px] font-bold tabular-nums text-[#13804b]"
+                            title="Priority: 60% how recently it sold, 40% how close it is"
+                          >
+                            {r.priority_score}
+                          </span>
                         </div>
-                        <span
-                          className="shrink-0 rounded-lg bg-emerald-400/15 px-2.5 py-1 text-sm font-bold text-emerald-300"
-                          title="Priority: 60% how recently it sold, 40% how close to a stop"
-                        >
-                          {r.priority_score}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm text-gray-300">
-                        Sold {onDate(`${r.sale_date}T12:00:00Z`)} ({r.days_since_sale} days ago)
-                        {r.sale_price ? ` · ${r.sale_price}` : ''}
-                      </p>
-                      <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-300">
-                        <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-500" />
-                        {r.straight_line_miles} mi from stop {r.nearest_route_stop_id}
-                        {r.nearest_technician ? ` · ${r.nearest_technician}` : ''}
-                        {r.nearest_service_day ? ` · ${r.nearest_service_day}` : ''}
-                        {r.stops_within_1_mile > 1 ? ` · ${r.stops_within_1_mile} stops within a mile` : ''}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {result.leads.length > shown.length && (
-                <button
-                  type="button"
-                  onClick={() => setShowAll(true)}
-                  className="mt-4 text-sm font-semibold text-brand-blue-light hover:text-white"
-                >
-                  Show all {result.leads.length.toLocaleString()}
-                </button>
-              )}
-
-              {excludedTotal > 0 && (
-                <div className="mt-6 border-t border-white/10 pt-5">
-                  <h3 className="text-sm font-semibold text-white">Excluded</h3>
-                  <ul className="mt-2 space-y-1 text-sm text-gray-400">
-                    {exclusions.map(([k, v]) => (
-                      <li key={k} className="flex justify-between gap-4 sm:max-w-md">
-                        <span>{k}</span>
-                        <span className="tabular-nums text-gray-300">{v.toLocaleString()}</span>
+                        <p className="mt-2 text-[14px] text-sc-navy/80">
+                          Sold {onDate(`${r.sale_date}T12:00:00Z`)} ({r.days_since_sale} days ago)
+                          {r.sale_price ? ` · ${showPrice(r.sale_price)}` : ''}
+                        </p>
+                        <p className="mt-1 flex items-center gap-1.5 text-[14px] text-sc-navy/80">
+                          <MapPin className="h-3.5 w-3.5 shrink-0 text-sc-blue" />
+                          {r.straight_line_miles} mi away
+                        </p>
                       </li>
                     ))}
                   </ul>
-                </div>
+                )}
+                {result.leads.length > shown.length && (
+                  <button type="button" onClick={() => setShowAll(true)} className={smallButton}>
+                    Show all {result.leads.length.toLocaleString()}
+                  </button>
+                )}
+
+                {excludedTotal > 0 && (
+                  <div className="border-t border-sc-navy/[0.08] pt-5">
+                    <h3 className="text-[15px] font-semibold text-sc-navy">Excluded</h3>
+                    <ul className="mt-2 space-y-1 text-[14px] text-sc-navy/70">
+                      {exclusions.map(([k, v]) => (
+                        <li key={k} className="flex justify-between gap-4 sm:max-w-md">
+                          <span>{k}</span>
+                          <span className="font-semibold tabular-nums text-sc-navy">{v.toLocaleString()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </Card>
+            )}
+          </div>
+
+          {/* The running tally, beside the work on desktop. */}
+          <aside className="space-y-6 lg:sticky lg:top-24">
+            <section
+              className={`${cardClass} p-5 sm:p-6 ${
+                lastDays !== null && lastDays > STALE_DAYS ? 'ring-2 ring-inset ring-[#f0d27a]' : ''
+              }`}
+            >
+              <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-sc-blue">Last run</p>
+              {history.kind === 'loading' && (
+                <p className={`mt-3 flex items-center gap-2 ${mutedText}`}>
+                  <LoaderCircle className="h-4 w-4 animate-spin" /> Loading run history…
+                </p>
+              )}
+              {history.kind === 'error' && (
+                <p className={`mt-3 flex items-center gap-2 ${notice.error}`}>
+                  <AlertCircle className="h-4 w-4 shrink-0" /> Couldn’t load the run history.
+                </p>
+              )}
+              {history.kind === 'ready' && !history.storage && (
+                <p className={`mt-3 ${notice.warn}`}>
+                  <span className="font-semibold">Run history isn’t set up yet.</span> Leads still work. Apply{' '}
+                  <span className="font-mono">migrations/0009_lead_runs.sql</span> in the D1 console to start keeping a
+                  tally.
+                </p>
+              )}
+              {history.kind === 'ready' && history.storage && !last && (
+                <p className={`mt-3 flex items-center gap-2 ${bodyText}`}>
+                  <History className="h-4 w-4 text-sc-navy/45" /> Never run yet. Your first run will show here.
+                </p>
+              )}
+              {history.kind === 'ready' && history.storage && last && (
+                <>
+                  <p className="mt-2 text-[26px] font-[650] leading-tight tracking-[-0.03em] text-sc-navy">
+                    {ago(last.ran_at)}
+                  </p>
+                  <p className={mutedText}>{onDateTime(last.ran_at)}</p>
+                  {lastDays !== null && lastDays > STALE_DAYS && (
+                    <p className={`mt-3 ${notice.warn}`}>Due for a run: new owners pick a pool company early.</p>
+                  )}
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <Stat value={last.leads_found.toLocaleString()} label="Leads found" />
+                    <Stat value={history.total.toLocaleString()} label="Runs total" />
+                  </div>
+                  <p className={`mt-3 ${mutedText}`}>
+                    {last.sales_rows.toLocaleString()} homes checked within {last.radius_miles} mi
+                    {last.newest_sale ? `. County data through ${onDate(`${last.newest_sale}T12:00:00Z`)}.` : '.'}
+                  </p>
+                  {history.runs.length > 1 && (
+                    <details className="mt-4 border-t border-sc-navy/[0.08] pt-4">
+                      <summary className="cursor-pointer text-[14px] font-semibold text-sc-blue">Recent runs</summary>
+                      <ul className="mt-3 space-y-2">
+                        {history.runs.map((r) => (
+                          <li key={r.id} className="flex items-baseline justify-between gap-3 text-[13.5px]">
+                            <span className="text-sc-navy/70">
+                              {onDate(r.ran_at)}
+                              <span className="text-sc-navy/45">
+                                {' '}
+                                · {r.radius_miles} mi · {r.lookback_days}d
+                              </span>
+                            </span>
+                            <span className="font-semibold tabular-nums text-sc-navy">
+                              {r.leads_found} lead{r.leads_found === 1 ? '' : 's'}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                </>
               )}
             </section>
-          )}
 
-          <p className="text-xs leading-relaxed text-gray-500">
-            Distances are straight-line, not driving. County pool flags can be out of date, so check before reaching
-            out. Nothing here contacts anyone: outreach happens in the CRM.
-          </p>
+            <p className={mutedText}>
+              Distances are straight-line, not driving. County pool flags can be out of date, so check before reaching
+              out. Nothing here contacts anyone: outreach happens in the CRM.
+            </p>
+          </aside>
         </div>
-      </div>
-    </div>
+      </AdminBody>
+    </>
   );
 };
-

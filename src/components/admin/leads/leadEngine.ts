@@ -1,15 +1,16 @@
 /**
- * New-homeowner leads: recently sold homes with a pool, near a stop we already
- * drive to. Pure functions over two CSVs (route stops, property sales), run in
- * the browser, so neither file ever reaches the server.
+ * New-homeowner leads: recently sold homes with a pool within a set distance
+ * of one address you choose, optionally inside a sale-price range. Pure
+ * functions over the county sales CSV, run in the browser, so the file never
+ * reaches the server.
  *
- * Nothing is guessed. A sale with no coordinates, no readable date or no pool
- * on record is EXCLUDED and counted under its reason, never filled in, so the
- * exclusion counts explain every row that didn't become a lead.
+ * Nothing is guessed. A sale with no coordinates, no readable date, no pool on
+ * record or (when a price range is set) no price is EXCLUDED and counted under
+ * its reason, never filled in, so the exclusion counts explain every row that
+ * didn't become a lead.
  */
 import type { CsvRow } from './csv';
 
-export const ROUTE_COLUMNS = ['stop_id', 'street_address', 'city', 'state', 'zip'] as const;
 export const SALES_COLUMNS = [
   'street_address',
   'city',
@@ -25,27 +26,8 @@ export const SALES_COLUMNS = [
 export const missingColumns = (rows: CsvRow[], required: readonly string[]): string[] =>
   rows.length ? required.filter((k) => !(k in rows[0])) : [...required];
 
-export type RouteStop = {
-  stopId: string;
-  street: string;
-  city: string;
-  zip: string;
-  key: string;
-  lat: number | null;
-  lng: number | null;
-  technician: string;
-  serviceDay: string;
-};
-
-export type RouteIssue = { issue: string; stopId: string; detail: string };
-
-export type RouteAudit = {
-  stops: RouteStop[];
-  scheduledStops: number;
-  distinctProperties: number;
-  geocodedStops: number;
-  issues: RouteIssue[];
-};
+/** The address the search is measured from. */
+export type SearchPoint = { street: string; zip: string; lat: number; lng: number };
 
 export type Lead = {
   parcel_id: string;
@@ -56,29 +38,17 @@ export type Lead = {
   sale_date: string;
   sale_price: string;
   days_since_sale: number;
+  /** Straight-line miles from the search address. */
   straight_line_miles: number;
-  nearest_route_stop_id: string;
-  nearest_technician: string;
-  nearest_service_day: string;
-  /** How many of our stops are within a mile: a street we're already on. */
-  stops_within_1_mile: number;
   priority_score: number;
-  /** 'file' (the sales CSV) or 'hand' (typed into the page). */
-  source: string;
 };
-
-/** What happened to one home added by hand: a lead, or the reason it isn't. */
-export type HandCheck = { street_address: string; lead: Lead | null; reason: string | null; detail: string };
 
 export type LeadResult = {
   leads: Lead[];
   /** Reason → how many sales it removed. */
   excluded: Record<string, number>;
-  needsRouteCoordinates: boolean;
   /** The latest sale on or before the as-of date: how fresh the county data is. */
   newestSale: string | null;
-  /** One entry per home added by hand, in the order added. */
-  handChecks: HandCheck[];
 };
 
 // ── Addresses ────────────────────────────────────────────────────────────────
@@ -93,7 +63,8 @@ const STREET_WORDS: Record<string, string> = {
 /**
  * "4424 19th Street North" and "4424 19TH ST N" are the same house. Street +
  * 5-digit ZIP, upper-cased, punctuation dropped, common words abbreviated.
- * Used to spot a sale that is already one of our stops.
+ * Used to fold repeat sales of one home together, and to leave the search
+ * address itself out of its own results.
  */
 export const addressKey = (street: string, zip: string): string => {
   const s = street
@@ -106,13 +77,25 @@ export const addressKey = (street: string, zip: string): string => {
   return s ? `${s}|${zip.trim().slice(0, 5)}` : '';
 };
 
-// ── Coordinates and dates ────────────────────────────────────────────────────
+// ── Numbers, coordinates and dates ───────────────────────────────────────────
 
 const num = (v: string | undefined): number | null => {
   if (v === undefined || v.trim() === '') return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 };
+
+/** "$612,000", "612000", "612,000.00" → 612000; null when there's no number. */
+export const money = (v: string | undefined): number | null => {
+  const s = (v ?? '').replace(/[$,\s]/g, '');
+  if (!s) return null;
+  const n = Number(s);
+  return Number.isFinite(n) && n > 0 ? n : null;
+};
+
+/** $612,000 → "$612k", $1,250,000 → "$1.25M": for labels, not the data. */
+export const shortMoney = (n: number): string =>
+  n >= 1_000_000 ? `$${+(n / 1_000_000).toFixed(2)}M` : `$${Math.round(n / 1000)}k`;
 
 /** A generous box around Florida: catches swapped lat/lng and 0,0 rows. */
 const inFlorida = (lat: number, lng: number): boolean => lat > 24 && lat < 31.5 && lng > -88 && lng < -79.5;
@@ -151,97 +134,45 @@ const hasPool = (raw: string | undefined): boolean => {
   return /^(y|yes|true|pool)$/i.test(s);
 };
 
-// ── Routes ───────────────────────────────────────────────────────────────────
-
-export const auditRoutes = (rows: CsvRow[]): RouteAudit => {
-  const issues: RouteIssue[] = [];
-  const seenIds = new Set<string>();
-  const keys = new Set<string>();
-  const stops: RouteStop[] = [];
-
-  rows.forEach((r, i) => {
-    const stopId = r.stop_id || `row ${i + 2}`;
-    const street = r.street_address ?? '';
-    const zip = r.zip ?? '';
-    if (r.stop_id && seenIds.has(r.stop_id)) issues.push({ issue: 'Duplicate stop ID', stopId, detail: 'appears more than once' });
-    seenIds.add(r.stop_id);
-
-    const key = addressKey(street, zip);
-    if (!key) issues.push({ issue: 'Missing address', stopId, detail: 'no street address' });
-    else keys.add(key);
-
-    let lat = num(r.latitude);
-    let lng = num(r.longitude);
-    if (lat === null || lng === null) {
-      issues.push({ issue: 'Missing coordinates', stopId, detail: street || 'no address' });
-      lat = lng = null;
-    } else if (!inFlorida(lat, lng)) {
-      issues.push({ issue: 'Coordinates outside Florida', stopId, detail: `${lat}, ${lng}: swapped or wrong` });
-      lat = lng = null;
-    }
-
-    stops.push({
-      stopId,
-      street,
-      city: r.city ?? '',
-      zip,
-      key,
-      lat,
-      lng,
-      technician: r.technician ?? '',
-      serviceDay: r.service_day ?? r.day ?? '',
-    });
-  });
-
-  return {
-    stops,
-    scheduledStops: rows.length,
-    distinctProperties: keys.size,
-    geocodedStops: stops.filter((s) => s.lat !== null).length,
-    issues,
-  };
-};
-
 // ── Ranking ──────────────────────────────────────────────────────────────────
 
 /**
  * Score 0–100: 60% how recently it sold (a new owner picks a pool company in
- * the first weeks), 40% how close it is to a stop (close means it slots into a
- * route we already drive). Both scale linearly across the chosen window and
- * radius.
+ * the first weeks), 40% how close it is to the search address. Both scale
+ * linearly across the chosen window and radius.
  */
 const score = (days: number, lookbackDays: number, miles: number, radius: number): number =>
   Math.round(100 * (0.6 * (1 - days / lookbackDays) + 0.4 * (1 - miles / radius)));
 
 export const rankLeads = ({
-  stops,
+  center,
   sales,
   asOf,
   lookbackDays,
   radius,
+  minPrice = null,
+  maxPrice = null,
 }: {
-  stops: RouteStop[];
+  center: SearchPoint;
   sales: CsvRow[];
   asOf: string;
   lookbackDays: number;
   radius: number;
+  /** Sale-price range in dollars; null leaves that side open. */
+  minPrice?: number | null;
+  maxPrice?: number | null;
 }): LeadResult => {
   const asOfIso = isoDate(asOf);
   if (!asOfIso) throw new Error('As-of date must be a real date (YYYY-MM-DD).');
-  if (!(radius > 0)) throw new Error('Radius must be more than 0 miles.');
+  if (!(radius > 0)) throw new Error('Distance must be more than 0 miles.');
   if (!(lookbackDays > 0)) throw new Error('Sold-within must be more than 0 days.');
+  if (minPrice !== null && maxPrice !== null && minPrice > maxPrice) {
+    throw new Error('The minimum price is above the maximum.');
+  }
 
   const excluded: Record<string, number> = {};
-  const handChecks: HandCheck[] = [];
-  // A home added by hand is one you're asking about on purpose, so it always
-  // gets an answer: its own reason here, not only a line in the counts.
-  const drop = (reason: string, row?: CsvRow, detail = '') => {
-    excluded[reason] = (excluded[reason] ?? 0) + 1;
-    if (row?.source === 'hand') handChecks.push({ street_address: row.street_address, lead: null, reason, detail });
-  };
-
-  const geocoded = stops.filter((s): s is RouteStop & { lat: number; lng: number } => s.lat !== null && s.lng !== null);
-  const customerKeys = new Set(stops.map((s) => s.key).filter(Boolean));
+  const drop = (reason: string) => (excluded[reason] = (excluded[reason] ?? 0) + 1);
+  const centerKey = addressKey(center.street, center.zip);
 
   // One row per home: a house that sold twice in the file is one lead, at its latest sale.
   const latest = new Map<string, { row: CsvRow; date: string }>();
@@ -249,73 +180,71 @@ export const rankLeads = ({
   for (const row of sales) {
     const key = addressKey(row.street_address ?? '', row.zip ?? '');
     if (!key) {
-      drop('No street address', row);
+      drop('No street address');
       continue;
     }
     const date = isoDate(row.sale_date ?? '');
     if (!date) {
-      drop('Unreadable sale date', row);
+      drop('Unreadable sale date');
       continue;
     }
     if (date <= asOfIso && (!newestSale || date > newestSale)) newestSale = date;
     const prev = latest.get(key);
     if (prev) {
-      if (date <= prev.date) {
-        drop('Older sale of the same home', row);
-        continue;
-      }
-      drop('Older sale of the same home', prev.row);
+      drop('Older sale of the same home');
+      if (date <= prev.date) continue;
     }
     latest.set(key, { row, date });
   }
 
+  const priced = minPrice !== null || maxPrice !== null;
   const leads: Lead[] = [];
   for (const [key, { row, date }] of latest) {
     const days = daysBetween(date, asOfIso);
     if (days < 0) {
-      drop('Sold after the as-of date', row);
+      drop('Sold after the as-of date');
       continue;
     }
     if (days > lookbackDays) {
-      drop(`Sold more than ${lookbackDays} days before`, row);
+      drop(`Sold more than ${lookbackDays} days before`);
       continue;
     }
     if (!hasPool(row.has_pool)) {
-      drop('No pool on record', row);
+      drop('No pool on record');
       continue;
     }
-    if (customerKeys.has(key)) {
-      drop('Already one of our stops', row);
+    if (priced) {
+      const price = money(row.sale_price);
+      if (price === null) {
+        drop('No sale price on record');
+        continue;
+      }
+      if (minPrice !== null && price < minPrice) {
+        drop(`Sold under ${shortMoney(minPrice)}`);
+        continue;
+      }
+      if (maxPrice !== null && price > maxPrice) {
+        drop(`Sold over ${shortMoney(maxPrice)}`);
+        continue;
+      }
+    }
+    if (key === centerKey) {
+      drop('The search address itself');
       continue;
     }
     const lat = num(row.latitude);
     const lng = num(row.longitude);
     if (lat === null || lng === null || !inFlorida(lat, lng)) {
-      drop('Missing or bad coordinates', row);
+      drop('Missing or bad coordinates');
       continue;
     }
-    if (!geocoded.length) {
-      drop('No geocoded route stops to measure from', row);
-      continue;
-    }
-
-    let nearest = geocoded[0];
-    let best = Infinity;
-    let within1 = 0;
-    for (const s of geocoded) {
-      const d = milesBetween(lat, lng, s.lat, s.lng);
-      if (d < best) {
-        best = d;
-        nearest = s;
-      }
-      if (d <= 1) within1++;
-    }
-    if (best > radius) {
-      drop(`More than ${radius} mi from a stop`, row, `${best.toFixed(2)} mi from stop ${nearest.stopId}`);
+    const miles = milesBetween(center.lat, center.lng, lat, lng);
+    if (miles > radius) {
+      drop(`More than ${radius} mi away`);
       continue;
     }
 
-    const lead: Lead = {
+    leads.push({
       parcel_id: row.parcel_id ?? '',
       street_address: row.street_address,
       city: row.city ?? '',
@@ -324,18 +253,11 @@ export const rankLeads = ({
       sale_date: date,
       sale_price: row.sale_price ?? '',
       days_since_sale: days,
-      straight_line_miles: Math.round(best * 100) / 100,
-      nearest_route_stop_id: nearest.stopId,
-      nearest_technician: nearest.technician,
-      nearest_service_day: nearest.serviceDay,
-      stops_within_1_mile: within1,
-      priority_score: score(days, lookbackDays, best, radius),
-      source: row.source === 'hand' ? 'hand' : 'file',
-    };
-    leads.push(lead);
-    if (row.source === 'hand') handChecks.push({ street_address: lead.street_address, lead, reason: null, detail: '' });
+      straight_line_miles: Math.round(miles * 100) / 100,
+      priority_score: score(days, lookbackDays, miles, radius),
+    });
   }
 
   leads.sort((a, b) => b.priority_score - a.priority_score || b.sale_date.localeCompare(a.sale_date));
-  return { leads, excluded, needsRouteCoordinates: sales.length > 0 && geocoded.length === 0, newestSale, handChecks };
+  return { leads, excluded, newestSale };
 };
