@@ -66,6 +66,8 @@ const none = () => json({ suggestions: [] });
 
 type MapboxFeature = {
   id?: string;
+  /** GeoJSON point: [longitude, latitude]. */
+  geometry?: { coordinates?: [number, number] };
   properties?: {
     mapbox_id?: string;
     name?: string;
@@ -82,8 +84,17 @@ type MapboxFeature = {
 };
 
 // `city` is Mapbox's place name, which the form matches against src/lib/cities.ts
-// to say "we service this area" (only on an exact match).
-export type AddressSuggestion = { id: string; line1: string; line2: string; full: string; city: string };
+// to say "we service this area" (only on an exact match). lat/lng place the
+// address for the admin lead finder; the quote forms ignore them.
+export type AddressSuggestion = {
+  id: string;
+  line1: string;
+  line2: string;
+  full: string;
+  city: string;
+  lat?: number;
+  lng?: number;
+};
 
 /**
  * "4424 19th St N, St. Petersburg, FL 33713": the shape splitAddress in
@@ -100,12 +111,14 @@ const toSuggestion = (f: MapboxFeature): AddressSuggestion | null => {
   const zip = p.context?.postcode?.name;
   const full =
     city && state ? `${street}, ${city}, ${state}${zip ? ` ${zip}` : ''}` : (p.full_address ?? street).replace(/, United States$/, '');
+  const [lng, lat] = f.geometry?.coordinates ?? [];
   return {
     id: p.mapbox_id ?? f.id ?? full,
     line1: street,
     line2: city && state ? `${city}, ${state}${zip ? ` ${zip}` : ''}` : (p.place_formatted ?? '').replace(/, United States$/, ''),
     full,
     city: city ?? '',
+    ...(Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : {}),
   };
 };
 

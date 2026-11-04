@@ -3,7 +3,10 @@
  * we already drive to.
  *
  * Two CSVs go in (route stops, property sales) and are read IN THE BROWSER:
- * neither file is uploaded. Press Run and the leads are ranked here
+ * neither file is uploaded. Single homes can also be added by hand, with the
+ * address placed by the site's Mapbox lookup, and each one gets its own answer.
+ * The route file and the hand-added homes are remembered on this device only,
+ * so a quick check is: type an address, press Run. Press Run and the leads are ranked here
  * (leads/leadEngine.ts); the only thing sent to the server is a summary of the
  * run (settings and counts, never an address), so the page can say when it last
  * ran and what it found. The leads leave as a CSV for the CRM, where outreach
@@ -20,8 +23,11 @@ import {
   LogOut,
   MapPin,
   Play,
+  Plus,
   Upload,
+  X,
 } from 'lucide-react';
+import { AddressAutocomplete, type Suggestion } from '@/components/landing/AddressAutocomplete';
 import { CollapsibleSection, Section } from './adminUi';
 import { ago, onDate, onDateTime } from './quoteFormat';
 import { parseCSV, toCSV, type CsvRow } from './leads/csv';
@@ -59,6 +65,59 @@ type RunHistory =
 type Settings = { asOf: string; lookbackDays: string; radius: string };
 
 const SETTINGS_KEY = 'scpp_admin_lead_settings';
+const ROUTES_KEY = 'scpp_admin_lead_routes';
+const HAND_KEY = 'scpp_admin_lead_hand';
+
+/** A home typed in rather than read from the sales file. */
+type HandHome = {
+  id: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  lat: number;
+  lng: number;
+  saleDate: string;
+  salePrice: string;
+  hasPool: boolean;
+};
+
+const readStored = <T,>(key: string, fallback: T): T => {
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const store = (key: string, value: unknown) => {
+  try {
+    if (value === null) window.localStorage.removeItem(key);
+    else window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* storage disabled or full: it just won't be remembered next visit */
+  }
+};
+
+/** "St. Petersburg, FL 33701" → its parts. */
+const splitPlace = (line2: string): { city: string; state: string; zip: string } => {
+  const m = /^(.*?),\s*([A-Z]{2})(?:\s+(\d{5}))?\s*$/.exec(line2.trim());
+  return m ? { city: m[1], state: m[2], zip: m[3] ?? '' } : { city: line2.trim(), state: '', zip: '' };
+};
+
+const handRow = (h: HandHome): CsvRow => ({
+  street_address: h.street,
+  city: h.city,
+  state: h.state,
+  zip: h.zip,
+  sale_date: h.saleDate,
+  sale_price: h.salePrice,
+  has_pool: h.hasPool ? 'Y' : 'N',
+  latitude: String(h.lat),
+  longitude: String(h.lng),
+  source: 'hand',
+});
 
 /** Today in Florida, as YYYY-MM-DD. */
 const todayEt = (): string =>
@@ -94,6 +153,7 @@ const LEAD_COLUMNS: Array<keyof Lead> = [
   'nearest_route_stop_id',
   'nearest_technician',
   'nearest_service_day',
+  'source',
 ];
 
 const input =
@@ -155,11 +215,103 @@ const FilePick = ({
   );
 };
 
+/**
+ * One home at a time. The address has to be PICKED from the suggestions: that
+ * is where its map position comes from, and a typed address with no position
+ * can't be measured against a stop.
+ */
+const HandEntry = ({ onAdd }: { onAdd: (h: HandHome) => void }) => {
+  const [picked, setPicked] = useState<Suggestion | null>(null);
+  const [saleDate, setSaleDate] = useState('');
+  const [salePrice, setSalePrice] = useState('');
+  const [hasPool, setHasPool] = useState(true);
+  // Remounts the address field empty after each add.
+  const [fieldKey, setFieldKey] = useState(0);
+
+  const placed = picked && typeof picked.lat === 'number' && typeof picked.lng === 'number';
+  const ready = !!placed && !!saleDate;
+
+  const add = () => {
+    if (!ready || !picked) return;
+    onAdd({
+      id: `${picked.id}-${Date.now()}`,
+      street: picked.line1,
+      ...splitPlace(picked.line2),
+      lat: picked.lat as number,
+      lng: picked.lng as number,
+      saleDate,
+      salePrice: salePrice.trim(),
+      hasPool,
+    });
+    setPicked(null);
+    setSaleDate('');
+    setSalePrice('');
+    setHasPool(true);
+    setFieldKey((k) => k + 1);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <span className={label}>Address</span>
+        <div key={fieldKey} className="flex rounded-lg bg-white">
+          <AddressAutocomplete name="lead-address" placeholder="Start typing an address" onPick={setPicked} />
+        </div>
+        {picked && !placed && (
+          <p className="mt-1.5 text-sm text-red-300">That address came back without a map position. Try another match.</p>
+        )}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+        <label>
+          <span className={label}>Sold on</span>
+          <input
+            type="date"
+            value={saleDate}
+            onChange={(e) => setSaleDate(e.target.value)}
+            className={`${input} [color-scheme:dark]`}
+          />
+        </label>
+        <label>
+          <span className={label}>Sale price (optional)</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={salePrice}
+            onChange={(e) => setSalePrice(e.target.value)}
+            placeholder="$540,000"
+            className={input}
+          />
+        </label>
+        <label className="flex h-11 items-center gap-2 text-sm text-gray-300">
+          <input
+            type="checkbox"
+            checked={hasPool}
+            onChange={(e) => setHasPool(e.target.checked)}
+            className="h-4 w-4 accent-[#4a93d1]"
+          />
+          Has a pool
+        </label>
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="button" onClick={add} disabled={!ready} className={`${ghostButton} disabled:cursor-not-allowed disabled:opacity-50`}>
+          <Plus className="h-4 w-4" /> Add home
+        </button>
+        {!ready && (
+          <span className="text-sm text-gray-500">
+            {placed ? 'Add the sale date.' : 'Pick an address from the list, then add the sale date.'}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack: () => void }) => {
-  const [routes, setRoutes] = useState<LoadedFile | null>(null);
+  const [routes, setRoutes] = useState<LoadedFile | null>(() => readStored<LoadedFile | null>(ROUTES_KEY, null));
+  const [hand, setHand] = useState<HandHome[]>(() => readStored<HandHome[]>(HAND_KEY, []));
   const [sales, setSales] = useState<LoadedFile | null>(null);
   const [settings, setSettings] = useState<Settings>(readSettings);
-  const [result, setResult] = useState<(LeadResult & { signature: string }) | null>(null);
+  const [result, setResult] = useState<(LeadResult & { signature: string; checked: number }) | null>(null);
   const [runError, setRunError] = useState('');
   const [logNote, setLogNote] = useState('');
   const [history, setHistory] = useState<RunHistory>({ kind: 'loading' });
@@ -199,6 +351,10 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
     }
   }, [settings.lookbackDays, settings.radius]);
 
+  // Remembered on this device so the next visit can skip straight to an address.
+  useEffect(() => store(ROUTES_KEY, routes), [routes]);
+  useEffect(() => store(HAND_KEY, hand.length ? hand : null), [hand]);
+
   const readFile = async (f: File, columns: readonly string[]): Promise<LoadedFile> => {
     const rows = parseCSV(await f.text());
     return { name: f.name, rows, missing: missingColumns(rows, columns) };
@@ -208,12 +364,29 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
 
   // What the results were computed from. When it no longer matches, the results
   // on screen are for different inputs and say so.
-  const signature = [routes?.name, routes?.rows.length, sales?.name, sales?.rows.length, settings.asOf, settings.lookbackDays, settings.radius].join('|');
-  const filesReady =
-    !!routes && !!sales && routes.rows.length > 0 && sales.rows.length > 0 && !routes.missing.length && !sales.missing.length;
+  const signature = [
+    routes?.name,
+    routes?.rows.length,
+    sales?.name,
+    sales?.rows.length,
+    hand.map((h) => h.id).join(','),
+    settings.asOf,
+    settings.lookbackDays,
+    settings.radius,
+  ].join('|');
+  const routesReady = !!routes && routes.rows.length > 0 && !routes.missing.length;
+  const salesReady = !!sales && sales.rows.length > 0 && !sales.missing.length;
+  // Routes are always needed (there is nothing to measure from without them);
+  // the homes can come from the file, from hand, or both.
+  const canRun = routesReady && (salesReady || hand.length > 0);
 
   const run = async () => {
-    if (!filesReady || !audit || !routes || !sales) return;
+    if (!canRun || !audit || !routes) return;
+    const fileRows = salesReady && sales ? sales.rows : [];
+    const allSales = [...fileRows, ...hand.map(handRow)];
+    const salesLabel = [salesReady && sales ? sales.name : '', hand.length ? `${hand.length} by hand` : '']
+      .filter(Boolean)
+      .join(' + ');
     setRunError('');
     setLogNote('');
     setShowAll(false);
@@ -221,7 +394,7 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
     try {
       out = rankLeads({
         stops: audit.stops,
-        sales: sales.rows,
+        sales: allSales,
         asOf: settings.asOf,
         lookbackDays: Number(settings.lookbackDays),
         radius: Number(settings.radius),
@@ -231,7 +404,7 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
       setRunError(e instanceof Error ? e.message : String(e));
       return;
     }
-    setResult({ ...out, signature });
+    setResult({ ...out, signature, checked: allSales.length });
 
     setRunning(true);
     try {
@@ -243,11 +416,11 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
           lookbackDays: Number(settings.lookbackDays),
           radius: Number(settings.radius),
           routeStops: audit.scheduledStops,
-          salesRows: sales.rows.length,
+          salesRows: allSales.length,
           leadsFound: out.leads.length,
           newestSale: out.newestSale,
           routesFile: routes.name,
-          salesFile: sales.name,
+          salesFile: salesLabel,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; storage?: boolean };
@@ -396,7 +569,8 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
         <div className="space-y-6">
           <Section title="1. Load the files">
             <p className="-mt-2 text-sm leading-relaxed text-gray-400">
-              Both files are read on this device and never uploaded.
+              Both files are read on this device and never uploaded. The route file is remembered here, so next
+              time you can skip straight to adding a home.
             </p>
             <div className="grid gap-4 md:grid-cols-2">
               <FilePick
@@ -416,9 +590,51 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
               Optional route columns: technician, service_day. Optional sales columns: parcel_id, sale_price. Route
               stops without latitude/longitude can’t be measured from.
             </p>
+            {routes && (
+              <button
+                type="button"
+                onClick={() => setRoutes(null)}
+                className="text-xs font-semibold text-gray-400 hover:text-white"
+              >
+                Forget the route file on this device
+              </button>
+            )}
           </Section>
 
-          <Section title="2. Settings">
+          <Section title="2. Add homes by hand">
+            <p className="-mt-2 text-sm leading-relaxed text-gray-400">
+              Optional. For a single home you’ve heard about, with or without a sales file. Each one gets its own
+              answer when you run.
+            </p>
+            <HandEntry onAdd={(h) => setHand((list) => [...list, h])} />
+            {hand.length > 0 && (
+              <ul className="space-y-2">
+                {hand.map((h) => (
+                  <li
+                    key={h.id}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm"
+                  >
+                    <span className="min-w-0 truncate text-gray-200">
+                      <span className="font-semibold text-white">{h.street}</span>
+                      {h.city ? `, ${h.city}` : ''} · sold {onDate(`${h.saleDate}T12:00:00Z`)}
+                      {h.salePrice ? ` · ${h.salePrice}` : ''}
+                      {h.hasPool ? '' : ' · no pool'}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${h.street}`}
+                      onClick={() => setHand((list) => list.filter((x) => x.id !== h.id))}
+                      className="shrink-0 rounded p-1 text-gray-400 hover:bg-white/5 hover:text-white"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Section>
+
+          <Section title="3. Settings">
             <div className="grid gap-4 sm:grid-cols-3">
               <label>
                 <span className={label}>As of</span>
@@ -457,13 +673,17 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
               <button
                 type="button"
                 onClick={run}
-                disabled={!filesReady || running}
+                disabled={!canRun || running}
                 className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand-blue px-5 font-semibold text-white transition-colors hover:bg-brand-blue-dark disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {running ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                 Run
               </button>
-              {!filesReady && <span className="text-sm text-gray-500">Load both files to run.</span>}
+              {!canRun && (
+                <span className="text-sm text-gray-500">
+                  {routesReady ? 'Load a sales file or add a home to run.' : 'Load the route stops file to run.'}
+                </span>
+              )}
               {runError && <span className="text-sm text-red-300">{runError}</span>}
             </div>
             {logNote && <p className="text-sm text-amber-200">{logNote}</p>}
@@ -498,7 +718,7 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
           {result && (
             <section className="glass-panel rounded-2xl p-5 sm:p-6">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                <h2 className="font-display text-base font-bold text-white">3. Leads</h2>
+                <h2 className="font-display text-base font-bold text-white">4. Leads</h2>
                 {result.leads.length > 0 && (
                   <button type="button" onClick={download} className={ghostButton}>
                     <Download className="h-4 w-4" /> Download CSV
@@ -518,11 +738,37 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                 </p>
               )}
 
+              {result.handChecks.length > 0 && (
+                <div className="mb-5 rounded-xl border border-brand-blue-light/30 bg-brand-blue/10 p-4">
+                  <h3 className="text-sm font-semibold text-white">Homes you added</h3>
+                  <ul className="mt-2 space-y-1.5 text-sm">
+                    {result.handChecks.map((c, i) => (
+                      <li key={i} className="text-gray-300">
+                        <span className="font-semibold text-white">{c.street_address}</span>
+                        {c.lead ? (
+                          <span className="text-emerald-300">
+                            {' '}
+                            · lead, score {c.lead.priority_score} · {c.lead.straight_line_miles} mi from stop{' '}
+                            {c.lead.nearest_route_stop_id}
+                          </span>
+                        ) : (
+                          <span className="text-amber-200">
+                            {' '}
+                            · not a lead: {c.reason}
+                            {c.detail ? ` (${c.detail})` : ''}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {(
                   [
                     ['Leads', result.leads.length],
-                    ['Sales checked', sales?.rows.length ?? 0],
+                    ['Homes checked', result.checked],
                     ['Excluded', excludedTotal],
                     ['Newest sale', result.newestSale ? onDate(`${result.newestSale}T12:00:00Z`) : '—'],
                   ] as const
@@ -550,7 +796,14 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="font-semibold text-white">{r.street_address}</p>
+                          <p className="font-semibold text-white">
+                            {r.street_address}
+                            {r.source === 'hand' && (
+                              <span className="ml-2 rounded bg-brand-blue/25 px-1.5 py-0.5 align-[2px] text-[11px] font-semibold text-brand-blue-light">
+                                Added by hand
+                              </span>
+                            )}
+                          </p>
                           <p className="text-sm text-gray-400">
                             {[r.city, `${r.state} ${r.zip}`.trim()].filter(Boolean).join(', ')}
                           </p>

@@ -63,7 +63,12 @@ export type Lead = {
   /** How many of our stops are within a mile: a street we're already on. */
   stops_within_1_mile: number;
   priority_score: number;
+  /** 'file' (the sales CSV) or 'hand' (typed into the page). */
+  source: string;
 };
+
+/** What happened to one home added by hand: a lead, or the reason it isn't. */
+export type HandCheck = { street_address: string; lead: Lead | null; reason: string | null; detail: string };
 
 export type LeadResult = {
   leads: Lead[];
@@ -72,6 +77,8 @@ export type LeadResult = {
   needsRouteCoordinates: boolean;
   /** The latest sale on or before the as-of date: how fresh the county data is. */
   newestSale: string | null;
+  /** One entry per home added by hand, in the order added. */
+  handChecks: HandCheck[];
 };
 
 // ── Addresses ────────────────────────────────────────────────────────────────
@@ -225,7 +232,13 @@ export const rankLeads = ({
   if (!(lookbackDays > 0)) throw new Error('Sold-within must be more than 0 days.');
 
   const excluded: Record<string, number> = {};
-  const drop = (reason: string) => (excluded[reason] = (excluded[reason] ?? 0) + 1);
+  const handChecks: HandCheck[] = [];
+  // A home added by hand is one you're asking about on purpose, so it always
+  // gets an answer: its own reason here, not only a line in the counts.
+  const drop = (reason: string, row?: CsvRow, detail = '') => {
+    excluded[reason] = (excluded[reason] ?? 0) + 1;
+    if (row?.source === 'hand') handChecks.push({ street_address: row.street_address, lead: null, reason, detail });
+  };
 
   const geocoded = stops.filter((s): s is RouteStop & { lat: number; lng: number } => s.lat !== null && s.lng !== null);
   const customerKeys = new Set(stops.map((s) => s.key).filter(Boolean));
@@ -236,19 +249,22 @@ export const rankLeads = ({
   for (const row of sales) {
     const key = addressKey(row.street_address ?? '', row.zip ?? '');
     if (!key) {
-      drop('No street address');
+      drop('No street address', row);
       continue;
     }
     const date = isoDate(row.sale_date ?? '');
     if (!date) {
-      drop('Unreadable sale date');
+      drop('Unreadable sale date', row);
       continue;
     }
     if (date <= asOfIso && (!newestSale || date > newestSale)) newestSale = date;
     const prev = latest.get(key);
     if (prev) {
-      drop('Older sale of the same home');
-      if (date <= prev.date) continue;
+      if (date <= prev.date) {
+        drop('Older sale of the same home', row);
+        continue;
+      }
+      drop('Older sale of the same home', prev.row);
     }
     latest.set(key, { row, date });
   }
@@ -257,29 +273,29 @@ export const rankLeads = ({
   for (const [key, { row, date }] of latest) {
     const days = daysBetween(date, asOfIso);
     if (days < 0) {
-      drop('Sold after the as-of date');
+      drop('Sold after the as-of date', row);
       continue;
     }
     if (days > lookbackDays) {
-      drop(`Sold more than ${lookbackDays} days before`);
+      drop(`Sold more than ${lookbackDays} days before`, row);
       continue;
     }
     if (!hasPool(row.has_pool)) {
-      drop('No pool on record');
+      drop('No pool on record', row);
       continue;
     }
     if (customerKeys.has(key)) {
-      drop('Already one of our stops');
+      drop('Already one of our stops', row);
       continue;
     }
     const lat = num(row.latitude);
     const lng = num(row.longitude);
     if (lat === null || lng === null || !inFlorida(lat, lng)) {
-      drop('Missing or bad coordinates');
+      drop('Missing or bad coordinates', row);
       continue;
     }
     if (!geocoded.length) {
-      drop('No geocoded route stops to measure from');
+      drop('No geocoded route stops to measure from', row);
       continue;
     }
 
@@ -295,11 +311,11 @@ export const rankLeads = ({
       if (d <= 1) within1++;
     }
     if (best > radius) {
-      drop(`More than ${radius} mi from a stop`);
+      drop(`More than ${radius} mi from a stop`, row, `${best.toFixed(2)} mi from stop ${nearest.stopId}`);
       continue;
     }
 
-    leads.push({
+    const lead: Lead = {
       parcel_id: row.parcel_id ?? '',
       street_address: row.street_address,
       city: row.city ?? '',
@@ -314,9 +330,12 @@ export const rankLeads = ({
       nearest_service_day: nearest.serviceDay,
       stops_within_1_mile: within1,
       priority_score: score(days, lookbackDays, best, radius),
-    });
+      source: row.source === 'hand' ? 'hand' : 'file',
+    };
+    leads.push(lead);
+    if (row.source === 'hand') handChecks.push({ street_address: lead.street_address, lead, reason: null, detail: '' });
   }
 
   leads.sort((a, b) => b.priority_score - a.priority_score || b.sale_date.localeCompare(a.sale_date));
-  return { leads, excluded, needsRouteCoordinates: sales.length > 0 && geocoded.length === 0, newestSale };
+  return { leads, excluded, needsRouteCoordinates: sales.length > 0 && geocoded.length === 0, newestSale, handChecks };
 };

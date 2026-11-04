@@ -14,7 +14,16 @@ import { MapPin } from 'lucide-react';
  * Escape closes it.
  */
 
-export type Suggestion = { id: string; line1: string; line2: string; full: string; city: string };
+export type Suggestion = {
+  id: string;
+  line1: string;
+  line2: string;
+  full: string;
+  city: string;
+  /** Where Mapbox places it. Only the admin lead finder reads these. */
+  lat?: number;
+  lng?: number;
+};
 
 const MIN_CHARS = 3;
 const DEBOUNCE_MS = 200;
