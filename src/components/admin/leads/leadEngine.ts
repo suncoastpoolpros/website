@@ -1,55 +1,79 @@
 /**
- * New-homeowner leads: recently sold homes with a pool within a set distance
- * of one address you choose, optionally inside a sale-price range. Pure
- * functions over the county sales CSV, run in the browser, so the file never
- * reaches the server.
+ * New-homeowner leads: recent Pinellas sales within a set distance of one
+ * address, narrowed by property type, sale type and price, ranked by how
+ * recently they sold and how close they are.
  *
- * Nothing is guessed. A sale with no coordinates, no readable date, no pool on
- * record or (when a price range is set) no price is EXCLUDED and counted under
- * its reason, never filled in, so the exclusion counts explain every row that
- * didn't become a lead.
+ * The sales come from the county (functions/api/_countySales.ts), already cut
+ * to the radius and date window there. Everything else is decided here, in the
+ * browser, so every row that didn't become a lead is counted under its reason.
+ * Nothing is guessed: a sale with no address or price (when a range is set) is
+ * excluded, never filled in.
+ *
+ * POOLS are not in the county's map data. Each lead links to its property
+ * page, where a pool is listed under Extra Features.
  */
-import type { CsvRow } from './csv';
+import type { CountySale } from '../../../../functions/api/_countySales';
 
-export const SALES_COLUMNS = [
-  'street_address',
-  'city',
-  'state',
-  'zip',
-  'sale_date',
-  'has_pool',
-  'latitude',
-  'longitude',
-] as const;
-
-/** Columns that must be present in a file's header row; [] when it has them all. */
-export const missingColumns = (rows: CsvRow[], required: readonly string[]): string[] =>
-  rows.length ? required.filter((k) => !(k in rows[0])) : [...required];
+export type { CountySale };
 
 /** The address the search is measured from. */
 export type SearchPoint = { street: string; zip: string; lat: number; lng: number };
 
 export type Lead = {
-  parcel_id: string;
+  priority_score: number;
   street_address: string;
   city: string;
-  state: string;
   zip: string;
   sale_date: string;
-  sale_price: string;
+  sale_price: number | null;
   days_since_sale: number;
   /** Straight-line miles from the search address. */
   straight_line_miles: number;
-  priority_score: number;
+  property_type: string;
+  living_sqft: string;
+  owner_on_record: string;
+  owner_mailing_address: string;
+  parcel_id: string;
+  /** The appraiser's page for this parcel: where a pool would be listed. */
+  county_page: string;
 };
 
 export type LeadResult = {
   leads: Lead[];
   /** Reason → how many sales it removed. */
   excluded: Record<string, number>;
-  /** The latest sale on or before the as-of date: how fresh the county data is. */
+  /** The latest sale in what the county returned. */
   newestSale: string | null;
 };
+
+export type LeadFilters = {
+  lookbackDays: number;
+  radius: number;
+  /** Sale-price range in dollars; null leaves that side open. */
+  minPrice: number | null;
+  maxPrice: number | null;
+  /** Only Florida use code 01xx (single-family). Off: any home (01, 02, 04, 08). */
+  singleFamilyOnly: boolean;
+  /** Only the county's "Q" (qualified) sales: leaves out bundled multi-parcel sales and the like. */
+  qualifiedOnly: boolean;
+};
+
+export const countyPage = (strap: string): string => `https://www.pcpao.gov/property-details?s=${strap}`;
+
+/**
+ * Florida's property-use codes by their first two digits (the Department of
+ * Revenue's statewide classes; Pinellas adds two more digits for detail).
+ */
+const USE_CLASS: Record<string, string> = {
+  '00': 'Vacant land',
+  '01': 'Single-family',
+  '02': 'Mobile home',
+  '04': 'Condo',
+  '08': 'Multi-family (2–9 units)',
+};
+const HOME_CLASSES = new Set(['01', '02', '04', '08']);
+
+export const propertyType = (useCode: string): string => USE_CLASS[useCode.slice(0, 2)] ?? `Other (${useCode || 'no code'})`;
 
 // ── Addresses ────────────────────────────────────────────────────────────────
 
@@ -63,8 +87,7 @@ const STREET_WORDS: Record<string, string> = {
 /**
  * "4424 19th Street North" and "4424 19TH ST N" are the same house. Street +
  * 5-digit ZIP, upper-cased, punctuation dropped, common words abbreviated.
- * Used to fold repeat sales of one home together, and to leave the search
- * address itself out of its own results.
+ * Used to leave the search address itself out of its own results.
  */
 export const addressKey = (street: string, zip: string): string => {
   const s = street
@@ -77,13 +100,18 @@ export const addressKey = (street: string, zip: string): string => {
   return s ? `${s}|${zip.trim().slice(0, 5)}` : '';
 };
 
-// ── Numbers, coordinates and dates ───────────────────────────────────────────
+const KEEP_UPPER = new Set(['N', 'S', 'E', 'W', 'NE', 'NW', 'SE', 'SW', 'US', 'FL']);
 
-const num = (v: string | undefined): number | null => {
-  if (v === undefined || v.trim() === '') return null;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-};
+/** "3643 20TH ST N" → "3643 20th St N"; "ST PETERSBURG" → "St Petersburg". */
+export const titleCase = (s: string): string =>
+  s
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => (KEEP_UPPER.has(w.toUpperCase()) ? w.toUpperCase() : /^\d/.test(w) ? w : w[0].toUpperCase() + w.slice(1)))
+    .join(' ');
+
+// ── Numbers and distance ─────────────────────────────────────────────────────
 
 /** "$612,000", "612000", "612,000.00" → 612000; null when there's no number. */
 export const money = (v: string | undefined): number | null => {
@@ -97,9 +125,6 @@ export const money = (v: string | undefined): number | null => {
 export const shortMoney = (n: number): string =>
   n >= 1_000_000 ? `$${+(n / 1_000_000).toFixed(2)}M` : `$${Math.round(n / 1000)}k`;
 
-/** A generous box around Florida: catches swapped lat/lng and 0,0 rows. */
-const inFlorida = (lat: number, lng: number): boolean => lat > 24 && lat < 31.5 && lng > -88 && lng < -79.5;
-
 /** Straight-line (great-circle) miles. Not driving distance. */
 export const milesBetween = (aLat: number, aLng: number, bLat: number, bLng: number): number => {
   const rad = Math.PI / 180;
@@ -109,30 +134,8 @@ export const milesBetween = (aLat: number, aLng: number, bLat: number, bLng: num
   return 3958.8 * 2 * Math.asin(Math.min(1, Math.sqrt(h)));
 };
 
-/** YYYY-MM-DD or M/D/YYYY → YYYY-MM-DD, or null when it isn't a real date. */
-export const isoDate = (raw: string): string | null => {
-  const s = raw.trim();
-  let y: number, m: number, d: number;
-  let hit = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s);
-  if (hit) [y, m, d] = [Number(hit[1]), Number(hit[2]), Number(hit[3])];
-  else if ((hit = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(s))) [m, d, y] = [Number(hit[1]), Number(hit[2]), Number(hit[3])];
-  else return null;
-  const dt = new Date(Date.UTC(y, m - 1, d));
-  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return null;
-  return dt.toISOString().slice(0, 10);
-};
-
 const daysBetween = (fromIso: string, toIso: string): number =>
   Math.round((Date.parse(toIso) - Date.parse(fromIso)) / 86_400_000);
-
-/** "Y", "yes", "true", "1", "pool", or a positive count/area all mean a pool. */
-const hasPool = (raw: string | undefined): boolean => {
-  const s = (raw ?? '').trim();
-  if (!s) return false;
-  const n = Number(s);
-  if (Number.isFinite(n)) return n > 0;
-  return /^(y|yes|true|pool)$/i.test(s);
-};
 
 // ── Ranking ──────────────────────────────────────────────────────────────────
 
@@ -147,23 +150,16 @@ const score = (days: number, lookbackDays: number, miles: number, radius: number
 export const rankLeads = ({
   center,
   sales,
-  asOf,
-  lookbackDays,
-  radius,
-  minPrice = null,
-  maxPrice = null,
+  today,
+  filters,
 }: {
   center: SearchPoint;
-  sales: CsvRow[];
-  asOf: string;
-  lookbackDays: number;
-  radius: number;
-  /** Sale-price range in dollars; null leaves that side open. */
-  minPrice?: number | null;
-  maxPrice?: number | null;
+  sales: CountySale[];
+  /** YYYY-MM-DD in Florida, as the server measured the window. */
+  today: string;
+  filters: LeadFilters;
 }): LeadResult => {
-  const asOfIso = isoDate(asOf);
-  if (!asOfIso) throw new Error('As-of date must be a real date (YYYY-MM-DD).');
+  const { lookbackDays, radius, minPrice, maxPrice, singleFamilyOnly, qualifiedOnly } = filters;
   if (!(radius > 0)) throw new Error('Distance must be more than 0 miles.');
   if (!(lookbackDays > 0)) throw new Error('Sold-within must be more than 0 days.');
   if (minPrice !== null && maxPrice !== null && minPrice > maxPrice) {
@@ -174,87 +170,85 @@ export const rankLeads = ({
   const drop = (reason: string) => (excluded[reason] = (excluded[reason] ?? 0) + 1);
   const centerKey = addressKey(center.street, center.zip);
 
-  // One row per home: a house that sold twice in the file is one lead, at its latest sale.
-  const latest = new Map<string, { row: CsvRow; date: string }>();
+  // One row per parcel: a home that sold twice in the window is one lead, at its latest sale.
+  const latest = new Map<string, CountySale>();
   let newestSale: string | null = null;
-  for (const row of sales) {
-    const key = addressKey(row.street_address ?? '', row.zip ?? '');
-    if (!key) {
-      drop('No street address');
-      continue;
-    }
-    const date = isoDate(row.sale_date ?? '');
-    if (!date) {
-      drop('Unreadable sale date');
-      continue;
-    }
-    if (date <= asOfIso && (!newestSale || date > newestSale)) newestSale = date;
-    const prev = latest.get(key);
+  for (const s of sales) {
+    if (!newestSale || s.saleDate > newestSale) newestSale = s.saleDate;
+    const prev = latest.get(s.strap);
     if (prev) {
       drop('Older sale of the same home');
-      if (date <= prev.date) continue;
+      if (s.saleDate <= prev.saleDate) continue;
     }
-    latest.set(key, { row, date });
+    latest.set(s.strap, s);
   }
 
   const priced = minPrice !== null || maxPrice !== null;
   const leads: Lead[] = [];
-  for (const [key, { row, date }] of latest) {
-    const days = daysBetween(date, asOfIso);
-    if (days < 0) {
-      drop('Sold after the as-of date');
-      continue;
-    }
+  for (const s of latest.values()) {
+    const days = daysBetween(s.saleDate, today);
     if (days > lookbackDays) {
-      drop(`Sold more than ${lookbackDays} days before`);
+      drop(`Sold more than ${lookbackDays} days ago`);
       continue;
     }
-    if (!hasPool(row.has_pool)) {
-      drop('No pool on record');
+    const useClass = s.useCode.slice(0, 2);
+    if (useClass === '00') {
+      drop('Vacant land');
+      continue;
+    }
+    if (singleFamilyOnly ? useClass !== '01' : !HOME_CLASSES.has(useClass)) {
+      drop(singleFamilyOnly ? 'Not a single-family home' : 'Not a home');
+      continue;
+    }
+    if (qualifiedOnly && s.qualified !== 'Q') {
+      drop('Not a qualified sale');
       continue;
     }
     if (priced) {
-      const price = money(row.sale_price);
-      if (price === null) {
+      if (s.price === null) {
         drop('No sale price on record');
         continue;
       }
-      if (minPrice !== null && price < minPrice) {
+      if (minPrice !== null && s.price < minPrice) {
         drop(`Sold under ${shortMoney(minPrice)}`);
         continue;
       }
-      if (maxPrice !== null && price > maxPrice) {
+      if (maxPrice !== null && s.price > maxPrice) {
         drop(`Sold over ${shortMoney(maxPrice)}`);
         continue;
       }
     }
-    if (key === centerKey) {
+    if (!s.address) {
+      drop('No street address on record');
+      continue;
+    }
+    if (addressKey(s.address, s.zip) === centerKey) {
       drop('The search address itself');
       continue;
     }
-    const lat = num(row.latitude);
-    const lng = num(row.longitude);
-    if (lat === null || lng === null || !inFlorida(lat, lng)) {
-      drop('Missing or bad coordinates');
-      continue;
-    }
-    const miles = milesBetween(center.lat, center.lng, lat, lng);
+    // The county measured to the parcel's point too; re-measured here so the
+    // distance shown is the one the filter used.
+    const miles = milesBetween(center.lat, center.lng, s.lat, s.lng);
     if (miles > radius) {
       drop(`More than ${radius} mi away`);
       continue;
     }
 
     leads.push({
-      parcel_id: row.parcel_id ?? '',
-      street_address: row.street_address,
-      city: row.city ?? '',
-      state: row.state ?? '',
-      zip: row.zip ?? '',
-      sale_date: date,
-      sale_price: row.sale_price ?? '',
+      priority_score: score(days, lookbackDays, miles, radius),
+      street_address: titleCase(s.address),
+      city: titleCase(s.city),
+      zip: s.zip,
+      sale_date: s.saleDate,
+      sale_price: s.price,
       days_since_sale: days,
       straight_line_miles: Math.round(miles * 100) / 100,
-      priority_score: score(days, lookbackDays, miles, radius),
+      property_type: propertyType(s.useCode),
+      living_sqft: s.livingSqft,
+      owner_on_record: s.owner,
+      owner_mailing_address: s.mailing,
+      parcel_id: s.strap,
+      county_page: countyPage(s.strap),
     });
   }
 

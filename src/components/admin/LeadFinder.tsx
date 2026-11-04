@@ -1,20 +1,24 @@
 /**
- * /admin → New Homeowner Leads. Recently sold homes with a pool within a set
- * distance of one address, optionally inside a sale-price range.
+ * /admin → New Homeowner Leads. Recent Pinellas sales within a set distance of
+ * one address, narrowed by property type, sale type and price.
  *
  * The search address is typed and picked from the site's address lookup,
- * which supplies its map position. The sold homes come from the county sales
- * CSV, read IN THE BROWSER and never uploaded. The leads are ranked here
- * (leads/leadEngine.ts); the only thing sent to the server is a summary of the
- * run (settings and counts, never an address), so the page can say when it
- * last ran and what it found. The leads leave as a CSV for the CRM, where
- * outreach lives; nothing here contacts anyone.
+ * which supplies its map position. Find leads asks /api/admin/county-sales for
+ * every sale in the radius and window (straight from the Property Appraiser's
+ * public map server), then ranks and filters them here (leads/leadEngine.ts),
+ * so each filter's toll shows in the exclusion counts. The only thing stored is
+ * a summary of the run (settings and counts, never an address), so the page
+ * can say when it last ran and what it found. The leads leave as a CSV for the
+ * CRM, where outreach lives; nothing here contacts anyone.
+ *
+ * Pools aren't in the county's map data: each lead links to its property page
+ * to check.
  *
  * Styled on the homepage's kit (adminKit.tsx): white cards on the light
  * section blue, the homepage's fields, and the gold button for the one action.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertCircle, ArrowRight, Download, FileSpreadsheet, History, LoaderCircle, MapPin, Upload } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { AlertCircle, ArrowRight, Download, ExternalLink, History, LoaderCircle, MapPin } from 'lucide-react';
 import { AddressAutocomplete, type Suggestion } from '@/components/landing/AddressAutocomplete';
 import {
   AdminBody,
@@ -33,19 +37,16 @@ import {
   tileClass,
 } from './adminKit';
 import { ago, onDate, onDateTime } from './quoteFormat';
-import { parseCSV, toCSV, type CsvRow } from './leads/csv';
+import { toCSV } from './leads/csv';
 import {
-  SALES_COLUMNS,
-  missingColumns,
   money,
   rankLeads,
   shortMoney,
+  type CountySale,
   type Lead,
   type LeadResult,
   type SearchPoint,
 } from './leads/leadEngine';
-
-type LoadedFile = { name: string; rows: CsvRow[]; missing: string[] };
 
 type Run = {
   id: number;
@@ -66,13 +67,32 @@ type RunHistory =
   | { kind: 'ready'; storage: boolean; runs: Run[]; total: number }
   | { kind: 'error' };
 
-type Settings = { asOf: string; lookbackDays: string; radius: string; minPrice: string; maxPrice: string };
+type Settings = {
+  lookbackDays: string;
+  radius: string;
+  minPrice: string;
+  maxPrice: string;
+  singleFamilyOnly: boolean;
+  qualifiedOnly: boolean;
+};
 
 /** The search address, with the full line it was picked as. */
 type Center = SearchPoint & { label: string };
 
+type CountyResponse = {
+  ok?: boolean;
+  error?: string;
+  today?: string;
+  sales?: CountySale[];
+  truncated?: boolean;
+  loadedAt?: string | null;
+};
+
 const SETTINGS_KEY = 'scpp_admin_lead_settings';
 const CENTER_KEY = 'scpp_admin_lead_center';
+/** The county endpoint's own limits. */
+const MAX_RADIUS = 10;
+const MAX_DAYS = 1460;
 
 const readStored = <T,>(key: string, fallback: T): T => {
   try {
@@ -92,20 +112,15 @@ const store = (key: string, value: unknown) => {
   }
 };
 
-/** Today in Florida, as YYYY-MM-DD. */
-const todayEt = (): string =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
-
 const readSettings = (): Settings => {
   const saved = readStored<Partial<Settings>>(SETTINGS_KEY, {});
-  // The as-of date is always today on a fresh visit: a remembered one would
-  // quietly re-run last month's window.
   return {
-    asOf: todayEt(),
     lookbackDays: saved.lookbackDays ?? '90',
-    radius: saved.radius ?? '2',
+    radius: saved.radius ?? '1',
     minPrice: saved.minPrice ?? '',
     maxPrice: saved.maxPrice ?? '',
+    singleFamilyOnly: saved.singleFamilyOnly ?? true,
+    qualifiedOnly: saved.qualifiedOnly ?? true,
   };
 };
 
@@ -116,24 +131,24 @@ const LEAD_COLUMNS: Array<keyof Lead> = [
   'priority_score',
   'street_address',
   'city',
-  'state',
   'zip',
-  'parcel_id',
   'sale_date',
   'sale_price',
   'days_since_sale',
   'straight_line_miles',
+  'property_type',
+  'living_sqft',
+  'owner_on_record',
+  'owner_mailing_address',
+  'parcel_id',
+  'county_page',
 ];
 
 /** "Oct 31": the year is in the run history; this tile only has room for the day. */
 const monthDay = (iso: string): string =>
   new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
-/** A county price as written ("950000", "$950,000.00") shown as $950,000. */
-const showPrice = (raw: string): string => {
-  const n = money(raw);
-  return n === null ? raw : `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
-};
+const dollars = (n: number): string => `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 
 /** "$400k–$900k", "over $400k", "under $900k" or '' for no range. */
 const priceRange = (min: number | null, max: number | null): string =>
@@ -144,61 +159,6 @@ const priceRange = (min: number | null, max: number | null): string =>
       : max !== null
         ? `under ${shortMoney(max)}`
         : '';
-
-const FilePick = ({
-  title,
-  columns,
-  file,
-  onFile,
-}: {
-  title: string;
-  columns: readonly string[];
-  file: LoadedFile | null;
-  onFile: (f: File) => void;
-}) => {
-  const ref = useRef<HTMLInputElement>(null);
-  const bad = file && (file.missing.length > 0 || file.rows.length === 0);
-  return (
-    <div className={`${tileClass} p-4`}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[15px] font-semibold text-sc-navy">{title}</p>
-          {file ? (
-            <p className={`mt-1 truncate text-[13.5px] ${bad ? 'font-medium text-red-700' : 'text-sc-navy/65'}`}>
-              <FileSpreadsheet className="mr-1 inline h-4 w-4 align-[-3px] text-sc-blue" />
-              {file.name} · {file.rows.length.toLocaleString()} rows
-            </p>
-          ) : (
-            <p className="mt-1 text-[13.5px] text-sc-navy/50">No file yet</p>
-          )}
-        </div>
-        <button type="button" onClick={() => ref.current?.click()} className={`${smallButton} shrink-0 bg-white`}>
-          <Upload className="h-4 w-4" /> {file ? 'Replace' : 'Choose CSV'}
-        </button>
-        <input
-          ref={ref}
-          type="file"
-          accept=".csv,text/csv"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) onFile(f);
-            e.target.value = '';
-          }}
-        />
-      </div>
-      {file && file.rows.length === 0 && <p className={`mt-3 ${notice.error}`}>This file has no data rows.</p>}
-      {file && file.missing.length > 0 && (
-        <p className={`mt-3 ${notice.error}`}>Missing columns: {file.missing.join(', ')}</p>
-      )}
-      <p className="mt-3 text-[12px] leading-relaxed text-sc-navy/50">
-        Needs: <span className="font-mono text-sc-navy/70">{columns.join(', ')}</span>
-        <br />
-        Optional: <span className="font-mono text-sc-navy/70">sale_price, parcel_id</span>
-      </p>
-    </div>
-  );
-};
 
 /**
  * The search address. It has to be PICKED from the suggestions: that is where
@@ -240,17 +200,43 @@ const CenterPicker = ({ center, onChange }: { center: Center | null; onChange: (
       {noPosition ? (
         <p className={`mt-2 ${notice.error}`}>That address came back without a map position. Try another match.</p>
       ) : (
-        <p className={`mt-2 ${mutedText}`}>Pick it from the list so it can be placed on the map.</p>
+        <p className={`mt-2 ${mutedText}`}>Any Pinellas address. Pick it from the list so it can be placed on the map.</p>
       )}
     </div>
   );
 };
 
+const Toggle = ({
+  checked,
+  onChange,
+  label,
+  hint,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+  hint: string;
+}) => (
+  <label className="flex cursor-pointer items-start gap-3">
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={(e) => onChange(e.target.checked)}
+      className="mt-1 h-4 w-4 shrink-0 accent-[#2676b6]"
+    />
+    <span>
+      <span className="block text-[15px] font-semibold text-sc-navy">{label}</span>
+      <span className={`block ${mutedText}`}>{hint}</span>
+    </span>
+  </label>
+);
+
 export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack: () => void }) => {
   const [center, setCenter] = useState<Center | null>(() => readStored<Center | null>(CENTER_KEY, null));
-  const [sales, setSales] = useState<LoadedFile | null>(null);
   const [settings, setSettings] = useState<Settings>(readSettings);
-  const [result, setResult] = useState<(LeadResult & { signature: string; checked: number }) | null>(null);
+  const [result, setResult] = useState<
+    (LeadResult & { signature: string; checked: number; truncated: boolean; loadedAt: string | null }) | null
+  >(null);
   const [runError, setRunError] = useState('');
   const [logNote, setLogNote] = useState('');
   const [history, setHistory] = useState<RunHistory>({ kind: 'loading' });
@@ -279,83 +265,118 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
     fetchHistory();
   }, [fetchHistory]);
 
-  // Remembered on this device: the window, distance and price range, and the
-  // last search address, so a repeat search is one press.
-  useEffect(() => {
-    const { lookbackDays, radius, minPrice, maxPrice } = settings;
-    store(SETTINGS_KEY, { lookbackDays, radius, minPrice, maxPrice });
-  }, [settings]);
+  // Remembered on this device: the filters and the last search address, so a
+  // repeat search is one press.
+  useEffect(() => store(SETTINGS_KEY, settings), [settings]);
   useEffect(() => store(CENTER_KEY, center), [center]);
 
-  const set = (k: keyof Settings) => (e: { target: { value: string } }) =>
+  const setText = (k: 'lookbackDays' | 'radius' | 'minPrice' | 'maxPrice') => (e: { target: { value: string } }) =>
     setSettings((s) => ({ ...s, [k]: e.target.value }));
 
   const minPrice = money(settings.minPrice);
   const maxPrice = money(settings.maxPrice);
+  const radius = Number(settings.radius);
+  const lookbackDays = Number(settings.lookbackDays);
 
   // What the results were computed from. When it no longer matches, the results
   // on screen are for different inputs and say so.
   const signature = [
     center?.label,
-    sales?.name,
-    sales?.rows.length,
-    settings.asOf,
     settings.lookbackDays,
     settings.radius,
     minPrice,
     maxPrice,
+    settings.singleFamilyOnly,
+    settings.qualifiedOnly,
   ].join('|');
-  const salesReady = !!sales && sales.rows.length > 0 && !sales.missing.length;
-  const canRun = !!center && salesReady;
+
+  const inputProblem = !center
+    ? 'Pick an address to search around.'
+    : !(radius > 0 && radius <= MAX_RADIUS)
+      ? `Distance must be between 0 and ${MAX_RADIUS} miles.`
+      : !(Number.isInteger(lookbackDays) && lookbackDays >= 1 && lookbackDays <= MAX_DAYS)
+        ? `Sold within must be a whole number of days, up to ${MAX_DAYS} (4 years).`
+        : '';
 
   const run = async () => {
-    if (!center || !sales || !salesReady) return;
+    if (!center || inputProblem) return;
     setRunError('');
     setLogNote('');
     setShowAll(false);
-    let out: LeadResult;
-    try {
-      out = rankLeads({
-        center,
-        sales: sales.rows,
-        asOf: settings.asOf,
-        lookbackDays: Number(settings.lookbackDays),
-        radius: Number(settings.radius),
-        minPrice,
-        maxPrice,
-      });
-    } catch (e) {
-      setResult(null);
-      setRunError(e instanceof Error ? e.message : String(e));
-      return;
-    }
-    setResult({ ...out, signature, checked: sales.rows.length });
-
     setRunning(true);
+    const sig = signature;
     try {
+      const res = await fetch('/api/admin/county-sales', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ lat: center.lat, lng: center.lng, radius, days: lookbackDays }),
+      });
+      if (res.status === 401) return onLogout();
+      const data = (await res.json().catch(() => ({}))) as CountyResponse;
+      if (!res.ok || !data.ok || !data.sales || !data.today) {
+        setResult(null);
+        setRunError(
+          data.error === 'county_unavailable'
+            ? 'The county’s property server didn’t answer. Try again in a minute.'
+            : data.error === 'bad_request'
+              ? 'That search couldn’t be run. Check the address is in Pinellas and the numbers are in range.'
+              : 'Something went wrong getting the county sales. Try again.',
+        );
+        return;
+      }
+
+      let out: LeadResult;
+      try {
+        out = rankLeads({
+          center,
+          sales: data.sales,
+          today: data.today,
+          filters: {
+            lookbackDays,
+            radius,
+            minPrice,
+            maxPrice,
+            singleFamilyOnly: settings.singleFamilyOnly,
+            qualifiedOnly: settings.qualifiedOnly,
+          },
+        });
+      } catch (e) {
+        setResult(null);
+        setRunError(e instanceof Error ? e.message : String(e));
+        return;
+      }
+      setResult({
+        ...out,
+        signature: sig,
+        checked: data.sales.length,
+        truncated: !!data.truncated,
+        loadedAt: data.loadedAt ?? null,
+      });
+
       const range = priceRange(minPrice, maxPrice);
-      const res = await fetch('/api/admin/lead-runs', {
+      const logged = await fetch('/api/admin/lead-runs', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         // Counts and settings only: the search address is not recorded.
         body: JSON.stringify({
-          asOf: settings.asOf,
-          lookbackDays: Number(settings.lookbackDays),
-          radius: Number(settings.radius),
+          asOf: data.today,
+          lookbackDays,
+          radius,
           routeStops: 1,
-          salesRows: sales.rows.length,
+          salesRows: data.sales.length,
           leadsFound: out.leads.length,
           newestSale: out.newestSale,
-          salesFile: range ? `${sales.name} · ${range}` : sales.name,
+          salesFile: ['Pinellas County', settings.singleFamilyOnly ? 'single-family' : 'any home', range]
+            .filter(Boolean)
+            .join(' · '),
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; storage?: boolean };
-      if (res.status === 401) return onLogout();
-      if (!res.ok || !data.ok) setLogNote('This run worked, but it couldn’t be added to the run history.');
-      else if (data.storage === false) setLogNote('This run worked. Run history isn’t set up yet, so it wasn’t recorded.');
+      const log = (await logged.json().catch(() => ({}))) as { ok?: boolean; storage?: boolean };
+      if (!logged.ok || !log.ok) setLogNote('This run worked, but it couldn’t be added to the run history.');
+      else if (log.storage === false) setLogNote('This run worked. Run history isn’t set up yet, so it wasn’t recorded.');
       await fetchHistory();
     } catch {
-      setLogNote('This run worked, but it couldn’t be added to the run history.');
+      setRunError('Couldn’t reach the server. Check the connection and try again.');
     } finally {
       setRunning(false);
     }
@@ -363,11 +384,12 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
 
   const download = () => {
     if (!result) return;
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
     const blob = new Blob([toCSV(LEAD_COLUMNS, result.leads)], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `new-homeowner-leads-${settings.asOf}.csv`;
+    a.download = `new-homeowner-leads-${today}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -387,7 +409,7 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
         <PageHead
           eyebrow="Lead finder"
           title="New homeowner leads"
-          lead="Recently sold homes with a pool, within the distance you set of one address."
+          lead="Recent Pinellas home sales near one address, straight from the county’s property records."
           onBack={onBack}
         />
 
@@ -397,32 +419,18 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
               <CenterPicker center={center} onChange={setCenter} />
             </Card>
 
-            <Card title="2. Sold homes">
-              <p className={`-mt-2 ${mutedText}`}>
-                The county sales file. It’s read on this device and never uploaded.
-              </p>
-              <FilePick
-                title="Property sales"
-                columns={SALES_COLUMNS}
-                file={sales}
-                onFile={async (f) => {
-                  const rows = parseCSV(await f.text());
-                  setSales({ name: f.name, rows, missing: missingColumns(rows, SALES_COLUMNS) });
-                }}
-              />
-            </Card>
-
-            <Card title="3. Narrow it down">
-              <div className="grid gap-4 sm:grid-cols-3">
+            <Card title="2. Narrow it down">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
                   <span className={fieldLabel}>Within (miles)</span>
                   <input
                     type="number"
                     inputMode="decimal"
                     min={0.1}
+                    max={MAX_RADIUS}
                     step={0.25}
                     value={settings.radius}
-                    onChange={set('radius')}
+                    onChange={setText('radius')}
                     className={inputClass}
                   />
                 </label>
@@ -432,24 +440,19 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                     type="number"
                     inputMode="numeric"
                     min={1}
+                    max={MAX_DAYS}
                     value={settings.lookbackDays}
-                    onChange={set('lookbackDays')}
+                    onChange={setText('lookbackDays')}
                     className={inputClass}
                   />
                 </label>
-                <label className="block">
-                  <span className={fieldLabel}>As of</span>
-                  <input type="date" value={settings.asOf} onChange={set('asOf')} className={inputClass} />
-                </label>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
                   <span className={fieldLabel}>Sale price from</span>
                   <input
                     type="text"
                     inputMode="numeric"
                     value={settings.minPrice}
-                    onChange={set('minPrice')}
+                    onChange={setText('minPrice')}
                     placeholder="No minimum"
                     className={inputClass}
                   />
@@ -460,32 +463,43 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                     type="text"
                     inputMode="numeric"
                     value={settings.maxPrice}
-                    onChange={set('maxPrice')}
+                    onChange={setText('maxPrice')}
                     placeholder="No maximum"
                     className={inputClass}
                   />
                 </label>
               </div>
-              <p className={`-mt-2 ${mutedText}`}>
-                {minPrice !== null || maxPrice !== null
-                  ? `Only homes that sold ${priceRange(minPrice, maxPrice)}. Homes with no price on record are left out.`
-                  : 'Leave both blank for any price.'}
-              </p>
+              {(minPrice !== null || maxPrice !== null) && (
+                <p className={`-mt-2 ${mutedText}`}>
+                  Only homes that sold {priceRange(minPrice, maxPrice)}. Sales with no price on record are left out.
+                </p>
+              )}
+              <div className="space-y-3 border-t border-sc-navy/[0.08] pt-5">
+                <Toggle
+                  checked={settings.singleFamilyOnly}
+                  onChange={(v) => setSettings((s) => ({ ...s, singleFamilyOnly: v }))}
+                  label="Single-family homes only"
+                  hint="Off includes condos, mobile homes and small multi-family. Vacant land is always left out."
+                />
+                <Toggle
+                  checked={settings.qualifiedOnly}
+                  onChange={(v) => setSettings((s) => ({ ...s, qualifiedOnly: v }))}
+                  label="Qualified sales only"
+                  hint="The county’s mark for a normal sale. Leaves out sales that bundled several parcels under one price."
+                />
+              </div>
               <div className="flex flex-wrap items-center gap-4">
-                <button type="button" onClick={run} disabled={!canRun || running} className={`${buttonClass.gold} px-7`}>
+                <button
+                  type="button"
+                  onClick={run}
+                  disabled={!!inputProblem || running}
+                  className={`${buttonClass.gold} px-7`}
+                >
                   {running && <LoaderCircle className="h-5 w-5 animate-spin" />}
-                  Find leads
+                  {running ? 'Searching the county…' : 'Find leads'}
                   {!running && <ArrowRight className="h-[18px] w-[18px]" strokeWidth={2.5} />}
                 </button>
-                {!canRun && (
-                  <span className={mutedText}>
-                    {!center && !salesReady
-                      ? 'Pick an address and load the sales file to run.'
-                      : !center
-                        ? 'Pick an address to search around.'
-                        : 'Load the sales file to run.'}
-                  </span>
-                )}
+                {inputProblem && <span className={mutedText}>{inputProblem}</span>}
               </div>
               {runError && <p className={notice.error}>{runError}</p>}
               {logNote && <p className={notice.warn}>{logNote}</p>}
@@ -493,7 +507,7 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
 
             {result && (
               <Card
-                title="4. Leads"
+                title="3. Leads"
                 aside={
                   result.leads.length > 0 && (
                     <button type="button" onClick={download} className={smallButton}>
@@ -502,32 +516,42 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                   )
                 }
               >
-                {stale && <p className={notice.warn}>The address, file or filters changed since this run. Run it again to update.</p>}
+                {stale && <p className={notice.warn}>The address or filters changed since this search. Run it again to update.</p>}
+                {result.truncated && (
+                  <p className={notice.warn}>
+                    This search hit the county limit, so the oldest sales were cut off. Narrow the distance or the window
+                    for a complete list.
+                  </p>
+                )}
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <Stat value={result.leads.length.toLocaleString()} label="Leads" />
-                  <Stat value={result.checked.toLocaleString()} label="Homes checked" />
+                  <Stat value={result.checked.toLocaleString()} label="Sales checked" />
                   <Stat value={excludedTotal.toLocaleString()} label="Excluded" />
                   <Stat value={result.newestSale ? monthDay(result.newestSale) : '—'} label="Newest sale" />
                 </div>
+                {result.loadedAt && (
+                  <p className={`-mt-2 ${mutedText}`}>
+                    County records as of {onDate(`${result.loadedAt}T12:00:00Z`)}. Recent sales take a few weeks to be
+                    recorded.
+                  </p>
+                )}
 
                 {result.leads.length === 0 ? (
                   <p className={bodyText}>
                     No qualifying leads. The exclusion counts below say why: the distance, the window, the price range or
-                    missing data.
+                    the property type.
                   </p>
                 ) : (
                   <ul className="space-y-3">
-                    {shown.map((r, i) => (
-                      <li
-                        key={`${r.parcel_id || r.street_address}-${i}`}
-                        className="rounded-[12px] p-4 ring-1 ring-inset ring-sc-navy/[0.12]"
-                      >
+                    {shown.map((r) => (
+                      <li key={r.parcel_id} className="rounded-[12px] p-4 ring-1 ring-inset ring-sc-navy/[0.12]">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <p className="text-[16px] font-semibold text-sc-navy">{r.street_address}</p>
                             <p className="text-[14px] text-sc-navy/60">
-                              {[r.city, `${r.state} ${r.zip}`.trim()].filter(Boolean).join(', ')}
+                              {[r.city, `FL ${r.zip}`.trim()].filter(Boolean).join(', ')} · {r.property_type}
+                              {r.living_sqft && r.living_sqft !== '0 sf' ? ` · ${r.living_sqft}` : ''}
                             </p>
                           </div>
                           <span
@@ -539,12 +563,19 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                         </div>
                         <p className="mt-2 text-[14px] text-sc-navy/80">
                           Sold {onDate(`${r.sale_date}T12:00:00Z`)} ({r.days_since_sale} days ago)
-                          {r.sale_price ? ` · ${showPrice(r.sale_price)}` : ''}
+                          {r.sale_price !== null ? ` · ${dollars(r.sale_price)}` : ''} · {r.straight_line_miles} mi away
                         </p>
-                        <p className="mt-1 flex items-center gap-1.5 text-[14px] text-sc-navy/80">
-                          <MapPin className="h-3.5 w-3.5 shrink-0 text-sc-blue" />
-                          {r.straight_line_miles} mi away
-                        </p>
+                        {r.owner_on_record && (
+                          <p className="mt-1 text-[13.5px] text-sc-navy/60">Owner on record: {r.owner_on_record}</p>
+                        )}
+                        <a
+                          href={r.county_page}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2 inline-flex items-center gap-1.5 text-[14px] font-semibold text-sc-blue hover:text-sc-navy"
+                        >
+                          Check for a pool on the county page <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
                       </li>
                     ))}
                   </ul>
@@ -616,8 +647,8 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
                     <Stat value={history.total.toLocaleString()} label="Runs total" />
                   </div>
                   <p className={`mt-3 ${mutedText}`}>
-                    {last.sales_rows.toLocaleString()} homes checked within {last.radius_miles} mi
-                    {last.newest_sale ? `. County data through ${onDate(`${last.newest_sale}T12:00:00Z`)}.` : '.'}
+                    {last.sales_rows.toLocaleString()} sales checked within {last.radius_miles} mi
+                    {last.newest_sale ? `. Newest sale ${onDate(`${last.newest_sale}T12:00:00Z`)}.` : '.'}
                   </p>
                   {history.runs.length > 1 && (
                     <details className="mt-4 border-t border-sc-navy/[0.08] pt-4">
@@ -645,8 +676,9 @@ export const LeadFinder = ({ onLogout, onBack }: { onLogout: () => void; onBack:
             </section>
 
             <p className={mutedText}>
-              Distances are straight-line, not driving. County pool flags can be out of date, so check before reaching
-              out. Nothing here contacts anyone: outreach happens in the CRM.
+              Sales come from the Pinellas County Property Appraiser’s public records. Pools aren’t in that data, so each
+              lead links to its county page to check. Distances are straight-line, not driving. Nothing here contacts
+              anyone: outreach happens in the CRM.
             </p>
           </aside>
         </div>
