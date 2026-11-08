@@ -90,7 +90,7 @@ export const Footer = () => {
                 className="h-8 w-auto shrink-0"
                 loading="lazy"
               />
-              <span className="font-display font-bold text-lg tracking-wide text-white uppercase leading-none">
+              <span className="font-brand font-bold text-lg tracking-wide text-white uppercase leading-none">
                 {BUSINESS_NAME}
               </span>
             </div>

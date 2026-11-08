@@ -55,7 +55,10 @@
 
 @theme {
   --font-sans: "Inter", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Montserrat", "Montserrat Fallback", ui-sans-serif, system-ui, sans-serif;
+  /* Headings: Inter too, so the whole site reads in one clean typeface. */
+  --font-display: "Inter", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
+  /* The SUNCOAST POOL PROS wordmark only: it's the logo, so it keeps Montserrat. */
+  --font-brand: "Montserrat", "Montserrat Fallback", ui-sans-serif, system-ui, sans-serif;
   
   /* === Brand color tokens (global reference) === */
   /* Orange */

@@ -181,7 +181,7 @@ export const Navbar = () => {
               height={24}
               className="h-7 w-auto md:hidden"
             />
-            <span className="flex md:hidden flex-col text-[#0a1628] uppercase font-display font-bold">
+            <span className="flex md:hidden flex-col text-[#0a1628] uppercase font-brand font-bold">
               <span className="text-[15px] leading-none tracking-[0.02em]">
                 Suncoast
               </span>
@@ -189,7 +189,7 @@ export const Navbar = () => {
                 Pool Pros
               </span>
             </span>
-            <span className="hidden md:inline font-display font-bold text-base tracking-wide text-white uppercase">
+            <span className="hidden md:inline font-brand font-bold text-base tracking-wide text-white uppercase">
               Suncoast Pool Pros
             </span>
           </Link>
@@ -425,7 +425,7 @@ export const Navbar = () => {
                   to="/"
                   onClick={() => setIsOpen(false)}
                   aria-label="Suncoast Pool Pros home"
-                  className="font-display font-bold text-base tracking-wide text-[#0a1628] uppercase"
+                  className="font-brand font-bold text-base tracking-wide text-[#0a1628] uppercase"
                 >
                   Suncoast Pool Pros
                 </Link>

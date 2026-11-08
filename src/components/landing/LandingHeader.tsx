@@ -162,7 +162,7 @@ export const LandingHeader = ({ onQuote = focusQuoteForm }: { onQuote?: () => vo
                   md up. The two lines' sizes and tracking scale together, so
                   "POOL PROS" stays the width of "SUNCOAST". */}
               <img src="/icon-mark.svg" alt="" aria-hidden="true" width={37} height={24} className="h-7 w-auto md:h-[30px]" />
-              <span className={`flex flex-col font-display font-bold uppercase ${INK}`}>
+              <span className={`flex flex-col font-brand font-bold uppercase ${INK}`}>
                 <span className="text-[15px] leading-none tracking-[0.02em] md:text-[16px]">Suncoast</span>
                 <span className="mt-[3px] text-[9px] leading-none tracking-[0.405em] md:mt-[3.25px] md:text-[9.6px]">
                   Pool Pros
@@ -307,7 +307,7 @@ export const LandingHeader = ({ onQuote = focusQuoteForm }: { onQuote?: () => vo
                   to="/"
                   onClick={closeMenu}
                   aria-label="Suncoast Pool Pros home"
-                  className={`font-display text-base font-bold uppercase tracking-wide ${INK}`}
+                  className={`font-brand text-base font-bold uppercase tracking-wide ${INK}`}
                 >
                   Suncoast Pool Pros
                 </Link>
