@@ -41,6 +41,9 @@ const POSTED = '2026-11-08';
 const VALID_THROUGH = '2027-01-07';
 /** Written out rather than formatted, so the server and browser render the same text. */
 const POSTED_LABEL = 'Nov 8, 2026';
+/** Starting weekly pay, and the stops in a full route it covers. */
+const START_PAY = 800;
+const ROUTE_STOPS = 70;
 
 const APPLY_SUBJECT = `${ROLE} — Application`;
 const APPLY_BODY =
@@ -49,20 +52,20 @@ const APPLY_HREF = `mailto:${EMAIL}?subject=${encodeURIComponent(APPLY_SUBJECT)}
 
 const PAGE_TITLE = 'Full-Time Pool Tech Job: Clearwater, Largo & Palm Harbor';
 const PAGE_DESC =
-  'Hiring a full-time pool service tech in the Clearwater, Largo & Palm Harbor area, FL. Weekly pay, set Mon–Sat routes, paid training and a company truck.';
+  'Hiring a full-time pool tech in the Clearwater, Largo & Palm Harbor area. From $800/week for about 70 stops, paid training and a company truck.';
 
 type Item = { icon: LucideIcon; title: string; body: string };
 
 const offer: Item[] = [
   {
     icon: Wallet,
-    title: 'Competitive weekly pay',
-    body: 'Steady, competitive pay every week, and we treat our techs like the professionals they are.',
+    title: `Starting at $${START_PAY} a week`,
+    body: 'Paid weekly from day one, and you earn more as your route grows. We treat our techs like the professionals they are.',
   },
   {
     icon: CalendarCheck,
-    title: 'Set routes & schedule',
-    body: 'Set routes week to week, a predictable Monday–Saturday schedule, and home every night.',
+    title: `About ${ROUTE_STOPS} stops a week`,
+    body: `Not the 100+ pools some companies pile on. A full route here is about ${ROUTE_STOPS} stops on a set Monday–Saturday schedule, so there's time to do every pool right and still get home every night.`,
   },
   {
     icon: GraduationCap,
@@ -174,6 +177,11 @@ const PAGE_SCHEMA = [
       `<p>To apply, email ${EMAIL} with your resume or a short note about yourself and your experience.</p>`,
     ].join(''),
     employmentType: 'FULL_TIME',
+    baseSalary: {
+      '@type': 'MonetaryAmount',
+      currency: 'USD',
+      value: { '@type': 'QuantitativeValue', minValue: START_PAY, unitText: 'WEEK' },
+    },
     hiringOrganization: {
       '@type': 'Organization',
       name: 'Suncoast Pool Pros',
@@ -223,7 +231,10 @@ export const CareersPage = () => {
             <h1 className="mt-4 text-balance text-[38px] font-[650] leading-[1.06] tracking-[-0.04em] text-sc-navy sm:text-[52px]">
               Now hiring a full-time pool service technician
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-pretty text-[17px] leading-[1.6] text-sc-muted sm:text-[18px]">
+            <p className="mt-5 text-[18px] font-semibold tracking-[-0.01em] text-sc-navy sm:text-[20px]">
+              Starting at ${START_PAY}/week · about {ROUTE_STOPS} stops, not 100+
+            </p>
+            <p className="mx-auto mt-3 max-w-2xl text-pretty text-[17px] leading-[1.6] text-sc-muted sm:text-[18px]">
               We're a locally owned pool service that runs on reliability, respect and doing honest work right. If
               you're dependable and take pride in your work, there's a steady route and a real team waiting for you.
             </p>
@@ -252,6 +263,9 @@ export const CareersPage = () => {
                   <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-[14.5px] text-white/75">
                     <li className="inline-flex items-center gap-1.5">
                       <Clock className="h-4 w-4 text-sc-glacier" /> Full-time · Mon–Sat
+                    </li>
+                    <li className="inline-flex items-center gap-1.5">
+                      <Wallet className="h-4 w-4 text-sc-glacier" /> From ${START_PAY}/week · ~{ROUTE_STOPS} stops
                     </li>
                     <li className="inline-flex items-center gap-1.5">
                       <MapPin className="h-4 w-4 text-sc-glacier" /> Clearwater, Largo &amp; Palm Harbor area
