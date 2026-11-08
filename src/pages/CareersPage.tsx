@@ -1,46 +1,108 @@
 import React from 'react';
-import { m } from 'motion/react';
 import {
-  Mail,
-  ShieldCheck,
-  Clock,
-  HeartHandshake,
-  Sparkles,
-  Truck,
-  GraduationCap,
-  Wallet,
-  CalendarCheck,
-  Eye,
+  ArrowRight,
   Award,
-  Sun,
+  CalendarCheck,
+  CalendarDays,
   CheckCircle2,
+  Clock,
+  Eye,
+  GraduationCap,
+  HeartHandshake,
+  Mail,
+  MapPin,
+  ShieldCheck,
+  Sparkles,
+  Sun,
+  Truck,
+  Wallet,
+  type LucideIcon,
 } from 'lucide-react';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
-import { Glass } from '@/components/Glass';
-import { Container } from '@/components/Container';
 import { EMAIL } from '@/lib/contact';
-import { usePageMeta } from '@/lib/usePageMeta';
+import { FONTS, usePageMeta } from '@/lib/usePageMeta';
+import { useQuoteSheet } from '@/components/QuoteSheet';
+import { LandingHeader } from '@/components/landing/LandingHeader';
+import { Container, Eyebrow, buttonClass, h2, lead, sectionY } from '@/components/landing/sectionKit';
+import { Footer } from '@/components/Footer';
 
-const APPLY_SUBJECT = 'Pool Service Technician — Application';
+/*
+ * /careers: the open job, on the homepage's light design (as the FAQ page).
+ *
+ * The posting is also a schema.org JobPosting in the prerendered head, which
+ * is what Google for Jobs reads. When the role is re-posted or changes, update
+ * POSTED (and VALID_THROUGH) together, plus the /careers/ date in
+ * scripts/sitemap-dates.json. Only re-date a real re-post: Google treats a
+ * date that keeps moving on an unchanged job as spam.
+ */
+
+const ROLE = 'Full-Time Pool Service Technician';
+/** When this posting went up (YYYY-MM-DD), and the date it lapses unless re-posted. */
+const POSTED = '2026-11-08';
+const VALID_THROUGH = '2027-01-07';
+/** Written out rather than formatted, so the server and browser render the same text. */
+const POSTED_LABEL = 'Nov 8, 2026';
+
+const APPLY_SUBJECT = `${ROLE} — Application`;
 const APPLY_BODY =
-  'Hi Suncoast Pool Pros team,%0D%0A%0D%0AI\'d like to apply for the Pool Service Technician role.%0D%0A%0D%0AName:%0D%0APhone:%0D%0AArea you live in:%0D%0APool / field experience:%0D%0A%0D%0A(Attach your resume if you have one — but it\'s not required.)';
+  "Hi Suncoast Pool Pros team,%0D%0A%0D%0AI'd like to apply for the full-time Pool Service Technician role.%0D%0A%0D%0AName:%0D%0APhone:%0D%0AArea you live in:%0D%0APool / field experience:%0D%0A%0D%0A(Attach your resume if you have one, but it's not required.)";
 const APPLY_HREF = `mailto:${EMAIL}?subject=${encodeURIComponent(APPLY_SUBJECT)}&body=${APPLY_BODY}`;
 
-const PAGE_TITLE = 'Now Hiring: Pool Service Techs in Clearwater & Largo';
+const PAGE_TITLE = 'Full-Time Pool Tech Job: Clearwater, Largo & Palm Harbor';
 const PAGE_DESC =
-  'Now hiring pool service techs in Clearwater & Largo, FL — steady weekly pay, same routes every week, paid training, and a company truck. Apply by email.';
+  'Hiring a full-time pool service tech in the Clearwater, Largo & Palm Harbor area, FL. Weekly pay, set Mon–Sat routes, paid training and a company truck.';
 
-const lookFor = [
+type Item = { icon: LucideIcon; title: string; body: string };
+
+const offer: Item[] = [
+  {
+    icon: Wallet,
+    title: 'Competitive weekly pay',
+    body: 'Steady, competitive pay every week, and we treat our techs like the professionals they are.',
+  },
+  {
+    icon: CalendarCheck,
+    title: 'Set routes & schedule',
+    body: 'Set routes week to week, a predictable Monday–Saturday schedule, and home every night.',
+  },
+  {
+    icon: GraduationCap,
+    title: 'Paid training & growth',
+    body: "We'll train you on everything from chemistry to equipment, with real room to grow as the company grows.",
+  },
+  {
+    icon: Truck,
+    title: 'Truck, gear & fuel provided',
+    body: 'We provide the company vehicle, equipment and fuel, so you keep more of what you earn.',
+  },
+];
+
+const dayInLife = [
+  'Start your day with a set route of pools',
+  'Brush, skim, vacuum and empty baskets at each stop',
+  'Test and balance water chemistry; check the pump, filter and salt cell',
+  'Send a photo-backed service report so the customer sees the work',
+  'Flag anything that needs attention before it becomes a problem',
+  'Wrap up and head home: no late nights, no weekend surprises',
+];
+
+const requirements = [
+  "A valid driver's license and clean driving record",
+  'Reliability and a strong work ethic (non-negotiable)',
+  'Ability to pass a background check',
+  'Comfortable working outdoors in Florida weather',
+  "Pool experience is a plus; we'll train the right person",
+];
+
+const lookFor: Item[] = [
   {
     icon: ShieldCheck,
     title: 'Reliability above all',
-    body: 'Our whole reputation is built on never missing a visit. We hire people who show up, every time, and take ownership of their routes.',
+    body: 'Our reputation is built on never missing a visit. We hire people who show up, every time, and take ownership of their routes.',
   },
   {
     icon: Eye,
     title: 'Discretion & professionalism',
-    body: "Many of our pools are at high-value waterfront homes. We look for techs who are respectful, quiet, and trustworthy on someone's property.",
+    body: "Many of our pools are at waterfront homes. We look for techs who are respectful, quiet and trustworthy on someone's property.",
   },
   {
     icon: HeartHandshake,
@@ -50,360 +112,48 @@ const lookFor = [
   {
     icon: Sun,
     title: 'Willing to learn coastal pool care',
-    body: "Experience helps, but it's not required. If you're dependable and teachable, we'll train you on water chemistry, equipment, and the Gulf-coast specifics.",
+    body: "Experience helps, but it's not required. If you're dependable and teachable, we'll train you on water chemistry, equipment and the Gulf-coast specifics.",
   },
 ];
 
-const offer = [
-  {
-    icon: Wallet,
-    title: 'Competitive weekly pay',
-    body: 'Steady, competitive pay every week — and we treat our techs like the professionals they are, not a number.',
-  },
+const values: Item[] = [
   {
     icon: CalendarCheck,
-    title: 'Consistent routes & schedule',
-    body: 'The same routes week to week, a predictable Monday–Saturday schedule, and home every night. No rotating chaos.',
-  },
-  {
-    icon: GraduationCap,
-    title: 'Paid training & growth',
-    body: "We'll train you on everything from chemistry to equipment, and there's real room to grow as the company grows.",
-  },
-  {
-    icon: Truck,
-    title: 'Truck, gear & fuel provided',
-    body: 'Show up ready to work — we provide the company vehicle, equipment, and fuel so you keep more of what you earn.',
-  },
-];
-
-const values = [
-  {
-    icon: CalendarCheck,
-    title: 'Consistency, not rotating crews',
-    body: 'Customers see a consistent technician, not a rotating crew. It builds trust, it produces better pools, and it makes your job easier because you know every property on your route.',
+    title: 'One standard on every visit',
+    body: 'Every customer has a locked-in service day and the same checklist every week. You run set routes and get to know the properties on them, and the work is the same standard no matter the stop.',
   },
   {
     icon: Award,
     title: 'Accountability we can prove',
-    body: 'GPS-verified visits and a photo report after every clean. It protects the customer — and it protects you, because your good work is always documented.',
+    body: 'GPS-verified visits and a photo report after every clean. It protects the customer, and it protects you, because your good work is always documented.',
   },
   {
     icon: Sparkles,
-    title: 'Respect — for homes and for each other',
-    body: "We treat customers' homes like our own and we treat our team like family. No yelling, no chaos, no cutting corners. Just steady, honest work done right.",
+    title: 'Respect, for homes and for each other',
+    body: "We treat customers' homes like our own and our team like family. No yelling, no chaos, no cutting corners. Just steady, honest work done right.",
   },
 ];
 
-const dayInLife = [
-  'Start your day with a set route of pools you know well',
-  'Brush, skim, vacuum, and empty baskets at each stop',
-  'Test and balance water chemistry; check the pump, filter & salt cell',
-  'Snap a photo-backed service report so the customer sees the work',
-  'Flag anything that needs attention before it becomes a problem',
-  'Wrap up and head home — no late nights, no weekend surprises',
-];
+// The homepage's card edge: a hairline ring and a soft drop.
+const cardShadow = 'shadow-[0_0_0_1px_rgba(36,58,85,0.08),0_10px_24px_-16px_rgba(36,58,85,0.3)]';
+const iconRing = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] ring-1 ring-inset ring-sc-navy/[0.12]';
 
-const Hero = () => (
-  <div className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
-    <div className="absolute inset-0 z-0">
-      <div className="absolute inset-0 bg-mesh opacity-60" />
-      <div className="hidden md:block absolute top-[-10%] left-1/2 -translate-x-1/2 w-[70%] h-[60%] bg-brand-blue/15 rounded-full blur-[150px] animate-float" />
-      <div className="absolute inset-x-0 bottom-0 h-60 bg-gradient-to-t from-[#07111c] to-transparent" />
-    </div>
-    <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
-      >
-        <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75 animate-ping" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange" />
-          </span>
-          <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
-            Now Hiring · Clearwater & Largo
-          </span>
-        </Glass>
-
-        <h1 className="font-display font-bold text-white tracking-tight text-4xl sm:text-5xl md:text-[3.5rem] leading-[1.05] mb-6">
-          Build a career you can{' '}
-          <span className="text-brand-blue-light">count on.</span>
-        </h1>
-
-        <p className="text-lg text-gray-300 font-normal max-w-2xl mx-auto leading-relaxed mb-9">
-          We're a locally owned pool service that runs on reliability, respect, and doing
-          honest work right. If you're dependable and take pride in your work, there's a
-          steady route and a real team waiting for you.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-          <a href={APPLY_HREF} className="btn btn-blue">
-            <Mail className="w-[18px] h-[18px]" />
-            Apply — Email Your Resume
-          </a>
-          <a
-            href="#open-role"
-            className="btn btn-glass"
-          >
-            See the Open Role
-          </a>
-        </div>
-        <p className="mt-4 text-[13px] text-gray-500">
-          No resume? No problem — email us and tell us a bit about yourself.
-        </p>
-      </m.div>
-    </div>
-  </div>
+const ApplyButton = ({ label = 'Apply by email', className = '' }: { label?: string; className?: string }) => (
+  <a href={APPLY_HREF} className={`${buttonClass.gold} ${className}`}>
+    <Mail className="h-[18px] w-[18px]" />
+    {label}
+  </a>
 );
 
-type Item = { icon: React.ComponentType<{ className?: string }>; title: string; body: string };
-
-const CardGrid = ({
-  eyebrow,
-  heading,
-  sub,
-  items,
-  cols = 2,
-}: {
-  eyebrow: string;
-  heading: string;
-  sub: string;
-  items: Item[];
-  cols?: 2 | 3;
-}) => (
-  <Container>
-    <m.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="max-w-2xl mb-12"
-    >
-      <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-        {eyebrow}
-      </span>
-      <h2 className="section-heading text-white leading-tight mb-4">{heading}</h2>
-      <p className="section-subtext">{sub}</p>
-    </m.div>
-    <div className={`grid grid-cols-1 ${cols === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-5`}>
-      {items.map((item, i) => (
-        <m.div
-          key={item.title}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: i * 0.08 }}
-          className="glass-panel rounded-2xl p-6 md:p-7 flex gap-5"
-        >
-          <div className="shrink-0 w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center">
-            <item.icon className="w-6 h-6 text-brand-blue-light" />
-          </div>
-          <div>
-            <h3 className="text-lg font-display font-bold text-white mb-2">{item.title}</h3>
-            <p className="text-gray-400 leading-relaxed text-[15px]">{item.body}</p>
-          </div>
-        </m.div>
-      ))}
-    </div>
-  </Container>
-);
-
-const OfferBand = () => (
-  <section className="py-20 md:py-28 bg-gradient-to-b from-[#07111c] to-[#0a1628] relative overflow-hidden">
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] bg-brand-blue/[0.07] rounded-full blur-[150px] pointer-events-none" />
-    <Container className="relative z-10">
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="text-center max-w-2xl mx-auto mb-14"
-      >
-        <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-          What We Offer
-        </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
-          A real job with real support.
-        </h2>
-        <p className="section-subtext">
-          We invest in our techs because steady, well-treated people deliver the
-          consistency our customers count on.
-        </p>
-      </m.div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-        {offer.map((item, i) => (
-          <m.div
-            key={item.title}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.09 }}
-            className="text-center px-4 py-8 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-brand-blue/30 hover:bg-white/[0.05] transition-colors"
-          >
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-blue/25 to-brand-blue/5 border border-brand-blue/30 flex items-center justify-center mb-5 shadow-lg shadow-brand-blue/10">
-              <item.icon className="w-8 h-8 text-brand-blue-light" />
-            </div>
-            <h3 className="text-base font-display font-bold text-white mb-2 leading-snug">
-              {item.title}
-            </h3>
-            <p className="text-gray-400 leading-relaxed text-sm">{item.body}</p>
-          </m.div>
-        ))}
-      </div>
-    </Container>
-  </section>
-);
-
-const ValuesSection = () => (
-  <section className="py-20 md:py-28 bg-[#0a1628] relative">
-    <Container>
-      <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-12 lg:gap-16 items-start">
-        {/* Left: the manifesto statement */}
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="lg:sticky lg:top-28"
-        >
-          <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-            How We Run Things
-          </span>
-          <h2 className="section-heading text-white leading-tight mb-4">
-            No rotating crews. No cutting corners.
-          </h2>
-          <p className="section-subtext">
-            The way we run the business is the whole reason customers stay — and the
-            reason this is a good place to work. It comes down to three things we
-            don't compromise on.
-          </p>
-        </m.div>
-
-        {/* Right: numbered editorial list */}
-        <div className="space-y-10">
-          {values.map((item, i) => (
-            <m.div
-              key={item.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="flex gap-6"
-            >
-              <span className="font-display font-bold text-4xl md:text-5xl text-brand-blue/30 leading-none tabular-nums shrink-0 w-14">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <div className="border-b border-white/10 pb-9">
-                <h3 className="text-xl font-display font-bold text-white mb-2 flex items-center gap-2.5">
-                  <item.icon className="w-5 h-5 text-brand-blue-light" />
-                  {item.title}
-                </h3>
-                <p className="text-gray-400 leading-relaxed">{item.body}</p>
-              </div>
-            </m.div>
-          ))}
-        </div>
-      </div>
-    </Container>
-  </section>
-);
-
-const OpenRole = () => (
-  <section id="open-role" className="py-20 md:py-28 bg-gradient-to-b from-[#0a1628] to-[#07111c] relative scroll-mt-20">
-    <Container>
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="glass-panel rounded-3xl p-8 md:p-12"
-      >
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-          <div>
-            <span className="text-brand-orange font-bold tracking-[0.2em] uppercase text-xs mb-2 block">
-              Open Role
-            </span>
-            <h2 className="font-display font-bold text-white text-3xl md:text-4xl leading-tight">
-              Pool Service Technician
-            </h2>
-            <p className="text-gray-400 mt-2">Full-time · Clearwater & Largo routes</p>
-          </div>
-          <a href={APPLY_HREF} className="btn btn-orange shrink-0">
-            <Mail className="w-[18px] h-[18px]" />
-            Apply Now
-          </a>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8 border-t border-white/10 pt-8">
-          <div>
-            <h3 className="text-white font-display font-bold text-lg mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-brand-blue-light" />
-              A day on the route
-            </h3>
-            <ul className="space-y-2.5">
-              {dayInLife.map((line) => (
-                <li key={line} className="flex items-start gap-3 text-gray-300 text-[15px] leading-relaxed">
-                  <CheckCircle2 className="w-[18px] h-[18px] text-brand-blue-light shrink-0 mt-0.5" />
-                  {line}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-white font-display font-bold text-lg mb-4 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-brand-blue-light" />
-              What you'll need
-            </h3>
-            <ul className="space-y-2.5 text-gray-300 text-[15px] leading-relaxed">
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="w-[18px] h-[18px] text-brand-blue-light shrink-0 mt-0.5" />
-                A valid driver's license and clean driving record
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="w-[18px] h-[18px] text-brand-blue-light shrink-0 mt-0.5" />
-                Reliability and a strong work ethic — non-negotiable
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="w-[18px] h-[18px] text-brand-blue-light shrink-0 mt-0.5" />
-                Ability to pass a background check
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="w-[18px] h-[18px] text-brand-blue-light shrink-0 mt-0.5" />
-                Comfortable working outdoors in Florida weather
-              </li>
-              <li className="flex items-start gap-3">
-                <CheckCircle2 className="w-[18px] h-[18px] text-brand-blue-light shrink-0 mt-0.5" />
-                Pool experience is a plus — we'll train the right person
-              </li>
-            </ul>
-          </div>
-        </div>
-      </m.div>
-    </Container>
-  </section>
-);
-
-const ApplyCta = () => (
-  <section className="py-16 md:py-24 bg-[#07111c] relative">
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <m.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
-        <h2 className="section-heading text-white leading-tight mb-4">
-          Ready to join the team?
-        </h2>
-        <p className="section-subtext mb-8">
-          Email us your resume — or just a quick note about yourself and your experience.
-          We read every application and reply to the ones that are a fit.
-        </p>
-        <a href={APPLY_HREF} className="btn btn-blue text-base px-8 py-3.5">
-          <Mail className="w-5 h-5" />
-          Email {EMAIL}
-        </a>
-      </m.div>
-    </div>
-  </section>
+const CheckList = ({ items }: { items: string[] }) => (
+  <ul className="mt-4 space-y-2.5">
+    {items.map((line) => (
+      <li key={line} className="flex items-start gap-3 text-[15.5px] leading-[1.55] text-sc-navy/[0.82]">
+        <CheckCircle2 className="mt-[3px] h-[18px] w-[18px] shrink-0 text-sc-blue" />
+        {line}
+      </li>
+    ))}
+  </ul>
 );
 
 // Page JSON-LD. Passed through the page-meta hook so it lands in the
@@ -411,59 +161,227 @@ const ApplyCta = () => (
 // a crawler reads on first fetch would otherwise carry none of these nodes.
 const PAGE_SCHEMA = [
   {
-      '@context': 'https://schema.org',
-      '@type': 'JobPosting',
-      title: 'Pool Service Technician',
-      description:
-        'Full-time pool service technician for Suncoast Pool Pros in Clearwater and Largo, FL. Competitive weekly pay, consistent routes, paid training, and a company truck. Reliability and professionalism required; pool experience a plus.',
-      employmentType: 'FULL_TIME',
-      hiringOrganization: {
-        '@type': 'Organization',
-        name: 'Suncoast Pool Pros',
-        sameAs: 'https://suncoastpoolpros.com/',
-      },
-      jobLocation: [
-        {
-          '@type': 'Place',
-          address: { '@type': 'PostalAddress', addressLocality: 'Clearwater', addressRegion: 'FL', addressCountry: 'US' },
-        },
-        {
-          '@type': 'Place',
-          address: { '@type': 'PostalAddress', addressLocality: 'Largo', addressRegion: 'FL', addressCountry: 'US' },
-        },
-      ],
-      applicantLocationRequirements: { '@type': 'AdministrativeArea', name: 'Pinellas County, FL' },
+    '@context': 'https://schema.org',
+    '@type': 'JobPosting',
+    title: ROLE,
+    datePosted: POSTED,
+    validThrough: `${VALID_THROUGH}T23:59:59-05:00`,
+    description: [
+      `<p>Suncoast Pool Pros is hiring a full-time pool service technician for our routes in the Clearwater, Largo and Palm Harbor area of Pinellas County, FL.</p>`,
+      `<p><strong>What you get:</strong></p><ul>${offer.map((o) => `<li>${o.title}: ${o.body}</li>`).join('')}</ul>`,
+      `<p><strong>A day on the route:</strong></p><ul>${dayInLife.map((d) => `<li>${d}</li>`).join('')}</ul>`,
+      `<p><strong>What you'll need:</strong></p><ul>${requirements.map((r) => `<li>${r}</li>`).join('')}</ul>`,
+      `<p>To apply, email ${EMAIL} with your resume or a short note about yourself and your experience.</p>`,
+    ].join(''),
+    employmentType: 'FULL_TIME',
+    hiringOrganization: {
+      '@type': 'Organization',
+      name: 'Suncoast Pool Pros',
+      sameAs: 'https://suncoastpoolpros.com/',
+      logo: 'https://suncoastpoolpros.com/logo-icon.png',
     },
+    jobLocation: [
+      {
+        '@type': 'Place',
+        address: { '@type': 'PostalAddress', addressLocality: 'Clearwater', addressRegion: 'FL', addressCountry: 'US' },
+      },
+      {
+        '@type': 'Place',
+        address: { '@type': 'PostalAddress', addressLocality: 'Largo', addressRegion: 'FL', addressCountry: 'US' },
+      },
+      {
+        '@type': 'Place',
+        address: { '@type': 'PostalAddress', addressLocality: 'Palm Harbor', addressRegion: 'FL', addressCountry: 'US' },
+      },
+    ],
+    applicantLocationRequirements: { '@type': 'AdministrativeArea', name: 'Pinellas County, FL' },
+    directApply: false,
+  },
 ];
 
 export const CareersPage = () => {
+  const { open: openQuoteSheet } = useQuoteSheet();
+
   usePageMeta({
     title: PAGE_TITLE,
     description: PAGE_DESC,
     canonicalPath: '/careers/',
+    // Inter for the page, Montserrat for the header's wordmark (the homepage's set).
+    fontPreload: [FONTS.inter, FONTS.montserrat],
     jsonLd: PAGE_SCHEMA,
   });
 
   return (
-    <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#1669AE] selection:text-white">
-      <div className="absolute md:fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
-      <div className="relative z-10">
-        <Navbar />
-        <Hero />
-        <section className="py-16 md:py-20 bg-[#07111c]">
-          <CardGrid
-            eyebrow="What We Look For"
-            heading="The right person matters more than the right resume."
-            sub="Skills can be taught. Character can't. Here's what earns a spot on our team."
-            items={lookFor}
-          />
+    <div className="landing-canvas force-static-motion relative min-h-screen overflow-x-clip bg-white font-sans text-sc-navy antialiased">
+      <LandingHeader onQuote={openQuoteSheet} />
+
+      <main>
+        {/* Hero: white into the mist the job card sits on. */}
+        <section className="bg-[linear-gradient(#fff,#f5f9fd)] px-4 pb-14 pt-14 text-center sm:px-8 sm:pt-20">
+          <div className="mx-auto max-w-3xl">
+            <Eyebrow centered>Now hiring · Clearwater, Largo &amp; Palm Harbor</Eyebrow>
+            <h1 className="mt-4 text-balance text-[38px] font-[650] leading-[1.06] tracking-[-0.04em] text-sc-navy sm:text-[52px]">
+              Now hiring a full-time pool service technician
+            </h1>
+            <p className="mx-auto mt-5 max-w-2xl text-pretty text-[17px] leading-[1.6] text-sc-muted sm:text-[18px]">
+              We're a locally owned pool service that runs on reliability, respect and doing honest work right. If
+              you're dependable and take pride in your work, there's a steady route and a real team waiting for you.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <ApplyButton className="w-full sm:w-auto" />
+              <a href="#open-role" className={`${buttonClass.outline} w-full sm:w-auto`}>
+                See the job
+              </a>
+            </div>
+            <p className="mt-4 text-[14px] text-sc-muted">
+              No resume? No problem. Email us and tell us a bit about yourself.
+            </p>
+          </div>
         </section>
-        <OfferBand />
-        <ValuesSection />
-        <OpenRole />
-        <ApplyCta />
-        <Footer />
-      </div>
+
+        {/* The job: navy header band on a white card, the proposal-card pairing. */}
+        <section id="open-role" aria-labelledby="role-title" className="scroll-mt-20 bg-sc-mist px-0 pb-20 sm:pb-24">
+          <Container>
+            <article className={`overflow-hidden rounded-[20px] bg-white ${cardShadow}`}>
+              <header className="flex flex-col gap-6 bg-sc-navy px-6 py-8 text-white sm:px-10 sm:py-10 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <Eyebrow gold>Open role</Eyebrow>
+                  <h2 id="role-title" className="mt-3 text-[28px] font-[650] leading-[1.12] tracking-[-0.03em] sm:text-[36px]">
+                    {ROLE}
+                  </h2>
+                  <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-[14.5px] text-white/75">
+                    <li className="inline-flex items-center gap-1.5">
+                      <Clock className="h-4 w-4 text-sc-glacier" /> Full-time · Mon–Sat
+                    </li>
+                    <li className="inline-flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4 text-sc-glacier" /> Clearwater, Largo &amp; Palm Harbor area
+                    </li>
+                    <li className="inline-flex items-center gap-1.5">
+                      <CalendarDays className="h-4 w-4 text-sc-glacier" />
+                      <span>
+                        Posted <time dateTime={POSTED}>{POSTED_LABEL}</time>
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+                <ApplyButton label="Apply now" className="w-full shrink-0 md:w-auto" />
+              </header>
+
+              <div className="grid gap-10 px-6 py-9 sm:px-10 sm:py-10 md:grid-cols-2">
+                <div>
+                  <h3 className="text-[19px] font-[650] tracking-[-0.02em]">A day on the route</h3>
+                  <CheckList items={dayInLife} />
+                </div>
+                <div>
+                  <h3 className="text-[19px] font-[650] tracking-[-0.02em]">What you'll need</h3>
+                  <CheckList items={requirements} />
+                </div>
+              </div>
+
+              <div className="border-t border-sc-navy/[0.08] px-6 py-9 sm:px-10 sm:py-10">
+                <h3 className="text-[19px] font-[650] tracking-[-0.02em]">What you get</h3>
+                <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                  {offer.map((item) => (
+                    <div key={item.title}>
+                      <span className={iconRing}>
+                        <item.icon className="h-5 w-5 text-sc-blue" />
+                      </span>
+                      <p className="mt-4 text-[16px] font-semibold tracking-[-0.01em]">{item.title}</p>
+                      <p className="mt-1.5 text-[15px] leading-[1.55] text-sc-navy/70">{item.body}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </article>
+          </Container>
+        </section>
+
+        {/* What we look for */}
+        <section aria-labelledby="look-for-title" className={`bg-white ${sectionY}`}>
+          <Container>
+            <div className="max-w-2xl">
+              <Eyebrow>What we look for</Eyebrow>
+              <h2 id="look-for-title" className={h2}>
+                The right person matters more than the right resume.
+              </h2>
+              <p className={lead}>Skills can be taught. Character can't. Here's what earns a spot on our team.</p>
+            </div>
+            <div className="mt-12 grid gap-5 md:grid-cols-2">
+              {lookFor.map((item) => (
+                <div key={item.title} className={`flex gap-5 rounded-[16px] bg-white p-6 sm:p-7 ${cardShadow}`}>
+                  <span className={iconRing}>
+                    <item.icon className="h-5 w-5 text-sc-blue" />
+                  </span>
+                  <div>
+                    <h3 className="text-[17px] font-semibold tracking-[-0.015em]">{item.title}</h3>
+                    <p className="mt-2 text-[15.5px] leading-[1.6] text-sc-navy/[0.72]">{item.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Container>
+        </section>
+
+        {/* How we run things: a numbered ledger on the mist. */}
+        <section aria-labelledby="values-title" className={`bg-sc-mist ${sectionY}`}>
+          <Container>
+            <div className="grid items-start gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+              <div className="lg:sticky lg:top-28">
+                <Eyebrow>How we run things</Eyebrow>
+                <h2 id="values-title" className={h2}>
+                  Set routes. One standard. No cutting corners.
+                </h2>
+                <p className={lead}>
+                  The way we run the business is the reason customers stay, and the reason this is a good place to
+                  work. It comes down to three things we don't compromise on.
+                </p>
+              </div>
+              <ol className="space-y-8">
+                {values.map((item, i) => (
+                  <li key={item.title} className="flex gap-6 border-b border-sc-navy/[0.1] pb-8 last:border-0 last:pb-0">
+                    <span className="w-12 shrink-0 text-[36px] font-[650] leading-none tracking-[-0.04em] text-sc-blue/35 tabular-nums">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <h3 className="flex items-center gap-2.5 text-[19px] font-[650] tracking-[-0.02em]">
+                        <item.icon className="h-5 w-5 text-sc-blue" />
+                        {item.title}
+                      </h3>
+                      <p className="mt-2 text-[15.5px] leading-[1.6] text-sc-navy/[0.72]">{item.body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </Container>
+        </section>
+
+        {/* Closing CTA: the homepage's navy card. */}
+        <section aria-labelledby="apply-title" className={`bg-white ${sectionY}`}>
+          <Container>
+            <div className="cta-depth rounded-[24px] px-6 py-14 text-center sm:px-12 sm:py-[72px]">
+              <h2 id="apply-title" className={`${h2} mx-auto max-w-2xl text-white`}>
+                Ready to join the team?
+              </h2>
+              <p className="mx-auto mt-4 max-w-md text-pretty text-[17px] leading-[1.6] text-white/75">
+                Email us your resume, or just a quick note about yourself and your experience. We read every
+                application and reply to the ones that are a fit.
+              </p>
+              <div className="mt-8 flex justify-center">
+                <a href={APPLY_HREF} className={`${buttonClass.gold} h-[52px] w-full px-7 sm:w-auto`}>
+                  Email {EMAIL}
+                  <ArrowRight
+                    className="h-[18px] w-[18px] transition-transform duration-150 group-hover:translate-x-[3px]"
+                    strokeWidth={2.5}
+                  />
+                </a>
+              </div>
+            </div>
+          </Container>
+        </section>
+      </main>
+
+      <Footer />
     </div>
   );
 };
