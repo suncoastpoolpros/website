@@ -114,8 +114,10 @@ const HeroPhoto = () => (
 // and trust row each need to stay on one line.
 const Hero = () => (
   <section className="relative bg-[#f5f9fd]">
-    <Container className="grid items-center gap-12 pb-16 pt-7 sm:pt-14 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,clamp(420px,calc(420px_+_(100vw_-_1024px)_*_0.8),496px))] lg:gap-x-[clamp(56px,calc(56px_+_(100vw_-_1024px)_*_0.34),88px)] lg:py-8 lg:portrait:min-h-0 lg:portrait:py-20">
-      <div className="hero-stagger min-w-0">
+    <Container className="grid items-center gap-12 pb-16 pt-10 sm:pt-14 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,clamp(420px,calc(420px_+_(100vw_-_1024px)_*_0.8),496px))] lg:gap-x-[clamp(56px,calc(56px_+_(100vw_-_1024px)_*_0.34),88px)] lg:py-8 lg:portrait:min-h-0 lg:portrait:py-20">
+      {/* Phones and tablets: one centered column, like the city pages. The
+          two-column desktop layout keeps it left-aligned beside the photo. */}
+      <div className="hero-stagger min-w-0 text-center lg:text-left">
         {/* One line on phones too: slightly smaller type below sm fits it
             from 390px, and under that Palm Harbor drops out (it's still in
             the service-area list). Both parts stay whole: on anything
@@ -135,7 +137,7 @@ const Hero = () => (
             (screen minus photo and gaps, never under the ~480px it holds
             below 1120) on desktop, and off the height so short laptops still
             fit. */}
-        <hgroup className="mt-6 text-[clamp(30px,12.2vw,58px)] lg:text-[clamp(36px,min(calc(max(100vw_-_648px,480px)/9.4),7.4vh),58px)]">
+        <hgroup className="mt-8 text-[clamp(30px,9.4vw,58px)] lg:mt-6 lg:text-[clamp(36px,min(calc(max(100vw_-_648px,480px)/9.4),7.4vh),58px)]">
           <h1 className="text-[1em] font-bold leading-[1.04] tracking-[-0.035em] text-sc-navy">
             <span className="bg-[linear-gradient(90deg,#2676b6,#3f95cc)] box-decoration-clone bg-clip-text text-transparent">
               St. Petersburg
@@ -145,12 +147,12 @@ const Hero = () => (
             <br />
             Pool Cleaning
           </h1>
-          <p className="mt-4 text-[0.38em] font-semibold sm:text-[0.42em] leading-tight tracking-[-0.01em] text-sc-navy/85">
+          <p className="mt-3.5 text-[0.42em] font-semibold lg:mt-4 leading-tight tracking-[-0.01em] text-sc-navy/85">
             Crystal-clear water, every week.
           </p>
         </hgroup>
 
-        <p className="mt-5 max-w-[29.5rem] text-pretty text-[17px] leading-[1.6] text-sc-navy/[0.74] sm:text-lg">
+        <p className="mx-auto mt-4 max-w-[22rem] text-pretty text-[15.5px] leading-[1.65] text-sc-navy/[0.7] sm:max-w-[29.5rem] sm:text-lg lg:mx-0 lg:mt-5 lg:text-sc-navy/[0.74]">
           Weekly pool cleaning service with every chemical included, GPS-verified visits, and no contracts.
         </p>
 
@@ -161,9 +163,9 @@ const Hero = () => (
             z-10: the hero-stagger entrance gives every block in this column
             its own stacking context, so without it the lines below would
             paint over the address suggestions. */}
-        <div id="quote" className="relative z-10 mt-10 scroll-mt-24 lg:max-w-[473px]">
+        <div id="quote" className="relative z-10 mx-auto mt-10 max-w-[34rem] scroll-mt-24 text-left lg:mx-0 lg:mt-10 lg:max-w-[473px]">
           {/* Inside #quote, so the hero-stagger entrance keeps its count. */}
-          <ul className="flex flex-wrap gap-[14px] text-[13px] font-medium text-[#5b6b80]">
+          <ul className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[12.5px] font-medium sm:gap-[14px] sm:text-[13px] text-[#5b6b80] lg:justify-start">
             {['No commitment', 'No signup', 'No contracts'].map((item) => (
               <li key={item} className="inline-flex items-center gap-[5px]">
                 <svg
@@ -189,8 +191,8 @@ const Hero = () => (
           </div>
         </div>
 
-        <p className="mt-10 flex items-start gap-2 text-[14.5px] leading-relaxed text-sc-navy/70">
-          <Phone className="mt-[3px] h-4 w-4 shrink-0 text-sc-navy/55" strokeWidth={2.25} />
+        <p className="mt-8 flex items-start justify-center gap-2 text-[14px] leading-relaxed text-sc-navy/70 sm:text-[14.5px] lg:mt-10 lg:justify-start">
+          <Phone className="mt-[3px] hidden h-4 w-4 shrink-0 text-sc-navy/55 lg:block" strokeWidth={2.25} />
           <span>
             Prefer to talk? Call{' '}
             <a href={PHONE_HREF} className={`${inlineLink} whitespace-nowrap`}>
@@ -206,7 +208,7 @@ const Hero = () => (
 
         {/* One line on desktop; each item's divider sits 10px into its 20px
             left padding, and the first item has neither. */}
-        <ul className="mt-7 grid grid-cols-3 divide-x divide-sc-navy/10 text-[12.5px] leading-snug text-sc-navy/75 sm:mt-6 sm:flex sm:flex-wrap sm:items-center sm:gap-y-2 sm:divide-x-0 sm:text-[13.5px] sm:leading-normal">
+        <ul className="mt-9 grid grid-cols-3 divide-x divide-sc-navy/10 text-[12px] leading-snug text-sc-navy/75 sm:mt-6 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-y-2 lg:justify-start sm:divide-x-0 sm:text-[13.5px] sm:leading-normal">
           <li className={trustItem}>
             {/* Small, tight stars: what keeps all three items on one line at
                 ~1126px, where the column is 478px and the row needs ~473. */}
