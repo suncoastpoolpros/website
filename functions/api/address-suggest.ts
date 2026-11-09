@@ -50,6 +50,7 @@ const PROXIMITY = '-82.64,27.77';
 // only, never raw coordinates from the request.
 const NEAR: Record<string, string> = {
   clearwater: '-82.80,27.97',
+  seminole: '-82.79,27.84',
 };
 const BBOX = '-82.87,27.6,-82.54,28.18';
 const COUNTY = 'Pinellas County';

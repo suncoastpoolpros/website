@@ -218,7 +218,7 @@ const CoverageSection = () => (
             </SmartLink>{' '}
             and{' '}
             <SmartLink to="/seminole-fl/" className="text-brand-orange hover:text-brand-orange-dark font-semibold">
-              Seminole
+              pool cleaning in Seminole
             </SmartLink>{' '}
             every week.
           </p>

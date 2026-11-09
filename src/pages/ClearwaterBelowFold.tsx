@@ -415,6 +415,10 @@ const ServiceArea = () => (
           <Link to="/belleair-beach-fl/" className={areaLink}>
             Belleair Beach
           </Link>
+          , and offer{' '}
+          <Link to="/seminole-fl/" className={areaLink}>
+            pool cleaning in Seminole
+          </Link>
           .
         </p>
         <QuoteButton label="Check my address" className="mt-[26px]" />

@@ -9,6 +9,10 @@ export const seminoleFaqs = [
     a: "Most Seminole homes land in a flat monthly rate that covers a weekly visit, full chemistry balance, and all standard chemicals — no separate chlorine or 'extra acid' line items. The exact number depends on your pool's size and equipment (salt vs. chlorine, screen enclosure, water features), so we give you a firm quote up front. No contracts, and the rate you're quoted is the rate you pay.",
   },
   {
+    q: 'Do you offer pool cleaning in Seminole, or just chemicals?',
+    a: "Full cleaning, every visit. We brush the walls and steps, skim the surface, vacuum the floor, empty the skimmer and pump baskets, and check the filter and equipment, then balance the water with every standard chemical included in your flat rate. You get a photo report when we leave, so you can see the work, not just the numbers.",
+  },
+  {
     q: 'Which Seminole neighborhoods do you cover?',
     a: "All of them — Bardmoor, Seminole Lake, Oakhurst, Bay Pines, the Lake Seminole area, and the 33772, 33776, 33777, and 33778 zips. We run structured weekly routes through mid-Pinellas, so your pool gets the same day every week rather than 'sometime this week.'",
   },
@@ -17,8 +21,8 @@ export const seminoleFaqs = [
     a: "Yes, and most Seminole pools are screened — so this is bread-and-butter for us. We clear the waterline and skimmers of the fine debris that blows through the cage (oak pollen in spring, leaf litter near Lake Seminole), brush the surfaces, and keep an eye on the screen-trapped humidity that can feed algae. If we spot a torn panel or a door that's letting debris in, we'll flag it in your report.",
   },
   {
-    q: "Will I have the same technician every week?",
-    a: "We assign a background-checked technician to your route and keep it consistent, so the face at your gate is one you know — someone friendly who learns your equipment, your gate, and how your water behaves. When you're home and using the pool all the time, that consistency is the difference between a service you trust and one you have to keep checking up on.",
+    q: 'Who actually shows up each week?',
+    a: "A familiar face on a set day. Every tech is vetted and background-checked, and routes stay consistent, so the people at your gate learn your equipment, your screen and how your water behaves. Every visit is documented, so even a fill-in tech isn't starting from zero.",
   },
   {
     q: 'My pool gets heavy use from the kids and grandkids — can you keep up with that?',
