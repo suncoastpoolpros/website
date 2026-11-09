@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   AlertCircle,
   ArrowRight,
@@ -23,6 +23,7 @@ import {
 import { SmartLink as Link } from '@/components/SmartLink';
 import { useQuoteFormSubmit } from '@/components/ServiceQuoteForm';
 import { SeminoleCoverageMap } from '@/components/SeminoleCoverageMap';
+import { QuoteSegment as Segment } from '@/components/landing/QuoteSegment';
 import {
   Container,
   Eyebrow,
@@ -85,7 +86,7 @@ const PILLARS = [
   {
     icon: Wallet,
     title: 'One flat rate, no nickel-and-diming',
-    body: "All standard chemicals are in your monthly rate. No surprise 'extra chlorine' lines, and anything bigger, a repair or a part, is quoted and approved before we touch it.",
+    body: "All standard chemicals are in your monthly rate. No surprise 'extra chlorine' lines, and anything beyond weekly care is quoted and approved before we do it.",
   },
 ];
 
@@ -260,8 +261,8 @@ const FlatRate = () => (
             ))}
           </ul>
           <p className="mt-6 border-t border-white/10 pt-5 text-[14px] leading-[1.6] text-white/65">
-            Anything larger than weekly care, a pump, a heater or bringing a green pool back, carries its own number,
-            and you sign off on it first.
+            Anything beyond weekly care, like clearing a green pool, carries its own number, and you sign off on it
+            first. If equipment needs attention, we flag it in your report.
           </p>
         </div>
       </div>
@@ -381,9 +382,9 @@ const ServiceArea = () => (
           <Link to="/largo-fl/" className={areaLink}>
             Largo
           </Link>{' '}
-          and{' '}
+          and offer{' '}
           <Link to="/treasure-island-fl/" className={areaLink}>
-            Treasure Island
+            pool cleaning in Treasure Island
           </Link>
           .
         </p>
@@ -491,80 +492,6 @@ const fieldLabel = `mb-1.5 mt-4 block text-[12px] font-semibold ${muted}`;
 // 16px on phones so iOS doesn't zoom into the field on focus.
 const inputClass =
   'h-[46px] w-full rounded-[10px] bg-white px-3.5 text-base text-sc-navy ring-1 ring-inset ring-sc-navy/15 transition outline-none focus:ring-2 focus:ring-sc-blue min-[960px]:text-[15px]';
-
-/**
- * A three-way choice as buttons. The hidden input carries the value under
- * `name` and stays required: an empty submit stops on it like any other
- * field, with our message in place of the browser bubble.
- */
-const Segment = ({
-  name,
-  label,
-  options,
-  missingText,
-}: {
-  name: string;
-  label: string;
-  options: { value: string; label: string }[];
-  missingText: string;
-}) => {
-  const [value, setValue] = useState('');
-  const [missing, setMissing] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const labelId = `quote-${name}-label`;
-  return (
-    <>
-      <p id={labelId} className={fieldLabel}>
-        {label}
-      </p>
-      <div ref={ref} role="group" aria-labelledby={labelId} className="relative grid grid-cols-3 gap-2">
-        {options.map((o) => {
-          const on = value === o.value;
-          return (
-            <button
-              key={o.value}
-              type="button"
-              aria-pressed={on}
-              onClick={() => {
-                setValue(o.value);
-                setMissing(false);
-              }}
-              className={`min-h-11 rounded-[10px] px-1 py-[11px] text-[14px] font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sc-blue ${
-                on ? 'bg-sc-navy text-white' : 'text-sc-navy ring-1 ring-inset ring-sc-navy/15 hover:ring-sc-navy/30'
-              }`}
-            >
-              {o.label}
-            </button>
-          );
-        })}
-        <input
-          name={name}
-          value={value}
-          onChange={() => {}}
-          required
-          tabIndex={-1}
-          aria-hidden="true"
-          onInvalid={(e) => {
-            e.preventDefault();
-            setMissing(true);
-            // Bring focus here only when this is the first field still missing.
-            const input = e.currentTarget;
-            const first = Array.from(input.form?.elements ?? []).find(
-              (el) => !(el as HTMLInputElement).validity?.valid,
-            );
-            if (first === input) requestAnimationFrame(() => ref.current?.querySelector('button')?.focus());
-          }}
-          className="pointer-events-none absolute bottom-0 left-1/2 h-px w-px opacity-0"
-        />
-      </div>
-      {missing && (
-        <p role="alert" className="mt-2 text-[13px] font-medium text-red-700">
-          {missingText}
-        </p>
-      )}
-    </>
-  );
-};
 
 const QuoteSection = () => {
   const { submitted, setSubmitted, loading, error, turnstile, handleSubmit } = useQuoteFormSubmit('seminole-quote-form');

@@ -1,317 +1,209 @@
-import React from 'react';
-import { m } from 'motion/react';
-import { Phone, Star, MapPin, ShieldCheck, KeyRound } from 'lucide-react';
-import { Navbar } from '@/components/Navbar';
+import { Check } from 'lucide-react';
+import { LandingHeader } from '@/components/landing/LandingHeader';
+import { HeroQuoteForm } from '@/components/landing/HeroQuoteForm';
 import { Footer } from '@/components/Footer';
-import { Glass } from '@/components/Glass';
-import { Container } from '@/components/Container';
-import { useQuoteSheet } from '@/components/QuoteSheet';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
-import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
+import { LandingQuoteSheetProvider, useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
+import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { treasureIslandFaqs } from '@/pages/treasureIslandFaqs';
-import { ServiceQuoteForm } from '@/components/ServiceQuoteForm';
-import { TreasureIslandHeroPhone } from '@/components/TreasureIslandHeroPhone';
-import TreasureIslandBelowFold from '@/pages/TreasureIslandBelowFold';
-import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
+import TreasureIslandBelowFold, { NEIGHBORHOODS, ZIPS } from '@/pages/TreasureIslandBelowFold';
+import { usePageMeta, FONTS } from '@/lib/usePageMeta';
 import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
-const PAGE_TITLE =
-  'Treasure Island Pool Service — Always Guest-Ready';
+// Keyword + city first, the brand after the pipe (the homepage's pattern).
+const PAGE_TITLE = 'Pool Cleaning in Treasure Island, FL | Suncoast Pool Pros';
 const PAGE_DESC =
-  'Weekly pool service across Treasure Island, FL — for homes, rentals & snowbirds. Consistent tech, one flat rate, photo report. Always guest-ready.';
+  'Weekly pool cleaning for Treasure Island rentals, Airbnbs and second homes. Familiar faces on a set day, a photo report every visit, one flat rate.';
 const PAGE_URL = 'https://suncoastpoolpros.com/treasure-island-fl/';
 
-const HeroSection = () => {
-  const { open } = useQuoteSheet();
-  const handleQuote = (e: React.MouseEvent) => {
-    e.preventDefault();
-    open();
-  };
+// The hero photo: a real canal-front pool in Treasure Island (location data
+// stripped from the files), graded brighter for an overcast day. Phones always
+// get the 800px file; wider screens pick 640 or 1120 by density.
+const PHOTO_SIZES = '(min-width: 1024px) 496px, 560px';
 
-  return (
-    <div className="relative min-h-dvh flex items-center overflow-hidden pt-24 pb-16">
-      {/* Immersive Background Elements */}
-      <div className="absolute inset-0 z-0">
-        {/* Near-black base with a hint of cool undertone */}
-        <div className="absolute inset-0 bg-[#02060c]" />
-
-        {/* Pool background — desktop (landscape crop) */}
-        <div
-          className="hero-bg-treasure-desktop absolute -inset-y-[18%] inset-x-0 hidden md:block bg-cover bg-center"
-          aria-hidden
+const HeroPhoto = () => (
+  <div className="relative mx-auto w-full min-w-0 max-w-[560px] lg:max-w-none">
+    <div className="relative aspect-[5/6] overflow-hidden rounded-[20px] bg-sc-sky/20 shadow-[0_40px_80px_-40px_rgba(16,32,52,0.55)] ring-1 ring-sc-navy/10 lg:aspect-auto lg:h-[min(640px,calc(100dvh-128px))]">
+      <picture>
+        <source media="(max-width: 767px)" type="image/webp" srcSet="/treasure-island-fl-waterfront-pool-800.webp" />
+        <source media="(max-width: 767px)" srcSet="/treasure-island-fl-waterfront-pool-800.jpg" />
+        <source
+          type="image/webp"
+          sizes={PHOTO_SIZES}
+          srcSet="/treasure-island-fl-waterfront-pool-640.webp 640w, /treasure-island-fl-waterfront-pool-1120.webp 1120w"
         />
-
-        {/* Pool background — mobile. Covers the full section (not just viewport)
-            so the photo extends past the fold and the pool stays visible behind
-            the CTAs / rating strip instead of cutting to solid dark mid-section. */}
-        <div
-          className="hero-bg-treasure-mobile absolute inset-0 md:hidden bg-cover bg-center"
-          aria-hidden
+        <img
+          src="/treasure-island-fl-waterfront-pool-1120.jpg"
+          srcSet="/treasure-island-fl-waterfront-pool-640.jpg 640w, /treasure-island-fl-waterfront-pool-1120.jpg 1120w"
+          sizes={PHOTO_SIZES}
+          alt="Backyard pool beside a canal lined with boat docks and palm trees in Treasure Island, FL"
+          width={1120}
+          height={1344}
+          fetchPriority="high"
+          decoding="async"
+          data-quote-image="/treasure-island-fl-waterfront-pool-1120.webp"
+          className="absolute inset-0 h-full w-full object-cover object-[50%_62%]"
         />
+      </picture>
+    </div>
+  </div>
+);
 
-        {/* Blue tint pass — 'overlay' blend deepens the blue in the sky, clouds,
-            and water without darkening the warm house lights. Hidden on mobile. */}
-        <div
-          className="hero-treasure-tint absolute inset-0 pointer-events-none"
-          aria-hidden
-        />
+const inlineLink =
+  'font-semibold text-sc-navy underline decoration-sc-navy/30 decoration-1 underline-offset-[3px] transition hover:decoration-sc-navy';
 
-        {/* Gradient overlay — stronger mid-section darkening on mobile so the
-            stacked body copy stays readable over the bright water/sky area.
-            Desktop keeps the lighter pass since the left scrim does the heavy
-            lifting there. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#02060c]/35 via-[#04090f]/50 to-[#07111c] md:from-[#02060c]/20 md:via-[#04090f]/55" />
+// The homepage's light hero: text on the light section blue, the photo in a
+// framed card beside it (below it on phones and tablets, where the text column
+// is centered). Brighter than a dark-photo hero, which suited the overcast
+// photo badly.
+const TreasureIslandHero = () => (
+  <section className="relative bg-[#f5f9fd]">
+    <div className="mx-auto grid w-full max-w-[1200px] items-center gap-12 px-4 pb-16 pt-10 sm:px-8 sm:pt-14 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,clamp(420px,calc(420px_+_(100vw_-_1024px)_*_0.8),496px))] lg:gap-x-[clamp(56px,calc(56px_+_(100vw_-_1024px)_*_0.34),88px)] lg:py-8">
+      <div className="min-w-0 text-center lg:text-left">
+        <p className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 rounded-[999px] bg-white py-1 pl-1 pr-3 text-[12px] font-medium text-sc-navy/75 ring-1 ring-sc-navy/10 sm:gap-x-2 sm:pr-3.5 sm:text-[13px]">
+          <span className="whitespace-nowrap rounded-full bg-sc-blue/10 px-2.5 py-0.5 text-[11.5px] font-semibold text-[#1f6aa6] sm:text-[12px]">
+            Rentals &amp; second homes
+          </span>
+          <span className="whitespace-nowrap">Sunset Beach · Isle of Capri</span>
+        </p>
 
-        {/* Mobile readability scrim — top-down wash sitting only over the upper
-            half of the section. Lifts contrast on headline + paragraph while
-            leaving the lower half open so the pool stays visible behind the CTAs. */}
-        <div className="md:hidden absolute inset-x-0 top-0 h-[55%] bg-gradient-to-b from-[#02060c]/45 via-[#02060c]/30 to-transparent pointer-events-none" />
+        <hgroup className="mt-8 text-[clamp(30px,9.4vw,56px)] lg:mt-6">
+          {/* The page's one h1: the keyword, set as the headline's first line. */}
+          <h1 className="text-[1em] font-bold leading-[1.04] tracking-[-0.035em] text-sc-navy">
+            <span className="bg-[linear-gradient(90deg,#2676b6,#3f95cc)] box-decoration-clone bg-clip-text text-transparent">
+              Treasure Island
+            </span>{' '}
+            <br />
+            Pool Cleaning
+          </h1>
+          <p className="mt-3.5 text-[0.42em] font-semibold leading-tight tracking-[-0.01em] text-sc-navy/85 lg:mt-4">
+            Guest-ready. Year-round.
+          </p>
+        </hgroup>
 
-        {/* Left scrim — DESKTOP ONLY. On mobile the layout is centered/stacked,
-            so a left scrim would just crush the whole image. */}
-        <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-[#02060c]/70 via-[#02060c]/20 to-transparent pointer-events-none" />
+        <p className="mx-auto mt-4 max-w-[22rem] text-pretty text-[15.5px] leading-[1.65] text-sc-navy/[0.7] sm:max-w-[29.5rem] sm:text-lg lg:mx-0 lg:mt-5">
+          Weekly pool cleaning for Treasure Island vacation rentals, Airbnbs and second homes, with a photo report after every visit,
+          wherever you are.
+        </p>
 
-        {/* Spotlight glow behind the phone — lower and pulled in toward center */}
-        <div className="hidden md:block absolute top-[35%] right-[12%] w-[45vw] h-[55vh] bg-brand-orange/14 rounded-full blur-[130px] animate-float" />
+        <div id="get-price" className="relative z-10 mx-auto mt-10 max-w-[34rem] scroll-mt-24 text-left lg:mx-0 lg:max-w-[473px]">
+          <HeroQuoteForm placeholder="Your pool's address" source="treasure-island-hero-quote-form" near="treasure-island" />
+        </div>
 
-        {/* Deep-blue ambient — moved to lower-left for asymmetric balance */}
-        <div className="hidden md:block absolute bottom-[5%] left-[-15%] w-[45vw] h-[45vw] bg-[#0a2540]/35 rounded-full blur-[130px] animate-morph" />
+        <p className="mt-8 text-[14px] leading-relaxed text-sc-navy/70 sm:text-[14.5px] lg:mt-10">
+          Out of town? Call or text{' '}
+          <a href={PHONE_HREF} className={`${inlineLink} whitespace-nowrap`}>
+            {PHONE_DISPLAY}
+          </a>{' '}
+          any time.
+        </p>
 
-        {/* Softer vignette — wider transparent core, less aggressive edge falloff */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_95%_75%_at_center,transparent_0%,transparent_65%,rgba(5,11,20,0.45)_100%)] pointer-events-none" />
+        <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] text-sc-navy/75 sm:text-[13.5px] lg:justify-start">
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="text-[11px] tracking-[-0.02em] text-[#e8a100]">
+              ★★★★★
+            </span>
+            <span>
+              <span className="sr-only">Rated </span>
+              <span className="font-semibold text-sc-navy">5.0</span>
+              <span className="sr-only"> out of 5</span> on Google
+            </span>
+          </li>
+          {['Photo report every visit', 'Trusted by local property managers'].map((t) => (
+            <li key={t} className="flex items-center gap-1.5">
+              <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-sc-blue" strokeWidth={2.5} />
+              {t}
+            </li>
+          ))}
+        </ul>
 
-        {/* Bottom blend: solid on the left (under the text column) so the seam
-            into the next section stays invisible there; fades out toward the
-            right so the pool in the lower-right stays visible. */}
-        <div className="hero-treasure-bottom-blend absolute inset-x-0 bottom-0 h-80 pointer-events-none" />
-
-        {/* Tiny solid sliver at the very bottom edge so the section still seams
-            cleanly into the next #07111c block on the right side. */}
-        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#07111c] to-transparent pointer-events-none" />
+        <p className="mt-6 text-[12.5px] text-sc-navy/55">
+          <span className="font-semibold uppercase tracking-[0.12em] text-sc-blue">Serving</span>{' '}
+          <span className="sr-only">Treasure Island neighborhoods: </span>
+          {NEIGHBORHOODS.join(' · ')}
+        </p>
       </div>
 
-      <Container className="relative z-10 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-          <m.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9, ease: 'easeOut' }}
-            className="lg:col-span-7"
-          >
-            <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8">
-              <MapPin className="w-3.5 h-3.5 text-brand-orange-light" />
-              <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
-                Treasure Island · Gulf Beach Community
-              </span>
-            </Glass>
-
-            {/* Visual headline — a div, so the SEO h1 below carries keyword weight */}
-            <div className="font-display font-bold md:font-black text-white tracking-tight mb-6 leading-[1.08]">
-              <span className="block text-4xl sm:text-5xl md:text-[3.4rem] leading-[1.04]">
-                Guest-Ready.
-              </span>
-              <span className="block text-4xl sm:text-5xl md:text-[3.4rem] leading-[1.04]">
-                Year-Round.
-              </span>
-            </div>
-
-            {/* SEO H1 — local keyword for this city page */}
-            <h1 className="text-shadow-city-h1 font-display font-normal text-white/90 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 tracking-tight">
-              Weekly pool service in Treasure Island, FL.
-            </h1>
-
-            {/* Mobile: tighter line — keeps the audience keywords (vacation
-                rentals, Airbnbs, snowbird homes) + weekly + photo report +
-                guest-ready. Full copy with the Sunset Beach–Isle of Capri
-                range stays on desktop (md+) for richer local SEO. */}
-            <p className="text-shadow-city-body md:hidden text-[15px] text-gray-200 max-w-[34rem] leading-[1.6] mb-7">
-              Vacation rentals, Airbnbs, and snowbird homes — <span className="text-white">weekly service with a photo report after every visit</span>. Guest-ready between bookings.
-            </p>
-            <p className="text-shadow-city-body hidden md:block text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
-              Vacation rentals, Airbnbs, and snowbird homes from{' '}
-              <span className="text-white">Sunset Beach to Isle of Capri</span> —
-              weekly service with a photo report after every visit. Guest-ready
-              between bookings, protected when empty.
-            </p>
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-              <a href="#quote" onClick={handleQuote} className="btn btn-blue">
-                Get a Free Quote
-              </a>
-              <Glass
-                href={`tel:${PHONE}`}
-                className="glass-mobile-blur inline-flex items-center justify-center gap-2 px-6 py-3 text-white/90 hover:text-white rounded-lg font-semibold text-[15px]"
-              >
-                <Phone className="w-4 h-4 text-brand-blue-light" />
-                {PHONE_DISPLAY}
-              </Glass>
-            </div>
-            <p className="mt-3 text-[13px] text-gray-400">
-              Out of town? Text or call any time — we work with absentee owners every day.
-            </p>
-
-            {/* Trust strip — adds a rental-specific signal */}
-            <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px] text-gray-400">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-0.5 text-brand-orange">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <Star key={i} className="w-4 h-4 fill-current" />
-                  ))}
-                </div>
-                <span className="font-semibold text-white/90">5.0</span>
-                <span className="text-gray-500">on Google</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-brand-orange-light" />
-                <span>Always Blue Guarantee</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <KeyRound className="w-4 h-4 text-brand-orange-light" />
-                <span>Trusted by local property managers</span>
-              </div>
-            </div>
-          </m.div>
-
-          {/* Right column: the phone mockup. DESKTOP ONLY (lg+) — it sits in the
-              5-col slot beside the text. On mobile it's pulled out of the hero
-              into its own section below (see TreasureIslandHeroSection's sibling)
-              so the hero is a clean 100vh of text/CTAs and the phone never sits
-              above the fold competing for paint. */}
-          <div className="hidden lg:flex lg:col-span-5 justify-center items-center relative">
-            <TreasureIslandHeroPhone />
-          </div>
-        </div>
-      </Container>
+      <HeroPhoto />
     </div>
-  );
-};
-
-// Mobile-only phone-mockup section, rendered immediately after the hero. Keeps
-// the heavy phone out of the above-the-fold 100vh hero on phones; on lg+ the
-// phone lives inside the hero grid instead (this section is hidden there).
-const PhoneShowcaseMobile = () => (
-  <section className="lg:hidden relative bg-[#07111c] py-12 flex justify-center">
-    <TreasureIslandHeroPhone />
   </section>
 );
 
-// JSON-LD (LocalBusiness + FAQPage) injected client-side. Title, description,
-// canonical, and OG tags are handled by usePageMeta (which runs during SSR so
-// they land in the prerendered HTML); usePageMeta doesn't do JSON-LD, so this
-// effect adds it.
 // Page JSON-LD. Passed through the page-meta hook so it lands in the
 // PRERENDERED head — an effect never runs during renderToString, so the HTML
 // a crawler reads on first fetch would otherwise carry none of these nodes.
 const PAGE_SCHEMA = [
-      {
-        '@context': 'https://schema.org',
-        '@type': 'LocalBusiness',
-        '@id': 'https://suncoastpoolpros.com/#business',
-        name: 'Suncoast Pool Pros',
-        url: PAGE_URL,
-        telephone: '+1-727-295-3621',
-        priceRange: '$$',
-        areaServed: { '@type': 'City', name: 'Treasure Island', addressRegion: 'FL' },
-        description:
-          'Reliable weekly pool service for Treasure Island vacation rentals, Airbnbs, and second homes — consistent vetted technicians, photo report after every visit.',
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: treasureIslandFaqs.map((f) => ({
-          '@type': 'Question',
-          name: f.q,
-          acceptedAnswer: { '@type': 'Answer', text: f.a },
-        })),
-      },
-      breadcrumbSchema([
-        { name: 'Home', path: '/' },
-        { name: 'Treasure Island', path: '/treasure-island-fl/' },
-      ]),
-    ];
+  {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': 'https://suncoastpoolpros.com/#business',
+    name: 'Suncoast Pool Pros',
+    url: PAGE_URL,
+    telephone: '+1-727-295-3621',
+    priceRange: '$$',
+    // Mirrors what the page names (hero bar and service area): the schema and
+    // the visible content must agree.
+    areaServed: [
+      { '@type': 'City', name: 'Treasure Island', addressRegion: 'FL' },
+      ...NEIGHBORHOODS.map((n) => ({ '@type': 'Place', name: `${n}, Treasure Island, FL` })),
+      ...ZIPS.map((z) => ({ '@type': 'PostalCodeSpecification' as const, postalCode: z, addressCountry: 'US' })),
+    ],
+    description:
+      'Reliable weekly pool cleaning for Treasure Island, FL vacation rentals, Airbnbs and second homes: vetted techs on a set day, one flat rate with chemicals included, and a photo report after every visit.',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    serviceType: 'Pool cleaning',
+    name: 'Weekly pool cleaning in Treasure Island, FL',
+    url: PAGE_URL,
+    provider: { '@id': 'https://suncoastpoolpros.com/#business' },
+    areaServed: { '@type': 'City', name: 'Treasure Island', addressRegion: 'FL' },
+    description:
+      'Weekly pool cleaning and chemical service on a set day for rentals and second homes: brushing, skimming, vacuuming, baskets, full water balance, filter and equipment check, and a photo report after every visit, at one flat monthly rate.',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: treasureIslandFaqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  },
+  breadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Treasure Island', path: '/treasure-island-fl/' },
+  ]),
+];
+
+// The phone bar's Quote opens the same popup (it needs the provider above it).
+const PopupStickyCta = () => <StickyMobileCta quote={useLandingQuoteSheet()} />;
 
 export const TreasureIslandPage = () => {
   usePageMeta({
     title: PAGE_TITLE,
     description: PAGE_DESC,
     canonicalPath: '/treasure-island-fl/',
-    heroPreload: {
-      mobile: '/treasure-island-mobile-palm.webp',
-      desktop: '/waterfront-pool-st-petersburg.webp',
-      wide: '/waterfront-pool-st-petersburg-1920.webp',
-    },
-    // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
-    // H1 (Montserrat 400). The big headline is font-bold md:font-black — i.e.
-    // Montserrat 700 on mobile, 900 on desktop — so preload 900 only at md+;
-    // mobile never fetches it.
-    fontPreload: [
-      ...NAV_FONTS,
-      FONTS.inter400,
-      FONTS.montserrat400,
-      { href: FONTS.montserrat900, media: '(min-width: 768px)' },
-    ],
+    // Inter for the page, Montserrat for the header's wordmark (the homepage's set).
+    fontPreload: [FONTS.inter, FONTS.montserrat],
     jsonLd: PAGE_SCHEMA,
+    // Its own share card, so a texted or shared link shows this page.
+    ogImage: 'https://suncoastpoolpros.com/og-treasure-island-v1.jpg',
+    ogImageAlt: 'Pool cleaning in Treasure Island, FL: a canal-front backyard pool, by Suncoast Pool Pros',
   });
 
-  // Mobile JS-motion stripping is handled globally by the app-level MotionConfig
-  // in App.tsx (+ the force-visible mobile CSS in index.css).
+  // overflow-x-clip, not -hidden: hidden makes the wrapper a scroll
+  // container, and the sticky header would stop sticking.
   return (
-    <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
-      <div className="absolute md:fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
-      <div className="relative z-10">
-        <Navbar />
-        <HeroSection />
-        <PhoneShowcaseMobile />
+    <LandingQuoteSheetProvider>
+      <div className="landing-canvas force-static-motion relative min-h-screen overflow-x-clip bg-white font-sans text-sc-navy antialiased">
+        <LandingHeader />
+        <TreasureIslandHero />
         <TreasureIslandBelowFold />
-        {/* On-page quote form in place of the shared call-to-action band, so the page ships
-            a real <form> in its prerendered HTML (CLAUDE.md #13). The copy and the
-            two qualifying questions are this page's own. */}
-        <ServiceQuoteForm
-          layout="centered"
-          accent="orange"
-          eyebrow="Treasure Island Quote"
-          heading="Guest-ready pool service, priced before you book."
-          intro={<>Tell us whether it&rsquo;s your home or a rental and when guests usually arrive. We&rsquo;ll set the service day around your calendar and send one flat monthly price the same day.</>}
-          points={[
-            "Service day set around check-ins, not the other way round",
-            "A photo report after every visit you can forward to your manager",
-            "One flat rate, chemicals included, no contract",
-          ]}
-          service={{ value: 'weekly', label: 'Weekly pool service' }}
-          extraFields={[
-            {
-              id: "homeUse",
-              label: "How is the property used?",
-              type: 'select',
-              required: true,
-              options: [
-                { value: "own-home", label: "Our own home" },
-                { value: "rental", label: "Short-term / vacation rental" },
-                { value: "seasonal", label: "Seasonal or snowbird home" },
-              ],
-            },
-            {
-              id: "guestTurnover",
-              label: "When do guests usually arrive?",
-              type: 'select',
-              required: true,
-              options: [
-                { value: "weekend", label: "Friday or Saturday" },
-                { value: "midweek", label: "Midweek" },
-                { value: "varies", label: "It varies" },
-                { value: "not-rental", label: "Not a rental" },
-              ],
-            },
-          ]}
-          source="treasure-island-quote-form"
-          submitLabel="Get My Treasure Island Quote"
-          successTitle="Got it — we will be in touch today."
-          successBody="We will come back with your flat weekly rate and a service day that lands ahead of your guests."
-          footnote={<>Photos of the pool and equipment pad help — text them to {PHONE_DISPLAY}.</>}
-        />
         <Footer />
+        <PopupStickyCta />
       </div>
-      <StickyMobileCta />
-    </div>
+    </LandingQuoteSheetProvider>
   );
 };
