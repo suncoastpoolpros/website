@@ -24,6 +24,7 @@ import { HomeHeroPhone, useLiveClock } from '@/components/Hero';
 export const WATERFRONT_REPORT_PHOTO = {
   base: '/pool-waterfront-800',
   mobileWebp: '/pool-waterfront-800.webp',
+  mobileJpg: '/pool-waterfront-800.jpg',
   webp: '/pool-waterfront-640.webp',
   wideWebp: '/pool-waterfront-1120.webp',
   alt: 'A sparkling blue backyard pool and spa on the water',

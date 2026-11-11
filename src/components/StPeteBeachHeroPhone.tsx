@@ -205,6 +205,9 @@ export const StPeteBeachHeroPhone = () => {
                     }
                     photo={{
                       base: '/st-pete-beach-hero',
+                      // The page's phone hero is the re-encoded -v2 file.
+                      mobileWebp: '/st-pete-beach-hero-mobile-v2.webp',
+                      mobileJpg: '/st-pete-beach-hero-mobile-v2.jpg',
                       alt: 'Beachfront pool in St. Pete Beach, FL — cleaned and chemically balanced by Suncoast Pool Pros',
                     }}
                   />

@@ -29,6 +29,9 @@ type ServiceReportPhoto = {
    *  free (a cache hit) while it requests the EXACT file the hero painted, so
    *  the two must not drift apart. */
   mobileWebp?: string;
+  /** Overrides the derived `${base}-mobile.jpg`, for the same reason. Without
+   *  it a page whose mobile file has a different name requests one that 404s. */
+  mobileJpg?: string;
   /** 1x source override, same principle as the two below: this photo is only
    *  free while it requests the EXACT file the hero painted. */
   webp?: string;
@@ -476,7 +479,7 @@ export const ServiceReport = ({
               />
               <source
                 media="(max-width: 767px)"
-                srcSet={`${photo.base}-mobile.jpg`}
+                srcSet={photo.mobileJpg ?? `${photo.base}-mobile.jpg`}
               />
               <source
                 type="image/webp"
