@@ -219,6 +219,30 @@ check(
   `accept.ts charges ${mirrored.join('/') || 'nothing'} months annually, planOptions says ${annualMonths}`,
 );
 
+// 8. The homepage's areaServed. index.html's LocalBusiness node is static JSON
+// (in every page's HTML without JS), so it can't import HOME_AREA_SERVED from
+// src/lib/businessSchema.ts, which the homepage's Service node uses. Two lists
+// for one business would tell Google two different service areas.
+const schemaMod = await bundle('src/lib/businessSchema.ts', 'business-schema.mjs');
+const indexHtml = await readFile(path.join(ROOT, 'index.html'), 'utf8');
+const ldBlocks = [...indexHtml.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+let localBusiness = null;
+for (const [, json] of ldBlocks) {
+  try {
+    const node = JSON.parse(json);
+    if (node['@type'] === 'LocalBusiness') localBusiness = node;
+  } catch (e) {
+    check(false, `index.html has a JSON-LD block that isn't valid JSON: ${e.message}`);
+  }
+}
+check(!!localBusiness, 'index.html has no LocalBusiness JSON-LD block');
+if (localBusiness) {
+  check(
+    JSON.stringify(localBusiness.areaServed) === JSON.stringify(schemaMod.HOME_AREA_SERVED),
+    "index.html LocalBusiness areaServed doesn't match HOME_AREA_SERVED in src/lib/businessSchema.ts",
+  );
+}
+
 await rm(OUT, { recursive: true, force: true });
 
 if (failures.length) {
@@ -232,5 +256,5 @@ if (failures.length) {
 }
 
 console.log(
-  '✓ Mirror check: quote links, token constants, NAP and plan options agree across src/ and functions/.',
+  '✓ Mirror check: quote links, token constants, NAP, plan options and the homepage areaServed agree.',
 );

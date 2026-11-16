@@ -32,6 +32,35 @@ const AREAS_SERVED = [
   'South Tampa',
 ];
 
+/**
+ * The homepage's areaServed, used by its Service node. index.html's
+ * LocalBusiness node is static JSON and can't import this, so it carries a
+ * hand copy; scripts/check-mirrors.mjs fails the build if the two differ.
+ * Neighborhoods are Places inside their city, not Cities of their own.
+ */
+const inCity = (name: string, city: string) => ({
+  '@type': 'Place',
+  name,
+  containedInPlace: { '@type': 'City', name: city },
+});
+export const HOME_AREA_SERVED = [
+  { '@type': 'City', name: 'St. Petersburg' },
+  inCity('Snell Isle', 'St. Petersburg'),
+  { '@type': 'City', name: 'Gulfport' },
+  { '@type': 'City', name: 'St. Pete Beach' },
+  { '@type': 'City', name: 'Treasure Island' },
+  { '@type': 'City', name: 'Seminole' },
+  { '@type': 'City', name: 'Largo' },
+  { '@type': 'City', name: 'Belleair Beach' },
+  { '@type': 'City', name: 'Clearwater' },
+  { '@type': 'City', name: 'Safety Harbor' },
+  { '@type': 'City', name: 'Dunedin' },
+  { '@type': 'City', name: 'Palm Harbor' },
+  inCity('Davis Island', 'Tampa'),
+  inCity('South Tampa', 'Tampa'),
+  { '@type': 'AdministrativeArea', name: 'Pinellas County' },
+];
+
 /** The site-wide WebSite node, declared once on the homepage. */
 export const webSiteSchema = () => ({
   '@context': 'https://schema.org',
@@ -89,16 +118,19 @@ export const serviceSchema = ({
   serviceType,
   description,
   url,
+  areaServed,
 }: {
   serviceType: string;
   description: string;
   url: string;
+  /** Overrides the default city list (the homepage passes HOME_AREA_SERVED). */
+  areaServed?: Array<Record<string, unknown>>;
 }) => ({
   '@context': 'https://schema.org',
   '@type': 'Service',
   serviceType,
   provider: { '@id': BUSINESS_ID },
-  areaServed: AREAS_SERVED.map((name) => ({ '@type': 'City', name })),
+  areaServed: areaServed ?? AREAS_SERVED.map((name) => ({ '@type': 'City', name })),
   description,
   url: `${SITE_ORIGIN}${url}`,
 });

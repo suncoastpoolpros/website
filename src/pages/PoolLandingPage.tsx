@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { House, Phone, ShieldCheck } from 'lucide-react';
 import { usePageMeta, FONTS } from '@/lib/usePageMeta';
-import { serviceSchema, webSiteSchema } from '@/lib/businessSchema';
+import { HOME_AREA_SERVED, serviceSchema, webSiteSchema } from '@/lib/businessSchema';
 import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 import { PHONE_DISPLAY, PHONE_HREF, SMS_QUOTE_HREF } from '@/lib/contact';
 import { HeroQuoteForm } from '@/components/landing/HeroQuoteForm';
@@ -147,13 +147,11 @@ const Hero = () => (
             <br />
             Pool Cleaning
           </h1>
-          <p className="mt-3.5 text-[0.42em] font-semibold lg:mt-4 leading-tight tracking-[-0.01em] text-sc-navy/85">
-            Crystal-clear water, every week.
-          </p>
         </hgroup>
 
         <p className="mx-auto mt-4 max-w-[22rem] text-pretty text-[15.5px] leading-[1.65] text-sc-navy/[0.7] sm:max-w-[29.5rem] sm:text-lg lg:mx-0 lg:mt-5 lg:text-sc-navy/[0.74]">
-          Weekly pool cleaning service with every chemical included, GPS-verified visits, and no contracts.
+          Weekly pool cleaning and maintenance in St.{'\u00A0'}Petersburg, FL, with every chemical included, GPS-verified
+          visits, and no contracts.
         </p>
 
         {/* Desktop: as wide as the trust row below (473px on one line), the
@@ -255,6 +253,7 @@ const LANDING_SCHEMA = [
     description:
       'Weekly pool cleaning in St. Petersburg and across Pinellas County for one flat monthly rate: walls and waterline brushed, skimmed and vacuumed, water tested and balanced with every standard chemical included, salt cell care on salt pools, an equipment check, and a GPS-verified visit report with readings, chemicals and photos. No contract.',
     url: '/',
+    areaServed: HOME_AREA_SERVED,
   }),
   {
     '@context': 'https://schema.org',
@@ -320,9 +319,9 @@ export const PoolLandingPage = () => {
   const rootRef = useRef<HTMLDivElement>(null);
   useScrollReveal(rootRef);
   usePageMeta({
-    title: 'Weekly Pool Service in St. Petersburg, FL | Suncoast Pool Pros',
+    title: 'Pool Cleaning in St. Petersburg, FL | Suncoast Pool Pros',
     description:
-      'Weekly pool cleaning in St. Petersburg with every standard chemical included, for one flat monthly price. No contracts, plus a 2-week money-back guarantee.',
+      'St. Petersburg pool cleaning with weekly service, every standard chemical included, GPS-verified visit reports and no contract. Get a flat-rate quote today.',
     canonicalPath: '/',
     fontPreload: [FONTS.inter, FONTS.montserrat],
     jsonLd: LANDING_SCHEMA,
