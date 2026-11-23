@@ -6,7 +6,7 @@ import { AreasPanel, ServicesPanel } from '@/components/landing/LandingNavMenus'
 import { cities } from '@/lib/cities';
 import { HOURS_SHORT, PHONE_DISPLAY, PHONE_HREF, SMS_HREF } from '@/lib/contact';
 import { useScrollLock } from '@/lib/useScrollLock';
-import { focusQuoteForm } from '@/components/landing/HeroQuoteForm';
+import { useQuoteSheet } from '@/components/QuoteSheet';
 
 /*
  * /landing's header: the site Navbar (src/components/Navbar.tsx), ported to a
@@ -43,7 +43,20 @@ const linkClass =
 const SCROLL_SLOP = 6;
 const ALWAYS_SHOW_ABOVE = 80;
 
-export const LandingHeader = ({ onQuote = focusQuoteForm }: { onQuote?: () => void } = {}) => {
+export const LandingHeader = ({
+  onQuote: onQuoteProp,
+  quoteLabel = 'Get a Quote',
+  strongPhone = false,
+}: {
+  onQuote?: () => void;
+  /** The quote buttons' label (the homepage says "Get my free quote"). */
+  quoteLabel?: string;
+  /** The desktop phone number in semibold navy rather than a nav-link grey. */
+  strongPhone?: boolean;
+} = {}) => {
+  // Every "Get a Quote" opens the 3-option quote popup unless a page says otherwise.
+  const sheet = useQuoteSheet();
+  const onQuote = onQuoteProp ?? sheet.open;
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [callOpen, setCallOpen] = useState(false);
@@ -216,7 +229,14 @@ export const LandingHeader = ({ onQuote = focusQuoteForm }: { onQuote?: () => vo
             </nav>
 
             <div className="flex items-center gap-4 md:gap-1.5 lg:gap-2">
-              <a href={PHONE_HREF} className={`hidden items-center md:inline-flex ${linkClass}`}>
+              <a
+                href={PHONE_HREF}
+                className={`hidden items-center md:inline-flex ${
+                  strongPhone
+                    ? 'whitespace-nowrap px-2.5 py-2 text-[13.5px] font-semibold text-[#243a55] transition-colors hover:text-[#1c2f47] lg:px-3'
+                    : linkClass
+                }`}
+              >
                 {PHONE_DISPLAY}
               </a>
 
@@ -273,7 +293,7 @@ export const LandingHeader = ({ onQuote = focusQuoteForm }: { onQuote?: () => vo
                   onClick={() => onQuote()}
                   className="inline-flex h-[38px] items-center whitespace-nowrap rounded-[10px] bg-sc-navy px-4 text-[13.5px] font-semibold text-white transition-colors hover:bg-[#1c2f46]"
                 >
-                  Get a Quote
+                  {quoteLabel}
                 </button>
               </span>
 
@@ -379,7 +399,7 @@ export const LandingHeader = ({ onQuote = focusQuoteForm }: { onQuote?: () => vo
                   }}
                   className="btn w-full bg-sc-navy text-white hover:bg-[#1c2f46]"
                 >
-                  Get a Quote
+                  {quoteLabel}
                   <ArrowRight className="h-[18px] w-[18px]" />
                 </button>
                 <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-sc-navy/50">

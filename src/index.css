@@ -21,7 +21,11 @@
 
    Bonus: `font-medium` (500) previously had no face and silently fell back to
    400 — the variable range now covers it. */
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/fonts/inter-var.woff2') format('woff2'); }
+/* Geist (Vercel, SIL OFL 1.1), from the `geist` npm package's variable woff2,
+   subset to the same Latin set with fonttools' pyftsubset. Original in _orig/.
+   Replaced Inter site-wide (Nov 2026); inter-var.woff2 stays on disk for any
+   still-cached HTML that preloads it. */
+@font-face { font-family: 'Geist'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/fonts/geist-var.woff2') format('woff2'); }
 @font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/fonts/montserrat-var.woff2') format('woff2'); }
 @font-face { font-family: 'Caveat'; font-style: normal; font-weight: 400 700; font-display: swap; src: url('/fonts/caveat-700.woff2') format('woff2'); }
 
@@ -44,19 +48,22 @@
   line-gap-override: 0%;
   size-adjust: 112%;
 }
+/* Geist's metrics over Arial's: size-adjust from the two fonts' widths over
+   the same sample text (1.06), the overrides from Geist's 920/-220/100 per
+   1000 divided by it. */
 @font-face {
-  font-family: 'Inter Fallback';
+  font-family: 'Geist Fallback';
   src: local('Arial');
-  ascent-override: 90%;
-  descent-override: 22.5%;
-  line-gap-override: 0%;
-  size-adjust: 107%;
+  ascent-override: 86.8%;
+  descent-override: 20.8%;
+  line-gap-override: 9.4%;
+  size-adjust: 106%;
 }
 
 @theme {
-  --font-sans: "Inter", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
-  /* Headings: Inter too, so the whole site reads in one clean typeface. */
-  --font-display: "Inter", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  /* Headings: Geist too, so the whole site reads in one clean typeface. */
+  --font-display: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
   /* The SUNCOAST POOL PROS wordmark only: it's the logo, so it keeps Montserrat. */
   --font-brand: "Montserrat", "Montserrat Fallback", ui-sans-serif, system-ui, sans-serif;
   
@@ -1119,8 +1126,8 @@ input[type="date"]::-webkit-date-and-time-value {
    the homepage design: the homepage, Clearwater, FAQ and the quote popup.
    Its text and icons stay above the ::before/::after layers: isolation +
    z-index:-1 paint them over the button's own gradient but under its
-   content. Keyframe names are prefixed: a bare `shimmer` already backs the
-   animate-shimmer theme utility. */
+   content. No motion (no shimmer, arrow nudge or hover lift): just a
+   brighter overlay on hover. */
 .gold-btn {
   position: relative;
   overflow: hidden;
@@ -1131,9 +1138,6 @@ input[type="date"]::-webkit-date-and-time-value {
     inset 0 1px 0 rgba(255, 255, 255, 0.45),
     0 1px 2px rgba(180, 100, 0, 0.25),
     0 6px 14px -6px rgba(255, 162, 3, 0.6);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
 }
 /* Lighter on hover: a brighter overlay fades in at 40%. */
 .gold-btn::before {
@@ -1149,52 +1153,12 @@ input[type="date"]::-webkit-date-and-time-value {
 .gold-btn:not(:disabled):hover::before {
   opacity: 0.4;
 }
-/* Shimmer: one sweep each time the button is hovered, no repeat. */
-.gold-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.6) 50%, transparent 70%);
-  transform: translateX(-120%);
-}
-.gold-btn:not(:disabled):hover::after {
-  animation: gold-btn-shimmer 0.9s ease-in-out 1 forwards;
-}
-/* The arrow nudges right and back, continuously. Only the arrow: a phone or
-   message icon stays put, and a loading spinner keeps its own spin. */
-.gold-btn .lucide-arrow-right {
-  animation: gold-btn-nudge 1s ease-in-out infinite;
-}
-/* A small lift on hover. */
-.gold-btn:not(:disabled):hover {
-  transform: translateY(-2px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 10px 22px -8px rgba(255, 162, 3, 0.75);
-}
-@keyframes gold-btn-shimmer {
-  from { transform: translateX(-120%); }
-  to { transform: translateX(120%); }
-}
-@keyframes gold-btn-nudge {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(4px); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .gold-btn .lucide-arrow-right,
-  .gold-btn:not(:disabled):hover::after {
-    animation: none;
-  }
-}
-
 /* Homepage quote popup (LandingQuoteSheet / QuotePopup). Composited
    transitions only. Phones (≤760px): the panel rises from the bottom.
    Desktop: it fades and rises in, over a blurred dim whose blur animates
    back to 0 before unmount (CLAUDE.md #10; phones never get the blur). */
 .qs-scrim {
-  background: rgba(20, 33, 52, 0.48);
+  background: rgba(20, 33, 52, 0.42);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -1215,15 +1179,16 @@ input[type="date"]::-webkit-date-and-time-value {
     -webkit-backdrop-filter: blur(6px);
   }
 }
-/* Sizes: phone (≤760) a 94dvh bottom sheet; tablet portrait (761–900) a
-   640px card as tall as its content; desktop (≥901) the 900px two-column
-   window; short screens (height ≤520, e.g. phone landscape) full screen. */
+/* Sizes: the same on every screen of the popup, so nothing resizes between
+   steps. Phones (≤760): a bottom sheet min(600px, 100dvh − 24px) tall.
+   From 761: a 520 × 560 window, never taller than the screen minus 16px top
+   and bottom; on a shorter screen its body scrolls inside it. */
 .qs-host {
   align-items: flex-end;
 }
 .qs-panel {
   width: 100%;
-  height: 94dvh;
+  height: min(600px, calc(100dvh - 24px));
   border-radius: 20px 20px 0 0;
   transform: translateY(100%);
   transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
@@ -1234,13 +1199,13 @@ input[type="date"]::-webkit-date-and-time-value {
 @media (min-width: 761px) {
   .qs-host {
     align-items: center;
-    padding: 24px;
+    padding: 16px;
   }
   .qs-panel {
-    max-width: 640px;
-    height: auto;
-    max-height: calc(100dvh - 64px);
-    border-radius: 20px;
+    width: 520px;
+    height: 560px;
+    max-height: calc(100dvh - 32px);
+    border-radius: 16px;
     opacity: 0;
     transform: translateY(10px) scale(0.985);
     transition:
@@ -1252,176 +1217,20 @@ input[type="date"]::-webkit-date-and-time-value {
     transform: none;
   }
 }
-@media (min-width: 901px) {
-  .qs-panel {
-    max-width: 900px;
-    height: min(620px, calc(100dvh - 48px));
-    max-height: none;
-  }
-}
-@media (max-height: 520px) {
-  .qs-host {
-    padding: 0;
-  }
-  .qs-panel {
-    max-width: none;
-    height: 100dvh;
-    max-height: none;
-    border-radius: 0;
-  }
-  /* The panel covers the whole screen, so a blur behind it is wasted GPU work
-     (and this is a phone held sideways). */
-  .qs-scrim,
-  .qs-scrim.is-open {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-}
 
-/* Left photo column: desktop only (≥901, not on short screens). */
-.qs-aside {
-  display: none;
-  width: 310px;
-}
-@media (min-width: 901px) and (min-height: 521px) {
-  .qs-aside {
-    display: flex;
-  }
-}
-@media (min-width: 901px) and (max-width: 1024px) {
-  .qs-aside {
-    width: 250px;
-  }
-}
-/* First-screen photo header: phones and tablet portrait only. Its twin, the
-   plain close button, shows wherever the header doesn't. */
-.qs-head {
-  height: 132px;
-}
-@media (min-width: 761px) {
-  .qs-head {
-    height: 180px;
-  }
-}
-@media (min-width: 901px), (max-height: 520px) {
-  .qs-head {
-    display: none;
-  }
-}
-.qs-nohead {
-  display: none;
-}
-@media (min-width: 901px), (max-height: 520px) {
-  .qs-nohead {
-    display: grid;
-  }
-}
-
-/* Content padding; the 901–1024 window is narrower, so 32px there. */
+/* Side padding: 20px on phones, 32px from 761. */
 .qs-pad {
   padding-left: 20px;
   padding-right: 20px;
 }
 @media (min-width: 761px) {
   .qs-pad {
-    padding-left: 40px;
-    padding-right: 40px;
-  }
-}
-@media (min-width: 901px) and (max-width: 1024px) {
-  .qs-pad {
     padding-left: 32px;
     padding-right: 32px;
   }
 }
-@media (max-height: 520px) {
-  .qs-pad {
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-}
 
-/* "~60 sec" next to the first option: hidden on phones and narrow windows. */
-.qs-time {
-  display: none;
-}
-@media (min-width: 761px) {
-  .qs-time {
-    display: block;
-  }
-}
-@media (min-width: 901px) and (max-width: 1024px) {
-  .qs-time {
-    display: none;
-  }
-}
-
-/* Answer cards: 2 columns; 1 on very small phones; 4 on short screens. */
-.qs-cards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-@media (max-width: 360px) {
-  .qs-cards {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-@media (max-height: 520px) {
-  .qs-cards {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
-  }
-  .qs-h2 {
-    font-size: 22px;
-  }
-  .qs-sub {
-    margin-top: 4px;
-    font-size: 14px;
-  }
-  .qs-gap {
-    margin-top: 16px;
-  }
-  .qs-row {
-    padding: 12px 16px;
-  }
-}
-
-/* The left column's photo runs 10% above the column, so the dark bands baked
-   into the top of some hero images are cropped off. */
-.qs-photo {
-  position: absolute;
-  inset: -10% 0 0 0;
-  background-size: cover;
-  background-position: center;
-}
-/* A light black vignette only, so the photo stays the hero. */
-.qs-photo-fade {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, transparent 22%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
-}
-/* The short phone/tablet header has no room for the column's 22% fade, so
-   it gets a firmer top shade behind the brand line. */
-.qs-head-shade {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.42) 0%, transparent 45%);
-}
-/* Under the live summary the bottom deepens to near-black, for legibility. */
-.qs-photo-deep {
-  background: linear-gradient(180deg, transparent 35%, rgba(11, 13, 16, 0.82) 68%, #0b0d10 100%);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-.qs-photo-deep.is-on {
-  opacity: 1;
-}
-/* Frosted glass pills over the photo. The global mobile rule strips the blur
-   below 768px (CLAUDE.md #10); the dark fill keeps them legible without it. */
-.qs-glass {
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-/* Each new screen, and each new line in the live summary, eases in. */
+/* Each new screen eases in. */
 .qb-in {
   animation: qb-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -1453,8 +1262,7 @@ input[type="date"]::-webkit-date-and-time-value {
     linear-gradient(180deg, #28405e, #1e324c);
   box-shadow: 0 30px 60px -30px rgba(20, 35, 55, 0.55);
 }
-/* Guarantee cards. Hover lifts with `translate`, which is separate from the
-   scroll reveal's `transform`, so the two never fight. */
+/* Guarantee cards: a small lift on hover. */
 .g-card {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
   box-shadow:
@@ -1495,7 +1303,7 @@ input[type="date"]::-webkit-date-and-time-value {
    the shadows stay above the section's own background. */
 .w-card {
   position: relative;
-  border-radius: 18px;
+  border-radius: 12px;
   box-shadow: 0 0 0 1px rgba(36, 58, 85, 0.08);
 }
 .w-card::before {
@@ -1517,16 +1325,11 @@ input[type="date"]::-webkit-date-and-time-value {
       0 22px 48px -20px rgba(36, 58, 85, 0.45);
   }
 }
-/* Feature icons: a brand-blue tile with a white icon, a top-edge highlight
-   and a soft blue shadow, like an app icon. One colour for all four. */
+/* Feature icons: a flat brand-blue tile with a white icon. One colour for
+   all four. */
 .icon-tile {
-  background: linear-gradient(160deg, #4a9ad6 0%, #2676b6 55%, #1f629a 100%);
+  background: #2a78b8;
   color: #fff;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 8px 16px -8px rgba(38, 118, 182, 0.55),
-    0 2px 4px -1px rgba(31, 98, 154, 0.25);
 }
 /* "What's included" check marks: a fresh green check on a pale green circle
    with a hairline green edge. */
@@ -2013,46 +1816,6 @@ input[type="date"]::-webkit-date-and-time-value {
 .report-tour.m-tour.tour-released .tour-stage {
   position: relative;
   top: auto;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  /* Hero left column: each child rises in once on load. Desktop only: on a
-     phone this column IS the first screen, and fading the headline in would
-     hold back its largest-paint time (CLAUDE.md: mobile strips page motion). */
-  @media (min-width: 768px) {
-    .hero-stagger > * {
-      animation: hero-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    }
-    .hero-stagger > :nth-child(1) { animation-delay: 80ms; }
-    .hero-stagger > :nth-child(2) { animation-delay: 170ms; }
-    .hero-stagger > :nth-child(3) { animation-delay: 260ms; }
-    .hero-stagger > :nth-child(4) { animation-delay: 350ms; }
-    .hero-stagger > :nth-child(5) { animation-delay: 440ms; }
-    .hero-stagger > :nth-child(6) { animation-delay: 530ms; }
-  }
-
-  /* Scroll reveal (useScrollReveal in PoolLandingPage.tsx). Hidden only once
-     the script has run and marked what's already on screen. */
-  [data-reveal-on] [data-reveal] {
-    transition:
-      opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--rd, 0ms),
-      transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--rd, 0ms);
-  }
-  [data-reveal-on] [data-reveal]:not([data-in]) {
-    opacity: 0;
-    transform: translateY(22px);
-  }
-  [data-reveal-on] .g-card[data-reveal] {
-    transition:
-      opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--rd, 0ms),
-      transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--rd, 0ms),
-      translate 0.35s ease,
-      box-shadow 0.35s ease;
-  }
-}
-@keyframes hero-in {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: none; }
 }
 
 /* Admin lead finder: the enlarged aerial that opens beside a hovered thumbnail. */

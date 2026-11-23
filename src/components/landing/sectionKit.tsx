@@ -51,10 +51,14 @@ export const buttonClass = {
   navy: `${buttonBase} bg-sc-navy text-white hover:bg-[#1c2f46] focus-visible:outline-sc-blue`,
   outline: `${buttonBase} text-sc-navy ring-1 ring-inset ring-sc-navy/[0.18] hover:ring-sc-navy/40 focus-visible:outline-sc-blue`,
   outlineOnDark: `${buttonBase} text-white ring-1 ring-inset ring-white/30 hover:ring-white/55 focus-visible:outline-white`,
+  // The homepage's gold: flat, no gradient or glow, a hairline shadow. No
+  // size of its own: each use sets its height, padding and text size, so
+  // they never compete with a default.
+  flat: `group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] font-semibold transition-colors ${focusRing} bg-[#f7b500] text-[#1c2f47] shadow-[0_1px_2px_rgba(16,24,40,0.14)] hover:bg-[#ffc01f] active:translate-y-px focus-visible:outline-sc-blue`,
 };
 
 const ButtonArrow = () => (
-  <ArrowRight className="h-[18px] w-[18px] transition-transform duration-150 group-hover:translate-x-[3px]" strokeWidth={2.5} />
+  <ArrowRight className="h-[18px] w-[18px]" strokeWidth={2.5} />
 );
 
 /**
@@ -68,7 +72,7 @@ export const QuoteButton = ({
   label = 'Get my price',
   className = '',
 }: {
-  variant?: 'gold' | 'navy';
+  variant?: 'gold' | 'navy' | 'flat';
   label?: string;
   className?: string;
 }) => {

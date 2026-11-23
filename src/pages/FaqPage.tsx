@@ -72,7 +72,7 @@ const FaqPageInner = () => {
       "Straight answers on flat-rate weekly pool service — what’s included, how pricing works, and what happens if your water turns green. No sales fluff.",
     canonicalPath: '/faq/',
     // Inter for the page, Montserrat for the header's wordmark (the homepage's set).
-    fontPreload: [FONTS.inter, FONTS.montserrat],
+    fontPreload: [FONTS.geist, FONTS.montserrat],
     jsonLd: PAGE_SCHEMA,
   });
 

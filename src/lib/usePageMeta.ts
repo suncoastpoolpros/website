@@ -46,7 +46,7 @@ type PageMeta = {
   noindex?: boolean;
 };
 
-/** Font FILES to preload. Inter = body (--font-sans), Montserrat = display
+/** Font FILES to preload. Geist = body (--font-sans), Montserrat = display
  *  (--font-display), Caveat = script accent.
  *
  *  One file per family: these are variable fonts covering wght 100–900, so
@@ -54,31 +54,28 @@ type PageMeta = {
  *  block in index.css for why the old per-weight duplicates were removed).
  *  Weight-specific preloading is therefore meaningless now — a page either
  *  paints the family above the fold or it doesn't. */
-const INTER = '/fonts/inter-var.woff2';
+const GEIST = '/fonts/geist-var.woff2';
 const MONTSERRAT = '/fonts/montserrat-var.woff2';
 
 export const FONTS = {
-  inter: INTER,
+  geist: GEIST,
   montserrat: MONTSERRAT,
   caveat: '/fonts/caveat-700.woff2',
 
   /** Legacy per-weight keys. The weights no longer map to separate files, so
    *  these all resolve to their family's single variable file. Kept so pages
    *  that still declare weights individually keep working (duplicates are
-   *  de-duped when the tags are emitted). Prefer `inter`/`montserrat`. */
-  inter400: INTER,
-  inter600: INTER,
-  inter700: INTER,
+   *  de-duped when the tags are emitted). Prefer `geist`/`montserrat`. */
   montserrat400: MONTSERRAT,
   montserrat700: MONTSERRAT,
   montserrat900: MONTSERRAT,
   caveat700: '/fonts/caveat-700.woff2',
 } as const;
 
-/** Above-the-fold fonts shared by every page: the Navbar paints Inter (body)
+/** Above-the-fold fonts shared by every page: the Navbar paints Geist (body)
  *  and Montserrat (wordmark), so both families are needed everywhere. Pages
  *  spread this and add only Caveat if they actually paint the script accent. */
-export const NAV_FONTS = [FONTS.inter, FONTS.montserrat];
+export const NAV_FONTS = [FONTS.geist, FONTS.montserrat];
 
 const setTag = (selector: string, attrName: 'name' | 'property', attrValue: string, content: string) => {
   let el = document.head.querySelector<HTMLMetaElement>(selector);

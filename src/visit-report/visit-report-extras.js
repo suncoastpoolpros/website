@@ -70,7 +70,7 @@
   }
 
   // ---------- 1. personalized address ----------
-  const timeLine = card.querySelector('.report-seq .p-4 img + div p:last-child');
+  const timeLine = card.querySelector('.report-seq .rs-body img + div p:last-child');
   const sub = card.querySelector('.rs3-sub');
   const defaults = { time: timeLine?.textContent, sub: sub?.lastChild?.textContent };
   function setAddress(street) {

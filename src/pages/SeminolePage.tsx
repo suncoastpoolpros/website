@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
 import { LandingHeader } from '@/components/landing/LandingHeader';
-import { HeroQuoteForm } from '@/components/landing/HeroQuoteForm';
+import { QuoteButton } from '@/components/landing/sectionKit';
 import { Footer } from '@/components/Footer';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { LandingQuoteSheetProvider, useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
@@ -32,8 +32,7 @@ const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offs
 // "Dark photo, centered", as on Clearwater: the homepage's type and address
 // bar over the photo, the neighborhoods along the bottom edge (md+).
 const SeminoleHero = () => (
-  // No overflow-hidden on the section: the address suggestions must be able
-  // to hang past its bottom edge. The photo layer clips itself instead.
+  // The photo layer clips itself (overflow-hidden), not the section.
   <section className="relative flex min-h-[calc(100svh-64px)] items-center justify-center bg-[#1D304A] text-center">
     <div className="absolute inset-0 overflow-hidden">
       <picture>
@@ -73,14 +72,9 @@ const SeminoleHero = () => (
         included, no contracts.
       </p>
 
-      {/* relative z-10: the address suggestions must paint over the lines below. */}
-      <div id="get-price" className="relative z-10 mx-auto mt-8 max-w-[34rem] scroll-mt-24 text-left">
-        <HeroQuoteForm
-          variant="onDark"
-          placeholder="Your pool's address"
-          source="seminole-hero-quote-form"
-          near="seminole"
-        />
+      {/* Opens the 3-option quote popup: no address to type first. */}
+      <div id="get-price" className="relative z-10 mx-auto mt-8 max-w-[26rem] scroll-mt-24 text-center">
+        <QuoteButton />
       </div>
 
       <p className={`mt-3 text-[13.5px] text-white/85 ${shadowSoft}`}>
@@ -199,7 +193,7 @@ export const SeminolePage = () => {
       wide: HERO_IMG.wide,
     },
     // Inter for the page, Montserrat for the header's wordmark (the homepage's set).
-    fontPreload: [FONTS.inter, FONTS.montserrat],
+    fontPreload: [FONTS.geist, FONTS.montserrat],
     jsonLd: PAGE_SCHEMA,
     // Its own share card, so a texted or shared link shows the Seminole page.
     ogImage: 'https://suncoastpoolpros.com/og-seminole-v1.jpg',

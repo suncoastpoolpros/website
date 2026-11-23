@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
 import { LandingHeader } from '@/components/landing/LandingHeader';
-import { HeroQuoteForm } from '@/components/landing/HeroQuoteForm';
+import { QuoteButton } from '@/components/landing/sectionKit';
 import { Footer } from '@/components/Footer';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
 import { LandingQuoteSheetProvider, useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
@@ -86,8 +86,8 @@ const TreasureIslandHero = () => (
           wherever you are.
         </p>
 
-        <div id="get-price" className="relative z-10 mx-auto mt-10 max-w-[34rem] scroll-mt-24 text-left lg:mx-0 lg:max-w-[473px]">
-          <HeroQuoteForm placeholder="Your pool's address" source="treasure-island-hero-quote-form" near="treasure-island" />
+        <div id="get-price" className="relative z-10 mx-auto mt-10 max-w-[34rem] scroll-mt-24 text-center lg:mx-0 lg:max-w-[473px] lg:text-left">
+          <QuoteButton />
         </div>
 
         <p className="mt-8 text-[14px] leading-relaxed text-sc-navy/70 sm:text-[14.5px] lg:mt-10">
@@ -186,7 +186,7 @@ export const TreasureIslandPage = () => {
     description: PAGE_DESC,
     canonicalPath: '/treasure-island-fl/',
     // Inter for the page, Montserrat for the header's wordmark (the homepage's set).
-    fontPreload: [FONTS.inter, FONTS.montserrat],
+    fontPreload: [FONTS.geist, FONTS.montserrat],
     jsonLd: PAGE_SCHEMA,
     // Its own share card, so a texted or shared link shows this page.
     ogImage: 'https://suncoastpoolpros.com/og-treasure-island-v1.jpg',

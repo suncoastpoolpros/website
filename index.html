@@ -99,15 +99,14 @@
       }
     </script>
 
-    <!-- Preload the fonts used above the fold (Montserrat headings + Inter body)
+    <!-- Preload the fonts used above the fold (Geist body + the Montserrat wordmark)
          so they start downloading the moment HTML arrives, in parallel with the
          CSS. Without these the browser only learns about them after CSS parses. -->
-    <!-- Default above-the-fold font set, used by content pages (nav + text H1):
-         Inter 600 (nav/semibold), Montserrat 700 (nav/headings display), Inter
-         400 (body). Hero pages override this set per-route via
+    <!-- Default above-the-fold font set, used by content pages: Geist (body and
+         headings) and Montserrat (the wordmark). Hero pages override this set per-route via
          usePageMeta({ fontPreload }) in scripts/prerender.mjs (e.g. adding
          Montserrat 900 for the big headline, or Caveat on the homepage). -->
-    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-var.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/geist-var.woff2" crossorigin />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/montserrat-var.woff2" crossorigin />
 
     <!-- Hero image preloads are injected per-page by scripts/prerender.mjs from

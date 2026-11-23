@@ -191,7 +191,7 @@ const StormCleanupPageInner = () => {
     // No hero photo on this page, so no heroPreload — the head stays lean and
     // the H1 paints as soon as the fonts land. Montserrat 900 is the display
     // weight above the fold; Inter 400 carries the lede.
-    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
+    fontPreload: [...NAV_FONTS, FONTS.geist, FONTS.montserrat900],
     jsonLd: STORM_SCHEMA,
   });
 

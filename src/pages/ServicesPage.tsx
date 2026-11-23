@@ -123,7 +123,7 @@ const ServicesPageInner = () => {
     description:
       'Pool services across St. Petersburg & Pinellas — flat-rate weekly cleaning with chemicals included, plus green pool recovery, storm cleanup and repairs.',
     canonicalPath: CANONICAL,
-    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
+    fontPreload: [...NAV_FONTS, FONTS.geist, FONTS.montserrat900],
     jsonLd: SERVICES_SCHEMA,
   });
 

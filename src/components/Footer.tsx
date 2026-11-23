@@ -177,7 +177,12 @@ export const Footer = () => {
               <li>
                 <a href={EMAIL_HREF} className={`group inline-flex items-start gap-2.5 min-w-0 ${linkClass}`}>
                   <Mail className="w-4 h-4 text-brand-orange shrink-0 mt-0.5" />
-                  <span className="min-w-0 break-all">{EMAIL}</span>
+                  {/* Never broken mid-word. One line, except in the tablet layout's
+                      narrow column, where it may wrap after the @. */}
+                  <span className="whitespace-nowrap text-[13px] md:max-lg:whitespace-normal">
+                    {EMAIL.split('@')[0]}@<wbr />
+                    {EMAIL.split('@')[1]}
+                  </span>
                 </a>
               </li>
               <li className="flex items-start gap-2.5 text-gray-400 text-sm">

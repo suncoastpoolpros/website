@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { QuotePopup, QUOTE_POPUP_FALLBACK_PHOTO, findHeroPhoto } from '@/components/landing/QuotePopup';
+import { QuotePopup } from '@/components/landing/QuotePopup';
 import { trackEvent } from '@/lib/analytics';
 import { useScrollLock } from '@/lib/useScrollLock';
 import { useOverlayTransition } from '@/lib/useOverlayTransition';
@@ -10,8 +10,9 @@ import { useOverlayTransition } from '@/lib/useOverlayTransition';
  * (src/components/QuoteSheet.tsx). Anything inside <LandingQuoteSheetProvider>
  * opens it with useLandingQuoteSheet().
  *
- * Phones (≤760px): a 94dvh sheet that rises from the bottom. Wider: a
- * centered window that fades and rises in (sizes per breakpoint: .qs-panel). Both animate with composited CSS
+ * Phones (≤760px): a bottom sheet min(600px, 100dvh − 24px) tall that rises
+ * from the bottom. Wider: a centered 520 × 560 window that fades and rises in
+ * (.qs-panel). Both animate with composited CSS
  * transitions (.qs-* in index.css). The desktop backdrop's blur animates back
  * to 0 before unmount (the CLAUDE.md #10 contract); phones get no blur.
  *
@@ -45,7 +46,6 @@ export const LandingQuoteSheetProvider = ({ children }: { children: React.ReactN
   // After a sent request, the next open starts fresh.
   const [submitted, setSubmitted] = useState(false);
   const [session, setSession] = useState(0);
-  const [photo, setPhoto] = useState(QUOTE_POPUP_FALLBACK_PHOTO);
   const step = useRef('choose');
   const panelRef = useRef<HTMLDivElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
@@ -55,8 +55,6 @@ export const LandingQuoteSheetProvider = ({ children }: { children: React.ReactN
   useScrollLock(isOpen);
 
   const open = () => {
-    // Read the page's hero photo now, before the scroll lock pins the body.
-    setPhoto(findHeroPhoto());
     returnFocus.current = document.activeElement as HTMLElement | null;
     if (submitted) {
       setSubmitted(false);
@@ -130,12 +128,11 @@ export const LandingQuoteSheetProvider = ({ children }: { children: React.ReactN
               aria-modal="true"
               aria-labelledby={headingId}
               tabIndex={-1}
-              className={`qs-panel relative flex overflow-hidden bg-white font-sans text-sc-navy antialiased shadow-[0_-12px_40px_-12px_rgba(20,33,52,0.35)] outline-none min-[761px]:shadow-[0_40px_100px_-30px_rgba(20,33,52,0.55),0_12px_32px_-12px_rgba(20,33,52,0.25)] ${sheet.visible ? 'is-open' : ''}`}
+              className={`qs-panel relative flex overflow-hidden bg-white font-sans text-sc-navy antialiased shadow-[0_-12px_40px_-12px_rgba(20,33,52,0.35)] outline-none min-[761px]:shadow-[0_0_0_1px_rgba(16,24,40,0.06),0_24px_48px_-12px_rgba(16,24,40,0.28),0_48px_100px_-24px_rgba(16,24,40,0.35)] ${sheet.visible ? 'is-open' : ''}`}
             >
               <React.Fragment key={session}>
                 <QuotePopup
                   active={sheet.visible}
-                  photo={photo}
                   headingId={headingId}
                   onClose={close}
                   onSubmitted={() => setSubmitted(true)}

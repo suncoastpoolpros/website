@@ -27,8 +27,7 @@ import {
   PHONE_HREF,
   SMS_QUOTE_HREF,
 } from '@/lib/contact';
-import { amberButton, focusQuoteForm } from '@/components/landing/HeroQuoteForm';
-import { Container, Eyebrow, h2, lead, sectionY } from '@/components/landing/sectionKit';
+import { Container, Eyebrow, QuoteButton as KitQuoteButton, lead } from '@/components/landing/sectionKit';
 import { GOOGLE_REVIEWS_URL, REVIEWS, type Review } from '@/lib/reviews';
 
 /*
@@ -46,9 +45,9 @@ import { GOOGLE_REVIEWS_URL, REVIEWS, type Review } from '@/lib/reviews';
  * No reviews, counts or prices that aren't real; no price anchor (the ~$150
  * average only appears elsewhere next to its caveats).
  *
- * Plain CSS only: the one motion is the scroll reveal (data-reveal, driven by
- * PoolLandingPage), and images below the fold are lazy. The FAQ is native
- * <details>, so every answer ships in the prerendered HTML.
+ * Plain CSS only, no scroll reveal: everything is simply there. Images below
+ * the fold are lazy. The FAQ is native <details>, so every answer ships in
+ * the prerendered HTML.
  */
 
 const inlineLink =
@@ -58,39 +57,16 @@ const inlineLink =
 const softLink =
   'underline decoration-current/30 decoration-1 underline-offset-[3px] transition hover:text-sc-navy hover:decoration-sc-navy';
 
-// Every "Get my price" below the hero opens the quote popup (LandingQuoteSheet).
-const QuoteButton = ({ label = 'Get my price', className = '' }: { label?: string; className?: string }) => {
-  const { open, warm } = useLandingQuoteSheet();
-  const ref = useRef<HTMLButtonElement>(null);
+// This page's section rhythm and headings (the shared kit's are the other
+// pages'): 80px top and bottom on desktop, 60px below 1024; headings in
+// semibold at -0.02em.
+const sectionY = 'py-[60px] lg:py-20';
+const h2 = 'mt-3 text-balance text-[30px] font-semibold leading-[1.12] tracking-[-0.02em] sm:text-[40px]';
 
-  // Pre-mount the popup once this button is on screen, so the tap only runs
-  // the open transition. Not on pointerdown: changing the DOM mid-tap made
-  // iOS swallow the first click (see the mobile menu's CTA in Navbar).
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || !('IntersectionObserver' in window)) return;
-    const io = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        warm();
-        io.disconnect();
-      }
-    });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [warm]);
-
-  return (
-    <button
-      ref={ref}
-      type="button"
-      onClick={open}
-      className={`${amberButton} h-12 whitespace-nowrap px-6 text-base ${className}`}
-    >
-      {label}
-      <ArrowRight className="h-[18px] w-[18px] transition-transform duration-150 group-hover:translate-x-[3px]" strokeWidth={2.5} />
-    </button>
-  );
-};
+// Every quote button below the hero: the flat gold, opening the quote popup.
+const QuoteButton = ({ className = 'h-12 px-6 text-base' }: { className?: string }) => (
+  <KitQuoteButton variant="flat" label="Get my free quote" className={className} />
+);
 
 // ── 1. What's included ──────────────────────────────────────────────────────
 
@@ -137,12 +113,12 @@ const CheckBadge = () => (
 const Included = () => (
   <section aria-labelledby="included-title" className={`bg-white ${sectionY}`}>
     <Container className="isolate">
-      <div data-reveal="" className="mx-auto max-w-3xl text-center">
-        <Eyebrow centered>What's included</Eyebrow>
+      <div className="max-w-3xl">
+        <Eyebrow>What's included</Eyebrow>
         <h2 id="included-title" className={`${h2} text-sc-navy`}>
-          Weekly pool service in St.&nbsp;Petersburg, all in one flat rate.
+          Weekly pool cleaning in St.&nbsp;Petersburg, all in one flat rate.
         </h2>
-        <p className={`${lead} mx-auto max-w-2xl`}>
+        <p className={`${lead} max-w-2xl`}>
           No chemical surcharges when summer pushes chlorine demand up, and no surprise line items. Here’s what
           every visit adds up to.
         </p>
@@ -151,13 +127,13 @@ const Included = () => (
       {/* The four parts, then the price card they add up to. */}
       <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {PARTS.map(({ icon: Icon, title, lines }, i) => (
-          <div key={title} data-reveal="" data-reveal-delay={i * 90} className="w-card flex h-full flex-col bg-white p-6">
+          <div key={title} className="w-card flex h-full flex-col bg-white p-6">
             {/* Phones: icon beside the title, to keep the stacked cards short. */}
             <div className="flex items-center gap-3.5 lg:block">
-              <span className="icon-tile grid h-11 w-11 shrink-0 place-items-center rounded-[13px] lg:h-12 lg:w-12 lg:rounded-[14px]">
+              <span className="icon-tile grid h-11 w-11 shrink-0 place-items-center rounded-[10px] lg:h-12 lg:w-12">
                 <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
               </span>
-              <h3 className="text-[18px] font-bold tracking-[-0.015em] text-sc-navy lg:mt-5">{title}</h3>
+              <h3 className="text-[18px] font-semibold tracking-[-0.02em] text-sc-navy lg:mt-5">{title}</h3>
             </div>
             <ul className="mt-4 space-y-2 lg:mt-3">
               {lines.map((l) => (
@@ -182,7 +158,7 @@ const Included = () => (
         ))}
       </div>
 
-      <div data-reveal="" data-reveal-delay={120} className="w-card mt-5 bg-white px-6 py-8 text-sc-navy sm:px-10">
+      <div className="w-card mt-5 bg-white px-6 py-8 text-sc-navy sm:px-10">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
           <div>
             <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-sc-blue">Your price</p>
@@ -198,7 +174,7 @@ const Included = () => (
               </li>
             ))}
           </ul>
-          <QuoteButton className="self-start lg:self-auto" />
+          <QuoteButton className="h-12 self-start px-6 text-base lg:self-auto" />
         </div>
       </div>
 
@@ -563,13 +539,11 @@ const Report = () => {
         <div className="tour-stage">
           <Container className="tour-grid grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:gap-20">
             <div>
-              <div data-reveal="">
-                <Eyebrow light>Your service report</Eyebrow>
-              </div>
-              <h2 data-reveal="" id="report-title" className={`${h2} text-white`}>
+              <Eyebrow light>Your service report</Eyebrow>
+              <h2 id="report-title" className={`${h2} text-white`}>
                 Know exactly what happened at your pool, every week.
               </h2>
-              <p data-reveal="" className="mt-4 max-w-[540px] text-pretty text-[17px] leading-[1.65] text-white/[0.72]">
+              <p className="mt-4 max-w-[540px] text-pretty text-[17px] leading-[1.65] text-white/[0.72]">
                 Most pool services never send a report. Yours arrives before we leave the driveway, and anything that
                 needs your attention, like low water or an equipment issue, is flagged right there.
               </p>
@@ -587,14 +561,14 @@ const Report = () => {
               {/* 2×2 with equal row heights, so the four items line up across;
                   on the desktop tour, one column of steps; on the phone tour,
                   one point at a time. */}
-              <ul data-reveal="" className="tour-list mt-11 grid auto-rows-fr sm:grid-cols-2 sm:gap-x-9">
+              <ul className="tour-list mt-11 grid auto-rows-fr sm:grid-cols-2 sm:gap-x-9">
                 {REPORT_POINTS.map(({ icon: Icon, title, body }, i) => (
                   <li key={title} data-active={tour && i === step ? '' : undefined} className="tour-item flex gap-4 py-6">
                     <span className="r-tile grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-white/[0.06] text-[#53a5d3]">
                       <Icon className="h-5 w-5" strokeWidth={2} />
                     </span>
                     <div>
-                      <h3 className="text-[16.5px] font-semibold text-white">{title}</h3>
+                      <h3 className="text-[16.5px] font-semibold tracking-[-0.02em] text-white">{title}</h3>
                       <div className="tour-desc">
                         <p className="mt-1 text-[14.5px] leading-[1.6] text-white/[0.62]">{body}</p>
                       </div>
@@ -603,7 +577,7 @@ const Report = () => {
                 ))}
               </ul>
             </div>
-            <div data-reveal="" data-reveal-delay={120} className="mx-auto w-full max-w-[440px]">
+            <div className="mx-auto w-full max-w-[440px]">
               <ReportPhone tour={tour} step={step} />
             </div>
           </Container>
@@ -623,8 +597,6 @@ const Stars = ({ className = '' }: { className?: string }) => (
 
 const ReviewCard = ({ review, featured = false, delay }: { review: Review; featured?: boolean; delay: number }) => (
   <li
-    data-reveal=""
-    data-reveal-delay={delay}
     className={`w-card flex flex-col bg-white ${featured ? 'justify-center px-[30px] py-7 md:row-span-2' : 'px-[26px] py-6'}`}
   >
     <Stars className="text-[13px]" />
@@ -648,10 +620,10 @@ const ReviewCard = ({ review, featured = false, delay }: { review: Review; featu
 );
 
 const Reviews = () => (
-  <section aria-labelledby="reviews-title" className="bg-[#f5f9fd] py-20 sm:py-24">
+  <section aria-labelledby="reviews-title" className={`bg-[#f5f9fd] ${sectionY}`}>
     <Container>
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-        <div data-reveal="" className="max-w-2xl">
+        <div className="max-w-2xl">
           <Eyebrow>What customers say</Eyebrow>
           <h2 id="reviews-title" className={`${h2} text-sc-navy sm:text-[clamp(28px,3.4vw,38px)]`}>
             Neighbors who stopped worrying about their pool.
@@ -684,7 +656,7 @@ const Reviews = () => (
 const STEPS = [
   {
     title: 'Send us your address',
-    body: 'Use the form above, or text two photos: one of the pool, one of the equipment. Same-day reply, Monday to Saturday.',
+    body: 'Tap “Get my free quote”, or text two photos: one of the pool, one of the equipment. Same-day reply, Monday to Saturday.',
   },
   {
     title: 'Get your flat monthly price',
@@ -700,7 +672,7 @@ const STEPS = [
 const HowItWorks = () => (
   <section aria-labelledby="how-title" className={`bg-white ${sectionY}`}>
     <Container className="grid gap-12 lg:grid-cols-[5fr_7fr] lg:gap-24">
-      <div data-reveal="" className="lg:self-center">
+      <div className="lg:self-center">
         <Eyebrow>How it works</Eyebrow>
         <h2 id="how-title" className={`${h2} text-sc-navy`}>
           Getting started takes five minutes, tops.
@@ -724,14 +696,12 @@ const HowItWorks = () => (
         {STEPS.map((s, i) => (
           <li
             key={s.title}
-            data-reveal=""
-            data-reveal-delay={i * 90}
             className="relative pb-11 pl-[68px] pt-1 last:pb-0 sm:pl-[84px]"
           >
             <span className="step-dot absolute left-0 top-0 grid h-12 w-12 place-items-center rounded-full bg-white text-[16px] font-semibold text-sc-blue">
               {i + 1}
             </span>
-            <h3 className="pt-2.5 text-[21px] font-semibold tracking-[-0.015em] text-sc-navy">{s.title}</h3>
+            <h3 className="pt-2.5 text-[21px] font-semibold tracking-[-0.02em] text-sc-navy">{s.title}</h3>
             <p className="mt-2 max-w-[460px] text-pretty text-[16.5px] leading-[1.6] text-sc-navy/[0.78]">{s.body}</p>
           </li>
         ))}
@@ -770,7 +740,7 @@ const [ALWAYS_BLUE, ...OTHER_GUARANTEES] = GUARANTEES;
 const Guarantees = () => (
   <section aria-labelledby="guarantees-title" className={`dark-depth text-white ${sectionY}`}>
     <Container>
-      <div data-reveal="" className="max-w-2xl">
+      <div className="max-w-2xl">
         <Eyebrow light>Our guarantees</Eyebrow>
         <h2 id="guarantees-title" className={`${h2} text-white`}>
           Our promises, in writing.
@@ -780,15 +750,14 @@ const Guarantees = () => (
       <div className="mt-12 grid gap-5 md:grid-cols-2">
         {/* The signature promise spans the row: icon | promise | fine print. */}
         <div
-          data-reveal=""
-          className="g-card g-card-feature grid gap-5 rounded-[18px] p-7 md:col-span-2 md:grid-cols-[64px_1.35fr_1fr] md:gap-x-8 md:gap-y-3 md:p-10"
+          className="g-card g-card-feature grid gap-5 rounded-[12px] p-7 md:col-span-2 md:grid-cols-[64px_1.35fr_1fr] md:gap-x-8 md:gap-y-3 md:p-10"
         >
           <span className="g-tile grid h-16 w-16 place-items-center rounded-[16px] md:row-span-2">
             <ALWAYS_BLUE.icon className="h-7 w-7" strokeWidth={2} />
           </span>
           <div className="md:self-end">
             <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[#ffc226]">Our signature promise</p>
-            <h3 className="mt-2 text-[28px] font-[650] leading-[1.15] tracking-[-0.025em]">{ALWAYS_BLUE.title}</h3>
+            <h3 className="mt-2 text-[28px] font-semibold leading-[1.15] tracking-[-0.02em]">{ALWAYS_BLUE.title}</h3>
           </div>
           <p className="text-pretty text-[17px] leading-[1.6] text-white/80 md:col-start-2 md:row-start-2">
             {ALWAYS_BLUE.body}
@@ -799,11 +768,11 @@ const Guarantees = () => (
         </div>
 
         {OTHER_GUARANTEES.map(({ icon: Icon, title, body, fine }, i) => (
-          <div key={title} data-reveal="" data-reveal-delay={(i + 1) * 90} className="g-card flex flex-col rounded-[18px] p-7 md:p-8">
+          <div key={title} className="g-card flex flex-col rounded-[12px] p-7 md:p-8">
             <span className="g-tile grid h-10 w-10 place-items-center rounded-[10px]">
               <Icon className="h-5 w-5" strokeWidth={2.25} />
             </span>
-            <h3 className="mt-5 text-[18px] font-semibold tracking-[-0.01em]">{title}</h3>
+            <h3 className="mt-5 text-[18px] font-semibold tracking-[-0.02em]">{title}</h3>
             <p className="mt-2 flex-1 text-[15.5px] leading-[1.55] text-white/80">{body}</p>
             <p className="mt-4 border-t border-white/10 pt-4 text-[13px] leading-snug text-white/55">{fine}</p>
           </div>
@@ -833,10 +802,12 @@ const Guarantees = () => (
 // Petersburg, the home base, is the one navy pill and stays unlinked: this
 // page is the St. Petersburg page.
 const pill = 'inline-flex items-center gap-1.5 rounded-full py-2.5 pl-3.5 pr-4';
-const Areas = () => (
+const Areas = () => {
+  const { open } = useLandingQuoteSheet();
+  return (
   <section id="service-areas" aria-labelledby="areas-title" className={`scroll-mt-16 bg-white ${sectionY}`}>
     <Container className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
-      <div data-reveal="">
+      <div>
         <Eyebrow>Service area</Eyebrow>
         <h2 id="areas-title" className={`${h2} text-sc-navy`}>
           Pool service across Pinellas County.
@@ -847,8 +818,8 @@ const Areas = () => (
         </p>
         <p className="mt-6 text-[15px] text-sc-navy/70">
           Don’t see your neighborhood?{' '}
-          <button type="button" onClick={focusQuoteForm} className={inlineLink}>
-            Enter your address
+          <button type="button" onClick={open} className={inlineLink}>
+            Ask us
           </button>{' '}
           and we’ll confirm.
         </p>
@@ -891,7 +862,8 @@ const Areas = () => (
       </ul>
     </Container>
   </section>
-);
+  );
+};
 
 // ── 6. FAQ ──────────────────────────────────────────────────────────────────
 
@@ -946,7 +918,7 @@ const AnswerWithLink = ({ answer, link }: { answer: string; link: { text: string
 const Faq = () => (
   <section aria-labelledby="faq-title" className={`bg-[#f5f9fd] ${sectionY}`}>
     <Container className="grid gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
-      <div data-reveal="">
+      <div>
         <Eyebrow>Questions</Eyebrow>
         <h2 id="faq-title" className={`${h2} text-sc-navy`}>
           Straight answers.
@@ -964,11 +936,11 @@ const Faq = () => (
         </p>
       </div>
 
-      <div className="divide-y divide-sc-navy/10 rounded-[18px] bg-white px-5 shadow-[0_0_0_1px_rgba(36,58,85,0.08)] sm:px-6">
+      <div className="divide-y divide-sc-navy/10 rounded-[12px] bg-white px-5 shadow-[0_0_0_1px_rgba(36,58,85,0.08)] sm:px-6">
         {LANDING_FAQS.map(({ q, a, link }) => (
           <details key={q} className="group">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-[16.5px] font-semibold text-sc-navy [&::-webkit-details-marker]:hidden">
-              <h3>{q}</h3>
+              <h3 className="tracking-[-0.02em]">{q}</h3>
               <ChevronDown className="h-5 w-5 shrink-0 text-sc-navy/45 transition-transform group-open:rotate-180" />
             </summary>
             <p className="-mt-1 pb-5 pr-10 text-[15.5px] leading-[1.6] text-sc-navy/[0.78]">
@@ -986,7 +958,7 @@ const Faq = () => (
 const FinalCta = () => (
   <section aria-labelledby="cta-title" className={`bg-white ${sectionY}`}>
     <Container>
-      <div data-reveal="" data-reveal-delay={120} className="cta-depth rounded-[24px] px-6 py-14 text-center sm:px-12 sm:py-[72px]">
+      <div className="cta-depth rounded-[12px] px-6 py-14 text-center sm:px-12 sm:py-[72px]">
         <h2 id="cta-title" className={`${h2} mx-auto max-w-2xl text-white`}>
           Ready for a pool you never have to think about?
         </h2>
@@ -995,7 +967,7 @@ const FinalCta = () => (
           guarantee.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <QuoteButton className="h-[52px] px-7" />
+          <QuoteButton className="h-[52px] px-7 text-base" />
           <a
             href={PHONE_HREF}
             className="inline-flex h-[52px] items-center gap-2 rounded-[10px] px-6 text-base font-semibold text-white ring-1 ring-white/25 transition hover:ring-white/50"
@@ -1013,8 +985,8 @@ const FinalCta = () => (
 export const LandingBelowFold = () => (
   <>
     <Included />
-    <Report />
     <Reviews />
+    <Report />
     <HowItWorks />
     <Guarantees />
     <Areas />

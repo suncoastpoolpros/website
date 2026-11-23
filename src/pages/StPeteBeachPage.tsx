@@ -216,7 +216,7 @@ export const StPeteBeachPage = () => {
     // Montserrat 700 on mobile, 900 on desktop — so preload 900 only at md+.
     fontPreload: [
       ...NAV_FONTS,
-      FONTS.inter400,
+      FONTS.geist,
       FONTS.montserrat400,
       { href: FONTS.montserrat900, media: '(min-width: 768px)' },
     ],

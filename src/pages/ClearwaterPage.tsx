@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
 import { LandingHeader } from '@/components/landing/LandingHeader';
-import { HeroQuoteForm } from '@/components/landing/HeroQuoteForm';
+import { QuoteButton } from '@/components/landing/sectionKit';
 import { Footer } from '@/components/Footer';
 import { SmartLink as Link } from '@/components/SmartLink';
 import { StickyMobileCta } from '@/components/StickyMobileCta';
@@ -61,8 +61,7 @@ const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offs
 const ClearwaterHero = () => {
   const hasLinks = NEIGHBORHOODS.some((n) => n.to);
   const Bar = hasLinks ? 'nav' : 'div';
-  // No overflow-hidden on the section: the address suggestions must be able
-  // to hang past its bottom edge. The photo layer clips itself instead.
+  // The photo layer clips itself (overflow-hidden), not the section.
   return (
     <section className="relative flex min-h-[calc(100svh-64px)] items-center justify-center bg-[#1D304A] text-center">
       <div className="absolute inset-0 overflow-hidden">
@@ -109,15 +108,9 @@ const ClearwaterHero = () => {
           Weekly pool service from Sand Key to Countryside. One flat rate, every chemical included, no contracts.
         </p>
 
-        {/* relative z-10: the address suggestions must paint over the lines
-            below. text-left: the form's own text and its step-two card. */}
-        <div id="get-price" className="relative z-10 mx-auto mt-8 max-w-[34rem] scroll-mt-24 text-left">
-          <HeroQuoteForm
-            variant="onDark"
-            placeholder="Your pool's address"
-            source="clearwater-hero-quote-form"
-            near="clearwater"
-          />
+        {/* Opens the 3-option quote popup: no address to type first. */}
+        <div id="get-price" className="relative z-10 mx-auto mt-8 max-w-[26rem] scroll-mt-24 text-center">
+          <QuoteButton />
         </div>
 
         <p className={`mt-3 text-[13.5px] text-white/85 ${shadowSoft}`}>
@@ -253,7 +246,7 @@ export const ClearwaterPage = () => {
       wide: HERO_IMG.wide,
     },
     // Inter for the hero, Montserrat for the header's wordmark (the homepage's set).
-    fontPreload: [FONTS.inter, FONTS.montserrat],
+    fontPreload: [FONTS.geist, FONTS.montserrat],
     jsonLd: PAGE_SCHEMA,
   });
 

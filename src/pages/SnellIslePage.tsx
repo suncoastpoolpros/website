@@ -203,7 +203,7 @@ export const SnellIslePage = () => {
     },
     fontPreload: [
       ...NAV_FONTS,
-      FONTS.inter400,
+      FONTS.geist,
       FONTS.montserrat400,
       { href: FONTS.montserrat900, media: '(min-width: 768px)' },
     ],

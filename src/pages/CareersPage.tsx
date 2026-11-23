@@ -215,7 +215,7 @@ export const CareersPage = () => {
     description: PAGE_DESC,
     canonicalPath: '/careers/',
     // Inter for the page, Montserrat for the header's wordmark (the homepage's set).
-    fontPreload: [FONTS.inter, FONTS.montserrat],
+    fontPreload: [FONTS.geist, FONTS.montserrat],
     jsonLd: PAGE_SCHEMA,
     // Its own share card, so a texted job link shows the role, pay and route size.
     ogImage: 'https://suncoastpoolpros.com/og-careers-v1.jpg',

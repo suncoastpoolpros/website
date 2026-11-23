@@ -242,7 +242,7 @@ const SaltwaterPoolServicePageInner = () => {
     description:
       'Weekly saltwater pool service in St. Petersburg & Pinellas. Salt cell cleaning and salt included, generator checked every visit, algae kept out. One flat rate.',
     canonicalPath: CANONICAL,
-    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
+    fontPreload: [...NAV_FONTS, FONTS.geist, FONTS.montserrat900],
     jsonLd: SALT_SCHEMA,
   });
 

@@ -216,7 +216,7 @@ const GreenPoolRecoveryPageInner = () => {
     ogImage: 'https://suncoastpoolpros.com/og-green-pool-recovery.jpg',
     ogImageAlt:
       'A filtered pool vacuum lifting sludge off the floor of a St. Petersburg pool',
-    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
+    fontPreload: [...NAV_FONTS, FONTS.geist, FONTS.montserrat900],
     jsonLd: RECOVERY_SCHEMA,
   });
 

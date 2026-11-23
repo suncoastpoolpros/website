@@ -194,7 +194,7 @@ export const BelleairBeachPage = () => {
     // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
     // hero headline (Montserrat 900), hero H1 (font-display font-normal =
     // Montserrat 400).
-    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat400, FONTS.montserrat900],
+    fontPreload: [...NAV_FONTS, FONTS.geist, FONTS.montserrat400, FONTS.montserrat900],
     jsonLd: PAGE_SCHEMA,
   });
 

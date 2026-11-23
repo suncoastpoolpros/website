@@ -18,9 +18,7 @@
   css.textContent = `
 .rs-v3, .rs-v3 * { animation: none !important; }
 .rs-v3 .rs-progress, .rs-v3 .rs-dash { display: none; }
-/* box-shadow (not filter: drop-shadow) so the rotated card isn't rasterized into a blurry layer */
-.rs-v3 .report-seq { position: relative; box-shadow: 0 1px 2px rgba(15,23,42,.10), 0 18px 36px -12px rgba(15,23,42,.35) !important; }
-.rs-v3 { rotate: -1.5deg; }
+.rs-v3 .report-seq { position: relative; }
 .rs3-ink { position: absolute; inset: 0; background: #0b0b0f; z-index: 5; pointer-events: none; }
 .rs3-island { position: absolute; z-index: 6; left: 50%; top: 10px; height: 40px; width: max-content; translate: -50% 0;
   display: flex; align-items: center; gap: 10px; padding: 0 7px; color: #fff; white-space: nowrap; pointer-events: none;
@@ -83,11 +81,12 @@
 
   const values = [...card.querySelectorAll('.rs-value')];
   const fmt = (n, d) => n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
-  const body = face.querySelector('.p-4');
+  const body = face.querySelector('.rs-body');
   const header = body.children[0], readings = body.children[1];
   const headerImg = header.querySelector('img'), headerText = headerImg.nextElementSibling;
   const badge = card.querySelector('.rs-badge'), lsi = card.querySelector('.rs-lsi');
   const chips = [...card.querySelectorAll('.rs-chip')], footer = card.querySelector('.rs-footer');
+  const added = card.querySelector('.rs-added');
 
   // Pace: PACE stretches the timeline (holds between beats), MOTION slows each individual move.
   const PACE = 1.6, MOTION = 1.3;
@@ -162,8 +161,6 @@
     A(headerImg, [{ transform: `translate(${dx}px, ${dy}px) scale(${sc})`, transformOrigin: '0 0' }, { transform: 'none', transformOrigin: '0 0' }],
       { duration: SOFT.duration, delay: OPEN, easing: SOFT.easing });
     A(islandImg, [{ opacity: 1 }, { opacity: 0 }], { duration: 1, delay: OPEN });
-    // capsule stays perfectly level; the card eases into its -1.5deg tilt as part of the open (no bounce)
-    A(card, [{ rotate: '0deg' }, { rotate: '-1.5deg' }], { duration: 900, delay: OPEN, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards' });
 
     // 5 — report content settles in
     const c0 = OPEN + 200;
@@ -177,11 +174,12 @@
     chips.forEach((ch, i) => A(ch, [{ opacity: 0, transform: 'translateY(8px) scale(.85)' }, { opacity: 1, transform: 'none' }],
       { duration: SNAP.duration, delay: c0 + 300 + i * 70, easing: SNAP.easing }));
     A(lsi, blurIn, { duration: 500, delay: c0 + 520, easing: OUT });
+    if (added) A(added, blurIn, { duration: 500, delay: c0 + 580, easing: OUT });
     A(footer, blurIn, { duration: 600, delay: c0 + 620, easing: OUT });
     A(badge, [{ transform: 'scale(0) rotate(-30deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: BOUNCY.duration, delay: c0 + 650, easing: BOUNCY.easing });
 
     // Crisp text: once everything has landed, drop the held animation states.
-    // Lingering filter/transform fills keep elements on GPU layers, which blurs text on the tilted card.
+    // Lingering filter/transform fills keep elements on GPU layers, which can blur text.
     const mine = anims.slice();
     Promise.all(mine.map((a) => a.finished)).then(() => {
       mine.filter((a) => a.effect && !island.contains(a.effect.target) && a.effect.target !== ink).forEach((a) => a.cancel());

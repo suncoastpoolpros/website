@@ -162,7 +162,7 @@ const HurricanePoolPrepPageInner = () => {
     description:
       'Do not drain it. Nine things to do with a Florida pool before a hurricane — water level, chlorine, the breaker — and why draining is the costly mistake.',
     canonicalPath: CANONICAL,
-    fontPreload: [...NAV_FONTS, FONTS.inter400, FONTS.montserrat900],
+    fontPreload: [...NAV_FONTS, FONTS.geist, FONTS.montserrat900],
     jsonLd: PREP_SCHEMA,
   });
 
