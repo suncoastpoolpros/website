@@ -1,12 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
-  BrushCleaning,
   Camera,
-  Check,
   ChevronDown,
-  ClipboardCheck,
-  Droplets,
   FlaskConical,
   Gauge,
   Handshake,
@@ -15,7 +11,6 @@ import {
   Phone,
   RotateCcw,
   ShieldCheck,
-  Wrench,
 } from 'lucide-react';
 import { SmartLink as Link } from '@/components/SmartLink';
 import { useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
@@ -27,13 +22,14 @@ import {
   PHONE_HREF,
   SMS_QUOTE_HREF,
 } from '@/lib/contact';
-import { Container, Eyebrow, QuoteButton as KitQuoteButton, lead } from '@/components/landing/sectionKit';
+import { Container, QuoteButton as KitQuoteButton } from '@/components/landing/sectionKit';
 import { GOOGLE_REVIEWS_URL, REVIEWS, type Review } from '@/lib/reviews';
+import { SERVICE_TILES } from '@/lib/serviceTiles';
 
 /*
- * /landing below the hero, in the order a visitor's questions come:
- *   what does the flat rate cover → what do I actually get each week → how do
- *   I start → what if I'm unhappy → do you come to me → the rest → go.
+ * The homepage below the hero, in the order a visitor's questions come:
+ *   what do you do → what do customers say → what do I get each week → how
+ *   do I start → what if I'm unhappy → do you come to me → the rest → go.
  *
  * EVERY CLAIM HERE IS SOURCED from the site: the FAQ (src/data/faqs.ts), the
  * Service Agreement (src/pages/ServiceAgreementPage.tsx: guarantee,
@@ -58,146 +54,124 @@ const softLink =
   'underline decoration-current/30 decoration-1 underline-offset-[3px] transition hover:text-sc-navy hover:decoration-sc-navy';
 
 // This page's section rhythm and headings (the shared kit's are the other
-// pages'): 80px top and bottom on desktop, 60px below 1024; headings in
-// semibold at -0.02em.
-const sectionY = 'py-[60px] lg:py-20';
-const h2 = 'mt-3 text-balance text-[30px] font-semibold leading-[1.12] tracking-[-0.02em] sm:text-[40px]';
+// pages'): 112px top and bottom from 1024px, 76px below. Every h2 is
+// followed by one subheading line. No eyebrow labels.
+const sectionY = 'py-[76px] lg:py-28';
+const h2 = 'text-balance text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] md:text-[30px]';
+const subBase = 'mt-2.5 max-w-[40rem] text-pretty text-[16px] leading-[1.55] md:text-[17px]';
+const sub = `${subBase} text-[rgba(36,58,85,0.66)]`;
+const subDark = `${subBase} text-white/[0.72]`;
 
 // Every quote button below the hero: the flat gold, opening the quote popup.
 const QuoteButton = ({ className = 'h-12 px-6 text-base' }: { className?: string }) => (
   <KitQuoteButton variant="flat" label="Get my free quote" className={className} />
 );
 
-// ── 1. What's included ──────────────────────────────────────────────────────
+// ── 1. Services ─────────────────────────────────────────────────────────────
 
-// The flat rate as an equation: the four parts of every visit add up to one
-// monthly price. Lines from the FAQ, How It Works, the homepage's included
-// lists and the sample report. A line with `to` links to the page that covers
-// it in depth (internal links from the homepage carry the most weight).
-type PartLine = string | { text: string; to: string };
-const PARTS: { icon: typeof Gauge; title: string; lines: PartLine[] }[] = [
-  {
-    icon: BrushCleaning,
-    title: 'Weekly cleaning',
-    lines: ['Walls and waterline brushed', 'Skimmed and vacuumed', 'Baskets emptied'],
-  },
-  {
-    icon: Droplets,
-    title: 'Water chemistry',
-    lines: [
-      'Tested and balanced',
-      'Every standard chemical',
-      { text: 'Salt cell care on salt pools', to: '/services/saltwater-pool-service/' },
-    ],
-  },
-  {
-    icon: Gauge,
-    title: 'Equipment check',
-    lines: ['Pump, filter and salt system', 'Issues flagged early', 'Caught before they’re costly'],
-  },
-  {
-    icon: ClipboardCheck,
-    title: 'Visit report',
-    lines: ['Readings, chemicals, photos', 'GPS-verified at your address', 'Sent before we leave'],
-  },
-];
+// Icon beside the name; at 560px and under, the icon above it and the name
+// free to wrap. Linked tiles only change their border on hover. From 1024 to
+// 1279 the four columns are narrowest, so a hair less padding and type keep
+// "Saltwater pool maintenance" on one line from ~1100px.
+const tileClass =
+  'flex h-[72px] items-center gap-2.5 rounded-[12px] border border-[rgba(36,58,85,0.1)] bg-white px-4 lg:max-xl:px-[14px] shadow-[0_1px_2px_rgba(16,24,40,0.03)] max-[560px]:h-auto max-[560px]:min-h-[94px] max-[560px]:flex-col max-[560px]:items-start max-[560px]:justify-center max-[560px]:p-4';
 
-// The one check mark used across this section (the four cards and the price
-// card): a small green circle with a white-tinted fill (.check-badge).
-const CheckBadge = () => (
-  <span aria-hidden="true" className="check-badge grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full">
-    <Check className="h-[11px] w-[11px]" strokeWidth={3.25} />
-  </span>
-);
-
-const Included = () => (
-  <section aria-labelledby="included-title" className={`bg-white ${sectionY}`}>
-    <Container className="isolate">
-      <div className="max-w-3xl">
-        <Eyebrow>What's included</Eyebrow>
-        <h2 id="included-title" className={`${h2} text-sc-navy`}>
-          Weekly pool cleaning in St.&nbsp;Petersburg, all in one flat rate.
+const ServicesSection = () => (
+  <section aria-labelledby="services-title" className={`bg-white ${sectionY}`}>
+    <Container>
+      <div className="mx-auto text-center">
+        <h2 id="services-title" className={`${h2} mx-auto max-w-[46rem] text-sc-navy`}>
+          Pool cleaning and service in <span className="whitespace-nowrap">St. Petersburg</span>, from one local team.
         </h2>
-        <p className={`${lead} max-w-2xl`}>
-          No chemical surcharges when summer pushes chlorine demand up, and no surprise line items. Here’s what
-          every visit adds up to.
+        <p className={`${sub} mx-auto max-w-[38rem]`}>
+          Weekly service at one flat rate, plus recovery, repairs and commercial work when you need it.
         </p>
       </div>
 
-      {/* The four parts, then the price card they add up to. */}
-      <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {PARTS.map(({ icon: Icon, title, lines }, i) => (
-          <div key={title} className="w-card flex h-full flex-col bg-white p-6">
-            {/* Phones: icon beside the title, to keep the stacked cards short. */}
-            <div className="flex items-center gap-3.5 lg:block">
-              <span className="icon-tile grid h-11 w-11 shrink-0 place-items-center rounded-[10px] lg:h-12 lg:w-12">
-                <Icon className="h-[22px] w-[22px]" strokeWidth={1.9} />
+      <ul className="mt-9 grid grid-cols-2 gap-3 lg:mt-12 lg:grid-cols-4">
+        {SERVICE_TILES.map(({ icon: Icon, name, to }) => {
+          const inner = (
+            <>
+              <Icon aria-hidden="true" className="h-5 w-5 shrink-0 text-[#1f7fdb]" strokeWidth={1.6} />
+              <span className="min-w-0 text-[15px] font-semibold leading-tight tracking-[-0.012em] text-[#243a55] max-[560px]:text-[14.5px] lg:max-xl:text-[14.5px]">
+                {name}
               </span>
-              <h3 className="text-[18px] font-semibold tracking-[-0.02em] text-sc-navy lg:mt-5">{title}</h3>
-            </div>
-            <ul className="mt-4 space-y-2 lg:mt-3">
-              {lines.map((l) => (
-                <li
-                  key={typeof l === 'string' ? l : l.text}
-                  className="flex items-start gap-2.5 text-[14.5px] leading-snug text-sc-navy/75"
+            </>
+          );
+          return (
+            <li key={name} className="flex">
+              {to ? (
+                <Link
+                  to={to}
+                  className={`${tileClass} w-full transition-colors hover:border-[#1f7fdb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f7fdb]`}
                 >
-                  <span className="mt-[1px]">
-                    <CheckBadge />
-                  </span>
-                  {typeof l === 'string' ? (
-                    l
-                  ) : (
-                    <Link to={l.to} className={softLink}>
-                      {l.text}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-
-      <div className="w-card mt-5 bg-white px-6 py-8 text-sc-navy sm:px-10">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
-          <div>
-            <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-sc-blue">Your price</p>
-            <p className="mt-1.5 text-[28px] font-bold leading-[1.1] tracking-[-0.02em] sm:text-[34px]">
-              One flat monthly rate
-            </p>
-          </div>
-          <ul className="flex flex-col gap-2 text-[15px] text-sc-navy/80">
-            {['$0 chemical surcharges', 'No contract, month to month', '2-week money-back guarantee'].map((t) => (
-              <li key={t} className="flex items-center gap-2.5 whitespace-nowrap">
-                <CheckBadge />
-                {t}
-              </li>
-            ))}
-          </ul>
-          <QuoteButton className="h-12 self-start px-6 text-base lg:self-auto" />
-        </div>
-      </div>
-
-      <p className="mx-auto mt-8 max-w-3xl text-center text-[14px] leading-[1.55] text-sc-navy/[0.72]">
-        <Wrench className="mr-1.5 inline h-4 w-4 -translate-y-px text-sc-navy/40" strokeWidth={2.25} />
-        Only ever quoted separately: major repairs, replacement parts,{' '}
-        <Link to="/services/green-pool-recovery/" className={softLink}>
-          green-to-clean recovery
-        </Link>{' '}
-        and{' '}
-        <Link to="/services/storm-cleanup/" className={softLink}>
-          major storm cleanup
-        </Link>
-        , always approved by you first.
-      </p>
+                  {inner}
+                </Link>
+              ) : (
+                <div className={`${tileClass} w-full`}>{inner}</div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
     </Container>
   </section>
 );
 
-// ── 2. The report ───────────────────────────────────────────────────────────
+// ── 2. Reviews ──────────────────────────────────────────────────────────────
 
-// In the order they appear in the email, top to bottom, so the desktop tour
-// (below) always moves down the report.
+const Stars = ({ className = '' }: { className?: string }) => (
+  <span aria-hidden="true" className={`tracking-[0.06em] text-[#e8a100] ${className}`}>
+    ★★★★★
+  </span>
+);
+
+// Three equal tiles; the attribution sits at the foot of each, so the names
+// line up across the row.
+const reviewCard = (review: Review) => (
+  <li key={review.name} className="flex flex-col rounded-[12px] border border-[rgba(36,58,85,0.1)] bg-white px-[26px] pb-6 pt-[26px] shadow-[0_1px_2px_rgba(16,24,40,0.03)]">
+    <Stars className="text-[12px]" />
+    <span className="sr-only">Rated 5 out of 5.</span>
+    <blockquote className="mt-3 text-[15.5px] leading-[1.6] text-[rgba(36,58,85,0.86)]">“{review.quote}”</blockquote>
+    <p className="mt-auto pt-5 text-[13.5px]">
+      <span className="font-semibold text-sc-navy">{review.name}</span>
+      <span className="text-sc-navy/[0.66]"> · Google review</span>
+    </p>
+  </li>
+);
+
+const Reviews = () => (
+  <section aria-labelledby="reviews-title" className={`bg-[#f7f9fc] ${sectionY}`}>
+    <Container>
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 id="reviews-title" className={`${h2} text-sc-navy`}>
+            Neighbors who stopped worrying about their pool.
+          </h2>
+          <p className={sub}>What our customers say on Google, where we’re rated 5.0.</p>
+        </div>
+        <a
+          href={GOOGLE_REVIEWS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex shrink-0 items-center gap-2 self-start rounded-[10px] border border-[rgba(36,58,85,0.14)] bg-white px-4 py-2.5 text-[14px] font-semibold text-sc-navy transition-colors hover:border-[rgba(36,58,85,0.3)] sm:self-auto"
+        >
+          <Stars className="text-[12px]" />
+          Read our reviews on Google
+          <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+        </a>
+      </div>
+
+      <ul className="mt-9 grid gap-3 lg:mt-12 min-[900px]:grid-cols-3">
+        {REVIEWS.slice(0, 3).map(reviewCard)}
+      </ul>
+    </Container>
+  </section>
+);
+
+// ── 3. The report ───────────────────────────────────────────────────────────
+
+// In the order they appear in the email, top to bottom.
 const REPORT_POINTS = [
   {
     icon: MapPin,
@@ -212,35 +186,30 @@ const REPORT_POINTS = [
   {
     icon: FlaskConical,
     title: 'Every chemical, logged',
-    body: 'Exactly what we added and how much, all covered by your flat rate.',
+    body: 'What we added and how much, every standard chemical covered by your flat rate.',
   },
   {
     icon: Camera,
     title: 'Photos of your pool',
-    body: 'See exactly how we left your pool, even on days you’re not home.',
+    body: 'See how we left your pool, even on days you’re not home.',
   },
 ];
 
 // Where each point lives in the sample email (ServiceReport.tsx), same order
-// as REPORT_POINTS: the elements whose combined box the tour scrolls to.
+// as REPORT_POINTS: the elements whose combined box the phone scrolls to.
 const sectionTitled = (body: HTMLElement, title: string) =>
   [...body.querySelectorAll('.sr-section')].find((el) => el.textContent?.trim() === title) ?? null;
-const TOUR_TARGETS: ((body: HTMLElement) => (Element | null)[])[] = [
+const REPORT_TARGETS: ((body: HTMLElement) => (Element | null)[])[] = [
   (body) => [body.querySelector('.sr-header__datebadge'), body.querySelector('.sr-hero')],
   (body) => [sectionTitled(body, 'Water Chemistry'), body.querySelector('.sr-lsi')],
   (body) => [sectionTitled(body, 'Chemicals Added'), sectionTitled(body, 'Chemicals Added')?.nextElementSibling ?? null],
   (body) => [sectionTitled(body, 'Photos'), body.querySelector('.sr-photo-wrap')],
 ];
 
-// The phone (PhoneReport) is on desktop a guided tour (Report, below); on
-// phones the email scrolls itself once the visitor is halfway down the
-// section (useAutoScrollReport). Either way the phone takes no scroll or touch
-// of its own, so it can never trap the page scroll.
-
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 // Glides an element's scrollTop to `to`, eased. Returns a cancel function.
-const glideScroll = (el: HTMLElement, to: number, ms: number, done?: () => void) => {
+const glideScroll = (el: HTMLElement, to: number, ms: number) => {
   const from = el.scrollTop;
   const t0 = performance.now();
   let raf = 0;
@@ -248,122 +217,14 @@ const glideScroll = (el: HTMLElement, to: number, ms: number, done?: () => void)
     const t = Math.min(1, (now - t0) / ms);
     el.scrollTop = from + (to - from) * easeInOutCubic(t);
     if (t < 1) raf = requestAnimationFrame(tick);
-    else done?.();
   };
   raf = requestAnimationFrame(tick);
   return () => cancelAnimationFrame(raf);
 };
 
-// Phones (and wherever the tour is off): a Framer-style scroll trigger. Once
-// the visitor is about halfway down the section, the email scrolls itself on
-// its own clock, like someone reading: four eased flicks with short pauses,
-// ~6s in all. The phone sits below the four points there, so it also waits
-// until most of the phone is on screen. Once the section is fully off screen,
-// the email resets to the top so it plays again next time. Reduced motion: it
-// doesn't play.
-const REPORT_STOPS = [0.24, 0.5, 0.76, 1]; // fractions of the email's length
-const REPORT_MOVE_MS = 950;
-const REPORT_PAUSE_MS = 650;
-
-const useAutoScrollReport = (
-  phoneRef: React.RefObject<HTMLDivElement | null>,
-  bodyRef: React.RefObject<HTMLDivElement | null>,
-  enabled: boolean,
-) => {
-  useEffect(() => {
-    const phone = phoneRef.current;
-    const body = bodyRef.current;
-    const section = phone?.closest('section');
-    if (!enabled || !phone || !body || !section) return;
-    if (!window.matchMedia('(prefers-reduced-motion: no-preference)').matches) return;
-    let cancelGlide = () => {};
-    let timer = 0;
-    let played = false;
-    const stop = () => {
-      cancelGlide();
-      clearTimeout(timer);
-    };
-    const play = () => {
-      const max = body.scrollHeight - body.clientHeight;
-      let i = 0;
-      const next = () => {
-        if (i >= REPORT_STOPS.length) return;
-        cancelGlide = glideScroll(body, REPORT_STOPS[i++] * max, REPORT_MOVE_MS, () => {
-          timer = window.setTimeout(next, REPORT_PAUSE_MS);
-        });
-      };
-      next();
-    };
-    const check = () => {
-      const vh = window.innerHeight;
-      const s = section.getBoundingClientRect();
-      const p = phone.getBoundingClientRect();
-      const midway = s.top + s.height / 2 <= vh / 2;
-      const phoneShown = Math.min(p.bottom, vh) - Math.max(p.top, 0) >= p.height * 0.6;
-      if (!played && midway && phoneShown) {
-        played = true;
-        play();
-      } else if (played && (s.bottom < 0 || s.top > vh)) {
-        played = false;
-        stop();
-        body.scrollTop = 0;
-      }
-    };
-    check();
-    window.addEventListener('scroll', check, { passive: true });
-    window.addEventListener('resize', check);
-    return () => {
-      stop();
-      window.removeEventListener('scroll', check);
-      window.removeEventListener('resize', check);
-    };
-  }, [phoneRef, bodyRef, enabled]);
-};
-
-// Desktop tour, phone side: for the active step, the email glides to that
-// part of the report, centred as far as the email allows.
-const TOUR_GLIDE_MS = 520;
-
-const useReportTour = (bodyRef: React.RefObject<HTMLDivElement | null>, tour: boolean, step: number) => {
-  useEffect(() => {
-    const body = bodyRef.current;
-    if (!tour || !body) return;
-    const els = TOUR_TARGETS[step](body).filter((el): el is Element => !!el);
-    if (!els.length) return;
-    // The phone may be scaled; work in the email's own CSS pixels.
-    const box = body.getBoundingClientRect();
-    const scale = box.height / body.offsetHeight || 1;
-    const rects = els.map((el) => el.getBoundingClientRect());
-    const top = (Math.min(...rects.map((r) => r.top)) - box.top) / scale + body.scrollTop;
-    const bottom = (Math.max(...rects.map((r) => r.bottom)) - box.top) / scale + body.scrollTop;
-    // On phones the pinned phone runs off the bottom of the screen, so centre
-    // within the part of the email that's actually showing.
-    const stage = body.closest('.tour-stage');
-    const clip = Math.min(box.bottom, window.innerHeight, stage?.getBoundingClientRect().bottom ?? Infinity);
-    const visible = Math.min(body.clientHeight, Math.max(160, (clip - box.top) / scale));
-    const max = body.scrollHeight - body.clientHeight;
-    const target = Math.max(0, Math.min(max, top - Math.max(12, (visible - (bottom - top)) / 2)));
-    return glideScroll(body, target, TOUR_GLIDE_MS);
-  }, [bodyRef, tour, step]);
-};
-
-const ReportPhone = ({ tour, step }: { tour: boolean; step: number }) => {
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const phoneRef = useRef<HTMLDivElement>(null);
-  useAutoScrollReport(phoneRef, bodyRef, !tour);
-  useReportTour(bodyRef, tour, step);
-  return <PhoneReport scrollRef={bodyRef} phoneRef={phoneRef} />;
-};
-
-// The guided tour runs on desktop screens tall enough to hold the whole
-// section, with motion allowed. Keep in sync with the .report-tour media
-// query in index.css, which pins the section.
-const TOUR_QUERY = '(min-width: 1024px) and (min-height: 680px) and (prefers-reduced-motion: no-preference)';
-// Phones and tablets get the same tour, laid out like a story: see Report.
-// Keep in sync with the .m-tour rules in index.css.
-const MOBILE_TOUR_QUERY = '(max-width: 1023px) and (min-height: 520px) and (prefers-reduced-motion: no-preference)';
-// Space above the progress bars while the phone tour is pinned.
-const M_TOUR_TOP_PAD = 20;
+const REPORT_GLIDE_MS = 500;
+const AUTOPLAY_MS = 3600;
+const MANUAL_PAUSE_MS = 9000;
 
 const useMediaQuery = (query: string) => {
   // false until mounted, to match the prerendered HTML.
@@ -378,278 +239,140 @@ const useMediaQuery = (query: string) => {
   return matches;
 };
 
-// Desktop: a guided tour. The section is tall and its content pinned
-// (.report-tour in index.css), so scrolling steps through the four points:
-// the active one lights up, a line beside it fills as the visitor scrolls
-// (--sp), and the phone scrolls to that part of the report. Phones, short
-// screens and reduced motion get the plain layout: a 2×2 list and the
-// self-scrolling email.
-//
-// Phones and tablets (MOBILE_TOUR_QUERY): the same tour as a story, like
-// poollogic.app's. The heading and intro scroll past as normal; then the
-// stage pins with four progress bars, the active point's title and text in
-// one place (crossfading), and the phone below, running off the bottom of
-// the screen. The stage is the whole column, so it pins at a NEGATIVE top
-// (--rh, measured: everything above the bars), which parks the heading just
-// above the screen. While pinned it holds the site header hidden
-// (data-header-hold on <html>, read by LandingHeader), since the bars sit
-// where the header would slide in.
-//
-// The tour plays once, on the way down. The pinned stretch would otherwise
-// hold anyone scrolling back up for over two screens, so the section is
-// released (unpinned, the track's extra length dropped) once the visitor is
-// past it and has stopped scrolling or turns the wheel upward, or as soon as
-// they fling upward mid-tour (mouse/trackpad only). While pinned, the stage
-// fills the screen, so the release is invisible: the page is scrolled by
-// however far the stage moved.
-//
-// iOS ignores (or undoes) that compensating scroll while a finger is down,
-// and Safari has no scroll anchoring, so on phones the release can't wait for
-// a swipe back up. Instead, once the visitor has scrolled the whole stage off
-// the top of the screen, it is unpinned where it stands (.tour-done: parked
-// at the bottom of its track, which moves nothing), so a swipe back up never
-// pins. The track's extra length, now an
-// empty band above the heading, is dropped once it is off screen: with a
-// compensating scroll after a pause if it is above, or with none needed as
-// soon as the whole section is below the screen.
-const TOUR_FLING_PX = 300; // upward travel within TOUR_FLING_MS that counts as a fling
-const TOUR_FLING_MS = 250;
-const TOUR_IDLE_MS = 150;
+// The phone scrolls (inside its own screen) to the active point's part of the
+// report, centred as far as the email allows. Instant with reduced motion.
+const usePhoneScroll = (bodyRef: React.RefObject<HTMLDivElement | null>, step: number, instant: boolean) => {
+  useEffect(() => {
+    const body = bodyRef.current;
+    if (!body) return;
+    const els = REPORT_TARGETS[step](body).filter((el): el is Element => !!el);
+    if (!els.length) return;
+    // The phone may be scaled; work in the email's own CSS pixels.
+    const box = body.getBoundingClientRect();
+    const scale = box.height / body.offsetHeight || 1;
+    const rects = els.map((el) => el.getBoundingClientRect());
+    const top = (Math.min(...rects.map((r) => r.top)) - box.top) / scale + body.scrollTop;
+    const bottom = (Math.max(...rects.map((r) => r.bottom)) - box.top) / scale + body.scrollTop;
+    const max = body.scrollHeight - body.clientHeight;
+    const target = step === 0 ? 0 : Math.max(0, Math.min(max, top - Math.max(12, (body.clientHeight - (bottom - top)) / 2)));
+    if (instant) {
+      body.scrollTop = target;
+      return;
+    }
+    return glideScroll(body, target, REPORT_GLIDE_MS);
+  }, [bodyRef, step, instant]);
+};
 
+// The four points are tabs: click, Enter or Space picks one, and the phone
+// scrolls to it. While at least 35% of the section is on screen they advance
+// on their own every 3.6s, looping; hovering the list or focusing a tab holds
+// them, and a pick holds them for 9s. No autoplay with reduced motion. The
+// section scrolls past like any other: nothing pins.
 const Report = () => {
-  const deskTour = useMediaQuery(TOUR_QUERY);
-  const mobileTour = useMediaQuery(MOBILE_TOUR_QUERY);
-  const tour = deskTour || mobileTour;
   const [step, setStep] = useState(0);
-  const [released, setReleased] = useState(false);
+  const [inView, setInView] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  // Bumped on every manual pick, so the hold restarts.
+  const [pick, setPick] = useState(0);
+  const reduced = useMediaQuery('(prefers-reduced-motion: reduce)');
   const sectionRef = useRef<HTMLElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  usePhoneScroll(bodyRef, step, reduced);
 
   useEffect(() => {
     const section = sectionRef.current;
-    const track = section?.querySelector<HTMLElement>('.tour-track');
-    const stage = section?.querySelector<HTMLElement>('.tour-stage');
-    if (!tour || released || !section || !track || !stage) return;
-    const fine = window.matchMedia('(pointer: fine)').matches;
-    const bars = section.querySelector<HTMLElement>('.tour-bars');
-    const root = document.documentElement;
-    // How far above the screen the stage pins: 0 on desktop, the heading's
-    // height on phones.
-    let pin = 0;
-    const measure = () => {
-      if (!mobileTour || !bars) return;
-      pin = Math.max(0, Math.round(bars.getBoundingClientRect().top - stage.getBoundingClientRect().top) - M_TOUR_TOP_PAD);
-      section.style.setProperty('--rh', `${pin}px`);
-    };
-    measure();
-    let raf = 0;
-    let idle = 0;
-    let markY = window.scrollY;
-    let markT = performance.now();
-    // The compensating scroll is upward, which would read to the header as
-    // the visitor scrolling up; hold it hidden until that scroll has landed.
-    let releasing = false;
-    const release = () => {
-      if (releasing) return;
-      releasing = true;
-      cancelAnimationFrame(raf);
-      clearTimeout(idle);
-      root.setAttribute('data-header-hold', '');
-      // Wholly below the screen, the section can shrink without moving
-      // anything in view.
-      const below = track.getBoundingClientRect().top >= window.innerHeight;
-      const before = stage.getBoundingClientRect().top;
-      section.classList.add('tour-released');
-      if (!below) window.scrollTo({ top: window.scrollY + stage.getBoundingClientRect().top - before, behavior: 'instant' });
-      window.setTimeout(() => root.removeAttribute('data-header-hold'), 150);
-      setReleased(true);
-    };
-    // Past the end: the stage has reached the bottom of its track.
-    const pastEnd = () => track.getBoundingClientRect().bottom <= stage.getBoundingClientRect().bottom + 1;
-    let done = false;
-    const update = () => {
-      raf = 0;
-      if (releasing) return;
-      const r = track.getBoundingClientRect();
-      const st = stage.getBoundingClientRect();
-      clearTimeout(idle);
-      if (done) {
-        // The empty band (track top to stage top) is off screen: below it
-        // all, or above it all.
-        if (r.top >= window.innerHeight) release();
-        else if (st.top <= 0) idle = window.setTimeout(release, TOUR_IDLE_MS);
-        return;
-      }
-      const range = r.height - st.height;
-      const p = range > 0 ? Math.min(1, Math.max(0, (-r.top - pin) / range)) : 0;
-      const n = REPORT_POINTS.length;
-      const s = Math.min(n - 1, Math.floor(p * n));
-      section.style.setProperty('--sp', String(Math.min(1, p * n - s)));
-      setStep(s);
-      if (mobileTour) root.toggleAttribute('data-header-hold', Math.abs(st.top + pin) < 1);
-      if (!pastEnd()) return;
-      if (mobileTour && st.bottom <= 0) {
-        done = true;
-        section.classList.add('tour-done');
-      }
-      idle = window.setTimeout(release, TOUR_IDLE_MS);
-    };
-    const onScroll = () => {
-      if (releasing) return;
-      const y = window.scrollY;
-      const t = performance.now();
-      if (y >= markY || t - markT > TOUR_FLING_MS) {
-        markY = y;
-        markT = t;
-      } else if (fine && markY - y > TOUR_FLING_PX && track.getBoundingClientRect().top < 0) {
-        release();
-        return;
-      }
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    // Wheeling back up from below without a pause: release before the
-    // scroll lands, so the tour is never replayed in reverse.
-    const onWheel = (e: WheelEvent) => {
-      if (e.deltaY < 0 && pastEnd()) release();
-    };
-    const onResize = () => {
-      measure();
-      onScroll();
-    };
-    update();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize);
-    window.addEventListener('wheel', onWheel, { passive: true });
-    return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(idle);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('wheel', onWheel);
-      if (!releasing) root.removeAttribute('data-header-hold');
-    };
-  }, [tour, mobileTour, released]);
+    if (!section || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.intersectionRatio >= 0.35), { threshold: [0, 0.35, 1] });
+    io.observe(section);
+    return () => io.disconnect();
+  }, []);
+
+  const running = inView && !hovered && !focused && !reduced;
+  const holding = pick > 0;
+  useEffect(() => {
+    if (!running) return;
+    const t = window.setTimeout(() => {
+      setPick(0);
+      setStep((s) => (s + 1) % REPORT_POINTS.length);
+    }, holding ? MANUAL_PAUSE_MS : AUTOPLAY_MS);
+    return () => clearTimeout(t);
+  }, [running, step, pick, holding]);
+
+  const choose = (i: number) => {
+    setStep(i);
+    setPick((n) => n + 1);
+  };
 
   return (
-    <section
-      ref={sectionRef}
-      aria-labelledby="report-title"
-      className={`report-tour dark-depth overflow-clip ${sectionY}${mobileTour ? ' m-tour' : ''}${released ? ' tour-released' : ''}`}
-    >
-      <div className="tour-track">
-        <div className="tour-stage">
-          <Container className="tour-grid grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:gap-20">
-            <div>
-              <Eyebrow light>Your service report</Eyebrow>
-              <h2 id="report-title" className={`${h2} text-white`}>
-                Know exactly what happened at your pool, every week.
-              </h2>
-              <p className="mt-4 max-w-[540px] text-pretty text-[17px] leading-[1.65] text-white/[0.72]">
-                Most pool services never send a report. Yours arrives before we leave the driveway, and anything that
-                needs your attention, like low water or an equipment issue, is flagged right there.
-              </p>
-              {/* Phone tour only (.m-tour): one bar per point; done bars are
-                  full, the active one fills with scroll (--sp). */}
-              <div aria-hidden="true" className="tour-bars">
-                {REPORT_POINTS.map(({ title }, i) => (
-                  <span
-                    key={title}
-                    data-done={tour && i < step ? '' : undefined}
-                    data-active={tour && i === step ? '' : undefined}
-                  />
-                ))}
-              </div>
-              {/* 2×2 with equal row heights, so the four items line up across;
-                  on the desktop tour, one column of steps; on the phone tour,
-                  one point at a time. */}
-              <ul className="tour-list mt-11 grid auto-rows-fr sm:grid-cols-2 sm:gap-x-9">
-                {REPORT_POINTS.map(({ icon: Icon, title, body }, i) => (
-                  <li key={title} data-active={tour && i === step ? '' : undefined} className="tour-item flex gap-4 py-6">
-                    <span className="r-tile grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-white/[0.06] text-[#53a5d3]">
-                      <Icon className="h-5 w-5" strokeWidth={2} />
+    <section ref={sectionRef} aria-labelledby="report-title" className={`report-bg overflow-hidden ${sectionY}`}>
+      <Container className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:gap-20">
+        <div>
+          <h2 id="report-title" className={`${h2} text-white`}>
+            Know exactly what happened at your pool, every week.
+          </h2>
+          <p className={subDark}>
+            Most pool services don’t send a report. Yours arrives before we leave the driveway, and anything that needs
+            your attention, like low water or an equipment issue, is flagged right there.
+          </p>
+          {/* Phones and tablets: one bar per point, the active one filling
+              over its interval (paused while autoplay is held). */}
+          <div
+            aria-hidden="true"
+            className={`rp-bars${running ? '' : ' is-paused'}${reduced ? ' is-static' : ''}`}
+          >
+            {REPORT_POINTS.map(({ title }, i) => (
+              <span
+                key={`${title}-${i === step ? `${step}-${pick}` : 'x'}`}
+                data-done={i < step ? '' : undefined}
+                data-active={i === step ? '' : undefined}
+                data-long={i === step && holding ? '' : undefined}
+              />
+            ))}
+          </div>
+          <div
+            role="tablist"
+            aria-label="What's in your report"
+            className="mt-7 grid lg:mt-9"
+            onPointerEnter={() => setHovered(true)}
+            onPointerLeave={() => setHovered(false)}
+            onFocus={() => setFocused(true)}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
+            }}
+          >
+            {REPORT_POINTS.map(({ icon: Icon, title, body }, i) => (
+              <button
+                key={title}
+                type="button"
+                role="tab"
+                aria-selected={i === step}
+                onClick={() => choose(i)}
+                className="rp-item flex gap-4 rounded-[12px] py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+              >
+                <span className="r-tile grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-white/[0.06] text-[#53a5d3]">
+                  <Icon className="h-5 w-5" strokeWidth={2} />
+                </span>
+                <span className="min-w-0 pt-2">
+                  <span className="block text-[16.5px] font-semibold tracking-[-0.02em] text-white">{title}</span>
+                  <span className="rp-desc">
+                    <span className="block">
+                      <span className="block pt-1 text-[14.5px] leading-[1.6] text-white/[0.62]">{body}</span>
                     </span>
-                    <div>
-                      <h3 className="text-[16.5px] font-semibold tracking-[-0.02em] text-white">{title}</h3>
-                      <div className="tour-desc">
-                        <p className="mt-1 text-[14.5px] leading-[1.6] text-white/[0.62]">{body}</p>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="mx-auto w-full max-w-[440px]">
-              <ReportPhone tour={tour} step={step} />
-            </div>
-          </Container>
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+        <div className="mx-auto w-full max-w-[440px]">
+          <PhoneReport scrollRef={bodyRef} address="Your address, St. Petersburg, FL" />
+        </div>
+      </Container>
     </section>
   );
 };
-
-// ── Reviews ─────────────────────────────────────────────────────────────────
-
-const Stars = ({ className = '' }: { className?: string }) => (
-  <span aria-hidden="true" className={`tracking-[0.06em] text-[#e8a100] ${className}`}>
-    ★★★★★
-  </span>
-);
-
-const ReviewCard = ({ review, featured = false, delay }: { review: Review; featured?: boolean; delay: number }) => (
-  <li
-    className={`w-card flex flex-col bg-white ${featured ? 'justify-center px-[30px] py-7 md:row-span-2' : 'px-[26px] py-6'}`}
-  >
-    <Stars className="text-[13px]" />
-    <span className="sr-only">Rated 5 out of 5.</span>
-    <blockquote className={`mt-3 leading-[1.6] text-sc-navy/80 ${featured ? 'text-[16px]' : 'text-[14.5px]'}`}>
-      “{review.quote}”
-    </blockquote>
-    <div className={`flex items-center gap-2.5 ${featured ? 'mt-[22px]' : 'mt-4'}`}>
-      <span
-        aria-hidden="true"
-        className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full bg-sc-blue/10 text-[13px] font-semibold text-sc-blue"
-      >
-        {review.name[0]}
-      </span>
-      <span className="text-[13.5px]">
-        <span className="font-semibold text-sc-navy">{review.name}</span>
-        <span className="text-sc-navy/[0.72]"> · Google review</span>
-      </span>
-    </div>
-  </li>
-);
-
-const Reviews = () => (
-  <section aria-labelledby="reviews-title" className={`bg-[#f5f9fd] ${sectionY}`}>
-    <Container>
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-        <div className="max-w-2xl">
-          <Eyebrow>What customers say</Eyebrow>
-          <h2 id="reviews-title" className={`${h2} text-sc-navy sm:text-[clamp(28px,3.4vw,38px)]`}>
-            Neighbors who stopped worrying about their pool.
-          </h2>
-        </div>
-        <a
-          href={GOOGLE_REVIEWS_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-white px-4 py-2.5 text-[14px] font-semibold text-sc-navy shadow-[0_1px_2px_rgba(16,24,40,0.06)] ring-1 ring-sc-navy/10 transition hover:ring-sc-navy/25 sm:self-auto"
-        >
-          <Stars className="text-[13px]" />
-          Read our reviews on Google
-          <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
-        </a>
-      </div>
-
-      {/* Featured review on the left; the other two stacked on the right. */}
-      <ul className="isolate mt-12 grid gap-5 md:grid-cols-2">
-        <ReviewCard review={REVIEWS[0]} featured delay={0} />
-        <ReviewCard review={REVIEWS[1]} delay={90} />
-        <ReviewCard review={REVIEWS[2]} delay={180} />
-      </ul>
-    </Container>
-  </section>
-);
 
 // ── 3. How it works ─────────────────────────────────────────────────────────
 
@@ -673,11 +396,10 @@ const HowItWorks = () => (
   <section aria-labelledby="how-title" className={`bg-white ${sectionY}`}>
     <Container className="grid gap-12 lg:grid-cols-[5fr_7fr] lg:gap-24">
       <div className="lg:self-center">
-        <Eyebrow>How it works</Eyebrow>
         <h2 id="how-title" className={`${h2} text-sc-navy`}>
           Getting started takes five minutes, tops.
         </h2>
-        <p className="mt-4 max-w-[420px] text-pretty text-[17px] leading-[1.6] text-sc-navy/[0.72]">
+        <p className={`${sub} max-w-[420px]`}>
           Three simple steps. No contract to sign, and no need to be home for any of them.
         </p>
         <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
@@ -735,60 +457,46 @@ const GUARANTEES = [
   },
 ];
 
-const [ALWAYS_BLUE, ...OTHER_GUARANTEES] = GUARANTEES;
-
+// Three equal tiles on a light background; the Always Blue Guarantee is the
+// featured one. The fine print sits at the foot of each tile, so the three
+// line up.
 const Guarantees = () => (
-  <section aria-labelledby="guarantees-title" className={`dark-depth text-white ${sectionY}`}>
+  <section aria-labelledby="guarantees-title" className={`bg-[#f7f9fc] ${sectionY}`}>
     <Container>
-      <div className="max-w-2xl">
-        <Eyebrow light>Our guarantees</Eyebrow>
-        <h2 id="guarantees-title" className={`${h2} text-white`}>
+      <div className="text-center">
+        <h2 id="guarantees-title" className={`${h2} text-sc-navy`}>
           Our promises, in writing.
         </h2>
+        <p className={`${sub} mx-auto`}>
+          Every term below is written into our{' '}
+          <Link to="/service-agreement/" className={inlineLink}>
+            Service Agreement
+          </Link>
+          .
+        </p>
       </div>
 
-      <div className="mt-12 grid gap-5 md:grid-cols-2">
-        {/* The signature promise spans the row: icon | promise | fine print. */}
-        <div
-          className="g-card g-card-feature grid gap-5 rounded-[12px] p-7 md:col-span-2 md:grid-cols-[64px_1.35fr_1fr] md:gap-x-8 md:gap-y-3 md:p-10"
-        >
-          <span className="g-tile grid h-16 w-16 place-items-center rounded-[16px] md:row-span-2">
-            <ALWAYS_BLUE.icon className="h-7 w-7" strokeWidth={2} />
-          </span>
-          <div className="md:self-end">
-            <p className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[#ffc226]">Our signature promise</p>
-            <h3 className="mt-2 text-[28px] font-semibold leading-[1.15] tracking-[-0.02em]">{ALWAYS_BLUE.title}</h3>
-          </div>
-          <p className="text-pretty text-[17px] leading-[1.6] text-white/80 md:col-start-2 md:row-start-2">
-            {ALWAYS_BLUE.body}
-          </p>
-          <p className="border-t border-white/[0.12] pt-5 text-[13.5px] leading-[1.55] text-white/55 md:col-start-3 md:row-span-2 md:row-start-1 md:self-center md:border-l md:border-t-0 md:pl-8 md:pt-0">
-            {ALWAYS_BLUE.fine}
-          </p>
-        </div>
-
-        {OTHER_GUARANTEES.map(({ icon: Icon, title, body, fine }, i) => (
-          <div key={title} className="g-card flex flex-col rounded-[12px] p-7 md:p-8">
-            <span className="g-tile grid h-10 w-10 place-items-center rounded-[10px]">
-              <Icon className="h-5 w-5" strokeWidth={2.25} />
-            </span>
-            <h3 className="mt-5 text-[18px] font-semibold tracking-[-0.02em]">{title}</h3>
-            <p className="mt-2 flex-1 text-[15.5px] leading-[1.55] text-white/80">{body}</p>
-            <p className="mt-4 border-t border-white/10 pt-4 text-[13px] leading-snug text-white/55">{fine}</p>
-          </div>
+      <ul className="mt-12 grid gap-3 min-[900px]:grid-cols-3">
+        {GUARANTEES.map(({ icon: Icon, title, body, fine }, i) => (
+          <li
+            key={title}
+            className={`flex flex-col rounded-[12px] px-[26px] pb-6 pt-7 ${
+              i === 0
+                ? 'border border-[#1f7fdb] bg-[rgba(31,127,219,0.045)] shadow-[0_0_0_1px_#1f7fdb,0_1px_2px_rgba(16,24,40,0.04)]'
+                : 'border border-[rgba(36,58,85,0.1)] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.03)]'
+            }`}
+          >
+            <Icon aria-hidden="true" className="h-6 w-6 text-[#1f7fdb]" strokeWidth={1.75} />
+            <h3 className="mt-4 text-[18px] font-semibold tracking-[-0.02em] text-[#243a55]">{title}</h3>
+            <p className="mt-2 text-[15px] leading-[1.6] text-[rgba(36,58,85,0.74)]">{body}</p>
+            <p className="mt-auto pt-5">
+              <span className="block border-t border-[rgba(36,58,85,0.1)] pt-4 text-[13px] leading-[1.5] text-[rgba(36,58,85,0.56)]">
+                {fine}
+              </span>
+            </p>
+          </li>
         ))}
-      </div>
-
-      <p className="mt-8 text-[14px] text-white/60">
-        Every term is in our{' '}
-        <Link
-          to="/service-agreement/"
-          className="font-semibold text-white underline decoration-white/30 decoration-1 underline-offset-[3px] transition hover:decoration-white"
-        >
-          Service Agreement
-        </Link>
-        .
-      </p>
+      </ul>
     </Container>
   </section>
 );
@@ -808,11 +516,10 @@ const Areas = () => {
   <section id="service-areas" aria-labelledby="areas-title" className={`scroll-mt-16 bg-white ${sectionY}`}>
     <Container className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
       <div>
-        <Eyebrow>Service area</Eyebrow>
         <h2 id="areas-title" className={`${h2} text-sc-navy`}>
           Pool service across Pinellas County.
         </h2>
-        <p className={lead}>
+        <p className={sub}>
           All of Pinellas, from St. Pete Beach to Palm Harbor, plus South Tampa and Davis Island. Our routes are
           concentrated here, which is how visits stay on schedule.
         </p>
@@ -919,11 +626,10 @@ const Faq = () => (
   <section aria-labelledby="faq-title" className={`bg-[#f5f9fd] ${sectionY}`}>
     <Container className="grid gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
       <div>
-        <Eyebrow>Questions</Eyebrow>
         <h2 id="faq-title" className={`${h2} text-sc-navy`}>
           Straight answers.
         </h2>
-        <p className={lead}>
+        <p className={sub}>
           Something else on your mind? Call{' '}
           <a href={PHONE_HREF} className={`${inlineLink} whitespace-nowrap`}>
             {PHONE_DISPLAY}
@@ -962,7 +668,7 @@ const FinalCta = () => (
         <h2 id="cta-title" className={`${h2} mx-auto max-w-2xl text-white`}>
           Ready for a pool you never have to think about?
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-pretty text-[17px] leading-[1.6] text-white/75">
+        <p className={`${subDark} mx-auto max-w-xl`}>
           Get your flat monthly price today. Every standard chemical included, no contract, and a 2-week money-back
           guarantee.
         </p>
@@ -984,7 +690,7 @@ const FinalCta = () => (
 // The sections go inside the page's <main>; the site-wide Footer goes after it.
 export const LandingBelowFold = () => (
   <>
-    <Included />
+    <ServicesSection />
     <Reviews />
     <Report />
     <HowItWorks />

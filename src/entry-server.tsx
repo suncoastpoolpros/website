@@ -47,6 +47,11 @@ import { GreenPoolPage } from '@/pages/GreenPoolPage';
 import { StormCleanupPage } from '@/pages/StormCleanupPage';
 import { GreenPoolRecoveryPage } from '@/pages/GreenPoolRecoveryPage';
 import { SaltwaterPoolServicePage } from '@/pages/SaltwaterPoolServicePage';
+import { WeeklyPoolServicePage } from '@/pages/WeeklyPoolServicePage';
+import { PoolRepairPage } from '@/pages/PoolRepairPage';
+import { CommercialPoolServicePage } from '@/pages/CommercialPoolServicePage';
+import { HoaPoolServicePage } from '@/pages/HoaPoolServicePage';
+import { RecreationTherapyPoolsPage } from '@/pages/RecreationTherapyPoolsPage';
 import { ServicesPage } from '@/pages/ServicesPage';
 import { HurricanePoolPrepPage } from '@/pages/HurricanePoolPrepPage';
 import { VariableSpeedPumpsPage } from '@/pages/VariableSpeedPumpsPage';
@@ -93,6 +98,11 @@ export const PRERENDER_ROUTES = [
   '/services/storm-cleanup',
   '/services/green-pool-recovery',
   '/services/saltwater-pool-service',
+  '/services/weekly-pool-service',
+  '/services/pool-repair',
+  '/services/commercial-pool-service',
+  '/services/hoa-pool-service',
+  '/services/recreation-therapy-pools',
   '/tools',
   '/tools/pool-volume-calculator',
   '/tools/pool-heating-cost-calculator',
@@ -140,6 +150,11 @@ const Routing = () => (
     <Route path="/services/storm-cleanup" element={<StormCleanupPage />} />
     <Route path="/services/green-pool-recovery" element={<GreenPoolRecoveryPage />} />
     <Route path="/services/saltwater-pool-service" element={<SaltwaterPoolServicePage />} />
+    <Route path="/services/weekly-pool-service" element={<WeeklyPoolServicePage />} />
+    <Route path="/services/pool-repair" element={<PoolRepairPage />} />
+    <Route path="/services/commercial-pool-service" element={<CommercialPoolServicePage />} />
+    <Route path="/services/hoa-pool-service" element={<HoaPoolServicePage />} />
+    <Route path="/services/recreation-therapy-pools" element={<RecreationTherapyPoolsPage />} />
     <Route path="/pool-care/variable-speed-pumps" element={<VariableSpeedPumpsPage />} />
     <Route path="/pool-care/salt-water-vs-chlorine" element={<SaltWaterVsChlorinePage />} />
     <Route path="/pool-care/how-to-drain-a-pool" element={<DrainPoolPage />} />

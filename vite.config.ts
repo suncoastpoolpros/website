@@ -3,8 +3,18 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig } from 'vite';
 
+// The day of the build (UTC), for the sample service report's date: the
+// prerendered HTML and the browser's first render both start from it, so they
+// match, and the page then moves it to the visitor's own most recent Thursday
+// (src/lib/reportDate.ts). Both builds (client and SSR) run in one `npm run
+// build`, so they agree.
+const BUILD_DATE = new Date().toISOString().slice(0, 10);
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: {
+    __BUILD_DATE__: JSON.stringify(BUILD_DATE),
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

@@ -366,6 +366,8 @@ const humanizeService = (slug: string): string => {
     equipment: 'Equipment Repair',
     repair: 'Equipment Repair',
     commercial: 'Commercial / HOA',
+    hoa: 'HOA Pool Service',
+    recreation: 'Recreation & Therapy Pools',
     other: 'Other',
   };
   return map[slug] ?? slug;

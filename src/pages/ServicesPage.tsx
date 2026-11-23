@@ -450,7 +450,6 @@ const ServicesPageInner = () => {
           serviceLabel="Which service do you need?"
           serviceOptions={[
             ...services.map((s) => ({ value: s.slug, label: s.label })),
-            { value: 'commercial', label: 'Commercial / HOA pool' },
             { value: 'other', label: 'Something else' },
           ]}
           extraFields={[

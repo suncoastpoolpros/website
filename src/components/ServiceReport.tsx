@@ -429,7 +429,7 @@ export const ServiceReport = ({
               <div className="sr-trow"><span className="sr-tlabel">Total Chlorine</span><span className="sr-tvalue">3.7</span><span className="sr-tunit">ppm</span></div>
               <div className="sr-trow"><span className="sr-tlabel">pH</span><span className="sr-tvalue">7.4</span><span className="sr-tunit"></span></div>
               <div className="sr-trow"><span className="sr-tlabel">Total Alkalinity</span><span className="sr-tvalue">98</span><span className="sr-tunit">ppm</span></div>
-              <div className="sr-trow"><span className="sr-tlabel">Salt</span><span className="sr-tvalue">2950</span><span className="sr-tunit">ppm</span></div>
+              <div className="sr-trow"><span className="sr-tlabel">Salt</span><span className="sr-tvalue">2,950</span><span className="sr-tunit">ppm</span></div>
               <div className="sr-trow"><span className="sr-tlabel">Water Temp</span><span className="sr-tvalue">84</span><span className="sr-tunit">°F</span></div>
               <div className="sr-trow"><span className="sr-tlabel">Filter Pressure</span><span className="sr-tvalue">14</span><span className="sr-tunit">PSI</span></div>
               <div className="sr-trow"><span className="sr-tlabel">Water Level</span><span className="sr-tvalue">Normal</span><span className="sr-tunit"></span></div>
@@ -440,7 +440,7 @@ export const ServiceReport = ({
           <div className="sr-lsi">
             <span className="sr-lsi__label">LSI Index</span>
             <span>
-              <span className="sr-lsi__value">-0.03</span>
+              <span className="sr-lsi__value">−0.03</span>
               <span className="sr-lsi__status">Balanced</span>
             </span>
           </div>
@@ -458,6 +458,8 @@ export const ServiceReport = ({
           <div className="sr-section"><p>Tasks Completed</p></div>
           <div className="sr-tasks">
             <span className="sr-task"><span className="sr-task__check">✓</span>Skimmed debris</span>
+            <span className="sr-task"><span className="sr-task__check">✓</span>Brushed walls and waterline</span>
+            <span className="sr-task"><span className="sr-task__check">✓</span>Vacuumed pool</span>
             <span className="sr-task"><span className="sr-task__check">✓</span>Emptied skimmer basket(s)</span>
             <span className="sr-task"><span className="sr-task__check">✓</span>Emptied pump basket</span>
             <span className="sr-task"><span className="sr-task__check">✓</span>Filter inspected</span>

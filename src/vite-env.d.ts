@@ -12,3 +12,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** The build's date, YYYY-MM-DD (UTC). Defined in vite.config.ts. */
+declare const __BUILD_DATE__: string;

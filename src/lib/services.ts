@@ -5,6 +5,9 @@ import {
   Droplets,
   Filter,
   Wrench,
+  Building2,
+  Users,
+  HeartPulse,
 } from 'lucide-react';
 
 /**
@@ -37,7 +40,7 @@ export type Service = {
 export const services: Service[] = [
   {
     slug: 'weekly',
-    to: '/services/',
+    to: '/services/weekly-pool-service/',
     label: 'Weekly Pool Cleaning',
     title: 'Weekly pool cleaning',
     blurb:
@@ -47,8 +50,8 @@ export const services: Service[] = [
   {
     slug: 'green',
     to: '/services/green-pool-recovery/',
-    label: 'Green Pool Recovery',
-    title: 'Green pool recovery',
+    label: 'Green Pool Cleanup',
+    title: 'Green pool cleanup',
     blurb:
       'Back to blue from any state, with an honest timeline up front. We vacuum the sludge out rather than draining the pool.',
     icon: Sprout,
@@ -81,11 +84,39 @@ export const services: Service[] = [
   },
   {
     slug: 'equipment',
-    label: 'Equipment Repair',
-    title: 'Equipment repair & upgrades',
+    to: '/services/pool-repair/',
+    label: 'Pool Repair',
+    title: 'Pool repair',
     blurb:
-      'For customers on a weekly plan: pumps, heaters, timers and automation, diagnosed before anything is quoted and replaced only when a repair genuinely will not hold.',
+      'Pumps, filters, heaters, timers, automation and salt systems, diagnosed before anything is quoted and replaced only when a repair genuinely will not hold.',
     icon: Wrench,
+  },
+  {
+    slug: 'commercial',
+    to: '/services/commercial-pool-service/',
+    label: 'Commercial Pool Service',
+    title: 'Commercial pool service',
+    blurb:
+      'Pools and spas at hotels, apartment communities, gyms and businesses, serviced up to daily, with readings logged in a report after every visit.',
+    icon: Building2,
+  },
+  {
+    slug: 'hoa',
+    to: '/services/hoa-pool-service/',
+    label: 'HOA Pool Service',
+    title: 'HOA pool service',
+    blurb:
+      'Community pools kept clean, balanced and open for residents on a set schedule, with a report after every visit for the board or manager.',
+    icon: Users,
+  },
+  {
+    slug: 'recreation',
+    to: '/services/recreation-therapy-pools/',
+    label: 'Recreation & Therapy Pools',
+    title: 'Recreation and therapy pools',
+    blurb:
+      'Recreation and aquatic centers, therapy pools and medical facilities, including warm-water and indoor pools, serviced up to daily.',
+    icon: HeartPulse,
   },
 ];
 

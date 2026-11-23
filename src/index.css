@@ -1249,90 +1249,15 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 
 /* ── /landing: motion and dark-section depth ──────────────────────────────── */
-/* Dark sections (service report, guarantees) and the final CTA box. */
-.dark-depth {
-  background:
-    radial-gradient(80% 55% at 15% 0%, rgba(83, 165, 211, 0.14), transparent 60%),
-    radial-gradient(60% 50% at 100% 100%, rgba(38, 118, 182, 0.12), transparent 60%),
-    linear-gradient(180deg, #28405e 0%, #223752 55%, #1d304a 100%);
-}
+/* The final CTA box (also used by Careers and FAQ). */
 .cta-depth {
   background:
     radial-gradient(70% 90% at 50% 0%, rgba(83, 165, 211, 0.22), transparent 65%),
     linear-gradient(180deg, #28405e, #1e324c);
   box-shadow: 0 30px 60px -30px rgba(20, 35, 55, 0.55);
 }
-/* Guarantee cards: a small lift on hover. */
-.g-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0 0 1px rgba(255, 255, 255, 0.07),
-    0 24px 48px -24px rgba(5, 15, 30, 0.7),
-    0 8px 16px -8px rgba(5, 15, 30, 0.35);
-  transition:
-    translate 0.35s ease,
-    box-shadow 0.35s ease;
-}
-.g-card:hover {
-  translate: 0 -3px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.1),
-    0 32px 60px -24px rgba(5, 15, 30, 0.8),
-    0 10px 20px -10px rgba(5, 15, 30, 0.4);
-}
-/* The Always Blue card: a faint gold glow from its top-left corner. */
-.g-card.g-card-feature {
-  background:
-    radial-gradient(120% 140% at 0% 0%, rgba(255, 194, 38, 0.1), transparent 45%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
-}
-.g-tile {
-  background: rgba(255, 194, 38, 0.1);
-  color: #ffc226;
-  box-shadow: inset 0 0 0 1px rgba(255, 194, 38, 0.28);
-}
-/* Light sections: white cards and feature icon tiles. */
-/* One shadow for every white card (the four "what's included" cards, the
-   price card, the reviews): a hairline edge on the card, and a soft shadow
-   behind it, a little deeper on hover. The shadow is drawn on a ::before at
-   z-index -1, so every shadow sits on a layer BELOW every card: a card's
-   shadow can fall on the background, never across a neighbouring card. That
-   layer is the nearest isolated ancestor (`isolate` on each card group), so
-   the shadows stay above the section's own background. */
-.w-card {
-  position: relative;
-  border-radius: 12px;
-  box-shadow: 0 0 0 1px rgba(36, 58, 85, 0.08);
-}
-.w-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow:
-    0 1px 2px rgba(16, 24, 40, 0.05),
-    0 16px 40px -20px rgba(36, 58, 85, 0.35);
-  transition: box-shadow 0.3s ease;
-}
-@media (hover: hover) {
-  .w-card:hover::before {
-    box-shadow:
-      0 1px 2px rgba(16, 24, 40, 0.05),
-      0 22px 48px -20px rgba(36, 58, 85, 0.45);
-  }
-}
-/* Feature icons: a flat brand-blue tile with a white icon. One colour for
-   all four. */
-.icon-tile {
-  background: #2a78b8;
-  color: #fff;
-}
-/* "What's included" check marks: a fresh green check on a pale green circle
-   with a hairline green edge. */
+/* Check marks (Clearwater's standard section): a fresh green check on a
+   pale green circle with a hairline green edge. */
 .check-badge {
   background: #e9f9ef;
   color: #0e9f57;
@@ -1586,87 +1511,6 @@ input[type="date"]::-webkit-date-and-time-value {
   .cs-col--r .cs-step:nth-child(3) { transition-delay: 600ms; }
 }
 
-/* ── /landing service report: the desktop guided tour (Report in
-   LandingBelowFold.tsx). Keep the media query in sync with TOUR_QUERY there.
-   The section grows to a screen plus 55% of a screen per step, and its content
-   pins while the visitor scrolls through it. The four points become one
-   column of steps: the active one lights up and shows its description, with
-   a line beside it that fills through the step (--sp, set from scroll); the
-   others dim to their titles. The section is overflow:clip, not hidden, so
-   the sticky stage still pins. */
-@media (min-width: 1024px) and (min-height: 680px) and (prefers-reduced-motion: no-preference) {
-  .report-tour {
-    padding-block: 0;
-  }
-  .report-tour .tour-track {
-    height: calc(100vh + 4 * 55vh);
-  }
-  .report-tour .tour-stage {
-    position: sticky;
-    top: 0;
-    display: flex;
-    align-items: center;
-    /* svh: the screen with the browser toolbar showing, so on an iPad the
-       pinned stage never runs under Safari's bottom bar. */
-    height: 100vh;
-    height: 100svh;
-    padding: 64px 0 24px;
-  }
-  .report-tour .tour-list {
-    grid-template-columns: 1fr;
-    grid-auto-rows: auto;
-    margin-top: 28px;
-  }
-  .report-tour .tour-item {
-    position: relative;
-    padding: 12px 0 12px 22px;
-    opacity: 0.45;
-    transition: opacity 0.4s ease;
-  }
-  .report-tour .tour-item::before,
-  .report-tour .tour-item::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 12px;
-    width: 2px;
-    border-radius: 2px;
-  }
-  .report-tour .tour-item::before {
-    bottom: 12px;
-    background: rgba(255, 255, 255, 0.12);
-  }
-  .report-tour .tour-item::after {
-    height: 0;
-    background: #53a5d3;
-  }
-  .report-tour .tour-item[data-active] {
-    opacity: 1;
-  }
-  .report-tour .tour-item[data-active]::after {
-    height: calc((100% - 24px) * var(--sp, 0));
-  }
-  .report-tour .tour-desc {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  .report-tour .tour-desc > p {
-    overflow: hidden;
-  }
-  .report-tour .tour-item[data-active] .tour-desc {
-    grid-template-rows: 1fr;
-  }
-  /* Released after the tour has played (Report): the stage stays as it was,
-     but scrolls with the page instead of pinning. */
-  .report-tour.tour-released .tour-track {
-    height: auto;
-  }
-  .report-tour.tour-released .tour-stage {
-    position: relative;
-  }
-}
-
 /* Homepage header dropdowns (LandingNavMenus): flush under the header, so
    the card is squared off on top and its shadow is clipped there. */
 .nav-panel {
@@ -1700,51 +1544,53 @@ input[type="date"]::-webkit-date-and-time-value {
   }
 }
 
-/* ── The same tour on phones and tablets: a story, like poollogic.app's
-   (Report in LandingBelowFold.tsx; .m-tour is set only while
-   MOBILE_TOUR_QUERY matches). The heading scrolls past; the stage then pins
-   at top: -var(--rh), which parks the heading just above the screen and
-   leaves the progress bars, one point's text and the phone, which runs off
-   the bottom (lvh, so it still reaches the edge once Safari's toolbars
-   collapse). Every transform here is in a class, never inline: the mobile
-   `.force-static-motion [style*="transform"]` rule would flatten it. */
-.tour-bars {
-  display: none;
+/* ── Homepage service report (Report in LandingBelowFold.tsx) ────────────
+   Near-black, with a faint blue light behind the phone. The four points are
+   tabs: the inactive ones dim to their titles, the active one shows its
+   description. Phones and tablets get four progress bars above the list,
+   the active one filling over its autoplay interval (3.6s, or 9s after a
+   pick); paused bars hold still, and reduced motion shows them filled. */
+.report-bg {
+  background-color: #0a0d13;
+  background-image:
+    radial-gradient(900px 520px at 78% 18%, rgba(31, 127, 219, 0.16), rgba(31, 127, 219, 0) 62%),
+    linear-gradient(180deg, #0a0d13 0%, #0f1520 100%);
 }
-.report-tour.m-tour {
-  padding-bottom: 0;
+.rp-item {
+  opacity: 0.45;
+  transition: opacity 0.35s ease;
 }
-.report-tour.m-tour .tour-track {
-  height: calc(var(--rh, 0px) + 100vh + 4 * 35vh);
-  height: calc(var(--rh, 0px) + 100lvh + 4 * 35svh);
+.rp-item:hover {
+  opacity: 0.7;
 }
-.report-tour.m-tour .tour-stage {
-  position: sticky;
-  top: calc(-1 * var(--rh, 0px));
-  height: calc(var(--rh, 0px) + 100vh);
-  height: calc(var(--rh, 0px) + 100lvh);
+.rp-item[aria-selected='true'] {
+  opacity: 1;
+}
+.rp-desc {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.rp-desc > span {
   overflow: hidden;
 }
-.report-tour.m-tour .tour-grid {
-  height: 100%;
-  grid-template-rows: auto minmax(0, 1fr);
-  align-items: start;
-  row-gap: 8px;
+.rp-item[aria-selected='true'] .rp-desc {
+  grid-template-rows: 1fr;
 }
-.report-tour.m-tour .tour-bars {
+.rp-bars {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
-  margin-top: 40px;
+  margin-top: 32px;
 }
-.report-tour.m-tour .tour-bars > span {
+.rp-bars > span {
   position: relative;
   height: 3px;
   overflow: hidden;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.14);
 }
-.report-tour.m-tour .tour-bars > span::after {
+.rp-bars > span::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -1752,70 +1598,35 @@ input[type="date"]::-webkit-date-and-time-value {
   transform: scaleX(0);
   transform-origin: left;
 }
-.report-tour.m-tour .tour-bars > span[data-done]::after {
+.rp-bars > span[data-done]::after {
   transform: scaleX(1);
 }
-.report-tour.m-tour .tour-bars > span[data-active]::after {
-  transform: scaleX(var(--sp, 0));
+.rp-bars > span[data-active]::after {
+  animation: rp-fill 3.6s linear forwards;
 }
-.report-tour.m-tour .tour-list {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-auto-rows: auto;
-  margin-top: 20px;
+.rp-bars > span[data-active][data-long]::after {
+  animation-duration: 9s;
 }
-/* All four stacked in one cell, so the block is as tall as the longest and
-   nothing below moves when the text changes. */
-.report-tour.m-tour .tour-item {
-  grid-area: 1 / 1;
-  padding: 0;
-  opacity: 0;
-  transform: translateY(8px);
-  transition:
-    opacity 0.35s ease,
-    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+.rp-bars.is-paused > span[data-active]::after {
+  animation-play-state: paused;
 }
-.report-tour.m-tour .tour-item[data-active] {
-  opacity: 1;
-  transform: none;
+.rp-bars.is-static > span[data-active]::after {
+  animation: none;
+  transform: scaleX(1);
 }
-.report-tour.m-tour .tour-item .r-tile {
-  display: none;
+@keyframes rp-fill {
+  to { transform: scaleX(1); }
 }
-.report-tour.m-tour .tour-item h3 {
-  font-size: 19px;
-}
-.report-tour.m-tour .tour-desc > p {
-  margin-top: 6px;
-  font-size: 15.5px;
-}
-/* Tablets: the phone at phone size left the lower half of the screen
-   empty. A transform, so the layout (and the stage's clip) is unchanged;
-   the tour's glide already works in the phone's own scaled pixels. */
-@media (min-width: 640px) {
-  .report-tour.m-tour .phone-drop {
-    transform: scale(1.3);
-    transform-origin: top center;
+@media (min-width: 1024px) {
+  .rp-bars {
+    display: none;
   }
 }
-/* Played through (Report): unpinned where it stands, at the bottom of its
-   track, so a swipe back up scrolls straight past. */
-.report-tour.m-tour.tour-done .tour-track {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-.report-tour.m-tour.tour-done .tour-stage {
-  flex: none;
-  position: relative;
-  top: auto;
-}
-.report-tour.m-tour.tour-released .tour-track {
-  height: auto;
-}
-.report-tour.m-tour.tour-released .tour-stage {
-  position: relative;
-  top: auto;
+@media (prefers-reduced-motion: reduce) {
+  .rp-item,
+  .rp-desc {
+    transition: none;
+  }
 }
 
 /* Admin lead finder: the enlarged aerial that opens beside a hovered thumbnail. */

@@ -45,6 +45,11 @@ const GreenPoolPage = lazyRoute(() => import('@/pages/GreenPoolPage').then((m) =
 const StormCleanupPage = lazyRoute(() => import('@/pages/StormCleanupPage').then((m) => m.StormCleanupPage));
 const GreenPoolRecoveryPage = lazyRoute(() => import('@/pages/GreenPoolRecoveryPage').then((m) => m.GreenPoolRecoveryPage));
 const SaltwaterPoolServicePage = lazyRoute(() => import('@/pages/SaltwaterPoolServicePage').then((m) => m.SaltwaterPoolServicePage));
+const WeeklyPoolServicePage = lazyRoute(() => import('@/pages/WeeklyPoolServicePage').then((m) => m.WeeklyPoolServicePage));
+const PoolRepairPage = lazyRoute(() => import('@/pages/PoolRepairPage').then((m) => m.PoolRepairPage));
+const CommercialPoolServicePage = lazyRoute(() => import('@/pages/CommercialPoolServicePage').then((m) => m.CommercialPoolServicePage));
+const HoaPoolServicePage = lazyRoute(() => import('@/pages/HoaPoolServicePage').then((m) => m.HoaPoolServicePage));
+const RecreationTherapyPoolsPage = lazyRoute(() => import('@/pages/RecreationTherapyPoolsPage').then((m) => m.RecreationTherapyPoolsPage));
 const ServicesPage = lazyRoute(() => import('@/pages/ServicesPage').then((m) => m.ServicesPage));
 const HurricanePoolPrepPage = lazyRoute(() => import('@/pages/HurricanePoolPrepPage').then((m) => m.HurricanePoolPrepPage));
 const VariableSpeedPumpsPage = lazyRoute(() => import('@/pages/VariableSpeedPumpsPage').then((m) => m.VariableSpeedPumpsPage));
@@ -145,6 +150,11 @@ export const ROUTE_COMPONENTS: Record<string, PreloadableComponent> = {
   '/services/storm-cleanup': StormCleanupPage,
   '/services/green-pool-recovery': GreenPoolRecoveryPage,
   '/services/saltwater-pool-service': SaltwaterPoolServicePage,
+  '/services/weekly-pool-service': WeeklyPoolServicePage,
+  '/services/pool-repair': PoolRepairPage,
+  '/services/commercial-pool-service': CommercialPoolServicePage,
+  '/services/hoa-pool-service': HoaPoolServicePage,
+  '/services/recreation-therapy-pools': RecreationTherapyPoolsPage,
   '/pool-care/variable-speed-pumps': VariableSpeedPumpsPage,
   '/pool-care/salt-water-vs-chlorine': SaltWaterVsChlorinePage,
   '/pool-care/how-to-drain-a-pool': DrainPoolPage,
@@ -265,6 +275,11 @@ export default function App() {
           <Route path="/services/storm-cleanup" element={<StormCleanupPage />} />
           <Route path="/services/green-pool-recovery" element={<GreenPoolRecoveryPage />} />
           <Route path="/services/saltwater-pool-service" element={<SaltwaterPoolServicePage />} />
+          <Route path="/services/weekly-pool-service" element={<WeeklyPoolServicePage />} />
+          <Route path="/services/pool-repair" element={<PoolRepairPage />} />
+          <Route path="/services/commercial-pool-service" element={<CommercialPoolServicePage />} />
+          <Route path="/services/hoa-pool-service" element={<HoaPoolServicePage />} />
+          <Route path="/services/recreation-therapy-pools" element={<RecreationTherapyPoolsPage />} />
           <Route path="/pool-care/variable-speed-pumps" element={<VariableSpeedPumpsPage />} />
           <Route path="/pool-care/salt-water-vs-chlorine" element={<SaltWaterVsChlorinePage />} />
           <Route path="/pool-care/how-to-drain-a-pool" element={<DrainPoolPage />} />

@@ -6,6 +6,7 @@ import { useQuoteSheet } from '@/components/QuoteSheet';
 import { Container } from '@/components/Container';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { ServiceReport } from '@/components/ServiceReport';
+import { useReportDate } from '@/lib/reportDate';
 
 const formatClock = (d: Date) =>
   d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s?[AP]M/i, '');
@@ -332,6 +333,8 @@ export const HomeHeroPhone = ({
   glare = false,
 }: HomeHeroPhoneProps) => {
   const light = shadow === 'light';
+  // This week's Thursday, at the hero report card's 9:42 AM.
+  const reportDate = useReportDate();
   return (
     <>
             {/* Handwritten label + arrow — animates as if being written/drawn in. */}
@@ -522,7 +525,7 @@ export const HomeHeroPhone = ({
                         <div className="px-3 pt-1.5 pb-2 flex items-start gap-2">
                           <div className="flex-1 min-w-0">
                             <p className="text-[15px] font-normal text-[#202124] leading-[1.25] tracking-tight">
-                              Pool Service Report — Thursday, May 14, 2026
+                              Pool Service Report — {reportDate.long}
                             </p>
                             <div className="flex items-center gap-1 mt-1.5">
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="#f9ab00">
@@ -553,7 +556,7 @@ export const HomeHeroPhone = ({
                             <p className="text-[11px] font-semibold text-[#202124] leading-tight truncate uppercase tracking-wide">
                               SUNCOAST POOL PROS
                             </p>
-                            <p className="text-[10px] text-[#5f6368] leading-tight mt-0.5">May 14</p>
+                            <p className="text-[10px] text-[#5f6368] leading-tight mt-0.5">{reportDate.short}</p>
                             <p className="text-[10px] text-[#5f6368] leading-tight mt-0.5 flex items-center gap-0.5">
                               to me
                               <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
@@ -587,6 +590,7 @@ export const HomeHeroPhone = ({
                         <ServiceReport
                           inline
                           customerAddress={address}
+                          serviceDate={`${reportDate.long} · 9:42 AM`}
                           photo={reportPhoto ?? {
                             base: '/treasure-island-hero',
                             // Points at the SAME re-encoded file the mobile hero

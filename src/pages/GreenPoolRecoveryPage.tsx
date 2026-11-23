@@ -192,7 +192,7 @@ const RECOVERY_SCHEMA = [
   breadcrumbSchema([
     { name: 'Home', path: '/' },
     { name: 'Services', path: '/services/' },
-    { name: 'Green Pool Recovery', path: CANONICAL },
+    { name: 'Green Pool Cleanup', path: CANONICAL },
   ]),
 ];
 
@@ -203,7 +203,7 @@ const GreenPoolRecoveryPageInner = () => {
   usePageMeta({
     // "Green to clean" is the industry-standard term for this job and two
     // Pinellas competitors rank with it in their titles. It was missing here.
-    title: 'Green Pool Cleanup St. Petersburg, FL — Green to Clean',
+    title: 'Green Pool Cleanup in St. Petersburg, FL | Green to Clean',
     description:
       // The no-drain differentiator is front-loaded so it survives mobile's
       // ~110-character cut, where the old copy showed only the city list.
@@ -241,11 +241,11 @@ const GreenPoolRecoveryPageInner = () => {
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5">
             <Sprout className="w-3.5 h-3.5 text-brand-blue-light" />
             <span className="text-gray-300 font-semibold tracking-wide text-xs">
-              Green Pool Recovery
+              Green Pool Cleanup
             </span>
           </div>
           <h1 className="font-display font-bold text-white text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.05] tracking-tight mb-5">
-            Green pool cleanup and recovery in St.&nbsp;Petersburg.
+            Green pool cleanup in St.&nbsp;Petersburg, FL.
           </h1>
           <p className="text-lg text-gray-400 leading-relaxed max-w-xl mx-auto mb-8">
             Send us a photo and we&rsquo;ll tell you which of three states your pool is in, how
