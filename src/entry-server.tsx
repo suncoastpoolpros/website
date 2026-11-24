@@ -33,6 +33,7 @@ import { SnellIslePage } from '@/pages/SnellIslePage';
 import { SeminolePage } from '@/pages/SeminolePage';
 import { LargoPage } from '@/pages/LargoPage';
 import { ClearwaterPage } from '@/pages/ClearwaterPage';
+import { PalmHarborPage } from '@/pages/PalmHarborPage';
 import { CareersPage } from '@/pages/CareersPage';
 import { FaqPage } from '@/pages/FaqPage';
 import { HowItWorksPage } from '@/pages/HowItWorksPage';
@@ -81,6 +82,7 @@ export const PRERENDER_ROUTES = [
   '/seminole-fl',
   '/largo-fl',
   '/clearwater-fl',
+  '/palm-harbor-fl',
   '/careers',
   '/faq',
   '/how-it-works',
@@ -141,6 +143,7 @@ const Routing = () => (
     <Route path="/seminole-fl" element={<SeminolePage />} />
     <Route path="/largo-fl" element={<LargoPage />} />
     <Route path="/clearwater-fl" element={<ClearwaterPage />} />
+    <Route path="/palm-harbor-fl" element={<PalmHarborPage />} />
     <Route path="/careers" element={<CareersPage />} />
     <Route path="/faq" element={<FaqPage />} />
     <Route path="/how-it-works" element={<HowItWorksPage />} />

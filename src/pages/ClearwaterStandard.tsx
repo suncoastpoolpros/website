@@ -12,6 +12,10 @@ import { QuoteButton } from '@/components/landing/sectionKit';
  * on screen, and only while it is on screen. The visitor can take over: hover
  * and wheel (or touch) to scroll it, or click a step to jump to that part of
  * the report. Every step stays at full color; nothing dims with the scroll.
+ *
+ * Shared by the city pages built on Clearwater's design (Clearwater, Palm
+ * Harbor): each passes its own heading, intro and sample-report address. The
+ * six steps are the same everywhere, since the weekly visit is.
  */
 
 type Target = { anchor: Element | null; offset: number; pulse: Element | null };
@@ -366,7 +370,24 @@ const StepList = ({ steps, side, onPick }: { steps: Step[]; side: 'l' | 'r'; onP
   </ul>
 );
 
-export const ClearwaterStandard = () => {
+type StandardProps = {
+  /** The small label above the heading; none when omitted. */
+  eyebrow?: string;
+  title: React.ReactNode;
+  lead: string;
+  /** The sample report's address line. */
+  address: string;
+  /** The heading's id (the section's accessible name). */
+  titleId?: string;
+};
+
+export const ClearwaterStandard = ({
+  eyebrow,
+  title,
+  lead,
+  address,
+  titleId = 'cw-standard-title',
+}: StandardProps) => {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const phoneWrapRef = useRef<HTMLDivElement>(null);
@@ -377,18 +398,14 @@ export const ClearwaterStandard = () => {
   const pick = (step: Step) => controls.current?.jump(step);
 
   return (
-    <section ref={sectionRef} aria-labelledby="cw-standard-title" className="cs-section">
+    <section ref={sectionRef} aria-labelledby={titleId} className="cs-section">
       <div className="cs-container">
         <div className="mx-auto max-w-[40rem] text-center">
-          <p className="cs-eyebrow">The Clearwater standard</p>
-          <h2 id="cw-standard-title" className="cs-h2">
-            &ldquo;Clear&rdquo; isn&rsquo;t a vibe.
-            <br />
-            It&rsquo;s a checklist.
+          {eyebrow && <p className="cs-eyebrow">{eyebrow}</p>}
+          <h2 id={titleId} className="cs-h2">
+            {title}
           </h2>
-          <p className="cs-lead">
-            Six steps every week, beach or mainland. Every one of them lands in your inbox before we leave the driveway.
-          </p>
+          <p className="cs-lead">{lead}</p>
         </div>
 
         <div ref={stageRef} className="cs-stage">
@@ -400,7 +417,7 @@ export const ClearwaterStandard = () => {
               shadow="light"
               glare
               time="10:14"
-              address="Sand Key · Clearwater Beach, FL 33767"
+              address={address}
               scrollRef={bodyRef}
             />
           </div>

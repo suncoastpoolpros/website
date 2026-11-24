@@ -31,6 +31,7 @@ const SnellIslePage = lazyRoute(() => import('@/pages/SnellIslePage').then((m) =
 const SeminolePage = lazyRoute(() => import('@/pages/SeminolePage').then((m) => m.SeminolePage));
 const LargoPage = lazyRoute(() => import('@/pages/LargoPage').then((m) => m.LargoPage));
 const ClearwaterPage = lazyRoute(() => import('@/pages/ClearwaterPage').then((m) => m.ClearwaterPage));
+const PalmHarborPage = lazyRoute(() => import('@/pages/PalmHarborPage').then((m) => m.PalmHarborPage));
 const CareersPage = lazyRoute(() => import('@/pages/CareersPage').then((m) => m.CareersPage));
 const FaqPage = lazyRoute(() => import('@/pages/FaqPage').then((m) => m.FaqPage));
 const HowItWorksPage = lazyRoute(() => import('@/pages/HowItWorksPage').then((m) => m.HowItWorksPage));
@@ -135,6 +136,7 @@ export const ROUTE_COMPONENTS: Record<string, PreloadableComponent> = {
   '/seminole-fl': SeminolePage,
   '/largo-fl': LargoPage,
   '/clearwater-fl': ClearwaterPage,
+  '/palm-harbor-fl': PalmHarborPage,
   '/careers': CareersPage,
   '/faq': FaqPage,
   '/how-it-works': HowItWorksPage,
@@ -268,6 +270,7 @@ export default function App() {
           <Route path="/seminole-fl" element={<SeminolePage />} />
           <Route path="/largo-fl" element={<LargoPage />} />
           <Route path="/clearwater-fl" element={<ClearwaterPage />} />
+          <Route path="/palm-harbor-fl" element={<PalmHarborPage />} />
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/how-it-works" element={<HowItWorksPage />} />

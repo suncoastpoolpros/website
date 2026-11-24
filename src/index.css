@@ -1353,8 +1353,12 @@ input[type="date"]::-webkit-date-and-time-value {
   background: currentColor;
   opacity: 0.5;
 }
-.cs-h2 {
+/* Space under the eyebrow only: a page that drops it (Palm Harbor) starts at
+   the heading. */
+.cs-eyebrow + .cs-h2 {
   margin-top: 16px;
+}
+.cs-h2 {
   font-size: 34px;
   font-weight: 650;
   line-height: 1.05;

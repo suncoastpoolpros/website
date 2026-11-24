@@ -410,10 +410,14 @@ const ServiceArea = () => (
           street. We also serve{' '}
           <Link to="/largo-fl/" className={areaLink}>
             Largo
-          </Link>{' '}
-          and{' '}
+          </Link>
+          ,{' '}
           <Link to="/belleair-beach-fl/" className={areaLink}>
             Belleair Beach
+          </Link>{' '}
+          and{' '}
+          <Link to="/palm-harbor-fl/" className={areaLink}>
+            Palm Harbor
           </Link>
           , and offer{' '}
           <Link to="/seminole-fl/" className={areaLink}>
@@ -786,7 +790,18 @@ const ClearwaterBelowFold = () => (
   <>
     <TrustBand />
     <TwoTowns />
-    <ClearwaterStandard />
+    <ClearwaterStandard
+      eyebrow="The Clearwater standard"
+      title={
+        <>
+          &ldquo;Clear&rdquo; isn&rsquo;t a vibe.
+          <br />
+          It&rsquo;s a checklist.
+        </>
+      }
+      lead="Six steps every week, beach or mainland. Every one of them lands in your inbox before we leave the driveway."
+      address="Sand Key · Clearwater Beach, FL 33767"
+    />
     <GettingStarted />
     <ServiceArea />
     <Faq />

@@ -21,7 +21,7 @@ export const cities: City[] = [
   { slug: 'clearwater',      name: 'Clearwater',      blurb: 'Beach & mainland', to: '/clearwater-fl/' },
   { slug: 'safety-harbor',   name: 'Safety Harbor',   blurb: 'East shore' },
   { slug: 'dunedin',         name: 'Dunedin',         blurb: 'Gulf-side' },
-  { slug: 'palm-harbor',     name: 'Palm Harbor',     blurb: 'Northern Pinellas' },
+  { slug: 'palm-harbor',     name: 'Palm Harbor',     blurb: 'Northern Pinellas', to: '/palm-harbor-fl/' },
   { slug: 'davis-island',    name: 'Davis Islands',    blurb: 'South Tampa island' },
   { slug: 'south-tampa',     name: 'South Tampa',     blurb: 'Hyde Park & Bayshore' },
 ];
