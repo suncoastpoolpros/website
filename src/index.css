@@ -1088,7 +1088,9 @@ input[type="date"]::-webkit-date-and-time-value {
 .rs-dash {
   opacity: 0;
 }
-@media (prefers-reduced-motion: no-preference) {
+/* From 768px up only: on phones the card doesn't animate (VisitReportCard
+   skips the scripts there), so it must never be held hidden. */
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
   .rs-hold {
     animation: rs-hold 4s;
   }

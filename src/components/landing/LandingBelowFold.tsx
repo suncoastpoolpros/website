@@ -74,10 +74,16 @@ const QuoteButton = ({ className = 'h-12 px-6 text-base' }: { className?: string
 // free to wrap. Linked tiles only change their border on hover. From 1024 to
 // 1279 the four columns are narrowest, so a hair less padding and type keep
 // "Saltwater pool maintenance" on one line from ~1100px.
+//
+// Below 768px the tiles are not tappable: no pointer events, out of the tab
+// order. They stay real links in the markup, so the homepage still carries
+// crawlable links to every service page (Google indexes the phone layout).
 const tileClass =
   'flex h-[72px] items-center gap-2.5 rounded-[12px] border border-[rgba(36,58,85,0.1)] bg-white px-4 lg:max-xl:px-[14px] shadow-[0_1px_2px_rgba(16,24,40,0.03)] max-[560px]:h-auto max-[560px]:min-h-[94px] max-[560px]:flex-col max-[560px]:items-start max-[560px]:justify-center max-[560px]:p-4';
 
-const ServicesSection = () => (
+const ServicesSection = () => {
+  const phone = useMediaQuery('(max-width: 767px)');
+  return (
   <section aria-labelledby="services-title" className={`bg-white ${sectionY}`}>
     <Container>
       <div className="mx-auto text-center">
@@ -104,7 +110,8 @@ const ServicesSection = () => (
               {to ? (
                 <Link
                   to={to}
-                  className={`${tileClass} w-full transition-colors hover:border-[#1f7fdb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f7fdb]`}
+                  tabIndex={phone ? -1 : undefined}
+                  className={`${tileClass} w-full transition-colors hover:border-[#1f7fdb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f7fdb] max-md:pointer-events-none`}
                 >
                   {inner}
                 </Link>
@@ -117,7 +124,8 @@ const ServicesSection = () => (
       </ul>
     </Container>
   </section>
-);
+  );
+};
 
 // ── 2. Reviews ──────────────────────────────────────────────────────────────
 
@@ -398,12 +406,13 @@ const Report = () => {
             </>
           )}
         </div>
-        {/* Phones: the phone sits at the left edge (its 300px box carries 15px
-            of side room, hence -ml-4, which lines the frame up with the page
-            gutter) and the scroller takes the space on its right. A sibling
-            of the phone, never inside it: the phone is inert. */}
-        <div className="mx-auto w-full max-w-[440px] max-md:flex max-md:items-center">
-          <div className="max-md:-ml-4 max-md:w-[300px] max-md:shrink-0">
+        {/* Phones: the phone and its scroller are centred as one group. The
+            phone's 300px box carries 15px of empty side room each side; the
+            -15px margin takes the left one out of the centring, so what's
+            centred is what you see (frame, gap, handle). The scroller is a
+            sibling of the phone, never inside it: the phone is inert. */}
+        <div className="mx-auto w-full max-w-[440px] max-md:flex max-md:items-center max-md:justify-center">
+          <div className="max-md:-ml-[15px] max-md:w-[300px] max-md:shrink-0">
             <PhoneReport scrollRef={bodyRef} address="Your address, St. Petersburg, FL" />
           </div>
           <ReportScroller bodyRef={bodyRef} className="md:hidden" />

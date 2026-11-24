@@ -65,6 +65,12 @@ export const VisitReportCard = memo(() => {
     // starts below the fold and only plays when it's scrolled into view.
     const hold = holdRef.current;
     const release = () => hold?.classList.remove('rs-hold', 'rs-wait');
+    // Phones: no animation at all. The card is simply there, finished, like
+    // the rest of the page (the hold classes only hide it from 768px up).
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      release();
+      return;
+    }
     hold?.querySelector('.report-enter')?.addEventListener('rs3:play', release, { once: true });
     runScript(islandScript); // island first: extras needs the .rs-v3 it adds
     runScript(extrasScript);
