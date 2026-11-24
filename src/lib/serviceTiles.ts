@@ -9,7 +9,7 @@ import { Building2, CalendarCheck, CloudLightning, Droplet, RefreshCw, Users, Wa
 export const SERVICE_TILES: { icon: typeof Wrench; name: string; to?: string }[] = [
   { icon: CalendarCheck, name: 'Weekly pool service', to: '/services/weekly-pool-service/' },
   { icon: Droplet, name: 'Saltwater pool maintenance', to: '/services/saltwater-pool-service/' },
-  { icon: RefreshCw, name: 'Green pool cleanup', to: '/services/green-pool-recovery/' },
+  { icon: RefreshCw, name: 'Green pool cleanup', to: '/services/green-pool-cleanup/' },
   { icon: CloudLightning, name: 'Storm cleanup', to: '/services/storm-cleanup/' },
   { icon: Wrench, name: 'Pool repair', to: '/services/pool-repair/' },
   { icon: Building2, name: 'Commercial pool service', to: '/services/commercial-pool-service/' },

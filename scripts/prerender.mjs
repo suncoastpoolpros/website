@@ -331,7 +331,7 @@ async function writeSitemap(entries) {
 async function run() {
   const template = await fs.readFile(TEMPLATE, 'utf8');
   // Bun-style file URL import for the SSR bundle so Node ESM resolves correctly.
-  const { render, PRERENDER_ROUTES } = await import(pathToFileURL(SERVER_ENTRY).href);
+  const { render, PRERENDER_ROUTES, NOT_FOUND_ROUTE } = await import(pathToFileURL(SERVER_ENTRY).href);
 
   // Read the build CSS once so we can inline it into every page's <head>
   // (kills the render-blocking stylesheet request). The href in the template
@@ -375,6 +375,25 @@ async function run() {
       sitemapEntries.push({ loc: meta.canonicalUrl });
     }
     console.log(`✓ ${route} → ${path.relative(ROOT, outFile)} (${html.length} bytes)`);
+  }
+
+  // The 404 page. Cloudflare Pages serves dist/404.html, with a real 404
+  // status, for any path that has no prerendered file and no _redirects rule.
+  // Rendering it from the app (rather than a hand-written public/404.html) gives
+  // it the real site header and footer, and its asset URLs are this build's, so
+  // they can't go stale. On the client it hydrates through the catch-all route,
+  // whose chunk main.tsx preloads first (see preloadCatchAll in App.tsx).
+  // A 404 has no canonical URL, so the template's homepage canonical and og:url
+  // are dropped rather than left pointing home.
+  {
+    const { html: body, meta } = render(NOT_FOUND_ROUTE);
+    let html = injectHead(template, { ...meta, canonicalUrl: undefined });
+    html = html.replace(/\s*<link rel="canonical"[^>]*\/?>/, '');
+    html = injectBody(html, body);
+    if (cssText) html = inlineCss(html, cssHref, cssText);
+    const outFile = path.join(CLIENT_DIST, '404.html');
+    await fs.writeFile(outFile, html);
+    console.log(`✓ 404 → ${path.relative(ROOT, outFile)} (${html.length} bytes)`);
   }
 
   await writeSitemap(sitemapEntries);

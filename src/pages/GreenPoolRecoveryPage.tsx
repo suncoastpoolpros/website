@@ -34,7 +34,7 @@ import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
 import { serviceSchema } from '@/lib/businessSchema';
 import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
-const CANONICAL = '/services/green-pool-recovery/';
+const CANONICAL = '/services/green-pool-cleanup/';
 
 // ── The three tiers ────────────────────────────────────────────────
 // This page's centrepiece and its whole credibility. Competitors advertise

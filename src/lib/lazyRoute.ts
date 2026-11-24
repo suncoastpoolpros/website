@@ -67,8 +67,9 @@ export function lazyRoute(loader: () => Promise<React.ComponentType<never>>): Pr
 
 /**
  * Resolve the chunk for `pathname` before hydrating, so the first render of the
- * prerendered route is synchronous. Unknown paths resolve immediately — they are
- * client-only (404), where there is no prerendered HTML to match anyway.
+ * prerendered route is synchronous. An unknown path is still prerendered HTML:
+ * Cloudflare serves dist/404.html for it (or, for a quote link, the approve
+ * page), so `fallback` resolves whichever chunk the catch-all route will render.
  *
  * Route paths are declared without a trailing slash while canonical URLs carry
  * one, so both forms are normalised to the declared key.
@@ -76,8 +77,9 @@ export function lazyRoute(loader: () => Promise<React.ComponentType<never>>): Pr
 export function preloadRoute(
   routes: Record<string, PreloadableComponent>,
   pathname: string,
+  fallback: () => Promise<unknown> = () => Promise.resolve(),
 ): Promise<unknown> {
   const key = pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
   const match = routes[key] ?? routes[key.toLowerCase()];
-  return match ? match.preload() : Promise.resolve();
+  return match ? match.preload() : fallback();
 }

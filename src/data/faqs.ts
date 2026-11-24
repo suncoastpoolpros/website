@@ -220,7 +220,7 @@ export const faqs: Faq[] = [
     category: 'Service Areas',
     question: 'What areas does Suncoast Pool Pros service?',
     answer:
-      "We cover all of Pinellas County plus West Tampa. That includes St. Petersburg, Gulfport, St. Pete Beach, Treasure Island, Seminole, Largo, Belleair Beach, Clearwater, Safety Harbor, Dunedin, and Palm Harbor, along with the South Tampa and Davis Island area across the bay. Because our routes are concentrated around St. Petersburg and the Gulf-side beach communities, we can keep visits reliable and on-schedule rather than stretching crews thin across the whole metro. If you're anywhere in or near Pinellas County, there's a strong chance we already service your street.",
+      "We cover all of Pinellas County plus West Tampa. That includes St. Petersburg, Gulfport, St. Pete Beach, Treasure Island, Seminole, Largo, Belleair Beach, Clearwater, Safety Harbor, Dunedin, and Palm Harbor, along with the South Tampa and Davis Islands area across the bay. Because our routes are concentrated around St. Petersburg and the Gulf-side beach communities, we can keep visits reliable and on-schedule rather than stretching crews thin across the whole metro. If you're anywhere in or near Pinellas County, there's a strong chance we already service your street.",
   },
   {
     category: 'Service Areas',

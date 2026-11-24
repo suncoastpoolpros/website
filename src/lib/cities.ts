@@ -22,7 +22,7 @@ export const cities: City[] = [
   { slug: 'safety-harbor',   name: 'Safety Harbor',   blurb: 'East shore' },
   { slug: 'dunedin',         name: 'Dunedin',         blurb: 'Gulf-side' },
   { slug: 'palm-harbor',     name: 'Palm Harbor',     blurb: 'Northern Pinellas' },
-  { slug: 'davis-island',    name: 'Davis Island',    blurb: 'South Tampa island' },
+  { slug: 'davis-island',    name: 'Davis Islands',    blurb: 'South Tampa island' },
   { slug: 'south-tampa',     name: 'South Tampa',     blurb: 'Hyde Park & Bayshore' },
 ];
 

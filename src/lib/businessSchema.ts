@@ -28,7 +28,7 @@ const AREAS_SERVED = [
   'Safety Harbor',
   'Dunedin',
   'Palm Harbor',
-  'Davis Island',
+  'Davis Islands',
   'South Tampa',
 ];
 
@@ -56,7 +56,7 @@ export const HOME_AREA_SERVED = [
   { '@type': 'City', name: 'Safety Harbor' },
   { '@type': 'City', name: 'Dunedin' },
   { '@type': 'City', name: 'Palm Harbor' },
-  inCity('Davis Island', 'Tampa'),
+  inCity('Davis Islands', 'Tampa'),
   inCity('South Tampa', 'Tampa'),
   { '@type': 'AdministrativeArea', name: 'Pinellas County' },
 ];

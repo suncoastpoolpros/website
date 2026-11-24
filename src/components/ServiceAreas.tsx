@@ -24,7 +24,7 @@ export const ServiceAreas = () => {
                 carried none of that signal.
                 Deliberately NO Tampa here: this is the page's strongest
                 service-area ranking signal and Tampa proper isn't a market we're
-                pursuing. Tampa coverage is still stated — South Tampa and Davis Island
+                pursuing. Tampa coverage is still stated — South Tampa and Davis Islands
                 remain in the chips below and in schema areaServed — it just isn't
                 targeted. */}
             <h2 className="section-heading text-white leading-[1.1] mb-5">

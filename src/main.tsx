@@ -2,7 +2,7 @@ import {StrictMode} from 'react';
 import {createRoot, hydrateRoot} from 'react-dom/client';
 import {BrowserRouter} from 'react-router-dom';
 import {LazyMotion, MotionConfig, domAnimation} from 'motion/react';
-import App, { ROUTE_COMPONENTS } from './App.tsx';
+import App, { ROUTE_COMPONENTS, preloadCatchAll } from './App.tsx';
 import { preloadRoute } from './lib/lazyRoute';
 import './index.css';
 
@@ -23,8 +23,8 @@ const tree = (
 );
 
 // If the route was prerendered, #root already contains rendered markup —
-// hydrate in place to preserve it (instant LCP). Otherwise fall back to a
-// fresh client render so SPA-only routes (404, etc.) still work.
+// hydrate in place to preserve it (instant LCP). Unknown paths are prerendered
+// too (dist/404.html). An empty #root falls back to a fresh client render.
 //
 // Hydration WAITS for the initial route's chunk. Routes are code-split, and a
 // split component that isn't loaded yet renders Suspense's null fallback — which
@@ -38,7 +38,7 @@ const tree = (
 // instead of a blank page.
 const rootEl = document.getElementById('root')!;
 if (rootEl.firstChild) {
-  preloadRoute(ROUTE_COMPONENTS, window.location.pathname).then(() => {
+  preloadRoute(ROUTE_COMPONENTS, window.location.pathname, preloadCatchAll).then(() => {
     hydrateRoot(rootEl, tree);
   });
 } else {

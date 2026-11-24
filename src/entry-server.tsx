@@ -66,6 +66,7 @@ import { PrivacyPolicyPage } from '@/pages/PrivacyPolicyPage';
 import { PoolLandingPage } from '@/pages/PoolLandingPage';
 import { AdminPage } from '@/pages/AdminPage';
 import { ApprovePage } from '@/pages/ApprovePage';
+import { NotFoundPage } from '@/pages/NotFoundPage';
 
 // Routes to prerender. Marketing pages benefit most from static HTML for SEO
 // and instant first paint; the calculator and signup are heavily interactive
@@ -96,7 +97,7 @@ export const PRERENDER_ROUTES = [
   '/pool-care/how-to-drain-a-pool',
   '/services',
   '/services/storm-cleanup',
-  '/services/green-pool-recovery',
+  '/services/green-pool-cleanup',
   '/services/saltwater-pool-service',
   '/services/weekly-pool-service',
   '/services/pool-repair',
@@ -125,6 +126,11 @@ export const PRERENDER_ROUTES = [
   '/approve',
 ];
 
+// Rendered by scripts/prerender.mjs into dist/404.html (NOT into a route folder,
+// and not into the sitemap). Any path that matches no route above falls to the
+// catch-all below, so this just has to be one that never will.
+export const NOT_FOUND_ROUTE = '/__not-found__';
+
 const Routing = () => (
   <Routes>
     <Route path="/" element={<PoolLandingPage />} />
@@ -148,7 +154,7 @@ const Routing = () => (
     <Route path="/pool-care/hurricane-pool-prep" element={<HurricanePoolPrepPage />} />
     <Route path="/services" element={<ServicesPage />} />
     <Route path="/services/storm-cleanup" element={<StormCleanupPage />} />
-    <Route path="/services/green-pool-recovery" element={<GreenPoolRecoveryPage />} />
+    <Route path="/services/green-pool-cleanup" element={<GreenPoolRecoveryPage />} />
     <Route path="/services/saltwater-pool-service" element={<SaltwaterPoolServicePage />} />
     <Route path="/services/weekly-pool-service" element={<WeeklyPoolServicePage />} />
     <Route path="/services/pool-repair" element={<PoolRepairPage />} />
@@ -167,6 +173,7 @@ const Routing = () => (
     <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
     <Route path="/admin" element={<AdminPage />} />
     <Route path="/approve" element={<ApprovePage />} />
+    <Route path="*" element={<NotFoundPage />} />
   </Routes>
 );
 

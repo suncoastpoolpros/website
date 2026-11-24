@@ -174,7 +174,7 @@ export const LandingHeader = ({
                   site header's phone lockup, in navy), a little larger from
                   md up. The two lines' sizes and tracking scale together, so
                   "POOL PROS" stays the width of "SUNCOAST". */}
-              <img src="/icon-mark.svg" alt="" aria-hidden="true" width={37} height={24} className="h-7 w-auto md:h-[30px]" />
+              <img src="/icon-mark.svg" alt="Suncoast Pool Pros" width={37} height={24} className="h-7 w-auto md:h-[30px]" />
               <span className={`flex flex-col font-brand font-bold uppercase ${INK}`}>
                 <span className="text-[15px] leading-none tracking-[0.02em] md:text-[16px]">Suncoast</span>
                 <span className="mt-[3px] text-[9px] leading-none tracking-[0.405em] md:mt-[3.25px] md:text-[9.6px]">

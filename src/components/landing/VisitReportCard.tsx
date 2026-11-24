@@ -123,7 +123,9 @@ export const VisitReportCard = memo(() => {
               <div className="rs-added mt-[7px] flex items-center justify-between gap-2 text-[11.5px] leading-tight">
                 <p className="min-w-0 truncate font-medium">
                   <span className="text-[rgba(36,58,85,0.52)]">Added</span>{' '}
-                  <span className="text-[#1c2f47]">½ scoop sodium bicarbonate</span>
+                  <span className="text-[#1c2f47]">
+                    <span className="diagonal-fractions">1/2</span> scoop sodium bicarbonate
+                  </span>
                 </p>
                 <span className="shrink-0 rounded-full bg-[rgba(42,120,184,0.1)] px-[7px] py-px text-[10.5px] font-semibold text-[#2a78b8]">
                   Included

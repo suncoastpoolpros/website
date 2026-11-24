@@ -175,8 +175,7 @@ export const Navbar = () => {
                 NAV_FONTS preloads on every page. */}
             <img
               src="/icon-mark.svg"
-              alt=""
-              aria-hidden="true"
+              alt="Suncoast Pool Pros"
               width={37}
               height={24}
               className="h-7 w-auto md:hidden"

@@ -112,7 +112,7 @@ const Hero = () => (
         </h1>
 
         <p className="mt-4 text-pretty text-[17px] leading-[1.6] text-[rgba(36,58,85,0.78)] lg:mt-5 lg:max-w-[27rem] lg:text-[18px]">
-          Weekly pool cleaning and maintenance in St.{' '}Petersburg, FL, with every chemical included, GPS-verified
+          Weekly pool cleaning and maintenance in St.{' '}Petersburg, FL, with every standard chemical included, GPS-verified
           visits, and no contracts.
         </p>
 

@@ -15,6 +15,7 @@ import {
 import { SmartLink as Link } from '@/components/SmartLink';
 import { useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
 import { PhoneReport } from '@/components/landing/PhoneReport';
+import { ReportScroller } from '@/components/landing/ReportScroller';
 import { cities } from '@/lib/cities';
 import {
   HOURS_SHORT,
@@ -146,7 +147,7 @@ const Reviews = () => (
       <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 id="reviews-title" className={`${h2} text-sc-navy`}>
-            Neighbors who stopped worrying about their pool.
+            What St. Petersburg pool owners say about us.
           </h2>
           <p className={sub}>What our customers say on Google, where we’re rated 5.0.</p>
         </div>
@@ -240,11 +241,17 @@ const useMediaQuery = (query: string) => {
 };
 
 // The phone scrolls (inside its own screen) to the active point's part of the
-// report, centred as far as the email allows. Instant with reduced motion.
-const usePhoneScroll = (bodyRef: React.RefObject<HTMLDivElement | null>, step: number, instant: boolean) => {
+// report, centred as far as the email allows. Instant with reduced motion. Off
+// on phones, where the visitor scrolls it with ReportScroller.
+const usePhoneScroll = (
+  bodyRef: React.RefObject<HTMLDivElement | null>,
+  step: number,
+  instant: boolean,
+  enabled: boolean,
+) => {
   useEffect(() => {
     const body = bodyRef.current;
-    if (!body) return;
+    if (!body || !enabled) return;
     const els = REPORT_TARGETS[step](body).filter((el): el is Element => !!el);
     if (!els.length) return;
     // The phone may be scaled; work in the email's own CSS pixels.
@@ -260,14 +267,20 @@ const usePhoneScroll = (bodyRef: React.RefObject<HTMLDivElement | null>, step: n
       return;
     }
     return glideScroll(body, target, REPORT_GLIDE_MS);
-  }, [bodyRef, step, instant]);
+  }, [bodyRef, step, instant, enabled]);
 };
 
-// The four points are tabs: click, Enter or Space picks one, and the phone
-// scrolls to it. While at least 35% of the section is on screen they advance
-// on their own every 3.6s, looping; hovering the list or focusing a tab holds
-// them, and a pick holds them for 9s. No autoplay with reduced motion. The
-// section scrolls past like any other: nothing pins.
+// From 768px up, the four points are tabs: click, Enter or Space picks one, and
+// the phone scrolls to it. While at least 35% of the section is on screen they
+// advance on their own every 3.6s, looping; hovering the list or focusing a tab
+// holds them, and a pick holds them for 9s. No autoplay with reduced motion.
+// The section scrolls past like any other: nothing pins.
+//
+// Below 768px it's a plain list, every description showing, and the phone
+// stays put until the visitor drags the scroller beside it (ReportScroller).
+// The prerendered HTML is the tab version (no window at build time), so the
+// max-width:767px rules on .rp-* in index.css make it LOOK like the list until
+// hydration swaps the markup.
 const Report = () => {
   const [step, setStep] = useState(0);
   const [inView, setInView] = useState(false);
@@ -276,10 +289,11 @@ const Report = () => {
   // Bumped on every manual pick, so the hold restarts.
   const [pick, setPick] = useState(0);
   const reduced = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const phone = useMediaQuery('(max-width: 767px)');
   const sectionRef = useRef<HTMLElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
 
-  usePhoneScroll(bodyRef, step, reduced);
+  usePhoneScroll(bodyRef, step, reduced, !phone);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -289,7 +303,7 @@ const Report = () => {
     return () => io.disconnect();
   }, []);
 
-  const running = inView && !hovered && !focused && !reduced;
+  const running = inView && !hovered && !focused && !reduced && !phone;
   const holding = pick > 0;
   useEffect(() => {
     if (!running) return;
@@ -316,58 +330,83 @@ const Report = () => {
             Most pool services don’t send a report. Yours arrives before we leave the driveway, and anything that needs
             your attention, like low water or an equipment issue, is flagged right there.
           </p>
-          {/* Phones and tablets: one bar per point, the active one filling
-              over its interval (paused while autoplay is held). */}
-          <div
-            aria-hidden="true"
-            className={`rp-bars${running ? '' : ' is-paused'}${reduced ? ' is-static' : ''}`}
-          >
-            {REPORT_POINTS.map(({ title }, i) => (
-              <span
-                key={`${title}-${i === step ? `${step}-${pick}` : 'x'}`}
-                data-done={i < step ? '' : undefined}
-                data-active={i === step ? '' : undefined}
-                data-long={i === step && holding ? '' : undefined}
-              />
-            ))}
-          </div>
-          <div
-            role="tablist"
-            aria-label="What's in your report"
-            className="mt-7 grid lg:mt-9"
-            onPointerEnter={() => setHovered(true)}
-            onPointerLeave={() => setHovered(false)}
-            onFocus={() => setFocused(true)}
-            onBlur={(e) => {
-              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
-            }}
-          >
-            {REPORT_POINTS.map(({ icon: Icon, title, body }, i) => (
-              <button
-                key={title}
-                type="button"
-                role="tab"
-                aria-selected={i === step}
-                onClick={() => choose(i)}
-                className="rp-item flex gap-4 rounded-[12px] py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-              >
-                <span className="r-tile grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-white/[0.06] text-[#53a5d3]">
-                  <Icon className="h-5 w-5" strokeWidth={2} />
-                </span>
-                <span className="min-w-0 pt-2">
-                  <span className="block text-[16.5px] font-semibold tracking-[-0.02em] text-white">{title}</span>
-                  <span className="rp-desc">
-                    <span className="block">
-                      <span className="block pt-1 text-[14.5px] leading-[1.6] text-white/[0.62]">{body}</span>
-                    </span>
+          {phone ? (
+            <ul className="mt-7 grid">
+              {REPORT_POINTS.map(({ icon: Icon, title, body }) => (
+                <li key={title} className="flex gap-4 py-3">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-white/[0.06] text-[#53a5d3]">
+                    <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={2} />
                   </span>
-                </span>
-              </button>
-            ))}
-          </div>
+                  <span className="min-w-0 pt-2">
+                    <span className="block text-[16.5px] font-semibold tracking-[-0.02em] text-white">{title}</span>
+                    <span className="block pt-1 text-[14.5px] leading-[1.6] text-white/[0.62]">{body}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <>
+              {/* Tablets (768–1023px): one bar per point, the active one
+                  filling over its interval (paused while autoplay is held). */}
+              <div
+                aria-hidden="true"
+                className={`rp-bars${running ? '' : ' is-paused'}${reduced ? ' is-static' : ''}`}
+              >
+                {REPORT_POINTS.map(({ title }, i) => (
+                  <span
+                    key={`${title}-${i === step ? `${step}-${pick}` : 'x'}`}
+                    data-done={i < step ? '' : undefined}
+                    data-active={i === step ? '' : undefined}
+                    data-long={i === step && holding ? '' : undefined}
+                  />
+                ))}
+              </div>
+              <div
+                role="tablist"
+                aria-label="What's in your report"
+                className="mt-7 grid lg:mt-9"
+                onPointerEnter={() => setHovered(true)}
+                onPointerLeave={() => setHovered(false)}
+                onFocus={() => setFocused(true)}
+                onBlur={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
+                }}
+              >
+                {REPORT_POINTS.map(({ icon: Icon, title, body }, i) => (
+                  <button
+                    key={title}
+                    type="button"
+                    role="tab"
+                    aria-selected={i === step}
+                    onClick={() => choose(i)}
+                    className="rp-item flex gap-4 rounded-[12px] py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                  >
+                    <span className="r-tile grid h-10 w-10 shrink-0 place-items-center rounded-[11px] bg-white/[0.06] text-[#53a5d3]">
+                      <Icon className="h-5 w-5" strokeWidth={2} />
+                    </span>
+                    <span className="min-w-0 pt-2">
+                      <span className="block text-[16.5px] font-semibold tracking-[-0.02em] text-white">{title}</span>
+                      <span className="rp-desc">
+                        <span className="block">
+                          <span className="block pt-1 text-[14.5px] leading-[1.6] text-white/[0.62]">{body}</span>
+                        </span>
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
-        <div className="mx-auto w-full max-w-[440px]">
-          <PhoneReport scrollRef={bodyRef} address="Your address, St. Petersburg, FL" />
+        {/* Phones: the phone sits at the left edge (its 300px box carries 15px
+            of side room, hence -ml-4, which lines the frame up with the page
+            gutter) and the scroller takes the space on its right. A sibling
+            of the phone, never inside it: the phone is inert. */}
+        <div className="mx-auto w-full max-w-[440px] max-md:flex max-md:items-center">
+          <div className="max-md:-ml-4 max-md:w-[300px] max-md:shrink-0">
+            <PhoneReport scrollRef={bodyRef} address="Your address, St. Petersburg, FL" />
+          </div>
+          <ReportScroller bodyRef={bodyRef} className="md:hidden" />
         </div>
       </Container>
     </section>
@@ -378,11 +417,11 @@ const Report = () => {
 
 const STEPS = [
   {
-    title: 'Send us your address',
+    title: 'Tell us about your pool',
     body: 'Tap “Get my free quote”, or text two photos: one of the pool, one of the equipment. Same-day reply, Monday to Saturday.',
   },
   {
-    title: 'Get your flat monthly price',
+    title: 'Get your flat monthly rate',
     body: 'A clear number, often without a site visit. No pressure and no obligation.',
   },
   {
@@ -397,7 +436,7 @@ const HowItWorks = () => (
     <Container className="grid gap-12 lg:grid-cols-[5fr_7fr] lg:gap-24">
       <div className="lg:self-center">
         <h2 id="how-title" className={`${h2} text-sc-navy`}>
-          Getting started takes five minutes, tops.
+          Getting started takes about a minute.
         </h2>
         <p className={`${sub} max-w-[420px]`}>
           Three simple steps. No contract to sign, and no need to be home for any of them.
@@ -520,7 +559,7 @@ const Areas = () => {
           Pool service across Pinellas County.
         </h2>
         <p className={sub}>
-          All of Pinellas, from St. Pete Beach to Palm Harbor, plus South Tampa and Davis Island. Our routes are
+          All of Pinellas, from St. Pete Beach to Palm Harbor, plus South Tampa and Davis Islands. Our routes are
           concentrated here, which is how visits stay on schedule.
         </p>
         <p className="mt-6 text-[15px] text-sc-navy/70">
@@ -600,7 +639,7 @@ export const LANDING_FAQS: FaqItem[] = [
   {
     q: 'My pool is green right now. Can you still help?',
     a: "Yes. Green pool recovery is quoted first, since the chemicals and labor vary so much from pool to pool, and starts once you approve it. When it's clear, you move onto weekly service so it stays that way.",
-    link: { text: 'Green pool recovery is quoted first', to: '/services/green-pool-recovery/' },
+    link: { text: 'Green pool recovery is quoted first', to: '/services/green-pool-cleanup/' },
   },
   {
     q: 'How soon can you start?',
@@ -627,7 +666,7 @@ const Faq = () => (
     <Container className="grid gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
       <div>
         <h2 id="faq-title" className={`${h2} text-sc-navy`}>
-          Straight answers.
+          Pool service questions, answered.
         </h2>
         <p className={sub}>
           Something else on your mind? Call{' '}

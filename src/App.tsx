@@ -148,7 +148,7 @@ export const ROUTE_COMPONENTS: Record<string, PreloadableComponent> = {
   '/pool-care/hurricane-pool-prep': HurricanePoolPrepPage,
   '/services': ServicesPage,
   '/services/storm-cleanup': StormCleanupPage,
-  '/services/green-pool-recovery': GreenPoolRecoveryPage,
+  '/services/green-pool-cleanup': GreenPoolRecoveryPage,
   '/services/saltwater-pool-service': SaltwaterPoolServicePage,
   '/services/weekly-pool-service': WeeklyPoolServicePage,
   '/services/pool-repair': PoolRepairPage,
@@ -188,6 +188,14 @@ const QuoteLinkOrNotFound = () => {
   const { pathname, search } = useLocation();
   return parseQuoteLink(pathname, search) ? <ApprovePage /> : <NotFoundPage />;
 };
+
+/** Preload the chunk the catch-all above will render for an unmatched path, so
+ *  a cold visit to dist/404.html (or a rewritten quote link) hydrates without a
+ *  Suspense fallback mismatch. Used by src/main.tsx. */
+export const preloadCatchAll = () =>
+  parseQuoteLink(window.location.pathname, window.location.search)
+    ? ApprovePage.preload()
+    : NotFoundPage.preload();
 
 export default function App() {
   const isMobile = useIsMobile();
@@ -273,7 +281,7 @@ export default function App() {
           <Route path="/pool-care/hurricane-pool-prep" element={<HurricanePoolPrepPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/services/storm-cleanup" element={<StormCleanupPage />} />
-          <Route path="/services/green-pool-recovery" element={<GreenPoolRecoveryPage />} />
+          <Route path="/services/green-pool-cleanup" element={<GreenPoolRecoveryPage />} />
           <Route path="/services/saltwater-pool-service" element={<SaltwaterPoolServicePage />} />
           <Route path="/services/weekly-pool-service" element={<WeeklyPoolServicePage />} />
           <Route path="/services/pool-repair" element={<PoolRepairPage />} />

@@ -238,7 +238,7 @@ const SaltwaterPoolServicePageInner = () => {
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
   usePageMeta({
-    title: 'Saltwater Pool Service St. Petersburg, FL — Salt Cell Care',
+    title: 'Saltwater Pool Maintenance in St. Petersburg, FL | Suncoast Pool Pros',
     description:
       'Weekly saltwater pool service in St. Petersburg & Pinellas. Salt cell cleaning and salt included, generator checked every visit, algae kept out. One flat rate.',
     canonicalPath: CANONICAL,
@@ -271,7 +271,7 @@ const SaltwaterPoolServicePageInner = () => {
             </span>
           </div>
           <h1 className="font-display font-bold text-white text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.05] tracking-tight mb-5">
-            Saltwater pool service in St.&nbsp;Petersburg, FL.
+            Saltwater pool maintenance in St.&nbsp;Petersburg, FL.
           </h1>
           <p className="text-lg text-gray-400 leading-relaxed max-w-xl mx-auto mb-8">
             Weekly service built around the salt system — the cell cleaned when it needs it, the
@@ -458,7 +458,7 @@ const SaltwaterPoolServicePageInner = () => {
                 service — honest timelines and a flat quote from photos.
               </p>
               <SmartLink
-                to="/services/green-pool-recovery/"
+                to="/services/green-pool-cleanup/"
                 className="group inline-flex items-center gap-2 shrink-0 text-brand-blue-light font-semibold text-[15px] hover:text-white transition-colors"
               >
                 Green pool recovery

@@ -49,7 +49,7 @@ export const services: Service[] = [
   },
   {
     slug: 'green',
-    to: '/services/green-pool-recovery/',
+    to: '/services/green-pool-cleanup/',
     label: 'Green Pool Cleanup',
     title: 'Green pool cleanup',
     blurb:

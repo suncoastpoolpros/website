@@ -1622,6 +1622,21 @@ input[type="date"]::-webkit-date-and-time-value {
     display: none;
   }
 }
+/* Phones: the Report section is a plain list with every description showing
+   (LandingBelowFold renders it once it knows the width). These make the
+   prerendered tab markup look the same before hydration. */
+@media (max-width: 767px) {
+  .rp-bars {
+    display: none;
+  }
+  .rp-item,
+  .rp-item:hover {
+    opacity: 1;
+  }
+  .rp-desc {
+    grid-template-rows: 1fr;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .rp-item,
   .rp-desc {

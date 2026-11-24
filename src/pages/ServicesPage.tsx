@@ -77,7 +77,7 @@ const SERVICES_FAQ: Array<{ question: string; answer: string }> = [
   {
     question: 'What areas do you cover?',
     answer:
-      "St. Petersburg and across Pinellas County — Clearwater, Largo, Seminole, Dunedin, Palm Harbor, Safety Harbor, the beaches from Belleair down through Treasure Island and St. Pete Beach — plus South Tampa and Davis Island. If you are near any of those, we are almost certainly already on your street.",
+      "St. Petersburg and across Pinellas County — Clearwater, Largo, Seminole, Dunedin, Palm Harbor, Safety Harbor, the beaches from Belleair down through Treasure Island and St. Pete Beach — plus South Tampa and Davis Islands. If you are near any of those, we are almost certainly already on your street.",
   },
   {
     question: 'How do I know the visit actually happened?',

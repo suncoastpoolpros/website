@@ -518,7 +518,7 @@ const GreenPoolPageInner = () => {
                 We clear green pools across St. Petersburg and the Tampa Bay area &mdash; and keep them
                 blue with weekly service for one flat rate. See{' '}
                 <Link
-                  to="/services/green-pool-recovery/"
+                  to="/services/green-pool-cleanup/"
                   className="text-brand-orange hover:text-brand-orange-dark font-semibold"
                 >
                   how green pool recovery works

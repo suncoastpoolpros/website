@@ -44,6 +44,12 @@
 /landing   /  301
 /landing/  /  301
 
+# The green-pool service page was renamed "Green Pool Cleanup" and moved to a
+# matching URL on 2026-11-23. Its old URL is no longer prerendered, so this rule
+# is the only thing answering it.
+/services/green-pool-recovery   /services/green-pool-cleanup/  301
+/services/green-pool-recovery/  /services/green-pool-cleanup/  301
+
 # NOTE: /admin needs no rule here. It's prerendered like every other route (see
 # PRERENDER_ROUTES), so Pages serves dist/admin/index.html directly. Rewriting it
 # to /index.html does NOT work — Pages canonicalises /index.html to / and turns

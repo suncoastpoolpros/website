@@ -784,7 +784,7 @@ const StormCleanupPageInner = () => {
               <p className="text-[13px] text-gray-500 max-w-2xl mx-auto leading-relaxed">
                 Storm damage often turns into a{' '}
                 <SmartLink
-                  to="/services/green-pool-recovery/"
+                  to="/services/green-pool-cleanup/"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   green pool a few days later

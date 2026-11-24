@@ -60,7 +60,7 @@ const CONFIG: ServiceLandingConfig = {
     sub: 'No contract to sign, and you don’t need to be home.',
     items: [
       { title: 'Tell us about your pool', body: 'Answer a few quick questions or text us two photos: the pool and the equipment pad.' },
-      { title: 'Get your flat monthly price', body: 'A clear number, usually the same day, Monday to Saturday. No obligation.' },
+      { title: 'Get your flat monthly rate', body: 'A clear number, usually the same day, Monday to Saturday. No obligation.' },
       { title: 'We take it from here', body: 'You get a set weekly day, and we usually start within days. Tell your old company you’re done; we handle the rest.' },
     ],
   },
