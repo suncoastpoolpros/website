@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   AlertCircle,
   ArrowRight,
@@ -24,7 +24,6 @@ import { useQuoteFormSubmit } from '@/components/ServiceQuoteForm';
 import { ClearwaterStandard } from '@/pages/ClearwaterStandard';
 import {
   Container,
-  Eyebrow,
   PhoneButton,
   QuoteButton,
   buttonClass,
@@ -36,14 +35,20 @@ import {
 import { clearwaterFaqs } from '@/pages/clearwaterFaqs';
 import { HOURS_SHORT, PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { REVIEWS } from '@/lib/reviews';
+import { reviewCard } from '@/components/landing/ReviewCard';
+import { GuaranteeCards } from '@/components/landing/GuaranteeCards';
 
 /*
  * Everything below the Clearwater hero, on the homepage design system: the
  * shared section pieces (sectionKit), the sc-* tokens, and the homepage's
- * gold/navy buttons. Light and dark sections alternate: trust band, Two Towns
- * (white), Standard (white into mist), Getting started (dark), Service area (mist), FAQ
- * (white), Quote (dark), Guides (white). Every "Get my price" below the hero
- * opens the quote popup (QuotePopup); the hero keeps its address search.
+ * gold/navy buttons. In order: proof card, the weekly checklist
+ * (ClearwaterStandard), beach and mainland with the dark banner, reviews,
+ * services, getting started, coverage, FAQ, promises, quote, guides. No
+ * section eyebrows: the hero's label (the h1) is the page's only one.
+ *
+ * Phones get a sticky Call / Get my price bar (ClearwaterPage), so the
+ * buttons it duplicates (checklist, dark banner, getting started) are hidden
+ * below 768px. Every other "Get my price" opens the quote popup.
  *
  * Copy follows the Service Agreement, the FAQ and the homepage guarantees.
  * Techs alternate, so nothing here promises one permanent person: the fixed
@@ -66,7 +71,7 @@ const TRUST_POINTS = [
 const TrustBand = () => (
   <section aria-label="Why Clearwater pool owners switch to us" className="bg-white pb-2 pt-14">
     <Container>
-      <div className="grid items-center gap-8 rounded-[20px] bg-sc-mist px-6 py-7 shadow-[0_0_0_1px_rgba(36,58,85,0.06)] sm:px-9 sm:py-8 min-[960px]:grid-cols-[1.25fr_1fr_auto] min-[960px]:gap-10">
+      <div className="grid gap-8 rounded-[20px] bg-sc-mist px-6 py-7 shadow-[0_0_0_1px_rgba(36,58,85,0.06)] sm:px-9 sm:py-8 md:grid-cols-[1.2fr_1fr] md:items-center md:gap-10">
         <figure className="flex items-start gap-4">
           <span
             aria-hidden="true"
@@ -91,7 +96,7 @@ const TrustBand = () => (
           </div>
         </figure>
 
-        <ul className="grid gap-3.5 border-t border-sc-navy/10 pt-5 min-[960px]:border-l min-[960px]:border-t-0 min-[960px]:pl-10 min-[960px]:pt-0">
+        <ul className="grid gap-3.5 border-t border-sc-navy/10 pt-5 md:border-l md:border-t-0 md:pl-10 md:pt-0">
           {TRUST_POINTS.map(({ icon: Icon, title, line }) => (
             <li key={title} className="flex items-start gap-3">
               <span
@@ -107,11 +112,6 @@ const TrustBand = () => (
             </li>
           ))}
         </ul>
-
-        <div className="flex flex-col items-center gap-2">
-          <QuoteButton variant="navy" className="h-[46px] w-full min-[960px]:w-auto" />
-          <p className={`text-[12.5px] ${muted}`}>Free quote · same-day reply</p>
-        </div>
       </div>
     </Container>
   </section>
@@ -121,9 +121,11 @@ const TrustBand = () => (
 
 type TownPoint = { icon: typeof Sun; title: string; body: string };
 
-const TOWN_ROWS: { label: string; beach: TownPoint; mainland: TownPoint }[] = [
+// `phoneHidden`: left out below 768px, so phones get four tiles.
+const TOWN_ROWS: { label: string; beach: TownPoint; mainland: TownPoint; phoneHidden?: boolean }[] = [
   {
     label: 'Sun & leaves',
+    phoneHidden: true,
     beach: {
       icon: Sun,
       title: 'Built for full Gulf sun',
@@ -137,6 +139,7 @@ const TOWN_ROWS: { label: string; beach: TownPoint; mainland: TownPoint }[] = [
   },
   {
     label: 'Systems & cages',
+    phoneHidden: true,
     beach: {
       icon: Droplet,
       title: 'Salt systems, watched weekly',
@@ -205,7 +208,6 @@ const TwoTowns = () => (
   >
     <Container>
       <div className="mx-auto max-w-[44rem] text-center">
-        <Eyebrow centered>Two towns, one name</Eyebrow>
         <h2 id="cw-towns-title" className={`${h2} text-sc-navy`}>
           A beach pool and a mainland pool aren&rsquo;t the same job.
         </h2>
@@ -237,12 +239,16 @@ const TwoTowns = () => (
             Intracoastal
           </span>
 
+          {/* Phones: one tile per line. 768–859px: each pair side by side
+              under its label. 860px up: the two sides either side of the line. */}
           {TOWN_ROWS.map((row) => (
             <div
               key={row.label}
-              className="border-t border-sc-navy/[0.08] py-[26px] min-[860px]:grid min-[860px]:grid-cols-[1fr_150px_1fr] min-[860px]:items-center"
+              className={`border-t border-sc-navy/[0.08] py-[26px] md:grid md:grid-cols-2 md:items-start md:gap-x-10 min-[860px]:grid-cols-[1fr_150px_1fr] min-[860px]:items-center min-[860px]:gap-x-0 ${
+                row.phoneHidden ? 'max-md:hidden' : ''
+              }`}
             >
-              <p className="mb-4 text-[11.5px] font-semibold uppercase tracking-[0.16em] text-sc-blue min-[860px]:hidden">
+              <p className="mb-4 text-[11.5px] font-semibold uppercase tracking-[0.16em] text-sc-blue md:col-span-2 min-[860px]:hidden">
                 {row.label}
               </p>
               <TownItem beach point={row.beach} />
@@ -250,7 +256,7 @@ const TwoTowns = () => (
                 aria-hidden="true"
                 className="relative mx-auto hidden h-3 w-3 rounded-full bg-white ring-[3px] ring-sc-blue min-[860px]:block"
               />
-              <div className="mt-5 min-[860px]:mt-0">
+              <div className="mt-5 md:mt-0">
                 <TownItem point={row.mainland} />
               </div>
             </div>
@@ -266,21 +272,113 @@ const TwoTowns = () => (
           clear
         </span>
         <div className="relative">
-          <Eyebrow gold>The Clearwater standard</Eyebrow>
-          <h3 className="mt-3 text-[24px] font-[650] leading-[1.15] tracking-[-0.03em] text-white sm:text-[28px]">
+          <h3 className="text-[24px] font-[650] leading-[1.15] tracking-[-0.03em] text-white sm:text-[28px]">
             Two very different pools. One clear-water standard.
           </h3>
           <p className="mt-2.5 text-[16px] text-white/75">The town is named for clear water. We just keep the promise.</p>
         </div>
-        <QuoteButton className="relative justify-self-start min-[860px]:justify-self-end" />
+        {/* Phones: the sticky bar covers this. */}
+        <QuoteButton className="relative justify-self-start max-md:hidden min-[860px]:justify-self-end" />
       </div>
     </Container>
   </section>
 );
 
-// ── C. The Clearwater standard: ClearwaterStandard.tsx
+// ── C. Reviews ────────────────────────────────────────────────────────────
 
-// ── D. Getting started ────────────────────────────────────────────────────
+// The homepage's Google reviews, as written there (ReviewCard).
+const PAGE_REVIEWS = ['Michelle M.', 'Jack K.'].flatMap((name) => REVIEWS.filter((r) => r.name === name));
+
+const Reviews = () => (
+  <section aria-labelledby="cw-reviews-title" className={`bg-sc-mist ${sectionY}`}>
+    <Container>
+      <div className="mx-auto max-w-[44rem] text-center">
+        <h2 id="cw-reviews-title" className={`${h2} text-sc-navy`}>
+          Neighbors who stopped worrying about their pool.
+        </h2>
+        <p className={`${lead} mx-auto max-w-[36rem]`}>
+          What our customers say on Google, where we&rsquo;re rated 5.0.
+        </p>
+      </div>
+      <ul className="mx-auto mt-10 grid max-w-[60rem] gap-3 md:grid-cols-2 lg:mt-12">
+        {PAGE_REVIEWS.map(reviewCard)}
+      </ul>
+    </Container>
+  </section>
+);
+
+// ── D. Services ───────────────────────────────────────────────────────────
+
+const SERVICES = [
+  {
+    title: 'Weekly pool service',
+    line: 'Cleaning, testing and every standard chemical, on a set day.',
+    to: '/services/weekly-pool-service/',
+  },
+  {
+    title: 'Saltwater pool maintenance',
+    line: 'Salt cell checks and chemistry tuned for beach and island pools.',
+    to: '/services/saltwater-pool-service/',
+  },
+  {
+    title: 'Pool repair',
+    line: 'Pumps, filters and heaters on older pools, quoted before any work.',
+    to: '/services/pool-repair/',
+  },
+  {
+    title: 'Condo and HOA pools',
+    line: 'Weekly care for community and condo pools, beach or mainland.',
+    to: '/services/hoa-pool-service/',
+  },
+  {
+    title: 'Storm cleanup',
+    line: 'Debris out and water rebalanced after a storm or hurricane.',
+    to: '/services/storm-cleanup/',
+  },
+  {
+    title: 'Green pool cleanup',
+    line: 'From green back to swimmable, with an up-front price.',
+    to: '/services/green-pool-cleanup/',
+  },
+];
+
+const Services = () => (
+  <section aria-labelledby="cw-services-title" className={`bg-white ${sectionY}`}>
+    <Container>
+      <div className="mx-auto max-w-[44rem] text-center">
+        <h2 id="cw-services-title" className={`${h2} text-sc-navy`}>
+          Pool services in Clearwater, beyond the weekly visit.
+        </h2>
+        <p className={`${lead} mx-auto max-w-[36rem]`}>
+          One local team for weekly cleaning and for everything your pool needs between visits.
+        </p>
+      </div>
+      <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:mt-12">
+        {SERVICES.map((svc) => (
+          <li key={svc.to} className="flex">
+            <Link
+              to={svc.to}
+              className="group flex w-full flex-col rounded-[14px] border border-[rgba(36,58,85,0.14)] bg-white p-4 transition-colors hover:border-sc-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sc-blue sm:p-6"
+            >
+              <span className="block text-[15.5px] font-[650] leading-snug text-sc-navy sm:text-[17px]">{svc.title}</span>
+              <span className={`mt-1.5 block flex-1 text-[13.5px] leading-[1.5] sm:text-[14.5px] ${muted}`}>{svc.line}</span>
+              <span className="mt-4 inline-flex items-center gap-1 text-[14px] font-semibold text-sc-blue">
+                Learn more
+                <ArrowRight
+                  aria-hidden="true"
+                  className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-[3px]"
+                  strokeWidth={2.25}
+                />
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </Container>
+  </section>
+);
+
+// ── E. Getting started ────────────────────────────────────────────────────
 
 const STEPS = [
   {
@@ -304,7 +402,6 @@ const GettingStarted = () => (
   <section aria-labelledby="cw-start-title" className={`cw-dark relative overflow-hidden ${sectionY}`}>
     <div aria-hidden="true" className="cw-dark-glow absolute inset-0" />
     <Container className="relative">
-      <Eyebrow gold>Getting started</Eyebrow>
       <h2 id="cw-start-title" className={`${h2} text-white`}>
         Switching takes one conversation.
       </h2>
@@ -337,7 +434,8 @@ const GettingStarted = () => (
             </li>
           ))}
         </ul>
-        <div className="flex flex-wrap gap-3">
+        {/* Phones: the sticky bar covers these. */}
+        <div className="flex flex-wrap gap-3 max-md:hidden">
           <PhoneButton onDark />
           <QuoteButton />
         </div>
@@ -346,7 +444,7 @@ const GettingStarted = () => (
   </section>
 );
 
-// ── E. Service area ───────────────────────────────────────────────────────
+// ── F. Service area ───────────────────────────────────────────────────────
 
 // Named on this page and in its schema. None has a page of its own yet; give
 // one a `to` and its chip becomes a link.
@@ -397,7 +495,6 @@ const ServiceArea = () => (
   <section aria-labelledby="cw-area-title" className={`bg-sc-mist ${sectionY}`}>
     <Container className="grid items-start gap-12 min-[960px]:grid-cols-[0.9fr_1.1fr] min-[960px]:gap-16">
       <div>
-        <Eyebrow>Across all of Clearwater</Eyebrow>
         <h2 id="cw-area-title" className={`${h2} text-sc-navy`}>
           From the sand to the suburbs, on a set day.
         </h2>
@@ -440,7 +537,7 @@ const ServiceArea = () => (
   </section>
 );
 
-// ── F. FAQ ────────────────────────────────────────────────────────────────
+// ── G. FAQ ────────────────────────────────────────────────────────────────
 
 const Faq = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
@@ -448,9 +545,8 @@ const Faq = () => {
     <section aria-labelledby="cw-faq-title" className={`bg-white ${sectionY}`}>
       <Container className="grid items-start gap-10 min-[960px]:grid-cols-[0.8fr_1.2fr] min-[960px]:gap-16">
         <div>
-          <Eyebrow>Clearwater pool service</Eyebrow>
           <h2 id="cw-faq-title" className={`${h2} text-sc-navy`}>
-            Questions, answered.
+            Clearwater pool service questions, answered.
           </h2>
           <div className="mt-7 rounded-[18px] bg-sc-mist p-[22px]">
             <p className="text-[16px] font-bold text-sc-navy">Rather talk to a person?</p>
@@ -513,7 +609,30 @@ const Faq = () => {
   );
 };
 
-// ── G. Quote ──────────────────────────────────────────────────────────────
+// ── H. Promises ───────────────────────────────────────────────────────────
+
+// The homepage's "Our promises, in writing." (GuaranteeCards holds the terms).
+const Promises = () => (
+  <section aria-labelledby="cw-promises-title" className={`bg-sc-mist ${sectionY}`}>
+    <Container>
+      <div className="mx-auto max-w-[44rem] text-center">
+        <h2 id="cw-promises-title" className={`${h2} text-sc-navy`}>
+          Our promises, in writing.
+        </h2>
+        <p className={`${lead} mx-auto max-w-[36rem]`}>
+          Every term below is written into our{' '}
+          <Link to="/service-agreement/" className={areaLink}>
+            Service Agreement
+          </Link>
+          .
+        </p>
+      </div>
+      <GuaranteeCards className="mt-10 min-[1000px]:grid-cols-3 lg:mt-12" />
+    </Container>
+  </section>
+);
+
+// ── I. Quote ──────────────────────────────────────────────────────────────
 
 // Same fields, names and values as the form this replaced; the submit is
 // useQuoteFormSubmit, shared with ServiceQuoteForm, so the lead arrives as
@@ -540,14 +659,11 @@ const QuoteSection = () => {
   const { submitted, setSubmitted, loading, error, turnstile, handleSubmit } =
     useQuoteFormSubmit('clearwater-quote-form');
   const [sanitizer, setSanitizer] = useState('');
-  const [sanitizerMissing, setSanitizerMissing] = useState(false);
-  const segmentRef = useRef<HTMLDivElement>(null);
 
   return (
     <section id="quote" aria-labelledby="cw-quote-title" className={`cw-dark scroll-mt-24 ${sectionY}`}>
       <Container className="grid items-center gap-12 min-[960px]:grid-cols-2 min-[960px]:gap-14">
         <div>
-          <Eyebrow gold>Your Clearwater quote</Eyebrow>
           <h2 id="cw-quote-title" className={`${h2} text-white`}>
             From the sand to the suburbs, one flat rate.
           </h2>
@@ -578,7 +694,11 @@ const QuoteSection = () => {
           </p>
         </div>
 
-        <div className="rounded-[22px] bg-white p-6 shadow-[0_30px_60px_-24px_rgba(0,0,0,0.5)] sm:p-[30px]">
+        {/* #quote-form: the phone bar scrolls here, and hides while it's on screen. */}
+        <div
+          id="quote-form"
+          className="scroll-mt-24 rounded-[22px] bg-white p-6 shadow-[0_30px_60px_-24px_rgba(0,0,0,0.5)] sm:p-[30px]"
+        >
           {submitted ? (
             <div className="py-6 text-center">
               <CheckCircle aria-hidden="true" className="mx-auto h-12 w-12 text-[#0e9f57]" />
@@ -611,14 +731,13 @@ const QuoteSection = () => {
               <h3 className="text-[20px] font-[650] leading-tight text-sc-navy">Get my Clearwater price</h3>
               <p className={`mt-1 text-[14px] ${muted}`}>Takes about a minute. No obligation.</p>
 
+              {/* Required: name, phone and ZIP only. */}
               <label htmlFor="quote-area" className={fieldLabel}>
-                Which part of Clearwater?
+                Which part of Clearwater? <span className="font-normal">(optional)</span>
               </label>
               <div className="relative">
-                <select id="quote-area" name="area" required defaultValue="" className={`${inputClass} appearance-none pr-10`}>
-                  <option value="" disabled>
-                    Choose one
-                  </option>
+                <select id="quote-area" name="area" defaultValue="" className={`${inputClass} appearance-none pr-10`}>
+                  <option value="">Choose one</option>
                   {AREA_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}
@@ -632,13 +751,12 @@ const QuoteSection = () => {
               </div>
 
               <p id="quote-sanitizer-label" className={fieldLabel}>
-                Salt or chlorine?
+                Salt or chlorine? <span className="font-normal">(optional)</span>
               </p>
-              {/* Buttons write the same `sanitizer` value the old select did.
-                  The input below carries it and keeps it required: an empty
-                  submit stops on it like any other field, with our message in
-                  place of the browser bubble. */}
-              <div ref={segmentRef} role="group" aria-labelledby="quote-sanitizer-label" className="relative grid grid-cols-3 gap-2">
+              {/* Buttons write the same `sanitizer` value the old select did,
+                  carried by the hidden input. Tapping the chosen one again
+                  clears it. */}
+              <div role="group" aria-labelledby="quote-sanitizer-label" className="grid grid-cols-3 gap-2">
                 {SANITIZER_OPTIONS.map((o) => {
                   const on = sanitizer === o.value;
                   return (
@@ -646,10 +764,7 @@ const QuoteSection = () => {
                       key={o.value}
                       type="button"
                       aria-pressed={on}
-                      onClick={() => {
-                        setSanitizer(o.value);
-                        setSanitizerMissing(false);
-                      }}
+                      onClick={() => setSanitizer(on ? '' : o.value)}
                       className={`min-h-11 rounded-[10px] px-1 py-[11px] text-[14px] font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sc-blue ${
                         on ? 'bg-sc-navy text-white' : 'text-sc-navy ring-1 ring-inset ring-sc-navy/15 hover:ring-sc-navy/30'
                       }`}
@@ -658,30 +773,8 @@ const QuoteSection = () => {
                     </button>
                   );
                 })}
-                <input
-                  name="sanitizer"
-                  value={sanitizer}
-                  onChange={() => {}}
-                  required
-                  tabIndex={-1}
-                  aria-hidden="true"
-                  onInvalid={(e) => {
-                    e.preventDefault();
-                    setSanitizerMissing(true);
-                    // Bring focus to the choice unless an earlier field is the problem.
-                    const area = e.currentTarget.form?.elements.namedItem('area') as HTMLSelectElement | null;
-                    if (area?.validity.valid) {
-                      requestAnimationFrame(() => segmentRef.current?.querySelector('button')?.focus());
-                    }
-                  }}
-                  className="pointer-events-none absolute bottom-0 left-1/2 h-px w-px opacity-0"
-                />
               </div>
-              {sanitizerMissing && (
-                <p role="alert" className="mt-2 text-[13px] font-medium text-red-700">
-                  Choose salt, chlorine or not sure.
-                </p>
-              )}
+              <input type="hidden" name="sanitizer" value={sanitizer} />
 
               <div className="grid gap-x-2.5 min-[960px]:grid-cols-2">
                 <div>
@@ -749,7 +842,7 @@ const QuoteSection = () => {
   );
 };
 
-// ── H. Free guides ────────────────────────────────────────────────────────
+// ── J. Free guides ────────────────────────────────────────────────────────
 
 const GUIDES = [
   { to: '/pool-care/salt-water-vs-chlorine/', title: 'Salt water vs. chlorine', line: 'The honest comparison, costs and all.' },
@@ -765,8 +858,7 @@ const GUIDES = [
 const Guides = () => (
   <section aria-labelledby="cw-guides-title" className="bg-white py-[72px]">
     <Container>
-      <Eyebrow>Free guides</Eyebrow>
-      <h2 id="cw-guides-title" className="mt-3 text-[24px] font-[650] leading-tight tracking-[-0.03em] text-sc-navy">
+      <h2 id="cw-guides-title" className="text-[24px] font-[650] leading-tight tracking-[-0.03em] text-sc-navy">
         Clear answers, free to keep.
       </h2>
       <ul className="mt-7 grid gap-4 min-[960px]:grid-cols-4">
@@ -789,9 +881,7 @@ const Guides = () => (
 const ClearwaterBelowFold = () => (
   <>
     <TrustBand />
-    <TwoTowns />
     <ClearwaterStandard
-      eyebrow="The Clearwater standard"
       title={
         <>
           &ldquo;Clear&rdquo; isn&rsquo;t a vibe.
@@ -801,10 +891,16 @@ const ClearwaterBelowFold = () => (
       }
       lead="Six steps every week, beach or mainland. Every one of them lands in your inbox before we leave the driveway."
       address="Sand Key · Clearwater Beach, FL 33767"
+      splitOnTablet
+      footerFromTablet
     />
+    <TwoTowns />
+    <Reviews />
+    <Services />
     <GettingStarted />
     <ServiceArea />
     <Faq />
+    <Promises />
     <QuoteSection />
     <Guides />
   </>

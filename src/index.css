@@ -471,10 +471,13 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 
 /* St. Pete Beach hero — dedicated photo. Slightly warmer/brighter treatment
-   than the other city pages to read "open beach". */
+   than the other city pages to read "open beach". 1600px to standard screens;
+   high-density screens get the largest file there is (1920px today; swap in
+   a 3200px one here and in the page's heroPreload when the original exists).
+   The box is the hero's own size (no overscan), so the photo isn't zoomed. */
 .hero-bg-stpetebeach-desktop {
   background-image: image-set(
-    url('/st-pete-beach-hero.webp') type('image/webp') 1x,
+    url('/st-pete-beach-hero-1600.webp') type('image/webp') 1x,
     url('/st-pete-beach-hero-1920.webp') type('image/webp') 2x,
     url('/st-pete-beach-hero.jpg') type('image/jpeg') 1x
   );
@@ -1496,6 +1499,67 @@ input[type="date"]::-webkit-date-and-time-value {
   .cs-col--l .cs-step-btn {
     flex-direction: row-reverse;
     text-align: right;
+  }
+}
+/* St. Pete Beach (StPeteBeachPage / StPeteBeachBelowFold).
+   Scroll reveal: only from 768px with motion allowed; the Reveal component
+   arms content below the fold (data-reveal="") and marks it "in" on scroll. */
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    transition:
+      opacity 0.6s ease-out,
+      transform 0.6s ease-out;
+  }
+  [data-reveal=''] {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .spb-hero-in {
+    animation: spb-hero-in 0.9s ease-out both;
+  }
+}
+@keyframes spb-hero-in {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: none; }
+}
+/* "Built for barrier-island wear": tap-to-open rows on phones (the open one
+   carries .is-open), always open as cards from 768px. */
+.spb-acc-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s ease;
+}
+.spb-acc-body > div {
+  overflow: hidden;
+  min-height: 0;
+}
+.spb-acc.is-open .spb-acc-body {
+  grid-template-rows: 1fr;
+}
+@media (min-width: 768px) {
+  .spb-acc-body {
+    grid-template-rows: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spb-acc-body { transition: none; }
+}
+
+/* Opt-in (ClearwaterStandard props): the steps as two lists of three, side
+   by side under the phone, on tablets; and no closing button on phones. */
+@media (min-width: 768px) and (max-width: 999px) {
+  .cs-stage--split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 0;
+  }
+  .cs-stage--split .cs-phone {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 767px) {
+  .cs-footer--from-tablet {
+    display: none;
   }
 }
 /* Steps fade up as the stage comes on screen, in alternating order (L1, R1,

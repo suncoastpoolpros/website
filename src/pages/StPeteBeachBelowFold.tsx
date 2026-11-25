@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { m } from 'motion/react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   Sun,
   Wind,
@@ -12,7 +11,6 @@ import {
   Home,
   Droplets,
   Wrench,
-  XCircle,
   CheckCircle2,
   MapPin,
   ShieldCheck,
@@ -23,9 +21,114 @@ import {
 import { Container } from '@/components/Container';
 import { SmartLink } from '@/components/SmartLink';
 import { useQuoteSheet } from '@/components/QuoteSheet';
+import { reviewCard } from '@/components/landing/ReviewCard';
+import { GuaranteeCards } from '@/components/landing/GuaranteeCards';
+import { REVIEWS } from '@/lib/reviews';
 import { stPeteBeachFaqs } from '@/pages/stPeteBeachFaqs';
 
-// ── Section 1: "The barrier-island toll" ───────────────────────────
+/*
+ * Everything below the St. Pete Beach hero. The page keeps its own layout and
+ * copy, in the homepage brand: the gold button with navy text, blue #1f7fdb
+ * accents on light sections, Geist headings at weight 600.
+ *
+ * Light sections alternate white and #f5f7fa, and their cards take the other
+ * tone with a hairline border. Dark sections (the photo band, "One pool, two
+ * lives", the promise strip, the quote form) sit on the page's navy.
+ *
+ * Scroll fade-ins run only from 768px with motion allowed (Reveal); on
+ * phones and for reduced motion everything is simply there.
+ */
+
+// ── Shared styles ──────────────────────────────────────────────────
+
+const h2Base = 'font-display text-3xl md:text-[2.5rem] font-semibold tracking-[-0.02em] leading-tight';
+const h2Light = `${h2Base} text-[#243a55]`;
+const h2Dark = `${h2Base} text-white`;
+const labelLight = 'block mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#1f7fdb]';
+const labelDark = 'block mb-3 text-xs font-bold uppercase tracking-[0.2em] text-brand-blue-light';
+const subLight = 'text-base sm:text-lg leading-relaxed text-[#475569]';
+const cardEdge = 'border border-[rgba(10,22,40,0.10)]';
+const iconBoxLight = 'flex items-center justify-center rounded-xl border border-[#1f7fdb]/20 bg-[#1f7fdb]/10';
+const goldButton = 'btn bg-[#f7b500] text-[#243a55] hover:bg-[#ffc01f]';
+const linkLight =
+  'font-semibold text-[#1f7fdb] underline decoration-[#1f7fdb]/30 underline-offset-[3px] transition-colors hover:text-[#243a55] hover:decoration-[#243a55]';
+
+// ── Scroll reveal (desktop, motion allowed) ────────────────────────
+
+const useBeforePaint = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+const REVEAL_WHEN = '(min-width: 768px) and (prefers-reduced-motion: no-preference)';
+
+// Fades its content up the first time it scrolls into view. Progressive: the
+// hidden state (data-reveal="") is only set once this has run, and only for
+// content still below the fold, so the prerendered HTML is always visible.
+const Reveal = ({
+  delay = 0,
+  className = '',
+  children,
+}: {
+  // This project's JSX types don't add `key` to component props on their own.
+  key?: React.Key;
+  delay?: number;
+  className?: string;
+  children: React.ReactNode;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  useBeforePaint(() => {
+    const el = ref.current;
+    if (!el || !('IntersectionObserver' in window) || !window.matchMedia(REVEAL_WHEN).matches) return;
+    if (el.getBoundingClientRect().top < window.innerHeight) return;
+    el.setAttribute('data-reveal', '');
+    if (delay) el.style.transitionDelay = `${delay}s`;
+    const io = new IntersectionObserver(([e]) => {
+      if (!e?.isIntersecting) return;
+      el.setAttribute('data-reveal', 'in');
+      io.disconnect();
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
+};
+
+// false until mounted, to match the prerendered HTML.
+const useMediaQuery = (query: string) => {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const update = () => setMatches(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, [query]);
+  return matches;
+};
+
+// ── Reviews (white) ────────────────────────────────────────────────
+
+// The homepage's Google reviews, as written there (ReviewCard), on grey cards.
+const PAGE_REVIEWS = ['Michelle M.', 'Jack K.'].flatMap((name) => REVIEWS.filter((r) => r.name === name));
+
+const ReviewsSection = () => (
+  <section aria-labelledby="spb-reviews-title" className="py-16 md:py-24 bg-white">
+    <Container>
+      <Reveal className="max-w-2xl mb-10 md:mb-12">
+        <span className={labelLight}>On the island every week</span>
+        <h2 id="spb-reviews-title" className={h2Light}>
+          Trusted by St. Pete Beach pool owners.
+        </h2>
+      </Reveal>
+      <ul className="grid grid-cols-1 gap-4 min-[600px]:grid-cols-2 [&>li]:border-[rgba(10,22,40,0.10)] [&>li]:bg-[#f5f7fa] [&>li]:shadow-none">
+        {PAGE_REVIEWS.map(reviewCard)}
+      </ul>
+    </Container>
+  </section>
+);
+
+// ── "The barrier-island toll" (light grey) ─────────────────────────
 // St. Pete Beach's distinct angle: a beachfront pool simply wears faster.
 // Salt air, blowing sand, relentless sun, and heavy use all hit at once.
 // This is NOT the absentee-owner framing from Treasure — it's about the
@@ -57,247 +160,131 @@ const islandToll = [
   },
 ];
 
-// ── Section 3: process steps (beach-specific framing) ──────────────
-const processSteps = [
-  {
-    icon: CalendarClock,
-    step: 'A familiar tech, same day every week',
-    body:
-      "Your pool goes on a consistent route — same day each week, with a vetted tech who learns your equipment, how to get to the lanai, the way your particular pool handles the salt and the sun. Nobody's relearning your property from scratch.",
-  },
-  {
-    icon: Camera,
-    step: 'A report hits your inbox after every visit',
-    body:
-      "Chemistry numbers, what got done, photos of the pool — in your inbox before we leave the property. At the house, up north, or forwarding it to a guest, you always know exactly where the water stands. No guessing whether anyone showed up.",
-  },
-  {
-    icon: MessageSquareText,
-    step: 'Need us? Text a real local',
-    body:
-      "Extra clean before the family flies in, a question after a storm blows through — you text or call an actual person here on the coast and hear back the same day. We're a St. Pete crew. Not a call center, not a franchise.",
-  },
-];
+// Cards from 768px. On phones each card is a tap-to-open row (the first one
+// open), collapsed by CSS (.spb-acc) from the first paint, so nothing shifts
+// on hydration.
+const IslandTollSection = () => {
+  const phone = useMediaQuery('(max-width: 767px)');
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  return (
+    <section aria-labelledby="spb-toll-title" className="py-16 md:py-24 bg-[#f5f7fa]">
+      <Container>
+        <Reveal className="max-w-2xl mb-10 md:mb-12">
+          <span className={labelLight}>Why Beach Pools Are Different</span>
+          <h2 id="spb-toll-title" className={`${h2Light} mb-4`}>
+            St. Pete Beach pool service, built for barrier-island wear.
+          </h2>
+          <p className={subLight}>
+            St. Pete Beach is a thin strip of sand between the Gulf and Boca Ciega
+            Bay — beautiful to live on, brutal on a pool. From Pass-a-Grille up to
+            Upham Beach, salt air, blowing sand, full sun, and steady use gang up in
+            a way an inland pool never deals with. Our weekly pool cleaning is tuned
+            for exactly that.
+          </p>
+        </Reveal>
 
-const faqs = stPeteBeachFaqs;
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
+          {islandToll.map((item, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <Reveal
+                key={item.title}
+                delay={i * 0.08}
+                className={`spb-acc ${isOpen ? 'is-open' : ''} rounded-2xl bg-white ${cardEdge} md:flex md:gap-5 md:p-7`}
+              >
+                <div className={`${iconBoxLight} hidden md:flex shrink-0 w-12 h-12`}>
+                  <item.icon className="w-6 h-6 text-[#1f7fdb]" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-lg font-display font-semibold tracking-[-0.02em] text-[#243a55]">
+                    <button
+                      type="button"
+                      id={`spb-toll-q-${i}`}
+                      aria-expanded={!phone || isOpen}
+                      aria-controls={`spb-toll-a-${i}`}
+                      tabIndex={phone ? undefined : -1}
+                      onClick={() => phone && setOpenIndex(isOpen ? null : i)}
+                      className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left md:mb-2 md:cursor-default md:p-0"
+                    >
+                      {item.title}
+                      {isOpen ? (
+                        <Minus aria-hidden="true" className="w-5 h-5 shrink-0 text-[#1f7fdb] md:hidden" />
+                      ) : (
+                        <Plus aria-hidden="true" className="w-5 h-5 shrink-0 text-[#475569] md:hidden" />
+                      )}
+                    </button>
+                  </h3>
+                  <div className="spb-acc-body" id={`spb-toll-a-${i}`} role="region" aria-labelledby={`spb-toll-q-${i}`}>
+                    <div>
+                      <p className="px-5 pb-5 md:p-0 text-[#475569] leading-relaxed text-[15px]">{item.body}</p>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
 
-const IslandTollSection = () => (
-  // Flat #07111c — the site's base surface. This used to run its own
-  // navy-to-navy gradient, which (stacked with the five other sections that
-  // each picked a slightly different navy) made the whole below-fold read as
-  // one continuous wash with no section boundaries. Dark sections now sit on
-  // exactly two surfaces: flat #07111c, or transparent so the page's fixed
-  // bg-mesh shows through. Contrast comes from the light band and the photo
-  // interlude, not from drifting the base color.
-  <section className="py-16 md:py-24 relative overflow-hidden bg-[#07111c]">
-    <div className="absolute top-[-10%] left-1/4 w-[55%] h-[45%] bg-brand-blue/[0.06] rounded-full blur-[150px] pointer-events-none" />
-    <div className="absolute -bottom-28 -left-32 w-[520px] h-[520px] rounded-full bg-brand-blue/[0.05] blur-[150px] pointer-events-none" />
-    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
-    <Container className="relative z-10">
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="max-w-2xl mb-10 md:mb-12"
-      >
-        {/* Blue kicker — site convention (see Services.tsx). Orange is reserved
-            for action on this page: the guide CTA below and the closing band. */}
-        <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-          Why Beach Pools Are Different
-        </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
-          St. Pete Beach pool service, built for barrier-island wear.
-        </h2>
-        <p className="section-subtext">
-          St. Pete Beach is a thin strip of sand between the Gulf and Boca Ciega
-          Bay — beautiful to live on, brutal on a pool. From Pass-a-Grille up to
-          Upham Beach, salt air, blowing sand, full sun, and steady use gang up in
-          a way an inland pool never deals with. Our weekly pool cleaning is tuned
-          for exactly that.
-        </p>
-      </m.div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {islandToll.map((item, i) => (
-          <m.div
-            key={item.title}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.08 }}
-            className="relative rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 md:p-7 flex gap-5 shadow-[0_12px_30px_-16px_rgba(0,0,0,0.8)] hover:bg-white/[0.06] hover:border-white/15 transition-colors"
+        {/* Contextual internal link → cyanuric-acid guide. The stabilizer band is
+            the single biggest lever on a full-sun beach pool, so this is the
+            natural place to send curious owners deeper (and it passes link
+            equity to the pillar guide for SEO). */}
+        <Reveal className="mt-6 rounded-2xl border border-[#1f7fdb]/20 bg-[#1f7fdb]/[0.05] p-6 md:p-7 flex flex-col sm:flex-row sm:items-center gap-5">
+          <p className="text-[#475569] leading-relaxed text-[15px] flex-1">
+            Getting that stabilizer-to-chlorine band right is honestly half the
+            job out here — it's the line between water that's still sanitized at
+            sunset and water that quit by lunch. Curious how it actually works?
+            We wrote up the real science (and the county limits most services
+            never mention).
+          </p>
+          <SmartLink
+            to="/pool-care/cyanuric-acid/"
+            className="group inline-flex items-center gap-2 shrink-0 text-[#1f7fdb] font-semibold text-[15px] hover:text-[#243a55] transition-colors"
           >
-            {/* Faint top-edge highlight — the homepage card treatment; it's what
-                makes a surface read as a lit object instead of a flat rectangle. */}
-            <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-            <div className="shrink-0 w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center">
-              <item.icon className="w-6 h-6 text-brand-blue-light" />
-            </div>
-            <div>
-              <h3 className="text-lg font-display font-bold text-white mb-2">
-                {item.title}
-              </h3>
-              <p className="text-gray-400 leading-relaxed text-[15px]">{item.body}</p>
-            </div>
-          </m.div>
-        ))}
-      </div>
+            Read our cyanuric acid guide
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+          </SmartLink>
+        </Reveal>
+      </Container>
+    </section>
+  );
+};
 
-      {/* Contextual internal link → cyanuric-acid guide. The stabilizer band is
-          the single biggest lever on a full-sun beach pool, so this is the
-          natural place to send curious owners deeper (and it passes link
-          equity to the pillar guide for SEO). */}
-      <m.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="mt-6 rounded-2xl border border-brand-orange/20 bg-brand-orange/[0.04] p-6 md:p-7 flex flex-col sm:flex-row sm:items-center gap-5"
-      >
-        <p className="text-gray-300 leading-relaxed text-[15px] flex-1">
-          Getting that stabilizer-to-chlorine band right is honestly half the
-          job out here — it's the line between water that's still sanitized at
-          sunset and water that quit by lunch. Curious how it actually works?
-          We wrote up the real science (and the county limits most services
-          never mention).
-        </p>
-        <SmartLink
-          to="/pool-care/cyanuric-acid/"
-          className="group inline-flex items-center gap-2 shrink-0 text-brand-orange-light font-semibold text-[15px] hover:text-white transition-colors"
-        >
-          Read our cyanuric acid guide
-          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-        </SmartLink>
-      </m.div>
-    </Container>
-  </section>
-);
-
-// ── Section: "What actually gets done every week" ───────────────────
-// The page sells the philosophy well but never lists the concrete weekly
-// checklist owners actually want to see. This grounds the promise (and is
-// dense with the literal "pool cleaning" search terms a service page should
-// rank for). Kept truthful to a standard full-service weekly visit.
-const weeklyChecklist = [
-  'Skim the surface — leaves, blown sand, lovebugs, whatever the Gulf left behind',
-  'Brush the walls, steps, and waterline tile so nothing gets a foothold',
-  'Vacuum the floor whenever it needs it, not just when you ask',
-  'Empty the skimmer and pump baskets',
-  'Check the filter and clean or backwash it on schedule',
-  'Test and balance the full panel — chlorine, pH, alkalinity, stabilizer, salt',
-  'Walk the equipment pad for salt corrosion, leaks, and a scaling salt cell',
-  'Add your standard weekly chemicals — already in the flat rate',
-];
-
-const WeeklyVisitSection = () => (
-  // No background of its own — the page's fixed bg-mesh gradient shows through.
-  // Sitting between two flat #07111c sections, that subtle blue bloom is what
-  // separates it, the same way Services/FAQ/QuoteForm work on the homepage.
-  <section className="py-16 md:py-24 relative overflow-hidden">
-    <div className="absolute top-0 right-1/4 w-[50%] h-[40%] bg-brand-blue/[0.06] rounded-full blur-[150px] pointer-events-none" />
-    <div className="absolute -bottom-24 -right-28 w-[460px] h-[460px] rounded-full bg-brand-blue/[0.05] blur-[150px] pointer-events-none" />
-    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
-    <Container className="relative z-10">
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="max-w-2xl mb-10 md:mb-12"
-      >
-        <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-          What's In Every Weekly Visit
-        </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
-          No mystery to it. Here's the actual checklist.
-        </h2>
-        <p className="section-subtext">
-          Same routine, same order, every single week — whether you're standing
-          on the deck watching or somewhere up north for the season. This is what
-          your St. Pete Beach pool cleaning covers, start to finish, before the
-          report lands in your inbox.
-        </p>
-      </m.div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-        {weeklyChecklist.map((item, i) => (
-          <m.div
-            key={item}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: (i % 2) * 0.06 }}
-            className="flex items-start gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] p-4 md:p-5"
-          >
-            <CheckCircle2 className="w-5 h-5 text-brand-blue-light shrink-0 mt-0.5" />
-            <p className="text-gray-300 text-[15px] leading-relaxed">{item}</p>
-          </m.div>
-        ))}
-      </div>
-
-      <m.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="mt-8 flex items-center justify-center gap-3 text-center"
-      >
-        <ClipboardCheck className="w-5 h-5 text-brand-blue-light shrink-0" />
-        <p className="text-gray-400 text-[15px]">
-          Then it's all written up —
-          <span className="text-white"> numbers, what got done, and photos in your inbox before we leave.</span>
-        </p>
-      </m.div>
-    </Container>
-  </section>
-);
-
-// ── Section 2: interlude band — beach-specific line ────────────────
+// ── Gulf photo band (dark) ─────────────────────────────────────────
+// The light section above meets the photo with a hard edge; the bottom still
+// dissolves into the dark "One pool, two lives" below.
 const InterludeBand = () => (
   <section className="relative h-[42vh] min-h-[360px] md:h-[50vh] md:min-h-[460px] overflow-hidden">
     <div className="interlude-bg-stpetebeach-desktop absolute inset-0 hidden md:block bg-cover bg-center" />
     <div className="interlude-bg-stpetebeach-mobile absolute inset-0 md:hidden bg-cover bg-center" />
 
     <div className="interlude-tint-stpetebeach absolute inset-0 pointer-events-none" />
-
-    {/* Both edges fade to #07111c — the sections above and below are now that
-        same flat navy, so the photo dissolves into them with no visible seam.
-        (The bottom used to fade to #0a1422, which left a soft step at the join.) */}
-    <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07111c] to-transparent pointer-events-none" />
     <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#07111c] to-transparent pointer-events-none" />
 
     <div className="relative h-full flex items-center justify-center">
-      <m.p
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-15%' }}
-        transition={{ duration: 1, ease: 'easeOut' }}
-        className="text-shadow-interlude font-display italic text-white/90 text-2xl sm:text-3xl md:text-[2.25rem] leading-snug text-center px-6 max-w-2xl tracking-tight"
-      >
-        The Gulf takes its toll. We take it off your plate.
-      </m.p>
+      <Reveal>
+        <p className="text-shadow-interlude font-display italic text-white/90 text-2xl sm:text-3xl md:text-[2.25rem] leading-snug text-center px-6 max-w-2xl tracking-tight">
+          The Gulf takes its toll. We take it off your plate.
+        </p>
+      </Reveal>
     </div>
   </section>
 );
 
-// ── Section 3: "Two pools, one address" ────────────────────────────
+// ── "One pool, two lives" (dark) ───────────────────────────────────
 // St. Pete Beach's signature mix: a pool that's a private retreat half the
 // year and a guest/rental pool the other half. Distinct from Treasure's
 // "during a booking / between bookings" failure framing — this is about the
 // dual identity of the same pool, and tuning service to both modes.
 const TwoModesSection = () => (
-  <section className="py-16 md:py-24 bg-[#07111c] relative overflow-hidden">
+  <section aria-labelledby="spb-modes-title" className="py-16 md:py-24 bg-[#07111c] relative overflow-hidden">
     <div className="absolute top-1/3 -right-20 w-[420px] h-[420px] rounded-full bg-brand-blue/[0.06] blur-[140px] pointer-events-none" />
     <div className="absolute bottom-0 -left-24 w-[420px] h-[420px] rounded-full bg-brand-blue/[0.05] blur-[140px] pointer-events-none" />
 
     <Container className="relative z-10">
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="max-w-2xl mb-10 md:mb-12"
-      >
-        <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-          One Pool, Two Lives
-        </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
+      <Reveal className="max-w-2xl mb-10 md:mb-12">
+        <span className={labelDark}>One Pool, Two Lives</span>
+        <h2 id="spb-modes-title" className={`${h2Dark} mb-4`}>
           Your retreat one month, a guest's highlight the next.
         </h2>
         <p className="section-subtext">
@@ -307,16 +294,11 @@ const TwoModesSection = () => (
           Mar, each mode asks something different from the water. Our weekly pool
           service covers both, so the handoff is invisible.
         </p>
-      </m.div>
+      </Reveal>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
         {/* Mode 1 — your retreat */}
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="relative glass-panel rounded-2xl p-7 md:p-8"
-        >
+        <Reveal className="relative glass-panel rounded-2xl p-7 md:p-8">
           <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
           <div className="flex items-center gap-3 mb-5">
             <div className="w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center shrink-0">
@@ -326,7 +308,7 @@ const TwoModesSection = () => (
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-blue-light">
                 When it's yours
               </p>
-              <h3 className="text-xl font-display font-bold text-white leading-tight">
+              <h3 className="text-xl font-display font-semibold tracking-[-0.02em] text-white leading-tight">
                 A retreat that's always ready
               </h3>
             </div>
@@ -357,21 +339,11 @@ const TwoModesSection = () => (
               <li>No to-do list waiting for you</li>
             </ul>
           </div>
-        </m.div>
+        </Reveal>
 
         {/* Mode 2 — guests & renters */}
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.08 }}
-          className="relative glass-panel rounded-2xl p-7 md:p-8"
-        >
+        <Reveal delay={0.08} className="relative glass-panel rounded-2xl p-7 md:p-8">
           <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-          {/* Paired-card contrast now runs blue vs. neutral-white rather than
-              blue vs. orange — same visual distinction between the two modes,
-              without spending the page's action color on a static label. The
-              neutral chip is the homepage CtaBand's second-card treatment. */}
           <div className="flex items-center gap-3 mb-5">
             <div className="w-12 h-12 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
               <Users className="w-6 h-6 text-white" />
@@ -380,7 +352,7 @@ const TwoModesSection = () => (
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
                 When it's theirs
               </p>
-              <h3 className="text-xl font-display font-bold text-white leading-tight">
+              <h3 className="text-xl font-display font-semibold tracking-[-0.02em] text-white leading-tight">
                 Guest-safe under real load
               </h3>
             </div>
@@ -411,250 +383,321 @@ const TwoModesSection = () => (
               <li>An emergency call the day a family arrives</li>
             </ul>
           </div>
-        </m.div>
+        </Reveal>
       </div>
 
-      <m.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="mt-10 flex items-center justify-center gap-3 text-center"
-      >
+      <Reveal className="mt-10 flex items-center justify-center gap-3 text-center">
         <Droplets className="w-5 h-5 text-brand-blue-light shrink-0" />
         <p className="text-gray-400 text-[15px]">
           One weekly service —
           <span className="text-white"> tuned to whichever life your pool is living that week.</span>
         </p>
-      </m.div>
+      </Reveal>
     </Container>
   </section>
 );
 
-// ── THE LIGHT BAND ─────────────────────────────────────────────────
-// The page's one polarity flip, and the reason the below-fold no longer reads
-// as a single continuous dark scroll. Site rule: exactly ONE light-band passage
-// per page — more than one and it stops being a structural hinge and turns into
-// a stripe pattern. It uses the homepage's light tokens (#e4e9f0 → #d6dde7
-// ground, #0a1628 headings, slate-600 body, white cards, brand-blue accents) but
-// its own composition: icon cards, not the homepage's numbered medallion row.
-//
-// Placed mid-page on purpose — everything above it is the barrier-island
-// problem, everything below it is proof and offer. The hard cut from #07111c
-// straight to the light ground IS the separator; no fade, no edge rule.
+// ── "What actually gets done every week" (white) ───────────────────
+// The page sells the philosophy well but never lists the concrete weekly
+// checklist owners actually want to see. This grounds the promise (and is
+// dense with the literal "pool cleaning" search terms a service page should
+// rank for). Kept truthful to a standard full-service weekly visit.
+const weeklyChecklist = [
+  'Skim the surface — leaves, blown sand, lovebugs, whatever the Gulf left behind',
+  'Brush the walls, steps, and waterline tile so nothing gets a foothold',
+  'Vacuum the floor whenever it needs it, not just when you ask',
+  'Empty the skimmer and pump baskets',
+  'Check the filter and clean or backwash it on schedule',
+  'Test and balance the full panel — chlorine, pH, alkalinity, stabilizer, salt',
+  'Walk the equipment pad for salt corrosion, leaks, and a scaling salt cell',
+  'Add your standard weekly chemicals — already in the flat rate',
+];
+
+const WeeklyVisitSection = () => (
+  <section aria-labelledby="spb-weekly-title" className="py-16 md:py-24 bg-white">
+    <Container>
+      <Reveal className="max-w-2xl mb-10 md:mb-12">
+        <span className={labelLight}>What's In Every Weekly Visit</span>
+        <h2 id="spb-weekly-title" className={`${h2Light} mb-4`}>
+          No mystery to it. Here's the actual checklist.
+        </h2>
+        <p className={subLight}>
+          Same routine, same order, every single week — whether you're standing
+          on the deck watching or somewhere up north for the season. This is what
+          your St. Pete Beach pool cleaning covers, start to finish, before the
+          report lands in your inbox.
+        </p>
+      </Reveal>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+        {weeklyChecklist.map((item, i) => (
+          <Reveal
+            key={item}
+            delay={(i % 2) * 0.06}
+            className={`flex items-start gap-3 rounded-xl bg-[#f5f7fa] ${cardEdge} p-4 md:p-5`}
+          >
+            <CheckCircle2 className="w-5 h-5 text-[#1f7fdb] shrink-0 mt-0.5" />
+            <p className="text-[#475569] text-[15px] leading-relaxed">{item}</p>
+          </Reveal>
+        ))}
+      </div>
+
+      <Reveal className="mt-8 flex items-center justify-center gap-3 text-center">
+        <ClipboardCheck className="w-5 h-5 text-[#1f7fdb] shrink-0" />
+        <p className="text-[#475569] text-[15px]">
+          Then it's all written up —
+          <span className="text-[#243a55]"> numbers, what got done, and photos in your inbox before we leave.</span>
+        </p>
+      </Reveal>
+    </Container>
+  </section>
+);
+
+// ── "Simple for you. Thorough at the pool." (light grey) ───────────
+const processSteps = [
+  {
+    icon: CalendarClock,
+    step: 'A familiar tech, same day every week',
+    body:
+      "Your pool goes on a consistent route — same day each week, with a vetted tech who learns your equipment, how to get to the lanai, the way your particular pool handles the salt and the sun. Nobody's relearning your property from scratch.",
+  },
+  {
+    icon: Camera,
+    step: 'A report hits your inbox after every visit',
+    body:
+      "Chemistry numbers, what got done, photos of the pool — in your inbox before we leave the property. At the house, up north, or forwarding it to a guest, you always know exactly where the water stands. No guessing whether anyone showed up.",
+  },
+  {
+    icon: MessageSquareText,
+    step: 'Need us? Text a real local',
+    body:
+      "Extra clean before the family flies in, a question after a storm blows through — you text or call an actual person here on the coast and hear back the same day. We're a St. Pete crew. Not a call center, not a franchise.",
+  },
+];
+
 const ProcessSection = () => {
   const { open: openQuoteSheet } = useQuoteSheet();
   return (
-    <section className="py-16 md:py-24 relative overflow-hidden bg-gradient-to-b from-[#e4e9f0] to-[#d6dde7]">
-      {/* Soft brand-blue bloom for depth on the light ground */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-[50%] bg-brand-blue/[0.05] rounded-full blur-[140px] pointer-events-none" />
-      <Container className="relative z-10">
-        {/* Centered header — the site centers only the sections meant to make
-            you stop and act (light band, closing CTA, FAQ). Every other header
-            on this page stays left-aligned. */}
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center max-w-2xl mx-auto mb-10 md:mb-14"
-        >
-          <span className="text-brand-blue font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-            How Weekly Service Works
-          </span>
-          <h2 className="section-heading text-[#0a1628] leading-tight mb-4">
+    <section aria-labelledby="spb-process-title" className="py-16 md:py-24 bg-[#f5f7fa]">
+      <Container>
+        <Reveal className="text-center max-w-2xl mx-auto mb-10 md:mb-14">
+          <span className={labelLight}>How Weekly Service Works</span>
+          <h2 id="spb-process-title" className={`${h2Light} mb-4`}>
             Simple for you. Thorough at the pool.
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+          <p className={subLight}>
             You shouldn't have to manage your pool service. Here's the whole
             arrangement — three things, then it just runs.
           </p>
-        </m.div>
+        </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6 max-w-5xl mx-auto">
           {processSteps.map((item, i) => (
-            <m.div
+            <Reveal
               key={item.step}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="rounded-2xl bg-white border border-brand-blue/15 shadow-[0_10px_30px_-18px_rgba(10,22,40,0.45)] p-6 md:p-7"
+              delay={i * 0.1}
+              className={`rounded-2xl bg-white ${cardEdge} shadow-[0_1px_2px_rgba(10,22,40,0.04)] p-6 md:p-7`}
             >
-              <div className="w-12 h-12 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center mb-5">
-                <item.icon className="w-6 h-6 text-brand-blue" />
+              <div className={`${iconBoxLight} w-12 h-12 mb-5`}>
+                <item.icon className="w-6 h-6 text-[#1f7fdb]" />
               </div>
-              <h3 className="text-lg font-display font-bold text-[#0a1628] mb-2 leading-snug">
+              <h3 className="text-lg font-display font-semibold tracking-[-0.02em] text-[#243a55] mb-2 leading-snug">
                 {item.step}
               </h3>
-              <p className="text-slate-600 leading-relaxed text-[15px]">{item.body}</p>
-            </m.div>
+              <p className="text-[#475569] leading-relaxed text-[15px]">{item.body}</p>
+            </Reveal>
           ))}
         </div>
 
-        {/* The one place orange earns its keep on the light ground — action,
-            not decoration. (One-accent rule: this section's kicker and icons
-            stay blue so the button is the only warm thing on screen.) */}
-        <m.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-12 flex flex-col items-center gap-3"
-        >
-          <button type="button" onClick={openQuoteSheet} className="btn btn-orange">
+        {/* Phones: the sticky bar covers this. */}
+        <Reveal className="mt-12 flex flex-col items-center gap-3 max-md:hidden">
+          <button type="button" onClick={openQuoteSheet} className={goldButton}>
             Get My Beach Pool Quote
           </button>
-          <p className="text-gray-500 text-sm text-center">
+          <p className="text-[#475569] text-sm text-center">
             Flat monthly rate · Chemicals included · Cancel any time
           </p>
-        </m.div>
+        </Reveal>
       </Container>
     </section>
   );
 };
 
-// ── Section 5: why-us comparison — retuned to beachfront pain ──────
-const WHY_US_PAIRS: Array<{
-  failure: string;
-  failureDetail: string;
-  us: string;
-  usDetail: string;
-}> = [
+// ── Services (white) ───────────────────────────────────────────────
+
+const SERVICES = [
   {
-    failure: 'Equipment rusts out with no warning',
-    failureDetail:
-      "Most services skim the pool and leave. Nobody's looking at the pad, so the salt air just keeps working on your heater and pump until something seizes. You find out the day the pool goes down — and the tech is already quoting a replacement.",
-    us: 'We look at the pad every single visit',
-    usDetail:
-      "Corrosion, leaks, salt-cell scaling — we check for it weekly and tell you while it's still a small repair. On a barrier island, that one habit is the whole difference between a $40 part and a rebuild.",
+    title: 'Weekly pool service',
+    line: 'Cleaning, testing and every standard chemical, on a set day.',
+    to: '/services/weekly-pool-service/',
   },
   {
-    failure: 'Chemistry that quits by mid-afternoon',
-    failureDetail:
-      "A routine built for an inland pool can't handle full Gulf sun plus a busy beach pool. The water tests fine in the morning. By the time anyone actually swims, the chlorine's gone.",
-    us: 'Dosing built for sun and real use',
-    usDetail:
-      "We set stabilizer and chlorine for the UV and the bather load your pool really takes — so there's a working buffer left at 5 p.m., not just at breakfast.",
+    title: 'Saltwater pool care',
+    line: 'Cell inspection and chemistry tuned for salt systems near the Gulf.',
+    to: '/services/saltwater-pool-service/',
   },
   {
-    failure: "You never know if anyone showed up",
-    failureDetail:
-      "No report, no photo, nothing. If you split time up north it's worse — you're just hoping the pool got done, or finding out from a guest that it didn't.",
-    us: 'A photo report, proven, every visit',
-    usDetail:
-      "Every visit is GPS-confirmed at your address, and a timestamped report with chemistry and photos hits your inbox right after. You know it was serviced and exactly how it read. No faith required.",
+    title: 'Pool repair',
+    line: 'Pumps, heaters and fittings worn by salt air, quoted before any work.',
+    to: '/services/pool-repair/',
   },
   {
-    failure: 'A bill that quietly climbs',
-    failureDetail:
-      "\"Extra chemicals.\" \"Demand surcharge.\" \"Storm cleanup.\" Vague lines you can't check, on an invoice that somehow never matches the price you agreed to.",
-    us: 'One flat rate, chemicals included',
-    usDetail:
-      "Standard weekly chemicals are baked into the monthly price. Anything bigger — a recovery, a part, real storm work — gets quoted and okayed before we touch it. The bill is the bill.",
+    title: 'Condo and community pools',
+    line: 'Weekly care for Gulf Boulevard condominiums and association pools.',
+    to: '/services/hoa-pool-service/',
+  },
+  {
+    title: 'Storm cleanup',
+    line: 'Debris removed and water rebalanced after a named storm.',
+    to: '/services/storm-cleanup/',
+  },
+  {
+    title: 'Green pool recovery',
+    line: 'From green back to clear, with an up-front price.',
+    to: '/services/green-pool-cleanup/',
   },
 ];
 
-const WhyUsSection = () => (
-  // First section after the light band — flat #07111c, so the page snaps back
-  // to its base surface with a hard edge rather than easing into another navy.
-  <section className="py-16 md:py-24 relative overflow-hidden bg-[#07111c]">
-    <div className="absolute top-1/4 right-[-10%] w-[460px] h-[460px] rounded-full bg-brand-blue/[0.06] blur-[150px] pointer-events-none" />
-    <div className="absolute bottom-0 left-[-8%] w-[400px] h-[400px] rounded-full bg-brand-blue/[0.05] blur-[140px] pointer-events-none" />
-
-    <Container className="relative z-10">
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="max-w-2xl mb-10 md:mb-12"
-      >
-        <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-          What Trips Up Most Services
-        </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
-          Four ways St. Pete Beach pool service goes wrong.
+// Cards from 600px (two across, three from 900px); below 600px compact rows,
+// title and arrow only.
+const ServicesSection = () => (
+  <section aria-labelledby="spb-services-title" className="py-16 md:py-24 bg-white">
+    <Container>
+      <Reveal className="max-w-2xl mb-10 md:mb-12">
+        <span className={labelLight}>More than the weekly visit</span>
+        <h2 id="spb-services-title" className={`${h2Light} mb-4`}>
+          One local team for everything your pool needs.
         </h2>
-        <p className="section-subtext">
-          A pool a few blocks from the Gulf has needs that an inland route just
-          isn't set up for. Here's where most St. Pete Beach pool service falls
-          short — and how our weekly pool cleaning is built differently.
+        <p className={subLight}>
+          Most St. Pete Beach owners start with weekly service. When something else comes up, the same team handles
+          it.
         </p>
-      </m.div>
-
-      <div className="grid grid-cols-1 gap-3 md:gap-4">
-        {WHY_US_PAIRS.map((pair, i) => (
-          <m.div
-            key={pair.failure}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.06 }}
-            className="grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.015]"
-          >
-            <div className="p-6 md:p-7 border-b md:border-b-0 md:border-r border-white/[0.08] bg-black/[0.18]">
-              <div className="flex items-start gap-3 mb-2">
-                <XCircle className="w-5 h-5 text-gray-500 shrink-0 mt-0.5" />
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
-                  What usually happens
-                </p>
-              </div>
-              <h3 className="text-[17px] font-display font-bold text-gray-300 leading-snug mb-2">
-                {pair.failure}
-              </h3>
-              <p className="text-gray-500 text-[14px] leading-relaxed">
-                {pair.failureDetail}
-              </p>
-            </div>
-
-            {/* Blue wash, not orange. A tinted half-panel this large is a
-                surface, not a call to action — orange at this size competed
-                with the actual CTAs and pulled the page off the site palette. */}
-            <div className="p-6 md:p-7 bg-brand-blue/[0.07]">
-              <div className="flex items-start gap-3 mb-2">
-                <CheckCircle2 className="w-5 h-5 text-brand-blue-light shrink-0 mt-0.5" />
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-blue-light">
-                  How we run it
-                </p>
-              </div>
-              <h3 className="text-[17px] font-display font-bold text-white leading-snug mb-2">
-                {pair.us}
-              </h3>
-              <p className="text-gray-300 text-[14px] leading-relaxed">
-                {pair.usDetail}
-              </p>
-            </div>
-          </m.div>
+      </Reveal>
+      <ul className="grid grid-cols-1 gap-2.5 min-[600px]:grid-cols-2 min-[600px]:gap-4 min-[900px]:grid-cols-3">
+        {SERVICES.map((svc) => (
+          <li key={svc.to} className="flex">
+            <SmartLink
+              to={svc.to}
+              className={`group flex w-full items-center justify-between gap-3 rounded-[14px] bg-[#f5f7fa] ${cardEdge} px-4 py-3.5 transition-colors hover:border-[#1f7fdb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f7fdb] min-[600px]:flex-col min-[600px]:items-start min-[600px]:justify-start min-[600px]:p-6`}
+            >
+              <span className="block text-[16px] font-display font-semibold tracking-[-0.02em] leading-snug text-[#243a55] min-[600px]:text-[17px]">
+                {svc.title}
+              </span>
+              <span className="hidden flex-1 text-[14.5px] leading-[1.5] text-[#475569] min-[600px]:block">
+                {svc.line}
+              </span>
+              <span className="inline-flex shrink-0 items-center gap-1 text-[14px] font-semibold text-[#1f7fdb] min-[600px]:mt-2">
+                <span className="hidden min-[600px]:inline">Learn more</span>
+                <ArrowRight
+                  aria-hidden="true"
+                  className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-[3px]"
+                  strokeWidth={2.25}
+                />
+              </span>
+            </SmartLink>
+          </li>
         ))}
-      </div>
-
-      <m.p
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="mt-10 md:mt-12 text-center text-gray-400 text-[15px] max-w-2xl mx-auto leading-relaxed"
-      >
-        It comes down to one thing: a beachfront pool needs a service that{' '}
-        <span className="text-white">understands the island it sits on</span>{' '}
-        — and most don't.
-      </m.p>
+      </ul>
     </Container>
   </section>
 );
 
+// ── "St. Pete Beach, north to south" (light grey) ──────────────────
+// The island top to bottom: a vertical line with a dot per stretch, NORTH at
+// the top and SOUTH at the bottom.
+const STRETCHES = [
+  {
+    name: 'Upham Beach and the north end',
+    body: 'Open Gulf exposure near Blind Pass. Wind carries sand into the pool, so baskets and filters get extra attention.',
+  },
+  {
+    name: 'Belle Vista',
+    body: 'Bayside streets and canal-front homes. Pools sit close to the seawall, where salt spray reaches the equipment pad.',
+  },
+  {
+    name: 'Gulf Boulevard and the Don CeSar area',
+    body: 'Condominiums and resort-side homes. Community pools and private pools both need steady chemistry under heavy use.',
+  },
+  {
+    name: 'Vina del Mar',
+    body: 'Island homes on Boca Ciega Bay. Water on every side means salt air year-round, and many owners are here for part of the year.',
+  },
+  {
+    name: 'Pass-a-Grille',
+    body: 'The historic southern tip, a few blocks wide between Gulf and bay. Smaller, older pools where equipment care matters most.',
+  },
+];
+
+const compass = 'text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1f7fdb]';
+
+const NorthToSouthSection = () => (
+  <section aria-labelledby="spb-area-title" className="py-16 md:py-24 bg-[#f5f7fa]">
+    <Container className="grid grid-cols-1 gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 lg:items-start">
+      <Reveal>
+        <span className={labelLight}>Where we work</span>
+        <h2 id="spb-area-title" className={`${h2Light} mb-4`}>
+          St. Pete Beach, north to south.
+        </h2>
+        <p className={subLight}>
+          Our route runs the length of the island every week. Each stretch treats a pool a little differently, and
+          your technician knows which one you&rsquo;re on.
+        </p>
+        <p className="mt-6 text-[15px] leading-relaxed text-[#475569]">
+          Also nearby:{' '}
+          <SmartLink to="/treasure-island-fl/" className={linkLight}>
+            Treasure Island
+          </SmartLink>{' '}
+          ·{' '}
+          <SmartLink to="/snell-isle-fl/" className={linkLight}>
+            Snell Isle
+          </SmartLink>{' '}
+          ·{' '}
+          <SmartLink to="/" className={linkLight}>
+            St. Petersburg
+          </SmartLink>
+        </p>
+      </Reveal>
+
+      <Reveal className="relative">
+        {/* The island's line, between the NORTH and SOUTH labels. */}
+        <span aria-hidden="true" className="absolute left-[6px] top-7 bottom-7 w-0.5 rounded-full bg-[#1f7fdb]/25" />
+        <p aria-hidden="true" className={compass}>
+          North
+        </p>
+        <ol className="relative mt-5 space-y-6">
+          {STRETCHES.map((s) => (
+            <li key={s.name} className="relative pl-9">
+              <span
+                aria-hidden="true"
+                className="absolute left-0 top-[5px] h-3.5 w-3.5 rounded-full bg-white ring-[3px] ring-[#1f7fdb]"
+              />
+              <h3 className="text-[17px] font-display font-semibold tracking-[-0.02em] leading-snug text-[#243a55]">
+                {s.name}
+              </h3>
+              <p className="mt-1 text-[15px] leading-relaxed text-[#475569]">{s.body}</p>
+            </li>
+          ))}
+        </ol>
+        <p aria-hidden="true" className={`${compass} mt-5`}>
+          South
+        </p>
+      </Reveal>
+    </Container>
+  </section>
+);
+
+// ── "Salt-tested. Sun-ready. Always clear." (dark) ─────────────────
 const PromiseStrip = () => (
-  // Transparent — the bg-mesh shows through, so it lifts off the flat #07111c
-  // section above it without introducing yet another navy. The two hairline
+  // Transparent — the page's navy and bg-mesh show through. The two hairline
   // rules top and bottom are what frame it as a distinct band.
-  <section className="py-16 md:py-24 relative overflow-hidden">
+  <section aria-labelledby="spb-strip-title" className="py-16 md:py-24 relative overflow-hidden">
     <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[80%] h-[100%] bg-brand-blue/[0.07] rounded-full blur-[150px] pointer-events-none" />
     <div className="absolute inset-0 bg-gradient-to-b from-white/[0.025] via-transparent to-transparent pointer-events-none" />
     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent pointer-events-none" />
     <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-      <m.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
-        <h2 className="section-heading text-white leading-tight mb-4">
+      <Reveal>
+        <h2 id="spb-strip-title" className={`${h2Dark} mb-4`}>
           Salt-tested. Sun-ready. Always clear.
         </h2>
         <p className="section-subtext max-w-2xl mx-auto mb-8">
@@ -682,12 +725,71 @@ const PromiseStrip = () => (
           Don CeSar, Upham Beach, Belle Vista, and the Gulf Blvd condos and
           waterfront homes along Boca Ciega Bay.
         </p>
-      </m.div>
+      </Reveal>
     </div>
   </section>
 );
 
-// ── Section: related pool-care guides ──────────────────────────────
+// ── FAQ (white) ────────────────────────────────────────────────────
+const FaqSection = () => {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  return (
+    <section aria-labelledby="spb-faq-title" className="py-16 md:py-24 bg-white">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Reveal className="text-center mb-10 md:mb-12">
+          <span className={labelLight}>St. Pete Beach Pool Service</span>
+          <h2 id="spb-faq-title" className={h2Light}>
+            Questions, answered.
+          </h2>
+        </Reveal>
+
+        <div className="space-y-3">
+          {stPeteBeachFaqs.map((faq, index) => {
+            const isOpen = openIndex === index;
+            const panelId = `spb-faq-panel-${index}`;
+            const buttonId = `spb-faq-button-${index}`;
+            return (
+              <div
+                key={index}
+                className={`faq-item rounded-2xl overflow-hidden bg-[#f5f7fa] ${cardEdge} transition-colors hover:bg-[#eef2f6] ${isOpen ? 'is-open' : ''}`}
+              >
+                <button
+                  type="button"
+                  id={buttonId}
+                  onClick={() => setOpenIndex(isOpen ? null : index)}
+                  className="w-full px-6 py-4 flex items-center justify-between text-left gap-4"
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                >
+                  <span className="text-[#243a55] font-semibold tracking-[-0.02em] text-[17px]">{faq.q}</span>
+                  {isOpen ? (
+                    <Minus className="w-5 h-5 shrink-0 text-[#1f7fdb]" />
+                  ) : (
+                    <Plus className="w-5 h-5 shrink-0 text-[#475569]" />
+                  )}
+                </button>
+                <div className="faq-answer">
+                  <div className="faq-answer-inner">
+                    <div
+                      id={panelId}
+                      role="region"
+                      aria-labelledby={buttonId}
+                      className="px-6 pb-6 text-[#475569] leading-relaxed border-t border-[rgba(10,22,40,0.08)] pt-4"
+                    >
+                      {faq.a}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ── Pool care guides (light grey) ──────────────────────────────────
 // Internal-link cluster → our pillar guides. Every topic here is one the
 // barrier-island copy already raises (sun/stabilizer, salt cells, green-pool
 // recovery, equipment), so the links are genuinely relevant — which is what
@@ -729,136 +831,78 @@ const relatedGuides: Array<{
 ];
 
 const RelatedGuidesSection = () => (
-  // Transparent (mesh) — sits between the flat #07111c FAQ and the flat
-  // #07111c closing CtaBand, so the page ends on a light/dark/light beat.
-  <section className="py-16 md:py-24 relative overflow-hidden">
-    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
-    <div className="absolute top-0 left-1/4 w-[50%] h-[40%] bg-brand-blue/[0.05] rounded-full blur-[150px] pointer-events-none" />
-    <Container className="relative z-10">
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="max-w-2xl mb-10 md:mb-12"
-      >
-        <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-          Pool Care, Explained
-        </span>
-        <h2 className="section-heading text-white leading-tight mb-4">
+  <section aria-labelledby="spb-guides-title" className="py-16 md:py-24 bg-[#f5f7fa]">
+    <Container>
+      <Reveal className="max-w-2xl mb-10 md:mb-12">
+        <span className={labelLight}>Pool Care, Explained</span>
+        <h2 id="spb-guides-title" className={`${h2Light} mb-4`}>
           The stuff we'd tell you at the pool anyway.
         </h2>
-        <p className="section-subtext">
+        <p className={subLight}>
           We put the things people ask us most into plain-English guides — no
           jargon, no upsell. Whether you're a customer or just trying to keep your
           own beach pool honest, dig in.
         </p>
-      </m.div>
+      </Reveal>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
         {relatedGuides.map((g, i) => (
-          <m.div
-            key={g.to}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: (i % 2) * 0.06 }}
-          >
+          <Reveal key={g.to} delay={(i % 2) * 0.06}>
             <SmartLink
               to={g.to}
-              className="group glass-panel rounded-2xl p-6 md:p-7 flex items-start gap-4 h-full hover:bg-white/10 transition-colors"
+              className={`group rounded-2xl bg-white ${cardEdge} p-6 md:p-7 flex items-start gap-4 h-full transition-colors hover:border-[#1f7fdb]/40`}
             >
-              <div className="shrink-0 w-11 h-11 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center">
-                <g.icon className="w-5 h-5 text-brand-blue-light" />
+              <div className={`${iconBoxLight} shrink-0 w-11 h-11`}>
+                <g.icon className="w-5 h-5 text-[#1f7fdb]" />
               </div>
               <div className="flex-1">
-                <h3 className="text-[17px] font-display font-bold text-white mb-1.5 flex items-center gap-1.5">
+                <h3 className="text-[17px] font-display font-semibold tracking-[-0.02em] text-[#243a55] mb-1.5 flex items-center gap-1.5">
                   {g.title}
-                  <ArrowRight className="w-4 h-4 text-gray-500 transition-all group-hover:text-brand-blue-light group-hover:translate-x-0.5" />
+                  <ArrowRight className="w-4 h-4 text-[#475569]/60 transition-all group-hover:text-[#1f7fdb] group-hover:translate-x-0.5" />
                 </h3>
-                <p className="text-gray-400 text-[14px] leading-relaxed">{g.blurb}</p>
+                <p className="text-[#475569] text-[14px] leading-relaxed">{g.blurb}</p>
               </div>
             </SmartLink>
-          </m.div>
+          </Reveal>
         ))}
       </div>
     </Container>
   </section>
 );
 
-const FaqSection = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-  return (
-    <section className="py-16 md:py-24 bg-[#07111c] relative">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <m.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-10 md:mb-12"
-        >
-          <span className="text-brand-blue-light font-bold tracking-[0.2em] uppercase text-xs mb-3 block">
-            St. Pete Beach Pool Service
-          </span>
-          <h2 className="section-heading text-white">Questions, answered.</h2>
-        </m.div>
+// ── Promises (white, directly above the quote form) ────────────────
+// The homepage's three written promises (GuaranteeCards holds the terms),
+// with the plain cards on grey to sit on white.
+const PromisesSection = () => (
+  <section aria-labelledby="spb-promises-title" className="py-16 md:py-24 bg-white">
+    <Container>
+      <Reveal className="max-w-2xl mb-10 md:mb-12">
+        <span className={labelLight}>In writing</span>
+        <h2 id="spb-promises-title" className={h2Light}>
+          Three promises, in your Service Agreement.
+        </h2>
+      </Reveal>
+      <GuaranteeCards className="min-[900px]:grid-cols-3 [&>li:not(:first-child)]:bg-[#f5f7fa]" />
+    </Container>
+  </section>
+);
 
-        <div className="space-y-4">
-          {faqs.map((faq, index) => {
-            const isOpen = openIndex === index;
-            const panelId = `spb-faq-panel-${index}`;
-            const buttonId = `spb-faq-button-${index}`;
-            return (
-              <div
-                key={index}
-                className={`faq-item glass-panel rounded-2xl overflow-hidden transition-colors hover:bg-white/10 ${isOpen ? 'is-open' : ''}`}
-              >
-                <button
-                  type="button"
-                  id={buttonId}
-                  onClick={() => setOpenIndex(isOpen ? null : index)}
-                  className="w-full px-6 py-4 flex items-center justify-between text-left gap-4"
-                  aria-expanded={isOpen}
-                  aria-controls={panelId}
-                >
-                  <span className="text-white font-semibold text-[17px]">{faq.q}</span>
-                  {isOpen ? (
-                    <Minus className="w-5 h-5 shrink-0 text-brand-blue-light" />
-                  ) : (
-                    <Plus className="w-5 h-5 shrink-0 text-gray-400" />
-                  )}
-                </button>
-                <div className="faq-answer">
-                  <div className="faq-answer-inner">
-                    <div
-                      id={panelId}
-                      role="region"
-                      aria-labelledby={buttonId}
-                      className="px-6 pb-6 text-gray-400 leading-relaxed border-t border-white/5 pt-4"
-                    >
-                      {faq.a}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-};
-
+// In the order the page reads; the quote form (dark) follows in
+// StPeteBeachPage.
 const StPeteBeachBelowFold = () => (
   <>
+    <ReviewsSection />
     <IslandTollSection />
     <InterludeBand />
     <TwoModesSection />
     <WeeklyVisitSection />
     <ProcessSection />
-    <WhyUsSection />
+    <ServicesSection />
+    <NorthToSouthSection />
     <PromiseStrip />
     <FaqSection />
     <RelatedGuidesSection />
+    <PromisesSection />
   </>
 );
 

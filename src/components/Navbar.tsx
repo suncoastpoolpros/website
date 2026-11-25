@@ -31,7 +31,9 @@ const MOBILE_NAV: MobileNavItem[] = [
   { label: 'Contact', to: '/contact/' },
 ];
 
-export const Navbar = () => {
+// `goldCta`: the header's Get a Quote in the homepage gold with navy text
+// (pages restyled to the homepage brand, e.g. St. Pete Beach) instead of orange.
+export const Navbar = ({ goldCta = false }: { goldCta?: boolean } = {}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [areasOpen, setAreasOpen] = useState(false);
@@ -363,7 +365,9 @@ export const Navbar = () => {
               <button
                 type="button"
                 onClick={openQuoteSheet}
-                className="btn btn-orange whitespace-nowrap px-4 lg:px-6"
+                className={`btn whitespace-nowrap px-4 lg:px-6 ${
+                  goldCta ? 'bg-[#f7b500] text-[#243a55] hover:bg-[#ffc01f]' : 'btn-orange'
+                }`}
               >
                 Get a Quote
               </button>

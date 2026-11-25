@@ -65,7 +65,11 @@ export type ServiceQuoteFormProps = {
    * Varying this stops three service pages from rendering the same silhouette.
    */
   layout?: 'form-right' | 'form-left' | 'centered';
-  accent?: 'blue' | 'orange';
+  /**
+   * `gold` is the homepage brand on a dark section: gold accents, the gold
+   * button with navy text, and headings at weight 600 (St. Pete Beach).
+   */
+  accent?: 'blue' | 'orange' | 'gold';
   /**
    * Locks the form to one service. The page IS the service, so the visitor
    * should not have to restate it — it ships as a hidden input plus a small
@@ -85,6 +89,8 @@ export type ServiceQuoteFormProps = {
   successBody: string;
   /** Small print under the submit button. */
   footnote?: React.ReactNode;
+  /** An id on the form card itself (a sticky bar scrolls to it and watches it). */
+  cardId?: string;
 };
 
 // Full literal class strings — see the Tailwind note in the header comment.
@@ -96,7 +102,9 @@ const ACCENT = {
     chip: 'border-brand-blue/30 bg-brand-blue/10 text-brand-blue-light',
     link: 'text-brand-blue-light hover:text-white',
     button:
-      'bg-gradient-to-r from-brand-blue to-brand-blue-dark hover:from-brand-blue-light hover:to-brand-blue shadow-lg shadow-brand-blue/20',
+      'text-white bg-gradient-to-r from-brand-blue to-brand-blue-dark hover:from-brand-blue-light hover:to-brand-blue shadow-lg shadow-brand-blue/20',
+    heading: 'section-heading',
+    successHeading: 'font-bold',
   },
   orange: {
     eyebrow: 'text-brand-orange',
@@ -105,7 +113,21 @@ const ACCENT = {
     chip: 'border-brand-orange/30 bg-brand-orange/10 text-brand-orange-light',
     link: 'text-brand-orange hover:text-white',
     button:
-      'bg-gradient-to-r from-brand-orange to-brand-orange-dark hover:from-brand-orange-light hover:to-brand-orange shadow-lg shadow-brand-orange/20',
+      'text-white bg-gradient-to-r from-brand-orange to-brand-orange-dark hover:from-brand-orange-light hover:to-brand-orange shadow-lg shadow-brand-orange/20',
+    heading: 'section-heading',
+    successHeading: 'font-bold',
+  },
+  gold: {
+    eyebrow: 'text-[#f7b500]',
+    glow: 'bg-[#f7b500]/10',
+    tick: 'text-[#f7b500]',
+    chip: 'border-[#f7b500]/30 bg-[#f7b500]/10 text-[#ffd257]',
+    link: 'text-[#f7b500] hover:text-white',
+    button: 'text-[#243a55] bg-[#f7b500] hover:bg-[#ffc01f] shadow-lg shadow-black/20',
+    // Not .section-heading: its weight 700 is in the utilities layer and
+    // would beat a weight utility on the same element.
+    heading: 'text-3xl md:text-[2.5rem] font-display font-semibold tracking-[-0.02em]',
+    successHeading: 'font-semibold tracking-[-0.02em]',
   },
 } as const;
 
@@ -197,6 +219,7 @@ export const ServiceQuoteForm = ({
   successTitle,
   successBody,
   footnote,
+  cardId,
 }: ServiceQuoteFormProps) => {
   const { submitted, setSubmitted, loading, error, turnstile, handleSubmit } = useQuoteFormSubmit(source);
   const a = ACCENT[accent];
@@ -210,7 +233,7 @@ export const ServiceQuoteForm = ({
             <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30">
               <CheckCircle className="w-10 h-10 text-green-500" />
             </div>
-            <h2 className="text-2xl md:text-3xl font-display font-bold text-white mb-4">
+            <h2 className={`text-2xl md:text-3xl font-display text-white mb-4 ${a.successHeading}`}>
               {successTitle}
             </h2>
             <p className="text-gray-300 text-base md:text-lg">{successBody}</p>
@@ -388,7 +411,7 @@ export const ServiceQuoteForm = ({
       >
         {eyebrow}
       </span>
-      <h2 className="section-heading text-white leading-tight mb-5">{heading}</h2>
+      <h2 className={`${a.heading} text-white leading-tight mb-5`}>{heading}</h2>
       <div className="section-subtext mb-6">{intro}</div>
 
       {points && points.length > 0 && (
@@ -415,7 +438,7 @@ export const ServiceQuoteForm = ({
   );
 
   const card = (
-    <div className="glass-panel p-6 sm:p-8 lg:p-10 rounded-3xl relative">
+    <div id={cardId} className={`glass-panel p-6 sm:p-8 lg:p-10 rounded-3xl relative ${cardId ? 'scroll-mt-24' : ''}`}>
       <div
         className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl pointer-events-none ${a.glow}`}
       />
@@ -473,7 +496,7 @@ export const ServiceQuoteForm = ({
         <button
           type="submit"
           disabled={loading}
-          className={`mt-6 w-full py-5 text-white rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed group ${a.button}`}
+          className={`mt-6 w-full py-5 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed group ${a.button}`}
         >
           {loading ? (
             <span className="animate-pulse">Sending&hellip;</span>

@@ -16,6 +16,11 @@ import { QuoteButton } from '@/components/landing/sectionKit';
  * Shared by the city pages built on Clearwater's design (Clearwater, Palm
  * Harbor): each passes its own heading, intro and sample-report address. The
  * six steps are the same everywhere, since the weekly visit is.
+ *
+ * Two opt-in layouts (Clearwater uses both): `splitOnTablet` sets the steps
+ * as two lists of three side by side under the phone from 768 to 999px, and
+ * `footerFromTablet` drops the closing button and its line on phones, where
+ * the page's sticky bar already offers it.
  */
 
 type Target = { anchor: Element | null; offset: number; pulse: Element | null };
@@ -379,6 +384,10 @@ type StandardProps = {
   address: string;
   /** The heading's id (the section's accessible name). */
   titleId?: string;
+  /** 768–999px: two lists of three side by side, instead of one column. */
+  splitOnTablet?: boolean;
+  /** Hide the closing "Get my price" and its line below 768px. */
+  footerFromTablet?: boolean;
 };
 
 export const ClearwaterStandard = ({
@@ -387,6 +396,8 @@ export const ClearwaterStandard = ({
   lead,
   address,
   titleId = 'cw-standard-title',
+  splitOnTablet = false,
+  footerFromTablet = false,
 }: StandardProps) => {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -408,7 +419,7 @@ export const ClearwaterStandard = ({
           <p className="cs-lead">{lead}</p>
         </div>
 
-        <div ref={stageRef} className="cs-stage">
+        <div ref={stageRef} className={`cs-stage${splitOnTablet ? ' cs-stage--split' : ''}`}>
           <div aria-hidden="true" className="cs-glow" />
           <StepList steps={LEFT} side="l" onPick={pick} />
           <div ref={phoneWrapRef} className="cs-phone">
@@ -424,7 +435,7 @@ export const ClearwaterStandard = ({
           <StepList steps={RIGHT} side="r" onPick={pick} />
         </div>
 
-        <div className="cs-footer">
+        <div className={`cs-footer${footerFromTablet ? ' cs-footer--from-tablet' : ''}`}>
           <QuoteButton />
           <p className="cs-footnote">All six steps, one flat rate.</p>
         </div>

@@ -251,7 +251,7 @@ export const StPeteBeachHeroPhone = () => {
 
         {/* Quiet ambient glow — Gulf-tone, slightly warmer than Treasure to
             read "sun-soaked beach" without leaving the brand palette. */}
-        <div className="absolute -top-6 -left-6 -right-6 bottom-12 bg-gradient-to-br from-brand-blue/15 via-brand-blue-dark/10 to-brand-orange/10 blur-3xl -z-10 rounded-[3rem]" />
+        <div className="absolute -top-6 -left-6 -right-6 bottom-12 bg-gradient-to-br from-brand-blue/15 via-brand-blue-dark/10 to-[#f7b500]/10 blur-3xl -z-10 rounded-[3rem]" />
       </div>
     </m.div>
   );

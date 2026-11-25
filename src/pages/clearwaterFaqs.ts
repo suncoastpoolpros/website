@@ -10,6 +10,10 @@
 // documented visit, never one permanent person.
 export const clearwaterFaqs = [
   {
+    q: 'How much does pool service cost in Clearwater?',
+    a: "It depends on your pool: its size, the trees around it, its surface and its equipment. Send your address or two photos and we'll reply with your exact flat monthly price the same day. Every standard chemical is included in that price.",
+  },
+  {
     q: 'How does the flat monthly rate work?',
     a: "Your price is set once when we quote your pool, and then it holds. It doesn't climb in July, and standard chemicals never show up as line items. Only one-off work like repairs, parts and green-pool recoveries is billed separately, and you approve each one first.",
   },

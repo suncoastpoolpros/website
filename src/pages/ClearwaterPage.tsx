@@ -1,10 +1,10 @@
-import { Check } from 'lucide-react';
+import { Phone } from 'lucide-react';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { QuoteButton } from '@/components/landing/sectionKit';
 import { Footer } from '@/components/Footer';
 import { SmartLink as Link } from '@/components/SmartLink';
-import { StickyMobileCta } from '@/components/StickyMobileCta';
-import { LandingQuoteSheetProvider, useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
+import { StickyQuoteBar } from '@/components/landing/StickyQuoteBar';
+import { LandingQuoteSheetProvider } from '@/components/landing/LandingQuoteSheet';
 import { PHONE_DISPLAY, PHONE_HREF } from '@/lib/contact';
 import { clearwaterFaqs } from '@/pages/clearwaterFaqs';
 import ClearwaterBelowFold from '@/pages/ClearwaterBelowFold';
@@ -12,14 +12,11 @@ import { usePageMeta, FONTS } from '@/lib/usePageMeta';
 import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
 // Keyword + city first, the brand after the pipe (the homepage's pattern).
-const PAGE_TITLE = 'Pool Cleaning in Clearwater, FL | Suncoast Pool Pros';
-// ~153 chars. Leads with the local keyword, names the duality that defines
-// Clearwater (barrier-island beach + established mainland) with real place
-// names, then stacks the click-drivers (consistent techs, flat rate, chemicals
-// in, clear water).
+const PAGE_TITLE = 'Pool Service in Clearwater, FL | Suncoast Pool Pros';
+// Leads with the local keyword, spans the beach and the mainland with real
+// place names, then the click-drivers.
 const PAGE_DESC =
-  'Weekly pool service in Clearwater, FL — Clearwater Beach & Sand Key to Countryside. Consistent techs, flat rate, chemicals included, crystal-clear water.';
-const PAGE_URL = 'https://suncoastpoolpros.com/clearwater-fl/';
+  'Weekly pool service in Clearwater, FL, from Clearwater Beach to Countryside. Flat monthly rate, chemicals included, no contract. Free same-day quote.';
 
 // The hero photo: Treasure Island's, as a placeholder until a Clearwater one
 // is shot. To swap it, change these paths; heroPreload reads them too, so the
@@ -38,8 +35,8 @@ const HERO_IMG = {
   letterboxed: true,
 };
 
-// Named in the Coverage section below and in the schema. None has a page of
-// its own yet; give one a `to` when it does and it becomes a link here.
+// The hero's "Serving" bar (md+). None has a page of its own yet; give one a
+// `to` when it does and it becomes a link here.
 const NEIGHBORHOODS: { name: string; to?: string }[] = [
   { name: 'Clearwater Beach' },
   { name: 'Sand Key' },
@@ -94,7 +91,7 @@ const ClearwaterHero = () => {
           className={`flex items-center justify-center gap-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-[#FFC94D] sm:text-[13px] sm:tracking-[0.16em] ${shadowSoft}`}
         >
           <span aria-hidden="true" className="hidden h-px w-7 shrink-0 bg-[rgba(255,194,38,0.6)] sm:block" />
-          Pool Cleaning in Clearwater, FL
+          Pool service in Clearwater, FL
           <span aria-hidden="true" className="hidden h-px w-7 shrink-0 bg-[rgba(255,194,38,0.6)] sm:block" />
         </h1>
 
@@ -108,26 +105,24 @@ const ClearwaterHero = () => {
           Weekly pool service from Sand Key to Countryside. One flat rate, every chemical included, no contracts.
         </p>
 
-        {/* Opens the 3-option quote popup: no address to type first. */}
-        <div id="get-price" className="relative z-10 mx-auto mt-8 max-w-[26rem] scroll-mt-24 text-center">
+        {/* Opens the 3-option quote popup: no address to type first. The phone
+            link sits beside it from 768px, centered under it on phones. */}
+        <div
+          id="get-price"
+          className="relative z-10 mx-auto mt-8 flex scroll-mt-24 flex-col items-center gap-2 md:flex-row md:justify-center md:gap-6"
+        >
           <QuoteButton />
-        </div>
-
-        <p className={`mt-3 text-[13.5px] text-white/85 ${shadowSoft}`}>
-          Free quote, same-day reply. Prefer to talk?{' '}
-          {/* Padding stretches the tap target to 44px; the negative margin
-              keeps the line height unchanged. */}
+          {/* Padding stretches the tap target to 44px. */}
           <a
             href={PHONE_HREF}
-            className={`-my-3 inline-block whitespace-nowrap py-3 font-semibold text-white underline decoration-white/60 underline-offset-[3px] hover:decoration-white ${focusRing}`}
+            className={`inline-flex items-center gap-2 whitespace-nowrap py-3 text-[15px] font-medium text-white underline decoration-white/60 underline-offset-[3px] hover:decoration-white ${shadowSoft} ${focusRing}`}
           >
-            {PHONE_DISPLAY}
+            <Phone aria-hidden="true" className="h-4 w-4 shrink-0" strokeWidth={2.25} />
+            or call {PHONE_DISPLAY}
           </a>
-        </p>
+        </div>
 
-        <ul
-          className={`mt-7 flex flex-col items-center gap-2.5 text-[14px] font-medium text-white sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-[26px] ${shadowSoft}`}
-        >
+        <ul className={`mt-5 flex justify-center text-[14px] font-medium text-white md:mt-7 ${shadowSoft}`}>
           <li className="inline-flex items-center gap-2 rounded-full bg-white/12 py-1.5 pl-2 pr-3 ring-1 ring-inset ring-white/18">
             <span
               aria-hidden="true"
@@ -142,13 +137,6 @@ const ClearwaterHero = () => {
               <span className="sr-only">Rated </span>5.0<span className="sr-only"> out of 5</span> on Google
             </span>
           </li>
-          {/* Techs alternate, so the promise sits on the day, not the person. */}
-          {['Familiar faces, locked-in day', 'Always Blue guarantee'].map((t) => (
-            <li key={t} className="flex items-center gap-2">
-              <Check className="h-4 w-4 shrink-0 text-[#9AD0F0]" strokeWidth={2.5} />
-              {t}
-            </li>
-          ))}
         </ul>
       </div>
 
@@ -180,42 +168,12 @@ const ClearwaterHero = () => {
   );
 };
 
-// JSON-LD (LocalBusiness + FAQPage + Breadcrumb) injected client-side. Title,
-// description, canonical, and OG come from usePageMeta (SSR'd into the
-// prerendered HTML); usePageMeta doesn't do JSON-LD, so this effect adds it.
-// See CLAUDE.md #9.
-// Page JSON-LD. Passed through the page-meta hook so it lands in the
-// PRERENDERED head — an effect never runs during renderToString, so the HTML
-// a crawler reads on first fetch would otherwise carry none of these nodes.
+// Page JSON-LD, through usePageMeta so it lands in the PRERENDERED head.
+// No LocalBusiness node of its own: the site-wide one in index.html (same
+// @id, full NAP, Clearwater in its areaServed) is the page's one business
+// entity. A second node with that @id but a different url and areaServed
+// read as two conflicting businesses.
 const PAGE_SCHEMA = [
-      {
-        '@context': 'https://schema.org',
-        '@type': 'LocalBusiness',
-        '@id': 'https://suncoastpoolpros.com/#business',
-        name: 'Suncoast Pool Pros',
-        url: PAGE_URL,
-        telephone: '+1-727-295-3621',
-        priceRange: '$$',
-        // Mirrors the neighborhoods the page itself names (Coverage section) —
-        // schema and visible content must agree.
-        areaServed: [
-          { '@type': 'City', name: 'Clearwater', addressRegion: 'FL' },
-          { '@type': 'Place', name: 'Clearwater Beach, FL' },
-          { '@type': 'Place', name: 'Sand Key, FL' },
-          { '@type': 'Place', name: 'Island Estates, FL' },
-          { '@type': 'Place', name: 'Countryside, FL' },
-          { '@type': 'Place', name: 'Morningside, FL' },
-          { '@type': 'Place', name: 'Del Oro, FL' },
-          { '@type': 'Place', name: 'Skycrest, FL' },
-          { '@type': 'Place', name: 'Harbor Oaks, FL' },
-          { '@type': 'Place', name: 'Coachman, FL' },
-          { '@type': 'Place', name: 'Sunset Point, FL' },
-          { '@type': 'Place', name: 'Eastwood, FL' },
-          { '@type': 'Place', name: 'Feather Sound, FL' },
-        ],
-        description:
-          'Weekly pool service for all of Clearwater, FL — the barrier-island beach world (Clearwater Beach, Sand Key, Island Estates) and the established mainland (Countryside, Morningside, Del Oro). Consistent vetted technicians, salt systems and screened cages handled, flat rate with chemicals included, photo report after every visit.',
-      },
       {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -230,9 +188,6 @@ const PAGE_SCHEMA = [
         { name: 'Clearwater', path: '/clearwater-fl/' },
       ]),
     ];
-
-// The phone bar's Quote opens the same popup (it needs the provider above it).
-const PopupStickyCta = () => <StickyMobileCta quote={useLandingQuoteSheet()} />;
 
 export const ClearwaterPage = () => {
   usePageMeta({
@@ -252,16 +207,18 @@ export const ClearwaterPage = () => {
 
   // overflow-x-clip, not -hidden: hidden makes the wrapper a scroll
   // container, and the sticky header would stop sticking.
-  // The homepage's quote popup: every "Get my price" below the hero (and the
-  // phone bar's Quote) opens it; the hero keeps its address search.
+  // The homepage's quote popup: every "Get my price" button on the page opens
+  // it, except the phone bar's, which scrolls to the form.
   return (
     <LandingQuoteSheetProvider>
-      <div className="landing-canvas force-static-motion relative min-h-screen overflow-x-clip bg-white font-sans text-sc-navy antialiased">
+      {/* Phones: h1 and h2 lines balanced. */}
+      <div className="landing-canvas force-static-motion relative min-h-screen overflow-x-clip bg-white font-sans text-sc-navy antialiased max-md:[&_h1]:text-balance max-md:[&_h2]:text-balance">
         <LandingHeader />
         <ClearwaterHero />
         <ClearwaterBelowFold />
         <Footer />
-        <PopupStickyCta />
+        {/* Phones only: Call + Get my price, to the form below. */}
+        <StickyQuoteBar label="Get my price" formId="quote-form" hideFrom="md" />
       </div>
     </LandingQuoteSheetProvider>
   );

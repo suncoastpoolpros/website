@@ -1,24 +1,22 @@
 import React from 'react';
-import { m } from 'motion/react';
-import { Phone, Star, MapPin, ShieldCheck, Wind } from 'lucide-react';
+import { Phone, Star } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Glass } from '@/components/Glass';
 import { Container } from '@/components/Container';
 import { useQuoteSheet } from '@/components/QuoteSheet';
-import { StickyMobileCta } from '@/components/StickyMobileCta';
+import { StickyQuoteBar } from '@/components/landing/StickyQuoteBar';
 import { PHONE_E164 as PHONE, PHONE_DISPLAY } from '@/lib/contact';
 import { stPeteBeachFaqs } from '@/pages/stPeteBeachFaqs';
 import { ServiceQuoteForm } from '@/components/ServiceQuoteForm';
 import { StPeteBeachHeroPhone } from '@/components/StPeteBeachHeroPhone';
 import StPeteBeachBelowFold from '@/pages/StPeteBeachBelowFold';
-import { usePageMeta, FONTS, NAV_FONTS } from '@/lib/usePageMeta';
+import { usePageMeta, NAV_FONTS } from '@/lib/usePageMeta';
 import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 
-const PAGE_TITLE = 'St. Pete Beach Pool Service — Salt-Tested, Always Clear';
+const PAGE_TITLE = 'St. Pete Beach Pool Service & Cleaning | Suncoast Pool Pros';
 const PAGE_DESC =
   'Weekly pool service for St. Pete Beach, FL — built for salt air, sun & heavy use. Consistent tech, equipment checked, flat rate, photo report every visit.';
-const PAGE_URL = 'https://suncoastpoolpros.com/st-pete-beach-fl/';
 
 const HeroSection = () => {
   const { open } = useQuoteSheet();
@@ -35,7 +33,7 @@ const HeroSection = () => {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[#02060c]" />
         <div
-          className="hero-bg-stpetebeach-desktop absolute -inset-y-[18%] inset-x-0 hidden md:block bg-cover bg-center"
+          className="hero-bg-stpetebeach-desktop absolute inset-0 hidden md:block bg-cover bg-center"
           aria-hidden
         />
         <div
@@ -65,50 +63,30 @@ const HeroSection = () => {
 
       <Container className="relative z-10 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-          <m.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9, ease: 'easeOut' }}
-            className="lg:col-span-7"
-          >
-            <Glass className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8">
-              <MapPin className="w-3.5 h-3.5 text-brand-blue-light" />
-              <span className="text-xs font-semibold text-cyan-50 tracking-wider uppercase">
-                St. Pete Beach · Gulf Barrier Island
+          {/* Slides in on desktop with motion allowed (.spb-hero-in); simply
+              there on phones and for reduced motion. */}
+          <div className="spb-hero-in lg:col-span-7">
+            {/* The page's one h1. Two lines from 768px; on phones it wraps
+                where it falls, never inside "St. Pete Beach, FL". */}
+            <h1 className="font-display font-semibold tracking-[-0.02em] text-white text-4xl sm:text-5xl md:text-[3.4rem] leading-[1.04] mb-5">
+              <span className="md:block">Pool Cleaning Service</span>{' '}
+              <span className="md:block">
+                in <span className="whitespace-nowrap">St. Pete Beach, FL</span>
               </span>
-            </Glass>
-
-            {/* Visual headline — a div, so the SEO h1 below carries keyword weight */}
-            <div className="font-display font-bold md:font-black text-white tracking-tight mb-6 leading-[1.08]">
-              <span className="block text-4xl sm:text-5xl md:text-[3.4rem] leading-[1.04]">
-                Salt-Tested.
-              </span>
-              <span className="block text-4xl sm:text-5xl md:text-[3.4rem] leading-[1.04]">
-                Always Clear.
-              </span>
-            </div>
-
-            {/* SEO H1 — local keyword for this city page */}
-            <h1 className="text-shadow-city-h1 font-display font-normal text-white/90 text-[17px] sm:text-lg md:text-[1.1875rem] leading-snug mb-5 tracking-tight">
-              Weekly pool service in St. Pete Beach, FL.
             </h1>
 
-            {/* Mobile: tighter line — keeps the salt-air/sand/sun hook +
-                weekly + photo report. Full copy with the Gulf Blvd–Pass-a-Grille
-                range and inspected-equipment detail stays on desktop (md+) for
-                richer local SEO. */}
-            <p className="text-shadow-city-body md:hidden text-[15px] text-gray-200 max-w-[34rem] leading-[1.6] mb-7">
-              <span className="text-white">Barrier-island pools take a beating from salt air, sand, and sun</span> — our weekly service answers it with balanced water and a photo report after every visit.
-            </p>
-            <p className="text-shadow-city-body hidden md:block text-[15px] sm:text-base text-gray-200 font-normal max-w-[38rem] leading-[1.65] mb-7">
-              From <span className="text-white">Gulf Blvd to Pass-a-Grille</span>, barrier-island
-              pools take a beating from salt air, blowing sand, and full afternoon sun. We run a
-              weekly service built for exactly that — balanced water, inspected equipment, and a
-              photo report after every visit.
+            <p className="text-shadow-city-h1 font-display font-medium text-white/90 text-lg md:text-[1.375rem] leading-snug mb-5">
+              Salt-tested. Always clear.
             </p>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-              <a href="#quote" onClick={handleQuote} className="btn btn-blue">
+            <p className="text-shadow-city-body text-[15px] sm:text-base text-gray-200 max-w-[38rem] leading-[1.65] mb-7">
+              Balanced water, inspected equipment and a photo report after every visit, built for salt air, sand and
+              full sun.
+            </p>
+
+            {/* #get-price: the phone bar appears once this row scrolls away. */}
+            <div id="get-price" className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <a href="#quote" onClick={handleQuote} className="btn bg-[#f7b500] text-[#243a55] hover:bg-[#ffc01f]">
                 Get a Free Quote
               </a>
               <Glass
@@ -119,14 +97,10 @@ const HeroSection = () => {
                 {PHONE_DISPLAY}
               </Glass>
             </div>
-            <p className="mt-3 text-[13px] text-gray-400">
-              On the beach or up north for the season — call or text any time, we handle it either way.
-            </p>
 
-            {/* Trust strip — beach-specific signal */}
             <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-[13px] text-gray-400">
               <div className="flex items-center gap-2">
-                <div className="flex gap-0.5 text-brand-orange">
+                <div className="flex gap-0.5 text-[#f7b500]">
                   {[0, 1, 2, 3, 4].map((i) => (
                     <Star key={i} className="w-4 h-4 fill-current" />
                   ))}
@@ -134,19 +108,8 @@ const HeroSection = () => {
                 <span className="font-semibold text-white/90">5.0</span>
                 <span className="text-gray-500">on Google</span>
               </div>
-              {/* Stars stay orange (homepage hero does the same); every other
-                  icon in the strip is blue-light, matching the homepage's
-                  blue MapPin. */}
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-brand-blue-light" />
-                <span>Always Blue Guarantee</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Wind className="w-4 h-4 text-brand-blue-light" />
-                <span>Built for salt-air equipment</span>
-              </div>
             </div>
-          </m.div>
+          </div>
 
           {/* Right column: phone mockup. DESKTOP ONLY (lg+); on mobile it
               renders in its own section below the hero. */}
@@ -167,25 +130,12 @@ const PhoneShowcaseMobile = () => (
   </section>
 );
 
-// JSON-LD (LocalBusiness + FAQPage) injected client-side. Title, description,
-// canonical, and OG come from usePageMeta (SSR'd into the prerendered HTML);
-// usePageMeta doesn't do JSON-LD, so this slim effect adds it.
-// Page JSON-LD. Passed through the page-meta hook so it lands in the
-// PRERENDERED head — an effect never runs during renderToString, so the HTML
-// a crawler reads on first fetch would otherwise carry none of these nodes.
+// Page JSON-LD, through usePageMeta so it lands in the PRERENDERED head.
+// No LocalBusiness node of its own: the site-wide one in index.html (same
+// @id, full NAP, St. Pete Beach in its areaServed) is the page's one business
+// entity. A second node with that @id but a different url and areaServed
+// read as two conflicting businesses.
 const PAGE_SCHEMA = [
-      {
-        '@context': 'https://schema.org',
-        '@type': 'LocalBusiness',
-        '@id': 'https://suncoastpoolpros.com/#business',
-        name: 'Suncoast Pool Pros',
-        url: PAGE_URL,
-        telephone: '+1-727-295-3621',
-        priceRange: '$$',
-        areaServed: { '@type': 'City', name: 'St. Pete Beach', addressRegion: 'FL' },
-        description:
-          'Weekly pool service for St. Pete Beach, FL barrier-island homes and rentals — salt-air equipment inspection, sun-tuned chemistry, consistent vetted technicians, and a photo report after every visit.',
-      },
       {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -206,28 +156,22 @@ export const StPeteBeachPage = () => {
     title: PAGE_TITLE,
     description: PAGE_DESC,
     canonicalPath: '/st-pete-beach-fl/',
+    // Mirrors .hero-bg-stpetebeach-* in index.css.
     heroPreload: {
       mobile: '/st-pete-beach-hero-mobile-v2.webp',
-      desktop: '/st-pete-beach-hero.webp',
+      desktop: '/st-pete-beach-hero-1600.webp',
       wide: '/st-pete-beach-hero-1920.webp',
     },
-    // Above-the-fold: nav (Inter 600 + Montserrat 700), hero body (Inter 400),
-    // H1 (Montserrat 400). The big headline is font-bold md:font-black —
-    // Montserrat 700 on mobile, 900 on desktop — so preload 900 only at md+.
-    fontPreload: [
-      ...NAV_FONTS,
-      FONTS.geist,
-      FONTS.montserrat400,
-      { href: FONTS.montserrat900, media: '(min-width: 768px)' },
-    ],
+    // Geist for the whole hero, Montserrat for the header's wordmark.
+    fontPreload: [...NAV_FONTS],
     jsonLd: PAGE_SCHEMA,
   });
 
   return (
-    <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#ff720f] selection:text-white">
+    <div className="force-static-motion min-h-screen bg-[#07111c] relative overflow-x-hidden selection:bg-[#1f7fdb] selection:text-white">
       <div className="absolute md:fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
       <div className="relative z-10">
-        <Navbar />
+        <Navbar goldCta />
         <HeroSection />
         <PhoneShowcaseMobile />
         <StPeteBeachBelowFold />
@@ -236,7 +180,7 @@ export const StPeteBeachPage = () => {
             two qualifying questions are this page's own. */}
         <ServiceQuoteForm
           layout="form-left"
-          accent="orange"
+          accent="gold"
           eyebrow="St. Pete Beach Quote"
           heading="Pool service built for the beach, priced the same day."
           intro={<>Salt air, full sun and heavy use are harder on a pool than anywhere inland. Tell us what it runs on and how close to the Gulf it sits, and you&rsquo;ll get one flat monthly price back today.</>}
@@ -251,7 +195,7 @@ export const StPeteBeachPage = () => {
               id: "sanitizer",
               label: "Is the pool salt or chlorine?",
               type: 'select',
-              required: true,
+              required: false,
               options: [
                 { value: "salt", label: "Salt system" },
                 { value: "chlorine", label: "Chlorine" },
@@ -262,7 +206,7 @@ export const StPeteBeachPage = () => {
               id: "location",
               label: "Where does the home sit?",
               type: 'select',
-              required: true,
+              required: false,
               options: [
                 { value: "gulf-front", label: "Gulf-front" },
                 { value: "bay-canal", label: "On the bay or a canal" },
@@ -275,10 +219,12 @@ export const StPeteBeachPage = () => {
           successTitle="Got it — we will be in touch today."
           successBody="We will come back with your flat weekly rate and what we would keep an eye on for a pool that close to the water."
           footnote={<>A photo of the equipment pad tells us a lot — text it to {PHONE_DISPLAY}.</>}
+          cardId="quote-form"
         />
         <Footer />
       </div>
-      <StickyMobileCta />
+      {/* Phones only: Call + Get a free quote, to the form above. */}
+      <StickyQuoteBar label="Get a free quote" formId="quote-form" hideFrom="md" tone="dark" />
     </div>
   );
 };

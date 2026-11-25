@@ -36,6 +36,9 @@ export const useLandingQuoteSheet = () => {
   return ctx;
 };
 
+/** The same, or null outside a provider (a page that only scrolls to its form). */
+export const useOptionalLandingQuoteSheet = () => useContext(LandingQuoteSheetContext);
+
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([tabindex="-1"]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export const LandingQuoteSheetProvider = ({ children }: { children: React.ReactNode }) => {

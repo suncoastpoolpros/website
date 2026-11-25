@@ -5,12 +5,9 @@ import {
   ChevronDown,
   FlaskConical,
   Gauge,
-  Handshake,
   MapPin,
   MessageSquare,
   Phone,
-  RotateCcw,
-  ShieldCheck,
 } from 'lucide-react';
 import { SmartLink as Link } from '@/components/SmartLink';
 import { useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
@@ -24,7 +21,9 @@ import {
   SMS_QUOTE_HREF,
 } from '@/lib/contact';
 import { Container, QuoteButton as KitQuoteButton } from '@/components/landing/sectionKit';
-import { GOOGLE_REVIEWS_URL, REVIEWS, type Review } from '@/lib/reviews';
+import { GOOGLE_REVIEWS_URL, REVIEWS } from '@/lib/reviews';
+import { reviewCard, Stars } from '@/components/landing/ReviewCard';
+import { GuaranteeCards } from '@/components/landing/GuaranteeCards';
 import { SERVICE_TILES } from '@/lib/serviceTiles';
 
 /*
@@ -129,26 +128,7 @@ const ServicesSection = () => {
 
 // ── 2. Reviews ──────────────────────────────────────────────────────────────
 
-const Stars = ({ className = '' }: { className?: string }) => (
-  <span aria-hidden="true" className={`tracking-[0.06em] text-[#e8a100] ${className}`}>
-    ★★★★★
-  </span>
-);
-
-// Three equal tiles; the attribution sits at the foot of each, so the names
-// line up across the row.
-const reviewCard = (review: Review) => (
-  <li key={review.name} className="flex flex-col rounded-[12px] border border-[rgba(36,58,85,0.1)] bg-white px-[26px] pb-6 pt-[26px] shadow-[0_1px_2px_rgba(16,24,40,0.03)]">
-    <Stars className="text-[12px]" />
-    <span className="sr-only">Rated 5 out of 5.</span>
-    <blockquote className="mt-3 text-[15.5px] leading-[1.6] text-[rgba(36,58,85,0.86)]">“{review.quote}”</blockquote>
-    <p className="mt-auto pt-5 text-[13.5px]">
-      <span className="font-semibold text-sc-navy">{review.name}</span>
-      <span className="text-sc-navy/[0.66]"> · Google review</span>
-    </p>
-  </li>
-);
-
+// Three equal tiles (ReviewCard, shared with the Clearwater page).
 const Reviews = () => (
   <section aria-labelledby="reviews-title" className={`bg-[#f7f9fc] ${sectionY}`}>
     <Container>
@@ -482,32 +462,8 @@ const HowItWorks = () => (
 
 // ── 4. Guarantees ───────────────────────────────────────────────────────────
 
-// Terms restated from the Service Agreement. The fine print is part of the
-// promise: stating a guarantee without its limits is how trust gets lost.
-const GUARANTEES = [
-  {
-    icon: ShieldCheck,
-    title: 'Always Blue Guarantee',
-    body: 'Your water stays clear and balanced all week, not just on visit day. If it drifts under our regular care, we come back and make it right at no charge.',
-    fine: "As long as we're the only ones adding chemicals. Excludes chemical loss from leaks, and problems from failing equipment until it's repaired.",
-  },
-  {
-    icon: RotateCcw,
-    title: '2-week money-back guarantee',
-    body: "Not happy in your first two weeks? Tell us before your third weekly visit and we'll refund everything you've paid, in full.",
-    fine: 'For new customers on our Service Agreement.',
-  },
-  {
-    icon: Handshake,
-    title: 'Month-to-month. No contract.',
-    body: "We'd rather earn your business every week than lock you in. Stop any time with 30 days' notice and no cancellation penalty.",
-    fine: 'Billed monthly, by bank transfer (free) or card.',
-  },
-];
-
-// Three equal tiles on a light background; the Always Blue Guarantee is the
-// featured one. The fine print sits at the foot of each tile, so the three
-// line up.
+// Three equal tiles on a light background (GuaranteeCards, shared with the
+// Clearwater page, which holds the terms).
 const Guarantees = () => (
   <section aria-labelledby="guarantees-title" className={`bg-[#f7f9fc] ${sectionY}`}>
     <Container>
@@ -524,27 +480,7 @@ const Guarantees = () => (
         </p>
       </div>
 
-      <ul className="mt-12 grid gap-3 min-[900px]:grid-cols-3">
-        {GUARANTEES.map(({ icon: Icon, title, body, fine }, i) => (
-          <li
-            key={title}
-            className={`flex flex-col rounded-[12px] px-[26px] pb-6 pt-7 ${
-              i === 0
-                ? 'border border-[#1f7fdb] bg-[rgba(31,127,219,0.045)] shadow-[0_0_0_1px_#1f7fdb,0_1px_2px_rgba(16,24,40,0.04)]'
-                : 'border border-[rgba(36,58,85,0.1)] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.03)]'
-            }`}
-          >
-            <Icon aria-hidden="true" className="h-6 w-6 text-[#1f7fdb]" strokeWidth={1.75} />
-            <h3 className="mt-4 text-[18px] font-semibold tracking-[-0.02em] text-[#243a55]">{title}</h3>
-            <p className="mt-2 text-[15px] leading-[1.6] text-[rgba(36,58,85,0.74)]">{body}</p>
-            <p className="mt-auto pt-5">
-              <span className="block border-t border-[rgba(36,58,85,0.1)] pt-4 text-[13px] leading-[1.5] text-[rgba(36,58,85,0.56)]">
-                {fine}
-              </span>
-            </p>
-          </li>
-        ))}
-      </ul>
+      <GuaranteeCards className="mt-12 min-[900px]:grid-cols-3" />
     </Container>
   </section>
 );

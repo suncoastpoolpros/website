@@ -1,27 +1,37 @@
 import { useEffect, useState } from 'react';
 import { Phone } from 'lucide-react';
 import { PHONE_HREF } from '@/lib/contact';
-import { useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
+import { useOptionalLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
 
 // Phones and tablets: Call + a quote button, pinned to the bottom once the
-// hero's button (#get-price) has scrolled up out of view. Needs a
-// LandingQuoteSheetProvider above it; the Footer's bottom bar leaves room for
-// it below 1024px, so it never covers the footer. Below the nav drawer (z-110) and
+// hero's button (#get-price) has scrolled up out of view. The Footer's
+// bottom bar leaves room for it below 1024px, so it never covers the footer. Below the nav drawer (z-110) and
 // the quote popup (z-120). Its blur, like every blur, is off under 768px
 // (CLAUDE.md #10); the 94% white reads the same without it.
 //
 // By default the quote button opens the quote popup (the homepage). With
 // `formId` it scrolls to that on-page form instead, and the bar steps aside
-// while the form is on screen (Palm Harbor).
+// while the form is on screen (Palm Harbor, Clearwater). `hideFrom="md"`
+// keeps it to phones only (Clearwater); by default it runs up to 1024px.
+// `tone="dark"` is the dark translucent version with an outlined Call (St. Pete
+// Beach). With `formId` the page needs no popup provider.
+//
+// Needs a LandingQuoteSheetProvider above it only when there is no formId.
 export const StickyQuoteBar = ({
   label = 'Get my free quote',
   formId,
+  hideFrom = 'lg',
+  tone = 'light',
 }: {
   label?: string;
   /** The on-page quote form to scroll to, instead of opening the popup. */
   formId?: string;
+  /** The width it steps aside from: 768px (md) or 1024px (lg, the default). */
+  hideFrom?: 'md' | 'lg';
+  tone?: 'light' | 'dark';
 } = {}) => {
-  const { open, warm } = useLandingQuoteSheet();
+  const sheet = useOptionalLandingQuoteSheet();
+  const dark = tone === 'dark';
   const [pastHero, setPastHero] = useState(false);
   const [formOnScreen, setFormOnScreen] = useState(false);
   const shown = pastHero && !formOnScreen;
@@ -43,11 +53,11 @@ export const StickyQuoteBar = ({
   }, [formId]);
 
   useEffect(() => {
-    if (shown && !formId) warm();
-  }, [shown, warm, formId]);
+    if (shown && !formId) sheet?.warm();
+  }, [shown, sheet, formId]);
 
   const onQuote = () => {
-    if (!formId) return open();
+    if (!formId) return sheet?.open();
     const form = document.getElementById(formId);
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     form?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
@@ -56,21 +66,29 @@ export const StickyQuoteBar = ({
   return (
     <div
       inert={!shown}
-      className={`fixed inset-x-0 bottom-0 z-[90] flex gap-2.5 border-t border-[rgba(36,58,85,0.1)] bg-white/[0.94] px-[14px] pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-8px_24px_-12px_rgba(16,24,40,0.18)] backdrop-blur-[14px] transition-transform duration-[220ms] ease-out lg:hidden ${
+      className={`fixed inset-x-0 bottom-0 z-[90] flex gap-2.5 border-t px-[14px] pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 backdrop-blur-[14px] transition-transform duration-[220ms] ease-out ${
+        dark
+          ? 'border-white/10 bg-[rgba(7,17,28,0.92)] shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.5)]'
+          : 'border-[rgba(36,58,85,0.1)] bg-white/[0.94] shadow-[0_-8px_24px_-12px_rgba(16,24,40,0.18)]'
+      } ${hideFrom === 'md' ? 'md:hidden' : 'lg:hidden'} ${
         shown ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
       <a
         href={PHONE_HREF}
-        className="flex h-[50px] w-[34%] shrink-0 items-center justify-center gap-2 rounded-[10px] border border-[rgba(36,58,85,0.18)] bg-white text-[16px] font-semibold text-[#243a55]"
+        className={`flex h-[50px] w-[34%] shrink-0 items-center justify-center gap-2 rounded-[10px] border text-[16px] font-semibold ${
+          dark ? 'border-white/35 text-white' : 'border-[rgba(36,58,85,0.18)] bg-white text-[#243a55]'
+        }`}
       >
-        <Phone className="h-[18px] w-[18px] text-[#2a78b8]" strokeWidth={2.25} />
+        <Phone className={`h-[18px] w-[18px] ${dark ? 'text-white' : 'text-[#2a78b8]'}`} strokeWidth={2.25} />
         Call
       </a>
       <button
         type="button"
         onClick={onQuote}
-        className="h-[50px] min-w-0 flex-1 rounded-[10px] bg-[#f7b500] text-[16px] font-semibold text-[#1c2f47]"
+        className={`h-[50px] min-w-0 flex-1 rounded-[10px] bg-[#f7b500] text-[16px] font-semibold ${
+          dark ? 'text-[#243a55]' : 'text-[#1c2f47]'
+        }`}
       >
         {label}
       </button>
