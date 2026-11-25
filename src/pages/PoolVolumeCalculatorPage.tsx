@@ -1064,7 +1064,7 @@ const PoolVolumeCalculatorInner = () => {
         <Navbar />
 
         {/* Hero */}
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-10 text-center">
+        <section className="page-container max-w-3xl mx-auto px-4 sm:px-6 pt-32 pb-10 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-[10px] px-3.5 py-1.5">
             <Calculator className="w-3.5 h-3.5 text-brand-orange" />
             <span className="text-gray-300 font-semibold tracking-wide text-xs">Free Pool Tool</span>
@@ -1098,7 +1098,7 @@ const PoolVolumeCalculatorInner = () => {
         </section>
 
         {/* Calculator */}
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <section className="page-container max-w-4xl mx-auto px-4 sm:px-6 pb-10">
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-8">
 
             {/* What are you calculating? — top-level mode picker. */}
@@ -1687,7 +1687,7 @@ const PoolVolumeCalculatorInner = () => {
 
         {/* Formula transparency panel (pool-specific) */}
         {gallons > 0 && shape !== 'freeform' && calcMode !== 'spa' && (
-          <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+          <section className="page-container max-w-4xl mx-auto px-4 sm:px-6 pb-10">
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6">
               <p className="text-xs uppercase tracking-[0.15em] text-gray-500 mb-2">How we got that</p>
               <p className="font-mono text-sm text-gray-300 break-words">{formula}</p>
@@ -1699,7 +1699,7 @@ const PoolVolumeCalculatorInner = () => {
         {/* Measurement tips (pool-specific) — 2×2 icon-card grid matching the
             chemical-care section pattern on the How It Works page. */}
         {calcMode !== 'spa' && (
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <section className="page-container max-w-4xl mx-auto px-4 sm:px-6 pb-10">
           <div className="mb-6">
             <h2 className="font-display font-bold text-white text-xl sm:text-2xl mb-2">
               How to measure your pool accurately
@@ -1751,7 +1751,7 @@ const PoolVolumeCalculatorInner = () => {
 
         {/* Reference chart (pool-specific) */}
         {calcMode !== 'spa' && (
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <section className="page-container max-w-4xl mx-auto px-4 sm:px-6 pb-12">
           <h2 className="font-display font-bold text-white text-xl sm:text-2xl mb-2">
             Common pool sizes
           </h2>
@@ -1788,7 +1788,7 @@ const PoolVolumeCalculatorInner = () => {
         {/* Common questions — high-intent search queries. The data is the
             same array that backs the FAQPage JSON-LD in <head>, so the on-page
             content matches the structured data Google reads. */}
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <section className="page-container max-w-3xl mx-auto px-4 sm:px-6 pb-16">
           <h2 className="font-display font-bold text-white text-xl sm:text-2xl mb-2">
             Common questions
           </h2>
@@ -1815,7 +1815,7 @@ const PoolVolumeCalculatorInner = () => {
         </section>
 
         {/* Lead-gen CTA */}
-        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+        <section className="page-container max-w-4xl mx-auto px-4 sm:px-6 pb-24">
           <m.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}

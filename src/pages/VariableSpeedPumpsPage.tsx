@@ -243,7 +243,7 @@ const VariableSpeedPumpsPageInner = () => {
         <Navbar />
 
         {/* Hero */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-14 text-center">
+        <section className="page-container max-w-5xl mx-auto px-4 sm:px-6 pt-32 pb-14 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-[10px] px-3.5 py-1.5">
             <Zap className="w-3.5 h-3.5 text-brand-orange" />
             <span className="text-gray-300 font-semibold tracking-wide text-xs">Pool Equipment &amp; Energy</span>
@@ -542,7 +542,7 @@ const VariableSpeedPumpsPageInner = () => {
             <div className="max-w-5xl mx-auto overflow-hidden rounded-3xl border border-white/10">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-white/[0.05] text-gray-300 text-[11px] sm:text-xs uppercase tracking-wider">
+                  <tr className="bg-white/[0.05] text-gray-300 text-[11px] sm:text-xs uppercase tracking-wider md:whitespace-nowrap">
                     <th className="py-3.5 px-4 sm:px-6 font-semibold">Pump</th>
                     <th className="py-3.5 px-2 sm:px-4 font-semibold">Size</th>
                     <th className="py-3.5 px-2 sm:px-4 font-semibold">Est. cost/yr</th>
@@ -573,7 +573,7 @@ const VariableSpeedPumpsPageInner = () => {
                             {p.size}
                           </span>
                           <span
-                            className={`block text-[10px] uppercase tracking-wider ${
+                            className={`block text-[10px] uppercase tracking-wider md:whitespace-nowrap ${
                               p.type === 'Variable' ? 'text-brand-blue-light' : 'text-gray-500'
                             }`}
                           >
@@ -758,7 +758,7 @@ const VariableSpeedPumpsPageInner = () => {
         </section>
 
         {/* Closing CTA — pivot from pump topic to weekly pool service */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-4">
+        <section className="page-container max-w-5xl mx-auto px-4 sm:px-6 pb-24 pt-4">
           <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 text-center border border-white/10 bg-gradient-to-br from-brand-blue/15 via-white/[0.03] to-brand-orange/10">
             <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-brand-blue/10 blur-3xl pointer-events-none" />
             <div className="relative">

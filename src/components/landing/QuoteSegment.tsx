@@ -24,8 +24,13 @@ export const QuoteSegment = ({
   const [missing, setMissing] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const labelId = `quote-${name}-label`;
-  // Three fit one row; four go two by two on phones.
-  const cols = options.length === 4 ? 'grid-cols-2 min-[480px]:grid-cols-4' : 'grid-cols-3';
+  // Three fit one row; four go two by two on phones. From 768px the four are
+  // equal while they fit, but a column never gets narrower than its label, so
+  // a tight form card (Treasure Island at ~1024px) doesn't break "Not a rental".
+  const cols =
+    options.length === 4
+      ? 'grid-cols-2 min-[480px]:grid-cols-4 md:grid-cols-[repeat(4,minmax(max-content,1fr))]'
+      : 'grid-cols-3';
   return (
     <>
       <p id={labelId} className={labelClass}>

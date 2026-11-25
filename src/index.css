@@ -121,6 +121,53 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+ * Page gutter: the one left/right page margin for tablet and desktop.
+ *
+ * `.page-container` goes on the nav, every section's content wrapper and the
+ * footer (the shared <Container> components carry it), so the logo, the
+ * section content and the footer share one left and right edge on every page.
+ *
+ * From 768px: the gutter is var(--gutter) (38px at 768, 51px at 1024, 64px
+ * from 1280) and content is capped at 1136px. The max-width includes the
+ * padding, so it grows with the gutter: content stays 1136px wide on wide
+ * screens however large the gutter is.
+ *
+ * Below 768px it does nothing: each container keeps its own phone padding
+ * (px-4 sm:px-8, px-4 sm:px-6, px-5...), exactly as before.
+ *
+ * Deliberately UNLAYERED: Tailwind's utilities live in @layer utilities, so
+ * this beats the old sm:/lg: padding and max-w classes left on the elements
+ * for phones, whatever order Tailwind emits them in.
+ *
+ * Narrow containers (a text column or a 5xl band) keep their max-w class and
+ * their desktop content width, but take the shared gutter at tablet widths:
+ * the max-w class sets --page-max to its old content width (max-w minus its
+ * old 2 x 32px desktop padding).
+ * ------------------------------------------------------------------------- */
+:root {
+  --gutter: clamp(32px, 5vw, 64px);
+}
+
+@property --page-max {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 1136px;
+}
+
+@media (min-width: 768px) {
+  .page-container {
+    box-sizing: border-box;
+    max-width: calc(var(--page-max) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+  .page-container.max-w-5xl { --page-max: 960px; }
+  .page-container.max-w-4xl { --page-max: 832px; }
+  .page-container.max-w-3xl { --page-max: 704px; }
+  .page-container.max-w-\[50rem\] { --page-max: 736px; }
+}
+
 @layer base {
   /* Any enabled button or button-role element shows the pointer/"clicker" cursor.
      Native <button> defaults to the arrow; this restores the expected hand on
@@ -1333,10 +1380,11 @@ input[type="date"]::-webkit-date-and-time-value {
   padding-block: 72px;
   overflow-x: clip;
 }
+/* The gutter is on the element: px-4 on phones, then .page-container (the
+   shared gutter and 1136px content width) from 768px. Don't add padding or a
+   max-width here: an unlayered rule after .page-container would override it. */
 .cs-container {
   margin-inline: auto;
-  max-width: 72rem;
-  padding-inline: 16px;
 }
 .cs-eyebrow {
   display: inline-flex;
@@ -1471,9 +1519,6 @@ input[type="date"]::-webkit-date-and-time-value {
 @media (min-width: 768px) {
   .cs-section {
     padding-block: 112px 120px;
-  }
-  .cs-container {
-    padding-inline: 32px;
   }
   .cs-h2 {
     font-size: 48px;

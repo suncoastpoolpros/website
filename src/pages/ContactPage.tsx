@@ -79,7 +79,7 @@ const ContactPageInner = () => {
         <Navbar />
 
         {/* Hero */}
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12 text-center">
+        <section className="page-container max-w-3xl mx-auto px-4 sm:px-6 pt-32 pb-12 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-[10px] px-3.5 py-1.5">
             <MessageSquare className="w-3.5 h-3.5 text-brand-orange" />
             <span className="text-gray-300 font-semibold tracking-wide text-xs">
@@ -96,7 +96,7 @@ const ContactPageInner = () => {
         </section>
 
         {/* Two-column: contact info (left) + form (right) */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="page-container mx-auto px-4 sm:px-6 pb-20">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
 
             {/* LEFT — contact details */}

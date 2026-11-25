@@ -2,11 +2,15 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 /**
- * Single source of truth for page content width + horizontal padding.
- * Change `CONTAINER_WIDTH` here to retune every section across the site.
+ * Page content container for the dark-theme pages (St. Pete Beach and the
+ * other older city pages, the pool-care guides, the tools). The tablet and
+ * desktop gutter and the 1136px content width come from `.page-container`
+ * in src/index.css, shared with every other page; the padding classes here
+ * are the phone gutter only (below 768px).
+ *
+ * A narrower container keeps its Tailwind max-w class (e.g. `max-w-3xl`):
+ * `.page-container` maps it to that column's desktop content width.
  */
-export const CONTAINER_WIDTH = 'max-w-6xl';
-
 type ContainerProps = {
   as?: React.ElementType;
   className?: string;
@@ -14,7 +18,7 @@ type ContainerProps = {
 } & React.HTMLAttributes<HTMLElement>;
 
 export const Container = ({ as: Tag = 'div', className, children, ...rest }: ContainerProps) => (
-  <Tag className={cn(CONTAINER_WIDTH, 'mx-auto px-4 sm:px-6 lg:px-8', className)} {...rest}>
+  <Tag className={cn('page-container mx-auto px-4 sm:px-6', className)} {...rest}>
     {children}
   </Tag>
 );

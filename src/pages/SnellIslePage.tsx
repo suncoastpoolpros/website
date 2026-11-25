@@ -79,7 +79,7 @@ const HeroSection = () => {
               <span className="block text-[2rem] sm:text-5xl md:text-[3.4rem] leading-[1.04]">
                 Pristine Water.
               </span>
-              <span className="block text-[2rem] sm:text-5xl md:text-[3.4rem] leading-[1.04]">
+              <span className="block text-[2rem] sm:text-5xl md:text-[3.4rem] leading-[1.04] lg:whitespace-nowrap">
                 Every Single Week.
               </span>
             </div>

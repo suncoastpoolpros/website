@@ -4,7 +4,7 @@ import { usePageMeta, FONTS } from '@/lib/usePageMeta';
 import { HOME_AREA_SERVED, serviceSchema, webSiteSchema } from '@/lib/businessSchema';
 import { breadcrumbSchema } from '@/lib/breadcrumbSchema';
 import { PHONE_DISPLAY, PHONE_HREF, SMS_QUOTE_HREF } from '@/lib/contact';
-import { QuoteButton } from '@/components/landing/sectionKit';
+import { Container, QuoteButton } from '@/components/landing/sectionKit';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { VisitReportCard } from '@/components/landing/VisitReportCard';
 import { LANDING_FAQS, LandingBelowFold } from '@/components/landing/LandingBelowFold';
@@ -25,10 +25,6 @@ import { StickyQuoteBar } from '@/components/landing/StickyQuoteBar';
  *
  * Don't add numbers, reviews or claims beyond the ones already here.
  */
-
-const Container = ({ className = '', children }: { className?: string; children: React.ReactNode }) => (
-  <div className={`mx-auto w-full max-w-[1200px] px-4 sm:px-8 ${className}`}>{children}</div>
-);
 
 // Phones and tablets: three centred columns split by hairlines. Desktop: one
 // row, each item's divider drawn by its ::before, 10px into its 20px padding.

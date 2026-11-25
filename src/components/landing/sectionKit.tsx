@@ -12,7 +12,7 @@ import { useLandingQuoteSheet } from '@/components/landing/LandingQuoteSheet';
  */
 
 export const Container = ({ className = '', children }: { className?: string; children: React.ReactNode }) => (
-  <div className={`mx-auto w-full max-w-[1200px] px-4 sm:px-8 ${className}`}>{children}</div>
+  <div className={`page-container mx-auto w-full px-4 sm:px-8 ${className}`}>{children}</div>
 );
 
 // A 22px rule before the label (and after it too when the heading is centered).

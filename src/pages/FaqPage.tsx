@@ -104,7 +104,7 @@ const FaqPageInner = () => {
 
       <main>
         {/* Hero: white into the mist the topics and answers sit on. */}
-        <section className="bg-[linear-gradient(#fff,#f5f9fd)] px-4 pb-12 pt-14 text-center sm:px-8 sm:pt-20">
+        <section className="bg-[linear-gradient(#fff,#f5f9fd)] px-4 pb-12 pt-14 text-center sm:px-8 sm:pt-20 md:px-(--gutter)">
           <div className="mx-auto max-w-3xl">
             <Eyebrow centered>Help center</Eyebrow>
             <h1 className="mt-4 text-balance text-[40px] font-[650] leading-[1.05] tracking-[-0.04em] text-sc-navy sm:text-[52px]">
@@ -146,7 +146,7 @@ const FaqPageInner = () => {
 
         {/* Two-column: sticky category sidebar (left) + answers (right) */}
         <div className="bg-sc-mist">
-          <div className="mx-auto max-w-[1200px] px-4 pb-20 sm:px-8 sm:pb-24">
+          <div className="page-container mx-auto px-4 pb-20 sm:px-8 sm:pb-24">
             <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[256px_1fr] lg:gap-12">
               {/* LEFT — category tabs */}
               <aside className="lg:sticky lg:top-24">

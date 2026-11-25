@@ -125,7 +125,7 @@ const SignupPageInner = () => {
         <Navbar />
 
         {/* Hero */}
-        <section className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-10 text-center">
+        <section className="relative page-container max-w-3xl mx-auto px-4 sm:px-6 pt-32 pb-10 text-center">
           <m.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -170,7 +170,7 @@ const SignupPageInner = () => {
         </section>
 
         {/* Form / Success */}
-        <section className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+        <section className="relative page-container max-w-3xl mx-auto px-4 sm:px-6 pb-24">
           {/* Parallax blue glow — drifts slower than the page on scroll */}
           <m.div
             aria-hidden="true"

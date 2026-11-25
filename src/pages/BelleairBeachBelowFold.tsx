@@ -463,7 +463,7 @@ const PromiseStrip = () => (
     <div className="absolute inset-0 bg-gradient-to-b from-white/[0.025] via-transparent to-transparent pointer-events-none" />
     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent pointer-events-none" />
     <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+    <div className="page-container max-w-5xl mx-auto px-4 sm:px-6 text-center relative z-10">
       <m.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -497,7 +497,7 @@ const FaqSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   return (
     <section className="py-20 md:py-24 bg-[#07111c] relative">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-container max-w-3xl mx-auto px-4 sm:px-6">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

@@ -167,7 +167,7 @@ export const LandingHeader = ({
             : 'shadow-[0_1px_0_0_rgba(36,58,85,0.08)]'
         } lg:shadow-[0_1px_0_0_#e5e7eb]`}
       >
-        <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-8">
+        <div className="page-container mx-auto w-full px-4 sm:px-8">
           <div className="flex h-16 items-center justify-between">
             <Link to="/" aria-label="Suncoast Pool Pros home" className="flex shrink-0 items-center gap-2">
               {/* The logo at every width: wave mark + stacked wordmark (the

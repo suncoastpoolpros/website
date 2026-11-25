@@ -201,7 +201,9 @@ export const Navbar = ({ goldCta = false }: { goldCta?: boolean } = {}) => {
               keeps the sticky dark bar + visible CTA and moves these links into
               the same white takeover menu mobile uses (it already carries all
               of them, plus Pool Care and Contact). */}
-          <div className="hidden lg:flex items-center gap-1">
+          {/* 1024-1151px: no gap between links (and tighter link and CTA
+              padding) so the full row fits inside the page gutter. */}
+          <div className="hidden lg:flex items-center gap-0 min-[1152px]:gap-1">
             {/* Service Areas — opens mega-menu on hover */}
             <div
               className="relative"
@@ -213,7 +215,7 @@ export const Navbar = ({ goldCta = false }: { goldCta?: boolean } = {}) => {
                 onClick={() => setAreasOpen((v) => !v)}
                 aria-expanded={areasOpen}
                 aria-haspopup="true"
-                className="inline-flex items-center gap-1 whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
+                className="inline-flex items-center gap-1 whitespace-nowrap text-gray-300 hover:text-white px-2.5 min-[1152px]:px-3 py-2 text-sm font-semibold transition-colors"
               >
                 Service Areas
                 <ChevronDown
@@ -246,7 +248,7 @@ export const Navbar = ({ goldCta = false }: { goldCta?: boolean } = {}) => {
                 onClick={() => setServicesOpen((v) => !v)}
                 aria-expanded={servicesOpen}
                 aria-haspopup="true"
-                className="inline-flex items-center gap-1 whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
+                className="inline-flex items-center gap-1 whitespace-nowrap text-gray-300 hover:text-white px-2.5 min-[1152px]:px-3 py-2 text-sm font-semibold transition-colors"
               >
                 Services
                 <ChevronDown
@@ -270,19 +272,19 @@ export const Navbar = ({ goldCta = false }: { goldCta?: boolean } = {}) => {
                 header. The slot freed by Careers pays for it. */}
             <Link
               to="/pool-care/"
-              className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
+              className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 min-[1152px]:px-3 py-2 text-sm font-semibold transition-colors"
             >
               Pool Care
             </Link>
             <Link
               to="/faq/"
-              className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
+              className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 min-[1152px]:px-3 py-2 text-sm font-semibold transition-colors"
             >
               FAQ
             </Link>
             <Link
               to="/tools/"
-              className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 lg:px-3 py-2 text-sm font-semibold transition-colors"
+              className="whitespace-nowrap text-gray-300 hover:text-white px-2.5 min-[1152px]:px-3 py-2 text-sm font-semibold transition-colors"
             >
               Tools
             </Link>
@@ -298,7 +300,7 @@ export const Navbar = ({ goldCta = false }: { goldCta?: boolean } = {}) => {
             {/* Phone: full number on the dark bar at md+ */}
             <a
               href={PHONE_HREF}
-              className="hidden md:inline-flex items-center gap-2 whitespace-nowrap px-2.5 lg:px-3 py-2 text-sm font-semibold text-gray-300 hover:text-white transition-colors"
+              className="hidden md:inline-flex items-center gap-2 whitespace-nowrap px-2.5 min-[1152px]:px-3 py-2 text-sm font-semibold text-gray-300 hover:text-white transition-colors"
             >
               <Phone className="w-4 h-4 shrink-0" />
               {PHONE_DISPLAY}
@@ -365,7 +367,7 @@ export const Navbar = ({ goldCta = false }: { goldCta?: boolean } = {}) => {
               <button
                 type="button"
                 onClick={openQuoteSheet}
-                className={`btn whitespace-nowrap px-4 lg:px-6 ${
+                className={`btn whitespace-nowrap px-4 min-[1152px]:px-6 ${
                   goldCta ? 'bg-[#f7b500] text-[#243a55] hover:bg-[#ffc01f]' : 'btn-orange'
                 }`}
               >

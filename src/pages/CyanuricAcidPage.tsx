@@ -182,7 +182,7 @@ const CyanuricAcidPageInner = () => {
         <Navbar />
 
         {/* Hero */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-14 text-center">
+        <section className="page-container max-w-5xl mx-auto px-4 sm:px-6 pt-32 pb-14 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-[10px] px-3.5 py-1.5">
             <FlaskConical className="w-3.5 h-3.5 text-brand-orange" />
             <span className="text-gray-300 font-semibold tracking-wide text-xs">Pool Water Science</span>
@@ -536,7 +536,7 @@ const CyanuricAcidPageInner = () => {
         </section>
 
         {/* Closing note — resource page for existing customers */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-4">
+        <section className="page-container max-w-5xl mx-auto px-4 sm:px-6 pb-24 pt-4">
           <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 text-center border border-white/10 bg-gradient-to-br from-brand-blue/15 via-white/[0.03] to-brand-orange/10">
             <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-brand-blue/10 blur-3xl pointer-events-none" />
             <div className="relative">

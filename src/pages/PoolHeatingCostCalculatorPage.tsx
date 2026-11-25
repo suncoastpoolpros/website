@@ -205,7 +205,7 @@ const PoolHeatingCostCalculatorInner = () => {
         <Navbar />
 
         {/* Hero */}
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-10 text-center">
+        <section className="page-container max-w-3xl mx-auto px-4 sm:px-6 pt-32 pb-10 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5">
             <Flame className="w-3.5 h-3.5 text-brand-orange" />
             <span className="text-gray-300 font-semibold tracking-wide text-xs">
@@ -223,7 +223,7 @@ const PoolHeatingCostCalculatorInner = () => {
         </section>
 
         {/* Calculator */}
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <section className="page-container max-w-3xl mx-auto px-4 sm:px-6 pb-16">
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:p-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="sm:col-span-2">

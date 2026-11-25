@@ -350,7 +350,7 @@ const PoolCarePageInner = () => {
         <Navbar />
 
         {/* Hero — framed as a library, not a single utility page */}
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12 text-center">
+        <section className="page-container max-w-3xl mx-auto px-4 sm:px-6 pt-32 pb-12 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-[10px] px-3.5 py-1.5">
             <BookOpen className="w-3.5 h-3.5 text-brand-orange" />
             <span className="text-gray-300 font-semibold tracking-wide text-xs">The Pool Care Library</span>
@@ -373,7 +373,7 @@ const PoolCarePageInner = () => {
         </section>
 
         {/* Featured "Most read" spotlight — wide editorial card */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
+        <section className="page-container max-w-5xl mx-auto px-4 sm:px-6 pb-14">
           <div className="flex items-center gap-3 mb-5">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange shrink-0">
               Most read
@@ -423,7 +423,7 @@ const PoolCarePageInner = () => {
         </section>
 
         {/* Browse all — guides grouped into a small library taxonomy */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+        <section className="page-container max-w-5xl mx-auto px-4 sm:px-6 pb-8">
           {CATEGORY_GROUPS.map((group) => (
             <div key={group.label} className="mb-12 last:mb-0">
               <div className="flex items-center gap-3 mb-5">
@@ -487,7 +487,7 @@ const PoolCarePageInner = () => {
         </section>
 
         {/* Cross-link to the calculators (complementary to the chemistry guides) */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 pt-16">
+        <section className="page-container max-w-5xl mx-auto px-4 sm:px-6 pb-16 pt-16">
           <Link
             to="/tools/"
             className="group flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 hover:bg-white/[0.05] hover:border-white/20 transition-colors"
@@ -510,7 +510,7 @@ const PoolCarePageInner = () => {
         </section>
 
         {/* Lead-gen CTA */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+        <section className="page-container max-w-5xl mx-auto px-4 sm:px-6 pb-24">
           <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 text-center border border-white/10 bg-gradient-to-br from-brand-blue/15 via-white/[0.03] to-brand-orange/10">
             <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-brand-orange/10 blur-3xl pointer-events-none" />
             <div className="relative">

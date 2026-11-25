@@ -818,7 +818,7 @@ export const ServiceAgreementPage = () => {
         <Navbar />
 
         {/* Hero */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-10">
+        <section className="page-container max-w-5xl mx-auto px-4 sm:px-6 pt-32 pb-10">
           <p className="text-brand-blue-light font-semibold tracking-[0.15em] uppercase text-sm mb-2">
             Suncoast Pool Pros LLC
           </p>
@@ -844,7 +844,7 @@ export const ServiceAgreementPage = () => {
         </section>
 
         {/* TOC sidebar + content */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+        <section className="page-container max-w-5xl mx-auto px-4 sm:px-6 pb-24">
           <div className="lg:grid lg:grid-cols-[260px_1fr] lg:gap-10">
             {/* Table of contents */}
             <nav aria-label="Sections" className="mb-8 lg:mb-0">

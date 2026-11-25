@@ -203,7 +203,7 @@ const CoverageSection = () => (
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.03 }}
-                className="rounded-xl bg-brand-blue/[0.08] border border-brand-blue/20 px-3 py-2.5 text-[14px] text-center text-cyan-50/90"
+                className="rounded-xl bg-brand-blue/[0.08] border border-brand-blue/20 px-3 py-2.5 text-[14px] text-center text-cyan-50/90 lg:flex lg:items-center lg:justify-center lg:px-2"
               >
                 {n}
               </m.span>
@@ -502,7 +502,7 @@ const FaqSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   return (
     <section className="py-20 md:py-24 bg-[#07111c] relative">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-container max-w-3xl mx-auto px-4 sm:px-6">
         <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

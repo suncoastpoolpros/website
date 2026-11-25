@@ -228,7 +228,7 @@ export const CareersPage = () => {
 
       <main>
         {/* Hero: white into the mist the job card sits on. */}
-        <section className="bg-[linear-gradient(#fff,#f5f9fd)] px-4 pb-14 pt-14 text-center sm:px-8 sm:pt-20">
+        <section className="bg-[linear-gradient(#fff,#f5f9fd)] px-4 pb-14 pt-14 text-center sm:px-8 sm:pt-20 md:px-(--gutter)">
           <div className="mx-auto max-w-3xl">
             <Eyebrow centered>Now hiring · Clearwater, Largo &amp; Palm Harbor</Eyebrow>
             <h1 className="mt-4 text-balance text-[38px] font-[650] leading-[1.06] tracking-[-0.04em] text-sc-navy sm:text-[52px]">

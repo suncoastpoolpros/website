@@ -410,7 +410,7 @@ export const ClearwaterStandard = ({
 
   return (
     <section ref={sectionRef} aria-labelledby={titleId} className="cs-section">
-      <div className="cs-container">
+      <div className="cs-container page-container px-4">
         <div className="mx-auto max-w-[40rem] text-center">
           {eyebrow && <p className="cs-eyebrow">{eyebrow}</p>}
           <h2 id={titleId} className="cs-h2">

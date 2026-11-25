@@ -74,7 +74,8 @@ const colHeading = 'mb-4 text-[13.5px] font-semibold text-white';
 const list = 'flex flex-col gap-2.5 text-[14px] leading-[1.5] text-white/60';
 const linkClass = 'transition-colors hover:text-white';
 const viewAll = 'mt-1 font-medium text-[#f7b500] transition-colors hover:text-[#ffc01f]';
-const container = 'mx-auto w-full max-w-[1200px] px-5 lg:px-8';
+// Shares the page gutter (.page-container); px-5 is the phone gutter.
+const container = 'page-container mx-auto w-full px-5';
 
 export const Footer = () => {
   return (

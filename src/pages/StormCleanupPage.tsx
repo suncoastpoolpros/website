@@ -213,7 +213,7 @@ const StormCleanupPageInner = () => {
         <Navbar />
 
         {/* ── Hero ──────────────────────────────────────────────── */}
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12 text-center">
+        <section className="page-container max-w-3xl mx-auto px-4 sm:px-6 pt-32 pb-12 text-center">
           <div className="inline-flex items-center gap-2 mb-5 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5">
             <Wind className="w-3.5 h-3.5 text-brand-blue-light" />
             <span className="text-gray-300 font-semibold tracking-wide text-xs">
@@ -741,7 +741,7 @@ const StormCleanupPageInner = () => {
           <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[80%] h-[100%] bg-brand-blue/[0.07] rounded-full blur-[150px] pointer-events-none" />
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent pointer-events-none" />
           <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <div className="page-container max-w-5xl mx-auto px-4 sm:px-6 text-center relative z-10">
             <m.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <h2 className="section-heading text-white leading-tight mb-4">
                 Quoted from photos. Not by the hour.

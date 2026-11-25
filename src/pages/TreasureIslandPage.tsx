@@ -58,7 +58,7 @@ const inlineLink =
 // photo badly.
 const TreasureIslandHero = () => (
   <section className="relative bg-[#f5f9fd]">
-    <div className="mx-auto grid w-full max-w-[1200px] items-center gap-12 px-4 pb-16 pt-10 sm:px-8 sm:pt-14 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,clamp(420px,calc(420px_+_(100vw_-_1024px)_*_0.8),496px))] lg:gap-x-[clamp(56px,calc(56px_+_(100vw_-_1024px)_*_0.34),88px)] lg:py-8">
+    <div className="page-container mx-auto grid w-full items-center gap-12 px-4 pb-16 pt-10 sm:px-8 sm:pt-14 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,clamp(420px,calc(420px_+_(100vw_-_1024px)_*_0.8),496px))] lg:gap-x-[clamp(56px,calc(56px_+_(100vw_-_1024px)_*_0.34),88px)] lg:py-8">
       <div className="min-w-0 text-center lg:text-left">
         <p className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 rounded-[999px] bg-white py-1 pl-1 pr-3 text-[12px] font-medium text-sc-navy/75 ring-1 ring-sc-navy/10 sm:gap-x-2 sm:pr-3.5 sm:text-[13px]">
           <span className="whitespace-nowrap rounded-full bg-sc-blue/10 px-2.5 py-0.5 text-[11.5px] font-semibold text-[#1f6aa6] sm:text-[12px]">

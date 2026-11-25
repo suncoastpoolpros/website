@@ -86,7 +86,7 @@ const PalmHarborHero = () => {
 
       {/* z-20: above the neighborhood bar (z-10), so open suggestions paint
           over it. */}
-      <div className="relative z-20 mx-auto w-full max-w-[50rem] px-5 pb-14 pt-10 sm:px-8 md:pb-[110px]">
+      <div className="page-container relative z-20 mx-auto w-full max-w-[50rem] px-5 pb-14 pt-10 sm:px-8 md:pb-[110px]">
         {/* The page's one h1, set as a label; the big line below is a <p>. */}
         <h1
           className={`flex items-center justify-center gap-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-[#FFC94D] sm:text-[13px] sm:tracking-[0.16em] ${shadowSoft}`}
