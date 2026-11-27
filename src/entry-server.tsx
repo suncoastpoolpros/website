@@ -27,6 +27,7 @@ import { resetSsrMeta, readSsrMeta } from '@/lib/serverMeta';
 
 // Eager imports — no lazy() here.
 import { BelleairBeachPage } from '@/pages/BelleairBeachPage';
+import { GulfportPage } from '@/pages/GulfportPage';
 import { TreasureIslandPage } from '@/pages/TreasureIslandPage';
 import { StPeteBeachPage } from '@/pages/StPeteBeachPage';
 import { SnellIslePage } from '@/pages/SnellIslePage';
@@ -76,6 +77,7 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
 export const PRERENDER_ROUTES = [
   '/',
   '/belleair-beach-fl',
+  '/gulfport-fl',
   '/treasure-island-fl',
   '/st-pete-beach-fl',
   '/snell-isle-fl',
@@ -137,6 +139,7 @@ const Routing = () => (
   <Routes>
     <Route path="/" element={<PoolLandingPage />} />
     <Route path="/belleair-beach-fl" element={<BelleairBeachPage />} />
+    <Route path="/gulfport-fl" element={<GulfportPage />} />
     <Route path="/treasure-island-fl" element={<TreasureIslandPage />} />
     <Route path="/st-pete-beach-fl" element={<StPeteBeachPage />} />
     <Route path="/snell-isle-fl" element={<SnellIslePage />} />

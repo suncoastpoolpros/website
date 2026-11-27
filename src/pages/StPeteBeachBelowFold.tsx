@@ -652,6 +652,10 @@ const NorthToSouthSection = () => (
             Snell Isle
           </SmartLink>{' '}
           ·{' '}
+          <SmartLink to="/gulfport-fl/" className={linkLight}>
+            Gulfport
+          </SmartLink>{' '}
+          ·{' '}
           <SmartLink to="/" className={linkLight}>
             St. Petersburg
           </SmartLink>

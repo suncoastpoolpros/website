@@ -147,7 +147,7 @@ const OFFSCREEN: React.CSSProperties = {
  * submits exactly as this component does. The form must render the `website`
  * honeypot and mount `turnstile.containerRef`.
  */
-export const useQuoteFormSubmit = (source: string) => {
+export const useQuoteFormSubmit = (source: string, eventParams?: Record<string, string>) => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -188,7 +188,7 @@ export const useQuoteFormSubmit = (source: string) => {
         turnstileToken,
       });
       setSubmitted(true);
-      trackEvent('generate_lead', { source });
+      trackEvent('generate_lead', { source, ...eventParams });
     } catch (err) {
       setError(
         `We couldn't submit your request. Please try again, or call us at ${PHONE_DISPLAY}.`

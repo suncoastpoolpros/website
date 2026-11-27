@@ -33,9 +33,8 @@ import {
  * lib/cities, so a new page appears here the moment it gets a `to`.
  */
 
-// Every city with a page, plus St. Petersburg and Gulfport as labels (no
-// dedicated page yet).
-const footerCities = cities.filter((c) => c.to || c.slug === 'st-petersburg' || c.slug === 'gulfport');
+// Every city with a page, plus St. Petersburg as a label (the homepage is its page).
+const footerCities = cities.filter((c) => c.to || c.slug === 'st-petersburg');
 
 const companyLinks = [
   { label: 'How It Works', to: '/how-it-works/' },

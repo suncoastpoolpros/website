@@ -62,13 +62,14 @@ Every page preloads **only the hero image and font weights it actually paints ab
 
 **Current per-page sets:**
 - **Homepage**: St-Pete hero + Inter 400/600, Montserrat 700/900, **Caveat 700** (the only page with the script accent).
-- **Belleair**: St-Pete hero (it reuses that image) + Inter 400/600, Montserrat 700/900.
+- **Belleair**: its own `belleair-beach-hero*` photo (an `<img>` in a card, not a CSS background) + the homepage's Geist/Montserrat set.
+- **Gulfport**: Treasure Island's hero as a stand-in (mobile/tablet/desktop/wide) + the homepage's Geist/Montserrat set.
 - **Treasure Island**: its *own* `treasure-island-hero-*` + Inter 400/600, Montserrat 700/900.
 - **Content pages** (FAQ/Tools/Contact/etc.): **no hero preload**, fonts = the `index.html` default (`inter-600` + `montserrat-700` + `inter-400`). They don't render Montserrat 900 or Caveat, so they don't preload them.
 
 **Rules:**
 - The `index.html` `<head>` default font set is the **content-page baseline**. Hero pages override via `fontPreload`. Keep `inter-600` in the default — it's the dominant above-fold weight (nav semibold) and was previously missing, which made it a render-blocker.
-- When adding a hero/city page, set both `heroPreload` and `fontPreload`, and point `heroPreload` at the image the page *actually paints* (check `hero-bg-*` in `index.css` — e.g. Belleair reuses the St-Pete image).
+- When adding a hero/city page, set both `heroPreload` and `fontPreload`, and point `heroPreload` at the image the page *actually paints* (check `hero-bg-*` in `index.css`, or the page's `HERO_IMG` paths for an `<img>` hero).
 - To verify after build: `grep` the `dist/<route>/index.html` head for `preload" as="image"` and `preload" as="font"` — each route should list only its own.
 
 ## Mobile motion & animation (strip on mobile, keep on desktop)

@@ -1,7 +1,21 @@
 // FAQ source-of-truth for the Belleair Beach page. Kept in its own tiny module
 // so the page chunk can include it for JSON-LD without pulling in the rest of
 // the below-the-fold React tree.
+//
+// The first two are the rebuilt page's own; the five after them are kept word
+// for word from the page before it.
+// TODO(owner): confirm the "first two weeks free" offer and its terms. If it
+// isn't approved, replace the first question with the 2-week money-back
+// guarantee (ServiceAgreementPage, "Money-back guarantee").
 export const belleairBeachFaqs = [
+  {
+    q: 'How do the two free weeks work?',
+    a: 'Your first two weekly visits, chemicals included, cost nothing. If you are pleased with the pool and the reports, service continues month to month at your flat rate. If not, you owe nothing.',
+  },
+  {
+    q: 'What does weekly service cost here?',
+    a: "One flat monthly rate that depends on the pool's size, surface and equipment. Routine chemicals are inside it. We give you the exact figure the same day you ask.",
+  },
   {
     q: 'Do you service waterfront and seasonal homes in Belleair Beach?',
     a: "Yes — it's much of what we do here. Whether you live in Belleair Beach year-round or your home sits empty for part of the season, your pool is maintained on a structured weekly schedule with a photo report after every visit, so it stays guest-ready and protected even when you're away.",

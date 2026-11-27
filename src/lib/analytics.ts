@@ -63,13 +63,18 @@ export function initAnalytics(): void {
   // subsequent SPA route changes are covered by trackPageView as before.
   trackPageView(window.location.pathname + window.location.hash);
 
-  // One delegated listener catches every tel: link on the site (hero, footer,
-  // sticky CTA, quote chooser, etc.) without wiring each one individually.
+  // One delegated listener catches every tel: and sms: link on the site (hero,
+  // footer, sticky CTA, quote chooser, etc.) without wiring each one
+  // individually. A link inside an element with `data-cta="…"` (the location
+  // pages: hero, sticky bar, FAQ, quote section) also reports where it was.
   document.addEventListener(
     'click',
     (e) => {
-      const link = (e.target as HTMLElement)?.closest?.('a[href^="tel:"]');
-      if (link) trackEvent('contact', { method: 'phone' });
+      const link = (e.target as HTMLElement)?.closest?.('a[href^="tel:"], a[href^="sms:"]');
+      if (!link) return;
+      const method = link.getAttribute('href')!.startsWith('sms:') ? 'sms' : 'phone';
+      const location = link.closest<HTMLElement>('[data-cta]')?.dataset.cta;
+      trackEvent('contact', location ? { method, location } : { method });
     },
     { capture: true },
   );

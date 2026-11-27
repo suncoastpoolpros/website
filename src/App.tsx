@@ -25,6 +25,7 @@ import { parseQuoteLink } from '@/lib/quoteLinks';
 // the initial route renders synchronously — see src/lib/lazyRoute.ts and the
 // preload call in src/main.tsx.
 const BelleairBeachPage = lazyRoute(() => import('@/pages/BelleairBeachPage').then((m) => m.BelleairBeachPage));
+const GulfportPage = lazyRoute(() => import('@/pages/GulfportPage').then((m) => m.GulfportPage));
 const TreasureIslandPage = lazyRoute(() => import('@/pages/TreasureIslandPage').then((m) => m.TreasureIslandPage));
 const StPeteBeachPage = lazyRoute(() => import('@/pages/StPeteBeachPage').then((m) => m.StPeteBeachPage));
 const SnellIslePage = lazyRoute(() => import('@/pages/SnellIslePage').then((m) => m.SnellIslePage));
@@ -130,6 +131,7 @@ const ChunkReloadReset = () => {
 export const ROUTE_COMPONENTS: Record<string, PreloadableComponent> = {
   '/': PoolLandingPage,
   '/belleair-beach-fl': BelleairBeachPage,
+  '/gulfport-fl': GulfportPage,
   '/treasure-island-fl': TreasureIslandPage,
   '/st-pete-beach-fl': StPeteBeachPage,
   '/snell-isle-fl': SnellIslePage,
@@ -264,6 +266,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<PoolLandingPage />} />
           <Route path="/belleair-beach-fl" element={<BelleairBeachPage />} />
+          <Route path="/gulfport-fl" element={<GulfportPage />} />
           <Route path="/treasure-island-fl" element={<TreasureIslandPage />} />
           <Route path="/st-pete-beach-fl" element={<StPeteBeachPage />} />
           <Route path="/snell-isle-fl" element={<SnellIslePage />} />
