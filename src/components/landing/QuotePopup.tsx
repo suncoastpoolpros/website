@@ -143,6 +143,14 @@ const CALL_TIMES: [string, string, string][] = [
 
 export type QuoteScreen = 'choose' | 'question' | 'contact' | 'text' | 'call' | 'done';
 type SendBy = 'text' | 'email';
+/** How to reach the visitor if a question comes up before the quote is sent. */
+type Reach = 'text' | 'call' | 'email';
+const REACH_OPTIONS: [Reach, string, string][] = [
+  // value, option label, how the lead email and the thank-you read it
+  ['text', 'Text me', 'text'],
+  ['call', 'Call me', 'call'],
+  ['email', 'Email me', 'email'],
+];
 type Fields = { name: string; phone: string; email: string; address: string };
 type Errors = Partial<Record<string, string>>;
 
@@ -222,12 +230,22 @@ export const QuotePopup = ({
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [picked, setPicked] = useState<string | null>(null);
   const [sendBy, setSendBy] = useState<SendBy>('text');
+  // Follows "Text me / Email me" until the visitor picks it themselves.
+  const [reach, setReach] = useState<Reach>('text');
+  const [reachChosen, setReachChosen] = useState(false);
   const [fields, setFields] = useState<Fields>({ name: '', phone: '', email: '', address: '' });
   const [callback, setCallback] = useState({ name: '', phone: '', when: 'asap' });
   const [errors, setErrors] = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [done, setDone] = useState<{ kind: 'form' | 'callback'; name: string; sendBy: SendBy; when: string; open: boolean } | null>(null);
+  const [done, setDone] = useState<{
+    kind: 'form' | 'callback';
+    name: string;
+    sendBy: SendBy;
+    reach?: Reach;
+    when: string;
+    open: boolean;
+  } | null>(null);
   const [openNow, setOpenNow] = useState(true);
   const [copied, setCopied] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -235,6 +253,10 @@ export const QuotePopup = ({
 
   const steps = stepsFor(answers.poolType);
   const home = isHome(answers.poolType);
+  // A phone is needed to text the quote or to text or call with a question;
+  // an email to email the quote or to email a question.
+  const needPhone = sendBy === 'text' || reach !== 'email';
+  const needEmail = sendBy === 'email' || reach === 'email';
 
   const step = screen === 'question' ? `q${qIndex + 1}` : screen;
   useEffect(() => onStep(step), [step, onStep]);
@@ -315,15 +337,16 @@ export const QuotePopup = ({
       ['qp-name', !f.name.trim() && 'Enter your first name.'],
       [
         'qp-phone',
-        sendBy === 'text'
-          ? digits(f.phone) < 10 && 'Enter a 10-digit mobile number.'
+        needPhone
+          ? digits(f.phone) < 10 && (reach === 'call' && sendBy === 'email' ? 'Enter a 10-digit phone number.' : 'Enter a 10-digit mobile number.')
           : !!f.phone.trim() && digits(f.phone) < 10 && 'Enter a 10-digit number, or leave it blank.',
       ],
-      ['qp-email', sendBy === 'email' && !emailOk(f.email) && 'Enter a valid email address.'],
+      ['qp-email', needEmail && !emailOk(f.email) && 'Enter a valid email address.'],
       ['qp-address', !f.address.trim() && 'Enter the pool’s address.'],
     ]);
     if (!valid) return;
-    if (honeypot(e.currentTarget)) return finish({ kind: 'form', name: f.name, sendBy, when: '', open: openNow });
+    const result = { kind: 'form' as const, name: f.name, sendBy, reach, when: '', open: openNow };
+    if (honeypot(e.currentTarget)) return finish(result);
     await send(
       {
         method: 'form',
@@ -334,11 +357,13 @@ export const QuotePopup = ({
         ...Object.fromEntries(steps.map((q) => [q.key, answers[q.key] ?? ''])),
         name: f.name.trim(),
         phone: f.phone.trim(),
-        email: sendBy === 'email' ? f.email.trim() : '',
+        email: needEmail ? f.email.trim() : '',
         address: f.address.trim(),
+        // Reads "Questions Via: Call me" in the lead email.
+        questionsVia: REACH_OPTIONS.find(([v]) => v === reach)![1],
         source: LEAD_SOURCE,
       },
-      { kind: 'form', name: f.name, sendBy, when: '', open: openNow },
+      result,
     );
   };
 
@@ -517,6 +542,7 @@ export const QuotePopup = ({
       aria-checked={sendBy === value}
       onClick={() => {
         setSendBy(value);
+        if (!reachChosen) setReach(value);
         setErrors({});
       }}
       className={`flex h-9 flex-1 items-center justify-center gap-2 rounded-[9px] text-[14.5px] font-semibold transition ${focusRing} ${
@@ -536,7 +562,6 @@ export const QuotePopup = ({
       <h2 id={headingId} className={`pt-2 ${h2Cls}`}>
         Where should we send your quote?
       </h2>
-      <p className={subCls}>One flat monthly rate, usually the same day (Mon–Sat).</p>
       <Spacer />
 
       <div>
@@ -557,7 +582,7 @@ export const QuotePopup = ({
             <div>
               <label htmlFor="qp-phone" className={labelCls}>
                 Mobile phone
-                {sendBy === 'email' && <span className="text-[12.5px] font-normal text-sc-muted">Optional</span>}
+                {!needPhone && <span className="text-[12.5px] font-normal text-sc-muted">Optional</span>}
               </label>
               <input
                 id="qp-phone"
@@ -572,15 +597,46 @@ export const QuotePopup = ({
               {fieldError('qp-phone')}
             </div>
           </div>
-          {sendBy === 'email' && (
-            <div>
-              <label htmlFor="qp-email" className={labelCls}>
-                Email
+          {/* How to reach them with a question, and the email field beside
+              it whenever an email is needed (the quote or a question goes by
+              email). Without one the dropdown takes the whole row. Three rows
+              of fields in every state, so the screen never outgrows the
+              popup. */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className={needEmail ? '' : 'col-span-2'}>
+              <label htmlFor="qp-reach" className={labelCls}>
+                If we have questions
               </label>
-              <input id="qp-email" type="email" autoComplete="email" value={fields.email} onChange={setField('email')} className={contactInput(!!errors['qp-email'])} {...errProps('qp-email')} />
-              {fieldError('qp-email')}
+              <div className="relative">
+                <select
+                  id="qp-reach"
+                  value={reach}
+                  onChange={(e) => {
+                    setReach(e.target.value as Reach);
+                    setReachChosen(true);
+                    setErrors({});
+                  }}
+                  className={`${contactInput(false)} appearance-none pr-10`}
+                >
+                  {REACH_OPTIONS.map(([v, label]) => (
+                    <option key={v} value={v}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-sc-navy/50" strokeWidth={1.75} />
+              </div>
             </div>
-          )}
+            {needEmail && (
+              <div>
+                <label htmlFor="qp-email" className={labelCls}>
+                  Email
+                </label>
+                <input id="qp-email" type="email" autoComplete="email" value={fields.email} onChange={setField('email')} className={contactInput(!!errors['qp-email'])} {...errProps('qp-email')} />
+                {fieldError('qp-email')}
+              </div>
+            )}
+          </div>
           <div>
             <label htmlFor="qp-address" className={labelCls}>
               Pool address
@@ -777,7 +833,9 @@ export const QuotePopup = ({
       </h2>
       <p className={`${subCls} max-w-[400px]`}>
         {done.kind === 'form'
-          ? `Your free quote is on its way by ${done.sendBy === 'text' ? 'text' : 'email'}. Keep an eye on your ${done.sendBy === 'text' ? 'messages' : 'inbox'}.`
+          ? `Your free quote is on its way by ${done.sendBy === 'text' ? 'text' : 'email'}. Keep an eye on your ${done.sendBy === 'text' ? 'messages' : 'inbox'}.${
+              done.reach ? ` If we need anything first, we’ll ${REACH_OPTIONS.find(([v]) => v === done.reach)![2]} you.` : ''
+            }`
           : !done.open && done.when === CALL_TIMES[0][2]
             ? 'We’re closed right now. We’ll call you first thing when we open.'
             : `We’ll call you ${done.when}.`}
